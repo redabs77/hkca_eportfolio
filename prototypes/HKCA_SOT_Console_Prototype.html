@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HKCA e-Portfolio — SOT Executive Triage Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            geist: ['"Geist"', 'sans-serif'],
+            geistmono: ['"Geist Mono"', 'monospace'],
+            inter: ['"Inter"', 'sans-serif'],
+          },
+          colors: {
+            linear: {
+              bg: '#08090a',
+              card: '#121417',
+              hover: '#1a1d21',
+              border: 'rgba(255, 255, 255, 0.08)',
+            },
+            stripe: {
+              canvas: '#f8fafc',
+              navy: '#0a2540',
+              navyLight: '#1b3a5d',
+              border: '#e3e8ee',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 9999px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    [data-view] { display: none; }
+    [data-view].active { display: block; }
+  </style>
+</head>
+<body class="h-full bg-slate-100 dark:bg-black text-slate-900 dark:text-slate-100 antialiased flex flex-col font-geist transition-colors duration-150">
+
+  <!-- ========================================================================= -->
+  <!-- TOP BAR                                                                   -->
+  <!-- ========================================================================= -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 px-4 py-2.5 shrink-0 z-50">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <div class="leading-tight">
+          <div class="text-xs font-bold tracking-tight text-white flex items-center gap-1.5">
+            HKCA e-Portfolio — SOT Console
+            <span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded border border-slate-700 font-mono">PROTOTYPE</span>
+          </div>
+          <div class="text-[10px] text-slate-400">Prince of Wales Hospital (NTEC) · Dr. Albert Chan, SOT</div>
+        </div>
+      </div>
+
+      <div id="breadcrumb" class="hidden md:flex items-center gap-2 text-xs font-geistmono text-slate-400">
+        <button onclick="showRoster()" class="hover:text-white transition">Roster</button>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs">
+        <button onclick="toggleDark()" class="p-1.5 text-slate-300 hover:text-white rounded bg-slate-800 hover:bg-slate-700 transition" title="Toggle Theme">
+          <span id="dark-icon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex-1 overflow-y-auto">
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 1: ROSTER — DENSE, LINEAR-PRECISION STYLE (bulk scan)            -->
+    <!-- ===================================================================== -->
+    <div id="view-roster" data-view class="active min-h-full font-geist bg-[#fafafa] dark:bg-linear-bg text-zinc-900 dark:text-zinc-100 p-4 lg:p-8 space-y-5">
+      <div class="max-w-6xl mx-auto space-y-5">
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200 dark:border-linear-border pb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500 font-geistmono">SOT Triage</span>
+              <span class="text-xs text-zinc-400">•</span>
+              <h2 class="text-sm font-semibold tracking-tight">14 Trainees under supervision</h2>
+            </div>
+            <p class="text-[11px] text-zinc-500 mt-0.5">All figures illustrative. Click any trainee row to open the full record.</p>
+          </div>
+          <div class="text-[11px] font-geistmono text-zinc-500 flex items-center gap-3">
+            <span>CYCLE: JUL–DEC 2026</span>
+            <span>HOSPITAL: PWH</span>
+          </div>
+        </div>
+
+        <!-- Triage Summary Tape -->
+        <div class="grid grid-cols-3 gap-px bg-zinc-200 dark:bg-zinc-800/80 rounded border border-zinc-200 dark:border-linear-border overflow-hidden text-xs">
+          <div class="bg-white dark:bg-linear-card p-3 space-y-1">
+            <div class="text-[11px] text-zinc-500 uppercase font-geistmono">Satisfactory</div>
+            <div class="text-xl font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">9</div>
+            <div class="text-[11px] text-zinc-400">On track, no open actions</div>
+          </div>
+          <div class="bg-white dark:bg-linear-card p-3 space-y-1">
+            <div class="text-[11px] text-zinc-500 uppercase font-geistmono">Under Observation / Remedial</div>
+            <div class="text-xl font-semibold text-amber-500 tabular-nums">3</div>
+            <div class="text-[11px] text-zinc-400">Active remedial plan or formative PIP</div>
+          </div>
+          <div class="bg-white dark:bg-linear-card p-3 space-y-1">
+            <div class="text-[11px] text-zinc-500 uppercase font-geistmono">Action Required</div>
+            <div class="text-xl font-semibold text-red-500 tabular-nums">2</div>
+            <div class="text-[11px] text-zinc-400">BOE escalation or contested ITA</div>
+          </div>
+        </div>
+
+        <!-- Trainee Roster Table -->
+        <div class="rounded border border-zinc-200 dark:border-linear-border bg-white dark:bg-linear-card overflow-hidden">
+          <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-linear-border flex items-center justify-between">
+            <span class="text-xs font-semibold text-zinc-900 dark:text-white">Trainee Roster — RAG Status</span>
+            <span class="text-[11px] font-geistmono text-zinc-400">Sorted: Action Required first</span>
+          </div>
+
+          <div class="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-xs">
+
+            <!-- Row: Action Required (contested ITA) -->
+            <div onclick="openTrainee('contested')" class="px-4 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-linear-hover transition cursor-pointer">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="font-medium text-zinc-900 dark:text-white truncate">Dr. Sarah Lau</div>
+                  <div class="text-[11px] text-zinc-500 truncate">HAT-1 · PWH · ITA Jul–Dec 2026</div>
+                </div>
+              </div>
+              <div class="hidden sm:flex items-center gap-4 font-geistmono text-[11px] text-zinc-500 shrink-0">
+                <span class="w-28">VOP 68.2%</span>
+                <span class="w-20">1 lifetime unsat</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 shrink-0">Contested — BOE Review</span>
+            </div>
+
+            <!-- Row: Action Required (2 consecutive unsat) -->
+            <div onclick="openTrainee('escalated')" class="px-4 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-linear-hover transition cursor-pointer">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="font-medium text-zinc-900 dark:text-white truncate">Dr. Marcus Yip</div>
+                  <div class="text-[11px] text-zinc-500 truncate">BAT-2 · PWH · ITA Jan–Jun 2026</div>
+                </div>
+              </div>
+              <div class="hidden sm:flex items-center gap-4 font-geistmono text-[11px] text-zinc-500 shrink-0">
+                <span class="w-28">VOP 54.0%</span>
+                <span class="w-20">2 consecutive unsat</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 shrink-0">BOE Escalation Triggered</span>
+            </div>
+
+            <!-- Row: Remedial -->
+            <div onclick="openTrainee('remedial')" class="px-4 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-linear-hover transition cursor-pointer">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="font-medium text-zinc-900 dark:text-white truncate">Dr. Priya Nair</div>
+                  <div class="text-[11px] text-zinc-500 truncate">HAT-2 · PWH · PIP since Aug 2026</div>
+                </div>
+              </div>
+              <div class="hidden sm:flex items-center gap-4 font-geistmono text-[11px] text-zinc-500 shrink-0">
+                <span class="w-28">VOP 71.4%</span>
+                <span class="w-20">Reassess 15 Nov</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">Active Remedial Plan</span>
+            </div>
+
+            <!-- Row: Observation -->
+            <div onclick="openTrainee('observation')" class="px-4 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-linear-hover transition cursor-pointer">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="font-medium text-zinc-900 dark:text-white truncate">Dr. Felix Tam</div>
+                  <div class="text-[11px] text-zinc-500 truncate">BAT-3 · PWH · Formative flag M2</div>
+                </div>
+              </div>
+              <div class="hidden sm:flex items-center gap-4 font-geistmono text-[11px] text-zinc-500 shrink-0">
+                <span class="w-28">VOP 79.8%</span>
+                <span class="w-20">1 lifetime unsat</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">Under Observation</span>
+            </div>
+
+            <!-- Row: Satisfactory (default detail trainee) -->
+            <div onclick="openTrainee('kelvin')" class="px-4 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-linear-hover transition cursor-pointer">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="font-medium text-zinc-900 dark:text-white truncate">Dr. Kelvin Wong</div>
+                  <div class="text-[11px] text-zinc-500 truncate">HAT-2 · PWH · ITA due in 18 days</div>
+                </div>
+              </div>
+              <div class="hidden sm:flex items-center gap-4 font-geistmono text-[11px] text-zinc-500 shrink-0">
+                <span class="w-28">VOP 94.6%</span>
+                <span class="w-20">0 unsat</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">ITA Action Required</span>
+            </div>
+
+            <!-- Row: Satisfactory -->
+            <div onclick="openTrainee('satisfactory')" class="px-4 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-linear-hover transition cursor-pointer">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="font-medium text-zinc-900 dark:text-white truncate">Dr. Jasmine Ho</div>
+                  <div class="text-[11px] text-zinc-500 truncate">PFY · PWH · 3-domain plan on track</div>
+                </div>
+              </div>
+              <div class="hidden sm:flex items-center gap-4 font-geistmono text-[11px] text-zinc-500 shrink-0">
+                <span class="w-28">VOP 101.2%</span>
+                <span class="w-20">0 unsat</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">Satisfactory</span>
+            </div>
+
+            <div class="px-4 py-2.5 text-center">
+              <span class="text-[11px] text-zinc-400 font-geistmono">+ 8 more satisfactory trainees (hidden in this prototype)</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Three Dense Action Queues -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+          <!-- ITA Action Queue w/ Escalation Ladder -->
+          <div class="rounded border border-zinc-200 dark:border-linear-border bg-white dark:bg-linear-card overflow-hidden">
+            <div class="px-3 py-2.5 border-b border-zinc-200 dark:border-linear-border flex items-center justify-between">
+              <span class="text-xs font-semibold text-zinc-900 dark:text-white">ITA Action Queue</span>
+              <span class="text-[10px] font-geistmono text-zinc-400">4 PENDING</span>
+            </div>
+            <div class="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-[11px]">
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <div class="font-medium text-zinc-800 dark:text-zinc-200">K. Wong — Synthesis ready</div>
+                  <div class="text-zinc-400">4/4 trainer forms in · due 18d</div>
+                </div>
+                <span class="font-geistmono text-amber-500 shrink-0">SOT</span>
+              </div>
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <div class="font-medium text-zinc-800 dark:text-zinc-200">M. Yip — Overdue sign-off</div>
+                  <div class="text-zinc-400">41 days overdue · 2 consecutive unsat</div>
+                </div>
+                <span class="font-geistmono text-red-500 shrink-0">BOE</span>
+              </div>
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <div class="font-medium text-zinc-800 dark:text-zinc-200">S. Lau — Contested, awaiting BOE</div>
+                  <div class="text-zinc-400">Objection filed 3 Oct 2026</div>
+                </div>
+                <span class="font-geistmono text-red-500 shrink-0">BOE</span>
+              </div>
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <div class="font-medium text-zinc-800 dark:text-zinc-200">P. Nair — PIP reassessment</div>
+                  <div class="text-zinc-400">Target reassessment 15 Nov</div>
+                </div>
+                <span class="font-geistmono text-amber-500 shrink-0">A-SOT</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logbook Verification Queue -->
+          <div class="rounded border border-zinc-200 dark:border-linear-border bg-white dark:bg-linear-card overflow-hidden">
+            <div class="px-3 py-2.5 border-b border-zinc-200 dark:border-linear-border flex items-center justify-between">
+              <span class="text-xs font-semibold text-zinc-900 dark:text-white">Logbook Verification</span>
+              <span class="text-[10px] font-geistmono text-zinc-400">126 PENDING</span>
+            </div>
+            <div class="p-3 space-y-2.5 text-[11px]">
+              <div class="flex items-center justify-between">
+                <span class="text-zinc-600 dark:text-zinc-300">Clean, high-confidence</span>
+                <span class="font-geistmono text-emerald-500 font-semibold">118 cases</span>
+              </div>
+              <button class="w-full py-1.5 text-[11px] font-semibold rounded bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:opacity-90 transition">
+                Batch sign-off (118)
+              </button>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-zinc-600 dark:text-zinc-300">Classifier diverged — needs review</span>
+                <span class="font-geistmono text-amber-500 font-semibold">8 cases</span>
+              </div>
+              <button class="w-full py-1.5 text-[11px] font-semibold rounded border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition">
+                Review individually (8)
+              </button>
+            </div>
+          </div>
+
+          <!-- Rotation Handshake Queue -->
+          <div class="rounded border border-zinc-200 dark:border-linear-border bg-white dark:bg-linear-card overflow-hidden">
+            <div class="px-3 py-2.5 border-b border-zinc-200 dark:border-linear-border flex items-center justify-between">
+              <span class="text-xs font-semibold text-zinc-900 dark:text-white">Rotation Handshake</span>
+              <span class="text-[10px] font-geistmono text-zinc-400">3 PENDING</span>
+            </div>
+            <div class="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-[11px]">
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <div class="font-medium text-zinc-800 dark:text-zinc-200">J. Ho — ICU declaration</div>
+                  <div class="text-zinc-400">QMH ICU · starts 1 Nov 2026</div>
+                </div>
+                <span class="font-geistmono text-zinc-400 shrink-0">Pending</span>
+              </div>
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <div class="font-medium text-zinc-800 dark:text-zinc-200">F. Tam — Elective declaration</div>
+                  <div class="text-zinc-400">PWH Pain Medicine · starts 15 Oct</div>
+                </div>
+                <span class="font-geistmono text-zinc-400 shrink-0">Pending</span>
+              </div>
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <div class="font-medium text-zinc-800 dark:text-zinc-200">S. Lau — Split ITA (mid-rotation transfer)</div>
+                  <div class="text-zinc-400">PWH → QEH, interim assessment required</div>
+                </div>
+                <span class="font-geistmono text-zinc-400 shrink-0">Pending</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 2: TRAINEE DETAIL — STRIPE EXECUTIVE STYLE (read one at a time)  -->
+    <!-- ===================================================================== -->
+    <div id="view-detail" data-view class="min-h-full font-inter bg-stripe-canvas dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-6 lg:p-10 space-y-8">
+      <div class="max-w-6xl mx-auto space-y-8">
+
+        <!-- Back navigation -->
+        <button onclick="showRoster()" class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-stripe-navy dark:hover:text-white transition">
+          <span>←</span> Back to roster
+        </button>
+
+        <!-- Executive Header & Trainee Identification -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-stripe-border dark:border-slate-800">
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Hong Kong College of Anaesthesiologists</span>
+              <span class="text-slate-300 dark:text-slate-700">•</span>
+              <span class="text-xs text-slate-500">SOT View — Supervisor Actions</span>
+            </div>
+            <h1 id="detail-name" class="text-2xl font-bold tracking-tight text-stripe-navy dark:text-white">Dr. Kelvin Wong</h1>
+            <p id="detail-meta" class="text-xs text-slate-500">HKCA Reg: <span class="font-mono text-slate-700 dark:text-slate-300">#2022-019</span> • Higher Anaesthesia Trainee (HAT-2) • Parent Hospital: Prince of Wales Hospital (NTEC)</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="text-right">
+              <div class="text-xs font-semibold text-slate-900 dark:text-white">RAG Status</div>
+              <div id="detail-rag" class="text-xs text-amber-600 dark:text-amber-400 font-medium">ITA Action Required</div>
+            </div>
+            <div id="detail-pct" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-stripe-border dark:border-slate-800 flex items-center justify-center font-bold text-sm text-stripe-navy dark:text-emerald-400 shadow-sm">
+              78%
+            </div>
+          </div>
+        </div>
+
+        <!-- 6-Year Stage Progression Visual Stepper -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-stripe-border dark:border-slate-800 shadow-sm space-y-5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Curriculum Progression Milestones</h3>
+            <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Accredited: 42 / 72 Months</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase">Stage 1 (Y1-2)</span>
+                <span class="text-emerald-600 dark:text-emerald-400 text-xs font-bold">Cleared ✓</span>
+              </div>
+              <div class="font-bold text-xs text-slate-900 dark:text-white">Basic Training (BAT)</div>
+              <p class="text-[11px] text-slate-500">24 Mos completed, Intermediate Exam Passed (Oct 2024)</p>
+            </div>
+
+            <div class="p-4 rounded-lg bg-white dark:bg-slate-800 border-2 border-stripe-navy dark:border-emerald-500 shadow-md space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold text-stripe-navy dark:text-emerald-400 uppercase">Stage 2 (Y3-4) • Current</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              </div>
+              <div class="font-bold text-xs text-slate-900 dark:text-white">Higher Training (HAT)</div>
+              <p class="text-[11px] text-slate-500">18 / 24 Mos completed. Subspecialties & ICU accredited.</p>
+            </div>
+
+            <div class="p-4 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 opacity-60 space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Stage 3 (Y5)</span>
+                <span class="text-[10px] text-slate-400">Locked</span>
+              </div>
+              <div class="font-bold text-xs text-slate-700 dark:text-slate-300">Provisional Fellowship (PFY)</div>
+              <p class="text-[11px] text-slate-500">3-domain PF plan (Clinical, Management, Education).</p>
+            </div>
+
+            <div class="p-4 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 opacity-60 space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Stage 4 (Y6)</span>
+                <span class="text-[10px] text-slate-400">Locked</span>
+              </div>
+              <div class="font-bold text-xs text-slate-700 dark:text-slate-300">Exit Assessment & FHKCA</div>
+              <p class="text-[11px] text-slate-500">Final credentialing for specialist registration.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Large Executive Sections — SOT ACTIONS not trainee self-service -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- ITA Synthesis — SOT performs Tier 2 action here -->
+          <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-stripe-border dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white">In-Training Assessment (HKCA-E06)</h3>
+                <p class="text-xs text-slate-500">Current 6-month assessment cycle ending 31 Dec 2026</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                SOT Synthesis Pending
+              </span>
+            </div>
+
+            <div class="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 space-y-2">
+              <div class="flex items-center justify-between text-xs font-semibold">
+                <span class="text-slate-900 dark:text-white">Trainer Feedback Consensus</span>
+                <span class="text-emerald-600 dark:text-emerald-400">4 / 4 Submitted</span>
+              </div>
+              <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Score distribution: 3× "Exceeds", 1× "Meets". No divergent outliers. You have not yet entered the official summative grade — trainee cannot sign until this is complete.
+              </p>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+              <button class="flex-1 py-2 text-xs font-semibold rounded-lg bg-stripe-navy hover:bg-stripe-navyLight text-white transition shadow-sm">
+                Enter Summative Grade & Synthesis
+              </button>
+              <button class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                View Trainer Forms (4)
+              </button>
+            </div>
+          </div>
+
+          <!-- Volume of Practice — SOT verification guardrails -->
+          <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-stripe-border dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Volume of Practice — Verification</h3>
+                <p class="text-xs text-slate-500">Cohort-relative velocity, not raw count</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                On Track
+              </span>
+            </div>
+
+            <div class="text-xs space-y-2">
+              <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg text-[11px]">
+                <div>
+                  <span class="text-slate-400 block">Logged (2-yr accredited):</span>
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">1,420 cases</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block">Velocity (cases / accredited mo, ex-ICU):</span>
+                  <span class="font-semibold text-emerald-600 dark:text-emerald-400">33.8 / mo</span>
+                </div>
+              </div>
+              <p class="text-slate-500">8 cases pending your review — classifier diverged from trainee-selected descriptor.</p>
+            </div>
+
+            <button class="w-full py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+              Review Divergent Classifications (8)
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Illustrative data notice -->
+        <p class="text-[11px] text-slate-400 text-center pt-2">All figures on this screen are illustrative and exist to demonstrate composition and interaction, not to state policy.</p>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Interactive Script -->
+  <script>
+    const traineeData = {
+      kelvin:       { name: "Dr. Kelvin Wong",   meta: "HKCA Reg: #2022-019 • Higher Anaesthesia Trainee (HAT-2) • Parent Hospital: Prince of Wales Hospital (NTEC)", rag: "ITA Action Required", pct: "78%" },
+      satisfactory: { name: "Dr. Jasmine Ho",     meta: "HKCA Reg: #2021-004 • Provisional Fellowship Year (PFY) • Parent Hospital: Prince of Wales Hospital (NTEC)", rag: "Satisfactory", pct: "91%" },
+      contested:    { name: "Dr. Sarah Lau",      meta: "HKCA Reg: #2024-011 • Higher Anaesthesia Trainee (HAT-1) • Parent Hospital: Prince of Wales Hospital (NTEC)", rag: "Contested — Pending BOE Review", pct: "61%" },
+      escalated:    { name: "Dr. Marcus Yip",     meta: "HKCA Reg: #2024-008 • Basic Anaesthesia Trainee (BAT-2) • Parent Hospital: Prince of Wales Hospital (NTEC)", rag: "BOE Escalation Triggered", pct: "48%" },
+      remedial:     { name: "Dr. Priya Nair",     meta: "HKCA Reg: #2023-015 • Higher Anaesthesia Trainee (HAT-2) • Parent Hospital: Prince of Wales Hospital (NTEC)", rag: "Active Remedial Plan (PIP)", pct: "66%" },
+      observation:  { name: "Dr. Felix Tam",      meta: "HKCA Reg: #2023-022 • Basic Anaesthesia Trainee (BAT-3) • Parent Hospital: Prince of Wales Hospital (NTEC)", rag: "Under Observation", pct: "70%" },
+    };
+
+    function openTrainee(key) {
+      const d = traineeData[key] || traineeData.kelvin;
+      document.getElementById('detail-name').innerText = d.name;
+      document.getElementById('detail-meta').innerHTML = d.meta.replace(/#([\w-]+)/, '<span class="font-mono text-slate-700 dark:text-slate-300">#$1</span>');
+      document.getElementById('detail-rag').innerText = d.rag;
+      document.getElementById('detail-pct').innerText = d.pct;
+
+      document.getElementById('view-roster').classList.remove('active');
+      document.getElementById('view-detail').classList.add('active');
+      document.getElementById('breadcrumb').classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function showRoster() {
+      document.getElementById('view-detail').classList.remove('active');
+      document.getElementById('view-roster').classList.add('active');
+      document.getElementById('breadcrumb').classList.add('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function toggleDark() {
+      const html = document.documentElement;
+      const icon = document.getElementById('dark-icon');
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        icon.innerText = "🌙";
+      } else {
+        html.classList.add('dark');
+        icon.innerText = "☀️";
+      }
+    }
+  </script>
+</body>
+</html>

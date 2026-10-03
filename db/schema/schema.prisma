@@ -1,0 +1,810 @@
+// =============================================================================
+// HKCA Electronic Portfolio System (EPS / ETP NextGen)
+// Master Prisma Database Schema — PostgreSQL Engine
+// Version: 1.0.0
+// Date: 2026-10-01
+// Governing Document: HKCA ePortfolio Master PRD v1.0
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// 1. ENUMS & TAXONOMIES
+// =============================================================================
+
+enum UserRole {
+  TRAINEE
+  TRAINER
+  SOT
+  ASSISTANT_SOT
+  CLUSTER_SOT
+  CHIEF_OF_SERVICE
+  COLLEGE_ADMIN
+  BOE_MEMBER
+  EXTERNAL_ASSESSOR
+}
+
+enum TrainingStage {
+  BAT   // Basic Anaesthesia Training (24 months)
+  HAT   // Higher Anaesthesia Training (24 months)
+  PFY   // Provisional Fellowship Year (12 months)
+  FELLOW
+  SUSPENDED
+  TERMINATED
+}
+
+enum RotationType {
+  CLINICAL_ANAESTHESIA
+  ICU
+  PAIN_MEDICINE
+  ELECTIVE_OTHER
+  ELECTIVE_RESEARCH
+  OVERSEAS_APPROVED
+}
+
+enum LedgerDecision {
+  GRANT
+  REVOKE
+  AMEND
+}
+
+enum LedgerReason {
+  SATISFACTORY_ITA_COMPLETION
+  CONFLICT_OF_INTEREST
+  NON_ACCREDITED_SITE
+  UNAUTHORIZED_SIGNATORY
+  SUCCESSFUL_APPEAL_OVERTURN
+  ADMINISTRATIVE_ERROR
+  FRAUDULENT_RECORD
+  INCORRECT_CATEGORY
+  PARTIAL_CREDIT_CORRECTION
+  CONDITIONAL_REQUIREMENT_FULFILLED
+  CURRICULUM_RULE_CHANGE
+  SUPERSEDES_DUPLICATE
+  OTHER_BOE_DIRECTED
+}
+
+enum ItaStatus {
+  PENDING_TRAINER_FEEDBACK
+  SOT_SYNTHESIS
+  AWAITING_TRAINEE_SIGNATURE
+  COMPLETED_SATISFACTORY
+  COMPLETED_UNSATISFACTORY
+  CONTESTED
+  PENDING_BOE_REVIEW
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED_FOR_REVIEW
+}
+
+enum WbaModality {
+  CEX
+  DOPS
+  CBD
+  ALMAT
+  EPA
+  MSF
+}
+
+enum ProjectStatus {
+  PROTOCOL_DRAFT
+  PROTOCOL_SUBMITTED
+  UNDER_REVIEW
+  REVISION_REQUIRED
+  MANUSCRIPT_SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+// =============================================================================
+// 2. USER DIRECTORY & ROLE-BASED ACCESS CONTROL (RBAC)
+// =============================================================================
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  name            String
+  hkcaNumber      String?        @unique
+  mchkNumber      String?        @unique
+  primaryRole     UserRole       @default(TRAINEE)
+  isActive        Boolean        @default(true)
+  
+  // Auditing & Soft-delete
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  // Relations
+  traineeProfile  TraineeProfile?
+  trainerProfile  TrainerProfile?
+  roles           UserRoleAssignment[]
+  auditLogs       AuditLog[]     @relation("AuditActor")
+
+  // Signature relations
+  rotationsSupervised   Rotation[]              @relation("SotSupervisor")
+  itaSessionsAuthored   ItaSession[]            @relation("SotAuthor")
+  itaAssessorResponses  ItaAssessorResponse[]   @relation("TrainerAssessor")
+  vopVerified           VolumeOfPractice[]      @relation("VopVerifier")
+  remedialPlansMentored RemedialPlan[]          @relation("MentorUser")
+  formalProjectsRev1    FormalProject[]         @relation("ProjectReviewer1")
+  formalProjectsRev2    FormalProject[]         @relation("ProjectReviewer2")
+  pfySotSignatures      PfyPlan[]               @relation("PfySotSigner")
+  pfyCosSignatures      PfyPlan[]               @relation("PfyCosSigner")
+  ledgerActions         AccreditedTimeLedger[]  @relation("LedgerAuthority")
+
+  @@index([email, hkcaNumber])
+  @@index([isActive])
+}
+
+model UserRoleAssignment {
+  id              String       @id @default(uuid())
+  userId          String
+  role            UserRole
+  scopeType       String       // "COLLEGE", "CLUSTER", "HOSPITAL", "DEPARTMENT"
+  scopeId         String?      // e.g., hospitalId or clusterId
+  effectiveFrom   DateTime     @default(now())
+  effectiveUntil  DateTime?
+  isActive        Boolean      @default(true)
+
+  user            User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, role, isActive])
+  @@index([scopeType, scopeId])
+}
+
+model TraineeProfile {
+  id                        String         @id @default(uuid())
+  userId                    String         @unique
+  hkcaNumber                String         @unique
+  currentStage              TrainingStage  @default(BAT)
+  curriculumEditionId       String
+
+  // Administrative Home
+  parentHospitalId          String
+  commencementBat           DateTime?
+  completionBat             DateTime?
+  commencementHat           DateTime?
+  completionHat             DateTime?
+  commencementPfy           DateTime?
+  completionPfy             DateTime?
+
+  // Milestone Eligibility Flags (Evaluated via live base table queries)
+  intermediateExamPassed    Boolean        @default(false)
+  intermediateExamDate      DateTime?
+  finalExamPassed           Boolean        @default(false)
+  finalExamDate             DateTime?
+  formalProjectApproved     Boolean        @default(false)
+  formalProjectApprovalDate DateTime?
+
+  // Status flags
+  isSuspended               Boolean        @default(false)
+  lifetimeUnsatItaCount     Int            @default(0) // Trigger for H8 SOT review flag
+  version                   Int            @default(1)
+
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+
+  // Relations
+  user                      User                   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  parentHospital            Hospital               @relation(fields: [parentHospitalId], references: [id], onDelete: Restrict)
+  curriculumEdition         CurriculumEdition      @relation(fields: [curriculumEditionId], references: [id], onDelete: Restrict)
+  rotations                 Rotation[]
+  itaSessions               ItaSession[]
+  ledgerEntries             AccreditedTimeLedger[]
+  volumeOfPractice          VolumeOfPractice[]
+  wbaAssessments            WbaAssessment[]
+  remedialPlans             RemedialPlan[]
+  examApplications          ExamApplication[]
+  formalProjects            FormalProject[]
+  pfyPlans                  PfyPlan[]
+
+  @@index([currentStage, isSuspended])
+  @@index([parentHospitalId])
+}
+
+model TrainerProfile {
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  hospitalId      String
+  isSot           Boolean      @default(false)
+  isAssistantSot  Boolean      @default(false)
+  isClusterSot    Boolean      @default(false)
+  qualifications  String[]     // ["FHKCA", "FANZCA", "FRCA"]
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  hospital        Hospital     @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+
+  @@index([hospitalId, isSot])
+}
+
+// =============================================================================
+// 3. HOSPITALS, CLUSTERS & TEMPORAL ACCREDITATION
+// =============================================================================
+
+model Cluster {
+  id              String       @id @default(uuid())
+  code            String       @unique // "NTEC", "KWC", "HKWC", "KCC", "HKE", "NTWC", "KEC"
+  name            String
+  description     String?
+
+  hospitals       HospitalClusterHistory[]
+}
+
+model Hospital {
+  id              String       @id @default(uuid())
+  hospitalCode    String       @unique // "PWH", "QMH", "QEH", "KWH", "TMH", "UCH", "PMH"
+  hospitalName    String
+  isHaHospital    Boolean      @default(true)
+  isActive        Boolean      @default(true)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  clusterHistory  HospitalClusterHistory[]
+  accreditedCentres AccreditedCentre[]
+  traineeProfiles TraineeProfile[]
+  trainerProfiles TrainerProfile[]
+  rotations       Rotation[]
+  vopEntries      VolumeOfPractice[]
+
+  @@index([hospitalCode])
+}
+
+model HospitalClusterHistory {
+  id              String       @id @default(uuid())
+  hospitalId      String
+  clusterId       String
+  effectiveFrom   DateTime     @default(now())
+  effectiveUntil  DateTime?    // NULL indicates current active cluster affiliation
+
+  hospital        Hospital     @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  cluster         Cluster      @relation(fields: [clusterId], references: [id], onDelete: Restrict)
+
+  @@index([hospitalId, effectiveUntil])
+  @@index([clusterId])
+}
+
+model AccreditedCentre {
+  id                      String       @id @default(uuid())
+  hospitalId              String
+  centreName              String       // e.g., "PWH Anaesthesia", "QMH ICU"
+  accreditationTypes      String[]     // ["CLINICAL_ANAESTHESIA", "ICU", "PAIN_MEDICINE"]
+  accreditationStatus     String       @default("ACTIVE") // "ACTIVE", "PENDING_REVIEW", "SUSPENDED", "EXPIRED"
+  accreditationStartDate  DateTime
+  accreditationEndDate    DateTime
+  maxDurationMonths       Int?         // Maximum accredited months per rotation
+  maxTraineeCapacity      Int?
+  trainerTraineeRatio     String?      // e.g. "1:1.2"
+  isSatelliteCentre       Boolean      @default(false)
+  parentCentreId          String?
+
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  hospital                Hospital     @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  rotations               Rotation[]
+  auditLogs               AccreditationAuditLog[]
+
+  @@index([hospitalId, accreditationStatus])
+  @@index([accreditationEndDate])
+}
+
+model AccreditationAuditLog {
+  id              String            @id @default(uuid())
+  centreId        String
+  action          String            // "RENEWED", "AMENDED", "SUSPENDED"
+  fieldChanged    String?
+  oldValue        String?
+  newValue        String?
+  changedBy       String
+  changedAt       DateTime          @default(now())
+  notes           String?
+
+  centre          AccreditedCentre  @relation(fields: [centreId], references: [id], onDelete: Restrict)
+
+  @@index([centreId, changedAt])
+}
+
+// =============================================================================
+// 4. DYNAMIC CURRICULUM & SCHEMA-DRIVEN FORMS ENGINE
+// =============================================================================
+
+model CurriculumEdition {
+  id              String       @id @default(uuid())
+  code            String       @unique // "HKCA-CURR-2017-v1.1", "HKCA-CURR-2028-v1.0"
+  name            String
+  effectiveFrom   DateTime
+  effectiveUntil  DateTime?    // NULL indicates currently active for new intakes
+  description     String?
+
+  traineeProfiles TraineeProfile[]
+  milestones      CurriculumMilestone[]
+  rules           CurriculumRule[]
+
+  @@index([code, effectiveFrom])
+}
+
+model CurriculumRule {
+  id                  String             @id @default(uuid())
+  editionId           String
+  ruleCode            String             // e.g., "BAT_MIN_VOP", "HAT_LAST_3YR_ACCREDITED"
+  ruleCategory        String             // "VOP", "WBA", "ROTATION", "EXAM", "TIME"
+  thresholdValue      Decimal            @db.Decimal(10, 2)
+  effectiveFrom       DateTime           @default(now())
+  effectiveUntil      DateTime?
+  curriculumReference String?            // "Vocational Training Guide §1.2.4"
+
+  edition             CurriculumEdition  @relation(fields: [editionId], references: [id], onDelete: Restrict)
+
+  @@index([editionId, ruleCode])
+}
+
+model CurriculumDescriptor {
+  id              String       @id @default(uuid())
+  code            String       @unique // e.g., "2.1", "2.2", "3.4", "3.5"
+  name            String       // e.g., "Regional Anaesthesia", "Paediatric Anaesthesia"
+  category        String       // "CLINICAL_FUNDAMENTALS" or "SPECIALTY_MODULES"
+  subspecialtyTag String?      // "paediatric", "obstetric", "cardiac", "neuro", "icu"
+  description     String?
+
+  vopCases        VolumeOfPractice[]
+  wbaAssessments  WbaAssessment[]
+
+  @@index([code, category])
+}
+
+model CurriculumMilestone {
+  id              String             @id @default(uuid())
+  editionId       String
+  stage           TrainingStage
+  milestoneCode   String             // "BAT_TO_HAT_PROGRESSION", "FINAL_EXAM_ELIGIBILITY"
+  requirementsJson Jsonb             // Structured requirement schema (VOP, WBA counts, courses)
+
+  edition         CurriculumEdition  @relation(fields: [editionId], references: [id], onDelete: Restrict)
+
+  @@index([editionId, stage, milestoneCode])
+}
+
+model AssessmentTool {
+  id              String       @id @default(uuid())
+  code            String       @unique // "HKCA-E06-ITA", "MINI-CEX", "DOPS", "EPA-01"
+  name            String
+  modality        WbaModality
+  version         Int          @default(1)
+  rubricSchema    Jsonb        // Question schema, Likert scales, and behavioral anchors
+  effectiveFrom   DateTime     @default(now())
+  effectiveUntil  DateTime?
+
+  itaAssessorResponses ItaAssessorResponse[]
+
+  @@index([code, modality])
+}
+
+// =============================================================================
+// 5. ROTATIONS & THE ACCREDITED TIME LEDGER (M2 & M3)
+// =============================================================================
+
+model Rotation {
+  id                  String             @id @default(uuid())
+  traineeId           String
+  hospitalId          String
+  accreditedCentreId  String
+  rotationType        RotationType
+  subspecialty        String?            // "CARDIAC", "PAEDIATRICS", "ICU", etc.
+
+  startDate           DateTime
+  endDate             DateTime
+  durationMonths      Decimal            @db.Decimal(5, 2) // Derived calendar month duration
+
+  // Gating & Verification
+  sotId               String
+  approvalStatus      VerificationStatus @default(PENDING)
+  approvedAt          DateTime?
+  learningGoals       String?
+
+  isAccredited        Boolean            @default(true)
+  version             Int                @default(1)
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  trainee             TraineeProfile     @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  hospital            Hospital           @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  accreditedCentre    AccreditedCentre   @relation(fields: [accreditedCentreId], references: [id], onDelete: Restrict)
+  sotSupervisor       User               @relation("SotSupervisor", fields: [sotId], references: [id], onDelete: Restrict)
+  itaSessions         ItaSession[]
+  ledgerEntries       AccreditedTimeLedger[]
+
+  @@index([traineeId, startDate, endDate])
+  @@index([hospitalId, rotationType])
+}
+
+model AccreditedTimeLedger {
+  id                      String          @id @default(uuid())
+  traineeId               String
+  rotationId              String?
+  itaSessionId            String?
+
+  periodStart             DateTime
+  periodEnd               DateTime
+  calendarMonthsCredited  Decimal         @db.Decimal(5, 2) // Exact calendar month calculation
+  category                RotationType
+  countsTowardLast3Years  Boolean         @default(true)
+
+  // Decision & Audit Trail (BOE Exclusive Authority for Revoke/Amend)
+  decision                LedgerDecision  @default(GRANT)
+  decisionReason          LedgerReason
+  decisionNotes           String?
+  authorityId             String          // User who authorized action (BOE member / SOT)
+  authorityRole           UserRole
+
+  conditionsJson          Jsonb?          // Conditional requirements attached to credit
+  supersedesId            String?         // Reference to previous ledger row if amended/revoked
+  effectiveAt             DateTime        @default(now())
+  isCurrent               Boolean         @default(true)
+
+  trainee                 TraineeProfile  @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  rotation                Rotation?       @relation(fields: [rotationId], references: [id], onDelete: Restrict)
+  itaSession              ItaSession?     @relation(fields: [itaSessionId], references: [id], onDelete: Restrict)
+  authorityUser           User            @relation("LedgerAuthority", fields: [authorityId], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, isCurrent])
+  @@index([rotationId])
+}
+
+// =============================================================================
+// 6. 2-TIER IN-TRAINING ASSESSMENT (ITA) PIPELINE (M1, M6, H1, H3, U1)
+// =============================================================================
+
+model ItaSession {
+  id                    String              @id @default(uuid())
+  rotationId            String
+  traineeId             String
+  sotId                 String
+
+  cycleStart            DateTime
+  cycleEnd              DateTime
+  trainingStage         TrainingStage
+  status                ItaStatus           @default(PENDING_TRAINER_FEEDBACK)
+
+  // SOT Summative Evaluation & Appeals Split (M6)
+  sotGrade              Int?                // 1=Exceeds, 2=Often Exceeds, 3=Meets (Pass), 4=Unsatisfactory
+  finalGrade            Int?                // Post-appeal authoritative grade evaluated by gates
+  sotComments           String?
+  learningSummary       String?
+
+  // Trainee Reflection & In-Person Sign-Off (H1)
+  traineeReflection     String?
+  traineeSignedAt       DateTime?
+
+  // Contested Dispute State Machine
+  isContested           Boolean             @default(false)
+  contestedStatement    String?
+  contestedAt           DateTime?
+  boeReviewStatus       String?             // "UNDER_REVIEW", "UPHELD", "OVERTURNED"
+
+  // Dates & Locking
+  sotSignedAt           DateTime?
+  completedAt           DateTime?
+  version               Int                 @default(1)
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  rotation              Rotation            @relation(fields: [rotationId], references: [id], onDelete: Restrict)
+  trainee               TraineeProfile      @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  sotAuthor             User                @relation("SotAuthor", fields: [sotId], references: [id], onDelete: Restrict)
+  assessorResponses     ItaAssessorResponse[]
+  ledgerEntries         AccreditedTimeLedger[]
+  remedialPlan          RemedialPlan?
+  appeals               ItaAppeal[]
+
+  @@index([traineeId, status])
+  @@index([rotationId])
+}
+
+model ItaAssessorResponse {
+  id                  String          @id @default(uuid())
+  itaSessionId        String
+  trainerId           String
+  toolId              String
+
+  // Structured Feedback (U1: No auto-prefill, structured text)
+  domainRatingsJson   Jsonb           // {"1a": 3, "1b": 3, "2a": 4, ...}
+  notableStrength     String?
+  keyAreaForGrowth    String?
+
+  submittedAt         DateTime        @default(now())
+
+  itaSession          ItaSession      @relation(fields: [itaSessionId], references: [id], onDelete: Restrict)
+  trainer             User            @relation("TrainerAssessor", fields: [trainerId], references: [id], onDelete: Restrict)
+  tool                AssessmentTool  @relation(fields: [toolId], references: [id], onDelete: Restrict)
+
+  @@index([itaSessionId, trainerId])
+}
+
+model ItaAppeal {
+  id                  String          @id @default(uuid())
+  itaSessionId        String
+  traineeId           String
+
+  appealDate          DateTime        @default(now())
+  groundsForAppeal    String
+  supportingDocsJson  Jsonb?
+
+  boeDecision         String?         // "UPHELD", "OVERTURNED_SATISFACTORY", "RE_ASSESSMENT"
+  overturnedGrade     Int?
+  boeDecisionDate     DateTime?
+  boeMinutesRef       String?
+
+  itaSession          ItaSession      @relation(fields: [itaSessionId], references: [id], onDelete: Restrict)
+
+  @@index([itaSessionId])
+}
+
+model RemedialPlan {
+  id                    String          @id @default(uuid())
+  itaSessionId          String          @unique
+  traineeId             String
+  assignedMentorId      String?
+
+  triggerReason         String
+  actionItemsJson       Jsonb           // Array of required targets, clinics, simulation sessions
+  targetReassessmentDate DateTime
+  actualReassessmentDate DateTime?
+  status                String          @default("ACTIVE") // "ACTIVE", "RESOLVED_SATISFACTORY", "ESCALATED_BOE"
+
+  resolvedAt            DateTime?
+
+  itaSession            ItaSession      @relation(fields: [itaSessionId], references: [id], onDelete: Restrict)
+  trainee               TraineeProfile  @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  mentor                User?           @relation("MentorUser", fields: [assignedMentorId], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, status])
+}
+
+// =============================================================================
+// 7. VOLUME OF PRACTICE (E-LOGBOOK) (H5, U2, U3, U4)
+// =============================================================================
+
+model VolumeOfPractice {
+  id                    String              @id @default(uuid())
+  traineeId             String
+  hospitalId            String
+
+  caseDate              DateTime            @db.Date
+  firstLoggedAt         DateTime            @default(now()) // Immutable database insert timestamp (H5)
+  deviceLoggedAt        DateTime?           // Client-side capture timestamp for offline PWA sync (U2)
+
+  durationHours         Decimal?            @db.Decimal(4, 2)
+  asaClass              Int?
+  patientAgeYears       Int?
+  isEmergency           Boolean             @default(false)
+
+  // Clinical Details
+  surgicalDiagnosis     String?
+  primaryOperation      String?
+  anaestheticTechnique  String[]            // ["GA", "SPINAL", "EPIDURAL", "TIVA", "UGRA"]
+  supervisionLevel      Int                 // 1=Direct, 2=Indirect, 3=Autonomous
+
+  // Dynamic Curriculum Classification (Descriptor FK)
+  descriptorCode        String
+  vopCategory           String              // "CLINICAL_FUNDAMENTALS" or "SPECIALTY_MODULES"
+  classifiedBy          String              // "TRAINEE", "CLASSIFIER", "SOT_OVERRIDE"
+  classificationConfidence Decimal?        @db.Decimal(4, 3)
+  classifierDiverged    Boolean             @default(false)
+
+  // Retrospective 2-Year Lock & Accreditation Flags
+  isAccredited          Boolean             @default(true)
+  disqualificationReason String?            // "EXCEEDED_2YR_WINDOW", "NON_ACCREDITED_ROTATION"
+
+  // Verification State (U3: SOT Guardrails)
+  verificationStatus    VerificationStatus  @default(PENDING)
+  verifiedById          String?
+  verifiedAt            DateTime?
+  verificationNotes     String?
+  version               Int                 @default(1)
+
+  // Legacy Provenance Tracking
+  legacyPid             Int?
+  legacyTid             String?
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  trainee               TraineeProfile      @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  hospital              Hospital            @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  descriptor            CurriculumDescriptor @relation(fields: [descriptorCode], references: [code], onDelete: Restrict)
+  verifiedByUser        User?               @relation("VopVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+  caseBlocks            CaseBlock[]
+
+  @@index([traineeId, caseDate])
+  @@index([firstLoggedAt, isAccredited])
+  @@index([descriptorCode])
+  @@index([verificationStatus])
+}
+
+model CaseBlock {
+  id              String            @id @default(uuid())
+  vopId           String
+  blockSite       String            // "FEMORAL", "AXILLARY", "INTERSCALENE"
+  blockTechnique  String            // "ULTRASOUND", "PNS", "LANDMARK"
+  sequence        Int               @default(1)
+
+  vop             VolumeOfPractice  @relation(fields: [vopId], references: [id], onDelete: Cascade)
+
+  @@index([vopId])
+}
+
+// =============================================================================
+// 8. WORKPLACE-BASED ASSESSMENTS (WBA) & HKAM iWBA SYNC (E2)
+// =============================================================================
+
+model WbaAssessment {
+  id                      String              @id @default(uuid())
+  traineeId               String
+  descriptorCode          String?
+
+  // HKAM iWBA Integration Contract (E2)
+  jcimedWbaId             String              @unique // UUID from https://wba.zlightinno.com
+  modality                WbaModality
+  datePerformed           DateTime            @db.Date
+
+  // Immutable Point-in-Time Assessor Snapshot
+  assessorHkamId          String?
+  assessorNameSnapshot    String
+  assessorHospitalSnapshot String?
+
+  procedureCode           String?             // e.g., "DOPS-12", "EPA-01"
+  procedureName           String?
+  entrustmentLevel        Int?                // 1-5 for EPA records
+  workflowOutcome         String?             // "COMPLETE", "FAIL"
+
+  // Full Assessment Timeline & Qualitative Feedback
+  timelineAnswersJson     Jsonb               // Complete step-by-step form answers, Likert ratings
+
+  syncBatchId             String?
+  syncStatus              String              @default("SYNCED")
+  importedAt              DateTime            @default(now())
+
+  trainee                 TraineeProfile      @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  descriptor              CurriculumDescriptor? @relation(fields: [descriptorCode], references: [code], onDelete: Restrict)
+
+  @@index([traineeId, modality, datePerformed])
+  @@index([jcimedWbaId])
+}
+
+model WbaSyncConflict {
+  id              String       @id @default(uuid())
+  jcimedWbaId     String       @unique
+  errorReason     String       // "UNRESOLVED_TRAINEE_IDENTITY", "UNMAPPED_DESCRIPTOR"
+  rawPayloadJson  Jsonb
+  resolved        Boolean      @default(false)
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  createdAt       DateTime     @default(now())
+
+  @@index([resolved, createdAt])
+}
+
+// =============================================================================
+// 9. EXAMS, COURSES & FORMAL PROJECTS (HKCA-E03, PFY)
+// =============================================================================
+
+model ExamApplication {
+  id                    String              @id @default(uuid())
+  traineeId             String
+  examType              String              // "INTERMEDIATE", "FINAL_ANAESTHESIA", "FINAL_ICU"
+  examDate              DateTime
+
+  submittedAt           DateTime            @default(now())
+  sotApprovalStatus     VerificationStatus  @default(PENDING)
+  sotApprovedAt         DateTime?
+  sotApprovedById       String?
+
+  collegeVettingStatus  String              @default("UNDER_REVIEW")
+  result                String?             // "PASS", "FAIL"
+
+  trainee               TraineeProfile      @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, examType, examDate])
+}
+
+model FormalProject {
+  id                    String              @id @default(uuid())
+  traineeId             String
+  projectType           String              // "RCT", "META_ANALYSIS", "OBSERVATIONAL", "QIP", "CASE_REPORT"
+  title                 String
+  status                ProjectStatus       @default(PROTOCOL_DRAFT)
+
+  protocolSubmittedDate DateTime?
+  protocolPath          String?
+  manuscriptPath        String?
+
+  // Blinded Reviewers (E6: 30-day tracking clock)
+  reviewer1Id           String?
+  reviewer2Id           String?
+  reviewer1Status       String?             // "APPROVED", "REVISION", "REJECT"
+  reviewer2Status       String?
+  reviewDueDate         DateTime?
+
+  finalApprovalDate     DateTime?
+  version               Int                 @default(1)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  trainee               TraineeProfile      @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  reviewer1             User?               @relation("ProjectReviewer1", fields: [reviewer1Id], references: [id], onDelete: Restrict)
+  reviewer2             User?               @relation("ProjectReviewer2", fields: [reviewer2Id], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, status])
+}
+
+model PfyPlan {
+  id                  String              @id @default(uuid())
+  traineeId           String
+  academicYear        String              // "2026-2027"
+
+  clinicalPlan        String
+  managementPlan      String
+  educationPlan       String
+
+  sotApprovedById     String?
+  sotApprovedDate     DateTime?
+  cosApprovedById     String?
+  cosApprovedDate     DateTime?
+
+  completionReport    String?
+  completionDate      DateTime?
+  status              VerificationStatus  @default(PENDING)
+
+  trainee             TraineeProfile      @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  sotApprover         User?               @relation("PfySotSigner", fields: [sotApprovedById], references: [id], onDelete: Restrict)
+  cosApprover         User?               @relation("PfyCosSigner", fields: [cosApprovedById], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, academicYear])
+}
+
+// =============================================================================
+// 10. TAMPER-EVIDENT APPEND-ONLY AUDIT LOG (H7)
+// =============================================================================
+
+model AuditLog {
+  id              BigInt       @id @default(autoincrement())
+  entityType      String       // "TRAINEE", "LEDGER", "ROTATION", "ITA", "VOP"
+  entityId        String
+  action          String       // "CREATE", "UPDATE", "REVOKE", "SIGN", "CONTEST"
+
+  beforeJson      Jsonb?
+  afterJson       Jsonb?
+
+  performedById   String
+  performedAt     DateTime     @default(now())
+  ipAddress       String?
+  userAgent       String?
+
+  // Cryptographic Hash Chaining (H7)
+  prevHash        String?
+  rowHash         String       // SHA-256 (prevHash + canonical row payload)
+
+  performedByUser User         @relation("AuditActor", fields: [performedById], references: [id], onDelete: Restrict)
+
+  @@index([entityType, entityId])
+  @@index([performedById, performedAt])
+  @@index([performedAt])
+}

@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# HKCA e-Portfolio — ignore rules
+# ---------------------------------------------------------------------------
+
+# ---- CRITICAL: never commit real data ----
+# Legacy dumps contain PLAINTEXT PATIENT HKIDs in `patient2.hkid`.
+# Keep all real data entirely outside this repository.
+*.sql
+*.sql.gz
+*.dump
+*.bak
+data/
+dumps/
+legacy-data/
+*.csv
+*.xlsx
+
+# ---- secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+
+# ---- dependencies ----
+node_modules/
+.pnp
+.pnp.js
+vendor/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# ---- build output ----
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# ---- test / coverage ----
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+
+# ---- editors / OS ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ---- logs ----
+*.log
+npm-debug.log*
+yarn-error.log*
+logs/
+
+# ---- local overrides ----
+*.local
+.cache/
+tmp/
+temp/
