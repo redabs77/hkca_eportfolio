@@ -298,7 +298,7 @@
       <button class="tab" data-tab="logbook">Logbook Verification <span class="cnt hot">18</span></button>
       <button class="tab" data-tab="rotations">Rotations <span class="cnt hot">3</span></button>
       <button class="tab" data-tab="itas">ITAs <span class="cnt hot">4</span></button>
-      <button class="tab" data-tab="review">Falling Behind <span class="cnt crit">3</span></button>
+      <button class="tab" data-tab="review">Progression Risk <span class="cnt crit">5</span></button>
     </nav>
   </div>
 </div>
@@ -472,7 +472,6 @@
             <div class="chips" style="margin-bottom:12px">
               <button class="chip">2.2 Regional Anaesthesia (CF)</button>
               <button class="chip on">3.5 Obstetric Anaesthesia (Specialty)</button>
-              <button class="chip">Split credit</button>
               <button class="chip no">Reject</button>
             </div>
             <div class="btn-row">
@@ -501,11 +500,11 @@
             </div>
             <p class="note" style="margin:0 0 12px">
               The case still counts toward overall volume of practice, but will not advance the curriculum minimum.
-              Approve to keep the case, or query the trainee.
+              Approve to keep the case, or request the trainee amend the log entry.
             </p>
             <div class="btn-row">
               <button class="btn pri sm">Approve (counts to VOP only)</button>
-              <button class="btn sec sm">Query trainee</button>
+              <button class="btn sec sm">Request trainee amendment</button>
               <button class="btn sec sm">Reject</button>
             </div>
           </div>
@@ -566,6 +565,9 @@
             <div class="meta" style="margin-top:3px;color:var(--ink3)">
               Learning goals: advanced TOE, structural heart intervention lists, cardiac ICU handover
             </div>
+            <div class="meta" style="margin-top:3px;color:var(--ink3)">
+              Special requirements: Peter Kam Course (self-funded, 3 days, no backfill needed)
+            </div>
           </div>
           <span class="pill warn"><span class="dot a pulse"></span>Awaiting destination SOT</span>
         </div>
@@ -610,6 +612,9 @@
             <div class="meta" style="margin-top:3px;color:var(--ink3)">
               Parent centre: Tuen Mun Hospital &middot; Learning goals: paediatric airway, caudal blocks, neonatal emergencies
             </div>
+            <div class="meta" style="margin-top:3px;color:var(--ink3)">
+              Special requirements: exam leave (Intermediate written, 2 weeks, Mar 2027), FRCA viva study leave
+            </div>
           </div>
           <span class="pill warn"><span class="dot a"></span>Your approval required</span>
         </div>
@@ -643,37 +648,80 @@
       </div>
     </div>
 
-    <!-- expiring accreditation warning -->
+    <!-- current rotations -->
+    <div class="card card-pad mb">
+      <div class="card-h" style="margin-bottom:11px">
+        <div>
+          <div class="eyebrow">Snapshot</div>
+          <div class="h3">Current Rotations &mdash; Your Trainees</div>
+        </div>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <thead>
+            <tr><th>Trainee</th><th>Stage</th><th>Current centre</th><th>Training type</th><th>Period</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="nm-cell">Dr. Kelvin Wong</td>
+              <td>HAT-2</td>
+              <td>Prince of Wales Hospital</td>
+              <td>Clinical Anaesthesia</td>
+              <td class="mono">01 Jul &ndash; 31 Dec 2026</td>
+            </tr>
+            <tr>
+              <td class="nm-cell">Dr. Sarah Lau</td>
+              <td>HAT-1</td>
+              <td>Queen Mary Hospital</td>
+              <td>Clinical Anaesthesia</td>
+              <td class="mono">01 Jul &ndash; 31 Dec 2026</td>
+            </tr>
+            <tr>
+              <td class="nm-cell">Dr. Felix Tam</td>
+              <td>BAT-3</td>
+              <td>Prince of Wales Hospital</td>
+              <td>Clinical Anaesthesia</td>
+              <td class="mono">01 Jul &ndash; 31 Dec 2026</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- rotation history -->
     <div class="card card-pad">
       <div class="card-h" style="margin-bottom:11px">
         <div>
-          <div class="eyebrow">Accreditation awareness</div>
-          <div class="h3">Centres expiring within 12 months</div>
+          <div class="eyebrow">History</div>
+          <div class="h3">Previous Rotation Arrangements &mdash; Your Trainees</div>
         </div>
       </div>
       <p class="note" style="margin:0 0 12px">
-        Rotations cannot be assigned to a centre whose accreditation expires before the rotation ends.
-        College Admin has been notified for review.
+        Also visible per-trainee in their individual drawer under Rotation history.
       </p>
       <div class="tbl-scroll">
         <table>
           <thead>
-            <tr><th>Centre</th><th>Cluster</th><th>Accredited for</th><th>Expiry</th><th>Status</th></tr>
+            <tr><th>Trainee</th><th>Centre</th><th>Training type</th><th>Period</th></tr>
           </thead>
           <tbody>
             <tr>
-              <td class="nm-cell">Hong Kong Buddhist Hospital</td>
-              <td>KCC</td>
-              <td>Clinical Anaesthesia</td>
-              <td class="mono">31 Dec 2026</td>
-              <td><span class="pill warn"><span class="dot a"></span>3 months &middot; review requested</span></td>
+              <td class="nm-cell">Dr. Kelvin Wong</td>
+              <td>Queen Mary Hospital</td>
+              <td>Clinical Anaesthesia &middot; Cardiac subspecialty</td>
+              <td class="mono">01 Jan &ndash; 30 Jun 2026</td>
             </tr>
             <tr>
-              <td class="nm-cell">Tin Shui Wai Hospital</td>
-              <td>NTWC</td>
+              <td class="nm-cell">Dr. Sarah Lau</td>
+              <td>Prince of Wales Hospital</td>
               <td>Clinical Anaesthesia</td>
-              <td class="mono">31 Dec 2026</td>
-              <td><span class="pill warn"><span class="dot a"></span>3 months &middot; review requested</span></td>
+              <td class="mono">01 Jan &ndash; 30 Jun 2026</td>
+            </tr>
+            <tr>
+              <td class="nm-cell">Dr. Felix Tam</td>
+              <td>Tuen Mun Hospital</td>
+              <td>Clinical Anaesthesia</td>
+              <td class="mono">01 Jul &ndash; 31 Dec 2025</td>
             </tr>
           </tbody>
         </table>
@@ -777,16 +825,78 @@
   <!-- ==================================================== -->
   <section id="tab-review" class="hidden">
 
+    <div class="banner">
+      <b>Two independent risk signals, shown separately.</b> <u>Velocity risk</u> projects whether a trainee's current
+      requirement pace will clear their next mandatory gate on time &mdash; time remaining to the gate deadline vs.
+      projected completion date for VOP/WBA/MSF at current rate, with peer pace shown as supporting context only.
+      <u>Assessment risk</u> is the existing ITA-grade ladder (contested grade, 2 consecutive unsatisfactory &rarr; BOE,
+      active remedial plan). A trainee can carry either, both, or neither. Both the SOT and the trainee see their own risk card.
+    </div>
+
+    <!-- VELOCITY RISK -->
     <div class="card card-pad mb">
       <div class="card-h">
         <div>
-          <div class="eyebrow">Progression risk</div>
-          <div class="h2">Trainees Falling Behind</div>
+          <div class="eyebrow">Velocity risk</div>
+          <div class="h2">Projected to Miss Next Gate</div>
         </div>
-        <span class="meta">Ranked by risk to progression gate</span>
+        <span class="meta">Time-to-gate vs. requirement completion rate &middot; peer pace shown for context</span>
       </div>
 
-      <!-- risk row -->
+      <div class="card-pad" style="border:1px solid rgba(239,68,68,.32);border-radius:10px;background:rgba(239,68,68,.03);margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start">
+          <div>
+            <div class="h3">Dr. Felix Tam &mdash; BAT-3 <span class="pill bad" style="margin-left:6px">Behind pace &middot; BT&rarr;HT gate</span></div>
+            <div class="meta" style="margin-top:4px">
+              BT&rarr;HT gate in 4 months (28 Feb 2027) &middot; VOP 174 of 218 (projected 198 by gate at current rate, short by 20)
+              &middot; CF WBA 12 of 16 (on pace)
+            </div>
+            <div class="meta" style="color:var(--rd700);margin-top:4px;font-weight:600">
+              At current logging rate, VOP will not clear the gate minimum. Stage median pace is 15% faster than Dr. Tam's.
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn am sm">Review with trainee</button>
+            <button class="btn sec sm">View logbook</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-pad" style="border:1px solid rgba(245,158,11,.32);border-radius:10px;background:rgba(245,158,11,.03)">
+        <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start">
+          <div>
+            <div class="h3">Dr. Priya Nair &mdash; HAT-2 <span class="pill warn" style="margin-left:6px">Narrow margin &middot; HT&rarr;PFY gate</span></div>
+            <div class="meta" style="margin-top:4px">
+              HT&rarr;PFY gate in 7 months (30 Apr 2027) &middot; VOP 440 of 615 (projected 610 by gate, within 1% of minimum)
+              &middot; MSF 1 of 2 (due before gate)
+            </div>
+            <div class="meta" style="color:var(--am700);margin-top:4px;font-weight:600">
+              Within the configured 10% schedule buffer &mdash; on watch, not yet critical. Outstanding MSF round should be scheduled now.
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn sec sm">Schedule MSF</button>
+            <button class="btn sec sm">View logbook</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="note" style="margin-top:12px">
+        Schedule buffer threshold shown here (10% margin to gate) is a prototype default for review, not a quoted
+        college rule &mdash; confirm before this goes live. Projection uses each trainee's trailing-90-day logging rate.
+      </p>
+    </div>
+
+    <!-- ASSESSMENT RISK -->
+    <div class="card card-pad mb">
+      <div class="card-h">
+        <div>
+          <div class="eyebrow">Assessment risk</div>
+          <div class="h2">ITA Grade Ladder</div>
+        </div>
+        <span class="meta">Contested grades &middot; consecutive unsatisfactory &middot; active remedial plans</span>
+      </div>
+
       <div class="card-pad" style="border:1px solid rgba(239,68,68,.32);border-radius:10px;background:rgba(239,68,68,.03);margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start">
           <div>
@@ -823,7 +933,7 @@
         </div>
       </div>
 
-      <div class="card-pad" style="border:1px solid rgba(245,158,11,.32);border-radius:10px;background:rgba(245,158,11,.03);margin-bottom:12px">
+      <div class="card-pad" style="border:1px solid rgba(245,158,11,.32);border-radius:10px;background:rgba(245,158,11,.03)">
         <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start">
           <div>
             <div class="h3">Dr. Priya Nair &mdash; HAT-2 <span class="pill warn" style="margin-left:6px">Active remedial</span></div>
@@ -841,27 +951,9 @@
         </div>
       </div>
 
-      <div class="card-pad" style="border:1px solid rgba(245,158,11,.32);border-radius:10px;background:rgba(245,158,11,.03)">
-        <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start">
-          <div>
-            <div class="h3">Dr. Felix Tam &mdash; BAT-3 <span class="pill warn" style="margin-left:6px">At risk</span></div>
-            <div class="meta" style="margin-top:4px">
-              Formative warning flagged &middot; VOP 174 of 218 &middot; CF WBA 12 of 16 &middot; 1 lifetime unsat
-            </div>
-            <div class="meta" style="color:var(--am700);margin-top:4px;font-weight:600">
-              Under observation this cycle. One further unsatisfactory ITA will trigger a formal remedial plan.
-            </div>
-          </div>
-          <div class="btn-row">
-            <button class="btn sec sm">Check with trainee</button>
-            <button class="btn sec sm">View logbook</button>
-          </div>
-        </div>
-      </div>
-
       <p class="note">
-        Status is computed from accredited months, WBA counts, VOP against curriculum minimums, MSF completion
-        and ITA outcomes. Thresholds are configurable by College Admin.
+        Assessment risk is computed from ITA grade history and remedial/appeal status only, independent of velocity risk above.
+        Thresholds (e.g. 2 consecutive unsatisfactory &rarr; BOE) are fixed curriculum rules, not configurable.
       </p>
     </div>
   </section>
@@ -917,6 +1009,17 @@
             <span>Last-3-years rule (24 mo accredited)</span><span class="frac">30 / 24 mo</span></div>
           <div class="bar"><i style="width:100%"></i></div>
         </div>
+      </div>
+    </div>
+
+    <div class="dr-sec">
+      <div class="eyebrow">Rotation history</div>
+      <div class="card card-pad">
+        <dl class="kv">
+          <dt>Jan &ndash; Jun 2026</dt><dd>Queen Mary Hospital &middot; Cardiac subspecialty</dd>
+          <dt>Jul &ndash; Dec 2025</dt><dd>Prince of Wales Hospital</dd>
+          <dt>Jan &ndash; Jun 2025</dt><dd>Prince of Wales Hospital (ICU)</dd>
+        </dl>
       </div>
     </div>
 
