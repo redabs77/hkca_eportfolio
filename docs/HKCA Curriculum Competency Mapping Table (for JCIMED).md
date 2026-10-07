@@ -79,7 +79,7 @@ Source: HKCA-E01 Appendix 3, §2.1.
 - **3 MSF required total — one per stage: Basic Training ×1, Higher Training ×1, Provisional Fellowship Year ×1.** (Corrected 2026-10-07 after cross-check against the live legacy EPS requirement tree — not 1 college-wide as earlier drafted.)
 
 ### Echo Curriculum (new item — confirmed separate from the HKCA-FTTE mandatory course)
-- **Echo Curriculum — DOPS ×1.** Found only in the legacy EPS live requirement tree (top-level node, outside the CF-2.x/SM-3.x taxonomy), not itemized in HKCA-E01 Appendix 3 as read directly from the PDF. Confirmed with Albert (2026-10-07): this is a **separate graded WBA/DOPS assessment**, distinct from the `HKCA-FTTE (Echo)` mandatory course certificate tracked elsewhere in this project. Stage placement (BT/HT/PFY) and exact procedure definition (TTE vs TOE) still need confirming with College Admin before this is sent to JCIMED as a buildable item — do not guess a CF-2.x/SM-3.x code for it.
+- **Echo Curriculum — DOPS ×1 (TTE — Transthoracic Echocardiography).** Found only in the legacy EPS live requirement tree (top-level node, outside the CF-2.x/SM-3.x taxonomy), not itemized in HKCA-E01 Appendix 3 as read directly from the PDF. Confirmed with Albert (2026-10-07): this is a **separate graded WBA/DOPS assessment**, distinct from the `HKCA-FTTE (Echo)` mandatory course certificate tracked elsewhere in this project. **Stage: can be done at any training stage (BT, HT, or PFY) — not stage-locked.** Modality/procedure confirmed as TTE, not TOE.
 
 ---
 
@@ -105,6 +105,7 @@ these modalities for HKCA trainees.
 3. **Coding scheme:** Replace free-text procedure labels with the `CF-2.x` / `SM-3.x` codes above; each code should carry its own BT/HT (or Exit Assessment, for SM) **WBA** minimum count so the API can report fulfilment, not just raw case counts. (VOP case-count minimums are HKCA's internal concern — not part of this ask.)
 4. **Missing domains entirely:** No items yet exist for `CF-2.6` (Trauma/Crisis/Resuscitation) or `CF-2.7` beyond the "checking anaesthesia machine" DOPS — both need CEX/CBD items added regardless of modality gaps elsewhere.
 5. **Do not add `PBA`/`ACR` mappings** — confirmed out of scope for HKCA (2026-10-07).
+6. **New item: Echo Curriculum** — add a `DOPS` item (TTE, any training stage) requiring ×1. Not part of the existing CF-2.x/SM-3.x taxonomy; needs its own standalone curriculum item in iWBA, same as it appears in the legacy EPS system.
 
 ---
 
@@ -113,5 +114,5 @@ these modalities for HKCA trainees.
 - [x] VOP/WBA minimums cross-checked directly against HKCA-E01 Appendix 1 & Appendix 3 (2026-10-07).
 - [x] PBA/ACR confirmed excluded from HKCA's WBA toolset (2026-10-07, Albert).
 - [x] WBA counts (CEX/CBD/DOPS/ALMAT) cross-checked against the live legacy EPS requirement tree (2026-10-07) — MSF corrected to 3× (one per stage); Echo Curriculum DOPS ×1 added as a confirmed-separate item.
-- [ ] Echo Curriculum: confirm exact stage placement (BT/HT/PFY) and procedure definition (TTE vs TOE) with College Admin before sending to JCIMED as a buildable item.
+- [x] Echo Curriculum confirmed (2026-10-07, Albert): TTE, any training stage (not stage-locked).
 - [ ] Get Albert's final sign-off on wording before sending to JCIMED.
