@@ -271,10 +271,11 @@
       <button data-scope="cluster">NTEC Cluster (all)</button>
     </div>
 
-    <!-- role: SOT vs Assistant SOT -->
+    <!-- role: SOT vs Assistant SOT vs Trainee (preview) -->
     <div class="seg" id="roleSeg">
       <button class="on" data-role="sot">SOT</button>
       <button data-role="asst">Assistant SOT</button>
+      <button data-role="trainee">Trainee view</button>
     </div>
 
     <div class="top-right">
@@ -307,7 +308,7 @@
 <div class="wrap">
 
   <!-- ============ ALERT STRIP ============ -->
-  <div class="alerts">
+  <div class="alerts" id="sotAlerts">
     <div class="alert" onclick="go('itas')">
       <div class="ic am">&#9203;</div>
       <div><div class="n">4</div><div class="l">ITAs awaiting your sign-off</div></div>
@@ -325,6 +326,152 @@
       <div><div class="n">3</div><div class="l">Trainees falling behind</div></div>
     </div>
   </div>
+
+  <!-- ============ TRAINEE VIEW (preview) ============ -->
+  <section id="tab-trainee-home" class="hidden">
+
+    <div class="banner mb">
+      <b>6-Month ITA due soon.</b> Your current rotation at Prince of Wales Hospital (Clinical Anaesthesia) ends in 18 days.
+      Your SOT has collected 4 of 4 trainer feedback forms &mdash; complete your self-reflection and goals before the synthesis meeting.
+      <button class="btn pri sm" style="margin-top:8px">Complete self-reflection &amp; goals</button>
+    </div>
+
+    <div class="alerts">
+      <div class="alert" style="cursor:default">
+        <div class="ic am">&#9203;</div>
+        <div><div class="n" style="font-size:15px">Action required</div><div class="l">Current ITA (HKCA-E06) &middot; due 18d</div></div>
+      </div>
+      <div class="alert" style="cursor:default">
+        <div class="ic em">&#128202;</div>
+        <div><div class="n" style="font-size:15px">608 / 615</div><div class="l">Volume of Practice &middot; to HAT&rarr;PFY gate</div></div>
+      </div>
+      <div class="alert" style="cursor:default">
+        <div class="ic bl">&#127891;</div>
+        <div><div class="n" style="font-size:15px">4 / 5 complete</div><div class="l">Mandatory courses &middot; UGRA not yet</div></div>
+      </div>
+      <div class="alert" style="cursor:default">
+        <div class="ic bl">&#128300;</div>
+        <div><div class="n" style="font-size:15px">Protocol approved</div><div class="l">Formal Project &middot; HKCA-E03</div></div>
+      </div>
+    </div>
+
+    <div class="card card-pad mb">
+      <div class="card-h" style="margin-bottom:12px">
+        <div>
+          <div class="eyebrow">6-year curriculum roadmap</div>
+          <div class="h2">Anaesthesia Vocational Training Pathway</div>
+        </div>
+        <div class="meta">Total accredited: <b class="mono">42 / 72</b> months</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+        <div class="card card-pad" style="border-color:var(--em600)">
+          <div class="eyebrow" style="color:var(--em700)">Year 1&ndash;2</div>
+          <div class="h3" style="margin-top:4px">Basic Training (BAT)</div>
+          <div class="meta" style="margin-top:2px">24 mo &middot; Satisfactory ITAs</div>
+          <span class="pill ok" style="margin-top:8px"><span class="dot g"></span>Done</span>
+        </div>
+        <div class="card card-pad" style="border-color:var(--em600)">
+          <div class="eyebrow" style="color:var(--em700)">Gateway</div>
+          <div class="h3" style="margin-top:4px">Intermediate Exam</div>
+          <div class="meta" style="margin-top:2px">Passed Oct 2024</div>
+          <span class="pill ok" style="margin-top:8px"><span class="dot g"></span>Passed</span>
+        </div>
+        <div class="card card-pad" style="border:2px solid var(--em600)">
+          <div class="eyebrow" style="color:var(--em700)">In progress</div>
+          <div class="h3" style="margin-top:4px">Higher Training (HAT)</div>
+          <div class="meta" style="margin-top:2px">18 / 24 mo &middot; Subspecialties</div>
+          <span class="pill warn" style="margin-top:8px"><span class="dot a"></span>Current stage</span>
+        </div>
+        <div class="card card-pad" style="opacity:.6">
+          <div class="eyebrow">Upcoming</div>
+          <div class="h3" style="margin-top:4px">Final Exam &amp; PF Year</div>
+          <div class="meta" style="margin-top:2px">Prereq: Formal Project approved</div>
+          <span class="pill" style="margin-top:8px">Locked</span>
+        </div>
+        <div class="card card-pad" style="opacity:.6">
+          <div class="eyebrow">Final step</div>
+          <div class="h3" style="margin-top:4px">Exit Assessment</div>
+          <div class="meta" style="margin-top:2px">FHKCA (Anaesthesiology)</div>
+          <span class="pill" style="margin-top:8px">Locked</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <!-- left: WBA + VOP -->
+      <div class="card card-pad">
+        <div class="eyebrow" style="margin-bottom:8px">Workplace-Based Assessments</div>
+        <div class="h3" style="margin-bottom:10px">Recent WBAs (synced from HKAM iWBA)</div>
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr><th>Type</th><th>Encounter</th><th>Assessor</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">DOPS</td><td>US-guided supraclavicular brachial plexus block</td><td>Dr. A. Chan</td><td class="mono">24 Sep</td></tr>
+              <tr><td class="mono">Mini-CEX</td><td>Preop evaluation of high-risk CPET cardiac patient</td><td>Dr. M. Lee</td><td class="mono">12 Sep</td></tr>
+              <tr><td class="mono">CBD</td><td>CICO scenario management</td><td>Dr. K. Yeung</td><td class="mono">18 Aug</td></tr>
+              <tr><td class="mono">ALMAT</td><td>Emergency vascular theatre list management</td><td>Dr. T. Wong</td><td class="mono">4 Jul</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="eyebrow" style="margin:16px 0 8px">Volume of Practice &middot; to HAT&rarr;PFY gate</div>
+        <div style="display:grid;gap:12px">
+          <div>
+            <div class="meta" style="margin-bottom:4px">Clinical Fundamentals WBA</div>
+            <div class="meter"><div class="bar"><i class="a" style="width:69%"></i></div><span class="frac">20 / 29</span></div>
+          </div>
+          <div>
+            <div class="meta" style="margin-bottom:4px">Specialty WBA</div>
+            <div class="meter"><div class="bar"><i class="b" style="width:39%"></i></div><span class="frac">12 / 31</span></div>
+          </div>
+          <div>
+            <div class="meta" style="margin-bottom:4px">Volume of Practice (cases)</div>
+            <div class="meter"><div class="bar"><i class="a" style="width:99%"></i></div><span class="frac">608 / 615</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: Mandatory Courses + Formal Project -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card card-pad">
+          <div class="eyebrow" style="margin-bottom:8px">Mandatory Courses</div>
+          <div style="font-size:22px;font-weight:750" class="mono">4<span style="font-size:13px;color:var(--ink3);font-weight:500"> / 5</span></div>
+          <div class="bar" style="margin-top:8px"><i style="width:80%"></i></div>
+          <dl class="kv" style="margin-top:10px;font-size:12px">
+            <dt>EASE</dt><dd><span class="pill ok" style="font-size:10.5px">Done &middot; Y1</span></dd>
+            <dt>EMAC</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
+            <dt>ADAM-A</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
+            <dt>HKCA-FTTE (Echo)</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
+            <dt>UGRA</dt><dd><span class="pill warn" style="font-size:10.5px">Not yet</span> <button class="btn sec sm" style="padding:3px 8px;font-size:10.5px">Upload cert</button></dd>
+          </dl>
+          <div class="note" style="margin-top:6px">EASE expected within Year 1 of BT; the other 4 have no fixed timeline but all must be complete before Exit Assessment.</div>
+        </div>
+        <div class="card card-pad">
+          <div class="eyebrow" style="margin-bottom:8px">Formal Project &middot; HKCA-E03</div>
+          <div style="margin-top:4px;font-weight:650;font-size:13px">Reducing Perioperative Hypothermia via Forced-Air Warming Optimization</div>
+          <div style="margin-top:8px"><span class="pill info">Protocol approved</span></div>
+          <div class="btn-row" style="margin-top:10px;gap:5px;flex-wrap:wrap">
+            <span class="pill ok" style="font-size:10.5px">Not started</span>
+            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
+            <span class="pill ok" style="font-size:10.5px">Protocol submitted</span>
+            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
+            <span class="pill info" style="font-size:10.5px">Protocol approved</span>
+            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
+            <span class="pill" style="font-size:10.5px">Manuscript submitted</span>
+            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
+            <span class="pill" style="font-size:10.5px">Manuscript approved</span>
+          </div>
+          <div class="note" style="margin-top:6px">No fixed timeline, but Manuscript Approved is a hard lock before Exit Assessment.</div>
+          <button class="btn sec sm" style="margin-top:10px">View blinded reviewer feedback</button>
+        </div>
+        <div class="card card-pad">
+          <div class="eyebrow" style="margin-bottom:8px">Current rotation</div>
+          <div class="h3">PWH &middot; Clinical Anaesthesia</div>
+          <div class="meta" style="margin-top:2px">Jul &ndash; Dec 2026 &middot; SOT: Dr. Albert Chan</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
 
   <!-- ==================================================== -->
   <!-- TAB 1 — ROSTER (default landing)                     -->
@@ -380,6 +527,8 @@
               <th style="min-width:140px">Specialty WBA</th>
               <th style="min-width:150px">VOP (to next gate)</th>
               <th>MSF</th>
+              <th style="min-width:118px">Courses</th>
+              <th style="min-width:140px">Formal Project</th>
               <th>Last ITA</th>
               <th>Action</th>
             </tr>
@@ -1047,6 +1196,35 @@
           <div style="font-size:22px;font-weight:750" class="mono">1<span style="font-size:13px;color:var(--ink3);font-weight:500"> / 2</span></div>
           <div class="bar" style="margin-top:8px"><i class="a" style="width:50%"></i></div>
         </div>
+        <div class="card card-pad">
+          <div class="eyebrow" style="margin-bottom:8px">Mandatory Courses</div>
+          <div style="font-size:22px;font-weight:750" class="mono">4<span style="font-size:13px;color:var(--ink3);font-weight:500"> / 5</span></div>
+          <div class="bar" style="margin-top:8px"><i style="width:80%"></i></div>
+          <dl class="kv" style="margin-top:10px;font-size:12px">
+            <dt>EASE</dt><dd><span class="pill ok" style="font-size:10.5px">Done &middot; Y1</span></dd>
+            <dt>EMAC</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
+            <dt>ADAM-A</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
+            <dt>HKCA-FTTE (Echo)</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
+            <dt>UGRA</dt><dd><span class="pill warn" style="font-size:10.5px">Not yet</span></dd>
+          </dl>
+          <div class="note" style="margin-top:6px">EASE expected within Year 1 of BT; the other 4 have no fixed timeline but all must be complete before Exit Assessment.</div>
+        </div>
+        <div class="card card-pad">
+          <div class="eyebrow" style="margin-bottom:8px">Formal Project</div>
+          <div style="margin-top:4px"><span class="pill info">Protocol approved</span></div>
+          <div class="btn-row" style="margin-top:10px;gap:5px;flex-wrap:wrap">
+            <span class="pill ok" style="font-size:10.5px">Not started</span>
+            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
+            <span class="pill ok" style="font-size:10.5px">Protocol submitted</span>
+            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
+            <span class="pill info" style="font-size:10.5px">Protocol approved</span>
+            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
+            <span class="pill" style="font-size:10.5px">Manuscript submitted</span>
+            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
+            <span class="pill" style="font-size:10.5px">Manuscript approved</span>
+          </div>
+          <div class="note" style="margin-top:6px">No fixed timeline, but Manuscript Approved is a hard lock before Exit Assessment (HKCA-E03).</div>
+        </div>
       </div>
     </div>
 
@@ -1104,6 +1282,7 @@ const ROSTER = [
     months:{cur:30, tot:72, ca:{n:27,t:48}, icu:{n:6,t:6}, el:{n:0,t:18}},
     cf:{n:15, t:29}, sm:{n:7, t:31}, vop:{n:420, t:615},
     msf:{n:1, t:2}, itaStatus:'bad', ita:{txt:'Contested &middot; BOE review', cls:'bad'}, health:'bad',
+    courses:{done:2, total:5, easeOverdue:false}, project:'NOT_STARTED',
     ita2:{tier1:'4 / 4 trainer forms in', tier2:'Grade 4 contested by trainee', ladder:'BOE', unsat:1}
   },
   {
@@ -1112,6 +1291,7 @@ const ROSTER = [
     months:{cur:18, tot:72, ca:{n:18,t:48}, icu:{n:0,t:6}, el:{n:0,t:18}},
     cf:{n:8, t:16}, sm:{n:0, t:31}, vop:{n:118, t:218},
     msf:{n:0, t:1}, itaStatus:'bad', ita:{txt:'BOE escalation triggered', cls:'bad'}, health:'bad',
+    courses:{done:1, total:5, easeOverdue:false}, project:'NOT_STARTED',
     ita2:{tier1:'3 / 4 trainer forms in', tier2:'2 consecutive unsatisfactory ITAs', ladder:'BOE', unsat:2}
   },
   {
@@ -1120,6 +1300,7 @@ const ROSTER = [
     months:{cur:38, tot:72, ca:{n:33,t:48}, icu:{n:6,t:6}, el:{n:0,t:18}},
     cf:{n:18, t:29}, sm:{n:10, t:31}, vop:{n:440, t:615},
     msf:{n:1, t:2}, itaStatus:'warn', ita:{txt:'Remedial plan active', cls:'warn'}, health:'warn',
+    courses:{done:3, total:5, easeOverdue:false}, project:'PROTOCOL_SUBMITTED',
     ita2:{tier1:'4 / 4 trainer forms in', tier2:'Grade 3 &middot; PIP reassess 15 Nov', ladder:'A-SOT', unsat:1}
   },
   {
@@ -1128,6 +1309,7 @@ const ROSTER = [
     months:{cur:24, tot:72, ca:{n:24,t:48}, icu:{n:0,t:6}, el:{n:0,t:18}},
     cf:{n:12, t:16}, sm:{n:3, t:31}, vop:{n:174, t:218},
     msf:{n:0, t:1}, itaStatus:'warn', ita:{txt:'Under observation', cls:'warn'}, health:'warn',
+    courses:{done:2, total:5, easeOverdue:false}, project:'NOT_STARTED',
     ita2:{tier1:'2 / 4 trainer forms in', tier2:'Formative warning flagged', ladder:'SOT', unsat:1}
   },
   {
@@ -1136,6 +1318,7 @@ const ROSTER = [
     months:{cur:42, tot:72, ca:{n:36,t:48}, icu:{n:6,t:6}, el:{n:0,t:18}},
     cf:{n:20, t:29}, sm:{n:12, t:31}, vop:{n:608, t:615},
     msf:{n:1, t:2}, itaStatus:'warn', ita:{txt:'SOT synthesis ready', cls:'warn'}, health:'ok',
+    courses:{done:4, total:5, easeOverdue:false}, project:'PROTOCOL_APPROVED',
     ita2:{tier1:'4 / 4 trainer forms in', tier2:'Awaiting SOT summative grade', ladder:'SOT', unsat:0}
   },
   {
@@ -1144,6 +1327,7 @@ const ROSTER = [
     months:{cur:66, tot:72, ca:{n:48,t:48}, icu:{n:6,t:6}, el:{n:10,t:18}},
     cf:{n:29, t:29}, sm:{n:31, t:31}, vop:{n:623, t:615},
     msf:{n:3, t:3}, itaStatus:'ok', ita:{txt:'Ready for sign-off', cls:'warn'}, health:'ok',
+    courses:{done:5, total:5, easeOverdue:false}, project:'MANUSCRIPT_SUBMITTED',
     ita2:{tier1:'5 / 5 trainer forms in', tier2:'Grade 2 &middot; awaiting trainee signature', ladder:'SOT', unsat:0}
   },
   {
@@ -1152,6 +1336,7 @@ const ROSTER = [
     months:{cur:10, tot:72, ca:{n:10,t:48}, icu:{n:0,t:6}, el:{n:0,t:18}},
     cf:{n:7, t:16}, sm:{n:0, t:31}, vop:{n:108, t:218},
     msf:{n:0, t:1}, itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok',
+    courses:{done:0, total:5, easeOverdue:false}, project:'NOT_STARTED',
     ita2:{tier1:'2 / 4 trainer forms in', tier2:'On track, no open actions', ladder:'SOT', unsat:0}
   },
   {
@@ -1160,6 +1345,7 @@ const ROSTER = [
     months:{cur:20, tot:72, ca:{n:20,t:48}, icu:{n:0,t:6}, el:{n:0,t:18}},
     cf:{n:11, t:16}, sm:{n:2, t:31}, vop:{n:201, t:218},
     msf:{n:1, t:1}, itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok',
+    courses:{done:2, total:5, easeOverdue:false}, project:'NOT_STARTED',
     ita2:{tier1:'4 / 4 trainer forms in', tier2:'On track, no open actions', ladder:'SOT', unsat:0}
   },
   {
@@ -1168,6 +1354,7 @@ const ROSTER = [
     months:{cur:44, tot:72, ca:{n:40,t:48}, icu:{n:6,t:6}, el:{n:0,t:18}},
     cf:{n:25, t:29}, sm:{n:27, t:31}, vop:{n:701, t:615},
     msf:{n:2, t:2}, itaStatus:'ok', ita:{txt:'Satisfactory &middot; Final exam passed', cls:'ok'}, health:'ok',
+    courses:{done:5, total:5, easeOverdue:false}, project:'MANUSCRIPT_APPROVED',
     ita2:{tier1:'4 / 4 trainer forms in', tier2:'On track, no open actions', ladder:'SOT', unsat:0}
   },
   {
@@ -1176,6 +1363,7 @@ const ROSTER = [
     months:{cur:32, tot:72, ca:{n:30,t:48}, icu:{n:6,t:6}, el:{n:0,t:18}},
     cf:{n:19, t:29}, sm:{n:14, t:31}, vop:{n:540, t:615},
     msf:{n:1, t:2}, itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok',
+    courses:{done:3, total:5, easeOverdue:false}, project:'PROTOCOL_SUBMITTED',
     ita2:{tier1:'4 / 4 trainer forms in', tier2:'On track, no open actions', ladder:'SOT', unsat:0}
   },
   {
@@ -1184,6 +1372,7 @@ const ROSTER = [
     months:{cur:10, tot:72, ca:{n:10,t:48}, icu:{n:0,t:6}, el:{n:0,t:18}},
     cf:{n:9, t:16}, sm:{n:1, t:31}, vop:{n:140, t:218},
     msf:{n:0, t:1}, itaStatus:'ok', ita:{txt:'Satisfactory &middot; High VOP velocity', cls:'ok'}, health:'ok',
+    courses:{done:1, total:5, easeOverdue:false}, project:'NOT_STARTED',
     ita2:{tier1:'2 / 4 trainer forms in', tier2:'On track, no open actions', ladder:'SOT', unsat:0}
   },
   {
@@ -1192,6 +1381,7 @@ const ROSTER = [
     months:{cur:21, tot:72, ca:{n:21,t:48}, icu:{n:0,t:6}, el:{n:0,t:18}},
     cf:{n:12, t:16}, sm:{n:2, t:31}, vop:{n:205, t:218},
     msf:{n:0, t:1}, itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok',
+    courses:{done:1, total:5, easeOverdue:true}, project:'NOT_STARTED',
     ita2:{tier1:'4 / 4 trainer forms in', tier2:'On track, no open actions', ladder:'SOT', unsat:0}
   },
   {
@@ -1200,6 +1390,7 @@ const ROSTER = [
     months:{cur:30, tot:72, ca:{n:27,t:48}, icu:{n:6,t:6}, el:{n:0,t:18}},
     cf:{n:16, t:29}, sm:{n:9, t:31}, vop:{n:510, t:615},
     msf:{n:1, t:2}, itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok',
+    courses:{done:3, total:5, easeOverdue:false}, project:'NOT_STARTED',
     ita2:{tier1:'4 / 4 trainer forms in', tier2:'On track, no open actions', ladder:'SOT', unsat:0}
   },
   {
@@ -1208,6 +1399,7 @@ const ROSTER = [
     months:{cur:70, tot:72, ca:{n:48,t:48}, icu:{n:6,t:6}, el:{n:18,t:18}},
     cf:{n:29, t:29}, sm:{n:31, t:31}, vop:{n:655, t:615},
     msf:{n:3, t:3}, itaStatus:'ok', ita:{txt:'QMH exit assessment pending', cls:''}, foreign:true, parent:'Prince of Wales Hospital',
+    courses:{done:5, total:5, easeOverdue:false}, project:'MANUSCRIPT_APPROVED',
     ita2:{tier1:'5 / 5 trainer forms in', tier2:'Exit assessment candidate', ladder:'SOT', unsat:0}
   }
 ];
@@ -1218,11 +1410,13 @@ const CLUSTER_EXTRA = [
    rot:{label:'NDH &middot; Clinical Anaesthesia', kind:'own', since:'Jul 2026'},
    months:{cur:30, tot:72, ca:{n:27,t:48}, icu:{n:6,t:6}, el:{n:0,t:18}},
    cf:{n:16, t:29}, sm:{n:8, t:31}, vop:{n:498, t:615}, msf:{n:1, t:2},
+   courses:{done:3, total:5, easeOverdue:false}, project:'PROTOCOL_SUBMITTED',
    itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok'},
   {id:'2024-102', name:'Dr. Ivan Mok', stage:'BAT-3', admitted:'2024', hospital:'Alice Ho Miu Ling Nethersole Hospital',
    rot:{label:'AHNH &middot; Clinical Anaesthesia', kind:'own', since:'Jan 2026'},
    months:{cur:18, tot:72, ca:{n:18,t:48}, icu:{n:0,t:6}, el:{n:0,t:18}},
    cf:{n:14, t:16}, sm:{n:2, t:31}, vop:{n:207, t:218}, msf:{n:0, t:1},
+   courses:{done:2, total:5, easeOverdue:false}, project:'NOT_STARTED',
    itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok'}
 ];
 
@@ -1257,6 +1451,24 @@ function itaListPill(status){
   if(status==='bad')  return '<span class="pill bad"><span class="dot r"></span>Unsatisfactory &middot; flagged</span>';
   if(status==='warn') return '<span class="pill warn"><span class="dot a"></span>Satisfactory</span>';
   return '<span class="pill ok"><span class="dot g"></span>Satisfactory</span>';
+}
+function coursesPill(c){
+  if(c.easeOverdue) return '<span class="pill bad"><span class="dot r"></span>EASE overdue</span>'
+    + `<div class="id-cell">${c.done} / ${c.total} courses</div>`;
+  if(c.done>=c.total) return `<span class="pill ok"><span class="dot g"></span>${c.done} / ${c.total} complete</span>`;
+  return `<span class="pill"><span class="dot b"></span>${c.done} / ${c.total} complete</span>`;
+}
+const PROJECT_STAGE = {
+  NOT_STARTED:         {cls:'',     label:'Not started'},
+  PROTOCOL_SUBMITTED:  {cls:'warn', label:'Protocol submitted'},
+  PROTOCOL_APPROVED:   {cls:'info', label:'Protocol approved'},
+  MANUSCRIPT_SUBMITTED:{cls:'warn', label:'Manuscript submitted'},
+  MANUSCRIPT_APPROVED: {cls:'ok',   label:'Manuscript approved'}
+};
+function projectPill(stage){
+  const s = PROJECT_STAGE[stage] || {cls:'', label:stage};
+  const dot = s.cls==='ok' ? '<span class="dot g"></span>' : s.cls==='warn' ? '<span class="dot a"></span>' : '';
+  return `<span class="pill ${s.cls}">${dot}${s.label}</span>`;
 }
 function stagePrefix(stage){ return stage.split('-')[0]; } // BAT-2 -> BAT, PFY -> PFY
 const STAGE_ORDER = {BAT:0, HAT:1, PFY:2};
@@ -1295,6 +1507,8 @@ function renderRoster(){
       <td>${meter(t.sm.n,t.sm.t, t.sm.n/t.sm.t<0.5?'n':'b')}</td>
       <td>${meter(Math.min(t.vop.n,t.vop.t),t.vop.t, t.vop.n>=t.vop.t?'':'a')}</td>
       <td>${meter(t.msf.n,t.msf.t, t.msf.n>=t.msf.t?'':'a')}</td>
+      <td>${coursesPill(t.courses)}</td>
+      <td>${projectPill(t.project)}</td>
       <td>${itaListPill(t.itaStatus)}</td>
       <td><button class="btn sec sm" onclick="openDrawer('${t.name}','${t.id}','${t.stage}','${t.parent||'Prince of Wales Hospital'}')">View</button></td>
     </tr>`;
@@ -1358,10 +1572,28 @@ document.querySelectorAll('#roleSeg button').forEach(b=>{
 
 function applyRole(){
   const asst = role==='asst';
-  document.getElementById('userName').textContent = asst ? 'Dr. Winnie Ho' : 'Dr. Albert Chan';
-  document.getElementById('userRole').innerHTML = asst
-    ? 'Assistant SOT &middot; Prince of Wales Hospital'
-    : 'SOT &middot; Prince of Wales Hospital';
+  const trainee = role==='trainee';
+
+  document.getElementById('userName').textContent = trainee ? 'Dr. Kelvin Wong' : (asst ? 'Dr. Winnie Ho' : 'Dr. Albert Chan');
+  document.getElementById('userRole').innerHTML = trainee
+    ? 'Higher Trainee (HAT-2) &middot; Prince of Wales Hospital'
+    : asst
+      ? 'Assistant SOT &middot; Prince of Wales Hospital'
+      : 'SOT &middot; Prince of Wales Hospital';
+
+  // swap entire SOT console (tabs + alert strip + tab sections) for the trainee dashboard
+  document.querySelector('.sub').classList.toggle('hidden', trainee);
+  document.getElementById('sotAlerts').classList.toggle('hidden', trainee);
+  document.getElementById('tab-trainee-home').classList.toggle('hidden', !trainee);
+  if(!trainee){
+    const activeTab = document.querySelector('.tab.on')?.dataset.tab || 'roster';
+    go(activeTab);
+  } else {
+    ['roster','logbook','rotations','itas','review'].forEach(t=>{
+      document.getElementById('tab-'+t).classList.add('hidden');
+    });
+  }
+  document.getElementById('scopeSeg').classList.toggle('hidden', trainee);
 
   // rotation approval is SOT-only
   document.querySelectorAll('[data-need-sot]').forEach(el=>{ el.disabled = asst; });
