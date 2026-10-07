@@ -271,12 +271,12 @@
       <button data-scope="cluster">NTEC Cluster (all)</button>
     </div>
 
-    <!-- role: SOT vs Assistant SOT vs Trainee (preview) -->
+    <!-- role: SOT vs Assistant SOT -->
     <div class="seg" id="roleSeg">
       <button class="on" data-role="sot">SOT</button>
       <button data-role="asst">Assistant SOT</button>
-      <button data-role="trainee">Trainee view</button>
     </div>
+    <a class="btn sec" href="HKCA_Trainee_Dashboard_DirectionA.html" target="_blank" rel="noopener">Trainee view &#8599;</a>
 
     <div class="top-right">
       <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">&#9788;</button>
@@ -326,152 +326,6 @@
       <div><div class="n">3</div><div class="l">Trainees falling behind</div></div>
     </div>
   </div>
-
-  <!-- ============ TRAINEE VIEW (preview) ============ -->
-  <section id="tab-trainee-home" class="hidden">
-
-    <div class="banner mb">
-      <b>6-Month ITA due soon.</b> Your current rotation at Prince of Wales Hospital (Clinical Anaesthesia) ends in 18 days.
-      Your SOT has collected 4 of 4 trainer feedback forms &mdash; complete your self-reflection and goals before the synthesis meeting.
-      <button class="btn pri sm" style="margin-top:8px">Complete self-reflection &amp; goals</button>
-    </div>
-
-    <div class="alerts">
-      <div class="alert" style="cursor:default">
-        <div class="ic am">&#9203;</div>
-        <div><div class="n" style="font-size:15px">Action required</div><div class="l">Current ITA (HKCA-E06) &middot; due 18d</div></div>
-      </div>
-      <div class="alert" style="cursor:default">
-        <div class="ic em">&#128202;</div>
-        <div><div class="n" style="font-size:15px">608 / 615</div><div class="l">Volume of Practice &middot; to HAT&rarr;PFY gate</div></div>
-      </div>
-      <div class="alert" style="cursor:default">
-        <div class="ic bl">&#127891;</div>
-        <div><div class="n" style="font-size:15px">4 / 5 complete</div><div class="l">Mandatory courses &middot; UGRA not yet</div></div>
-      </div>
-      <div class="alert" style="cursor:default">
-        <div class="ic bl">&#128300;</div>
-        <div><div class="n" style="font-size:15px">Protocol approved</div><div class="l">Formal Project &middot; HKCA-E03</div></div>
-      </div>
-    </div>
-
-    <div class="card card-pad mb">
-      <div class="card-h" style="margin-bottom:12px">
-        <div>
-          <div class="eyebrow">6-year curriculum roadmap</div>
-          <div class="h2">Anaesthesia Vocational Training Pathway</div>
-        </div>
-        <div class="meta">Total accredited: <b class="mono">42 / 72</b> months</div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
-        <div class="card card-pad" style="border-color:var(--em600)">
-          <div class="eyebrow" style="color:var(--em700)">Year 1&ndash;2</div>
-          <div class="h3" style="margin-top:4px">Basic Training (BAT)</div>
-          <div class="meta" style="margin-top:2px">24 mo &middot; Satisfactory ITAs</div>
-          <span class="pill ok" style="margin-top:8px"><span class="dot g"></span>Done</span>
-        </div>
-        <div class="card card-pad" style="border-color:var(--em600)">
-          <div class="eyebrow" style="color:var(--em700)">Gateway</div>
-          <div class="h3" style="margin-top:4px">Intermediate Exam</div>
-          <div class="meta" style="margin-top:2px">Passed Oct 2024</div>
-          <span class="pill ok" style="margin-top:8px"><span class="dot g"></span>Passed</span>
-        </div>
-        <div class="card card-pad" style="border:2px solid var(--em600)">
-          <div class="eyebrow" style="color:var(--em700)">In progress</div>
-          <div class="h3" style="margin-top:4px">Higher Training (HAT)</div>
-          <div class="meta" style="margin-top:2px">18 / 24 mo &middot; Subspecialties</div>
-          <span class="pill warn" style="margin-top:8px"><span class="dot a"></span>Current stage</span>
-        </div>
-        <div class="card card-pad" style="opacity:.6">
-          <div class="eyebrow">Upcoming</div>
-          <div class="h3" style="margin-top:4px">Final Exam &amp; PF Year</div>
-          <div class="meta" style="margin-top:2px">Prereq: Formal Project approved</div>
-          <span class="pill" style="margin-top:8px">Locked</span>
-        </div>
-        <div class="card card-pad" style="opacity:.6">
-          <div class="eyebrow">Final step</div>
-          <div class="h3" style="margin-top:4px">Exit Assessment</div>
-          <div class="meta" style="margin-top:2px">FHKCA (Anaesthesiology)</div>
-          <span class="pill" style="margin-top:8px">Locked</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid2">
-      <!-- left: WBA + VOP -->
-      <div class="card card-pad">
-        <div class="eyebrow" style="margin-bottom:8px">Workplace-Based Assessments</div>
-        <div class="h3" style="margin-bottom:10px">Recent WBAs (synced from HKAM iWBA)</div>
-        <div class="tbl-scroll">
-          <table>
-            <thead><tr><th>Type</th><th>Encounter</th><th>Assessor</th><th>Date</th></tr></thead>
-            <tbody>
-              <tr><td class="mono">DOPS</td><td>US-guided supraclavicular brachial plexus block</td><td>Dr. A. Chan</td><td class="mono">24 Sep</td></tr>
-              <tr><td class="mono">Mini-CEX</td><td>Preop evaluation of high-risk CPET cardiac patient</td><td>Dr. M. Lee</td><td class="mono">12 Sep</td></tr>
-              <tr><td class="mono">CBD</td><td>CICO scenario management</td><td>Dr. K. Yeung</td><td class="mono">18 Aug</td></tr>
-              <tr><td class="mono">ALMAT</td><td>Emergency vascular theatre list management</td><td>Dr. T. Wong</td><td class="mono">4 Jul</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="eyebrow" style="margin:16px 0 8px">Volume of Practice &middot; to HAT&rarr;PFY gate</div>
-        <div style="display:grid;gap:12px">
-          <div>
-            <div class="meta" style="margin-bottom:4px">Clinical Fundamentals WBA</div>
-            <div class="meter"><div class="bar"><i class="a" style="width:69%"></i></div><span class="frac">20 / 29</span></div>
-          </div>
-          <div>
-            <div class="meta" style="margin-bottom:4px">Specialty WBA</div>
-            <div class="meter"><div class="bar"><i class="b" style="width:39%"></i></div><span class="frac">12 / 31</span></div>
-          </div>
-          <div>
-            <div class="meta" style="margin-bottom:4px">Volume of Practice (cases)</div>
-            <div class="meter"><div class="bar"><i class="a" style="width:99%"></i></div><span class="frac">608 / 615</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- right: Mandatory Courses + Formal Project -->
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="card card-pad">
-          <div class="eyebrow" style="margin-bottom:8px">Mandatory Courses</div>
-          <div style="font-size:22px;font-weight:750" class="mono">4<span style="font-size:13px;color:var(--ink3);font-weight:500"> / 5</span></div>
-          <div class="bar" style="margin-top:8px"><i style="width:80%"></i></div>
-          <dl class="kv" style="margin-top:10px;font-size:12px">
-            <dt>EASE</dt><dd><span class="pill ok" style="font-size:10.5px">Done &middot; Y1</span></dd>
-            <dt>EMAC</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
-            <dt>ADAM-A</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
-            <dt>HKCA-FTTE (Echo)</dt><dd><span class="pill ok" style="font-size:10.5px">Done</span></dd>
-            <dt>UGRA</dt><dd><span class="pill warn" style="font-size:10.5px">Not yet</span> <button class="btn sec sm" style="padding:3px 8px;font-size:10.5px">Upload cert</button></dd>
-          </dl>
-          <div class="note" style="margin-top:6px">EASE expected within Year 1 of BT; the other 4 have no fixed timeline but all must be complete before Exit Assessment.</div>
-        </div>
-        <div class="card card-pad">
-          <div class="eyebrow" style="margin-bottom:8px">Formal Project &middot; HKCA-E03</div>
-          <div style="margin-top:4px;font-weight:650;font-size:13px">Reducing Perioperative Hypothermia via Forced-Air Warming Optimization</div>
-          <div style="margin-top:8px"><span class="pill info">Protocol approved</span></div>
-          <div class="btn-row" style="margin-top:10px;gap:5px;flex-wrap:wrap">
-            <span class="pill ok" style="font-size:10.5px">Not started</span>
-            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
-            <span class="pill ok" style="font-size:10.5px">Protocol submitted</span>
-            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
-            <span class="pill info" style="font-size:10.5px">Protocol approved</span>
-            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
-            <span class="pill" style="font-size:10.5px">Manuscript submitted</span>
-            <span style="color:var(--ink3);font-size:11px">&rarr;</span>
-            <span class="pill" style="font-size:10.5px">Manuscript approved</span>
-          </div>
-          <div class="note" style="margin-top:6px">No fixed timeline, but Manuscript Approved is a hard lock before Exit Assessment.</div>
-          <button class="btn sec sm" style="margin-top:10px">View blinded reviewer feedback</button>
-        </div>
-        <div class="card card-pad">
-          <div class="eyebrow" style="margin-bottom:8px">Current rotation</div>
-          <div class="h3">PWH &middot; Clinical Anaesthesia</div>
-          <div class="meta" style="margin-top:2px">Jul &ndash; Dec 2026 &middot; SOT: Dr. Albert Chan</div>
-        </div>
-      </div>
-    </div>
-
-  </section>
 
   <!-- ==================================================== -->
   <!-- TAB 1 — ROSTER (default landing)                     -->
@@ -1572,28 +1426,10 @@ document.querySelectorAll('#roleSeg button').forEach(b=>{
 
 function applyRole(){
   const asst = role==='asst';
-  const trainee = role==='trainee';
-
-  document.getElementById('userName').textContent = trainee ? 'Dr. Kelvin Wong' : (asst ? 'Dr. Winnie Ho' : 'Dr. Albert Chan');
-  document.getElementById('userRole').innerHTML = trainee
-    ? 'Higher Trainee (HAT-2) &middot; Prince of Wales Hospital'
-    : asst
-      ? 'Assistant SOT &middot; Prince of Wales Hospital'
-      : 'SOT &middot; Prince of Wales Hospital';
-
-  // swap entire SOT console (tabs + alert strip + tab sections) for the trainee dashboard
-  document.querySelector('.sub').classList.toggle('hidden', trainee);
-  document.getElementById('sotAlerts').classList.toggle('hidden', trainee);
-  document.getElementById('tab-trainee-home').classList.toggle('hidden', !trainee);
-  if(!trainee){
-    const activeTab = document.querySelector('.tab.on')?.dataset.tab || 'roster';
-    go(activeTab);
-  } else {
-    ['roster','logbook','rotations','itas','review'].forEach(t=>{
-      document.getElementById('tab-'+t).classList.add('hidden');
-    });
-  }
-  document.getElementById('scopeSeg').classList.toggle('hidden', trainee);
+  document.getElementById('userName').textContent = asst ? 'Dr. Winnie Ho' : 'Dr. Albert Chan';
+  document.getElementById('userRole').innerHTML = asst
+    ? 'Assistant SOT &middot; Prince of Wales Hospital'
+    : 'SOT &middot; Prince of Wales Hospital';
 
   // rotation approval is SOT-only
   document.querySelectorAll('[data-need-sot]').forEach(el=>{ el.disabled = asst; });

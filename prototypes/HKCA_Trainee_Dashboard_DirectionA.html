@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HKCA e-Portfolio — Trainee Dashboard (Direction A)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a2540; --navy-l:#1b3a5d; --border:#e3e8ee; --slate:#425466;
+  --teal:#00d4b2; --green:#00a389; --surface:#fff; --page:#f8fafc;
+  --am:#d97706; --rd:#dc2626; --bl:#2563eb; --pu:#7c3aed;
+}
+.dark{
+  --navy:#e8eef7; --navy-l:#cbd8e8; --border:#1e2a45; --slate:#8fa3c0;
+  --surface:#111a2c; --page:#0a1220; --green:#00d4b2;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--page); color:var(--navy); font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased; transition:background .15s,color .15s;
+}
+.mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:0 30px}
+.hidden{display:none !important}
+
+/* ---------- nav ---------- */
+.nav{border-bottom:1px solid var(--border);background:var(--surface);padding:16px 0;position:sticky;top:0;z-index:60}
+.dark .nav{background:#0d1626}
+.navrow{display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px}
+.mk{width:40px;height:40px;border-radius:11px;background:var(--navy);color:var(--page);
+  display:grid;place-items:center;font-weight:750;font-size:17px;flex:none}
+.dark .mk{background:var(--teal);color:#0a2540}
+.brand h1{font-size:15.5px;font-weight:750;letter-spacing:-.015em;line-height:1.2}
+.brand p{font-size:11.5px;color:var(--slate);margin-top:1px}
+.navright{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-top:16px;overflow-x:auto}
+.tabs button{border:0;background:transparent;font-family:inherit;font-size:13px;font-weight:600;
+  color:var(--slate);padding:11px 17px;cursor:pointer;border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all .14s}
+.tabs button:hover{color:var(--navy)}
+.tabs button.on{color:var(--navy);border-bottom-color:var(--teal)}
+
+/* ---------- pills / buttons ---------- */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;
+  padding:5px 11px;border-radius:7px;background:#eceff3;color:var(--navy);white-space:nowrap}
+.dark .pill{background:#1e2a45;color:#e8eef7}
+.pill.ok{background:rgba(0,163,137,.12);color:#067a68}
+.pill.warn{background:#fef3c7;color:#92400e}
+.pill.bad{background:#fee2e2;color:#991b1b}
+.pill.info{background:#dbeafe;color:#1e40af}
+.pill.pur{background:#ede9fe;color:#5b21b6}
+.dark .pill.ok{background:rgba(0,212,178,.14);color:#5eead4}
+.dark .pill.warn{background:#3a2c0a;color:#fcd34d}
+.dark .pill.bad{background:#3d1616;color:#fca5a5}
+.dark .pill.info{background:#12294d;color:#93c5fd}
+.dark .pill.pur{background:#2a1f4d;color:#c4b5fd}
+.dot{width:6px;height:6px;border-radius:50%;flex:none}
+.dot.g{background:#00a389}.dot.a{background:#f59e0b}.dot.r{background:#ef4444}
+.dot.b{background:#3b82f6}.dot.p{background:#8b5cf6}
+
+.btn{border:0;font-family:inherit;font-size:13px;font-weight:650;padding:10px 18px;border-radius:9px;
+  cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s;white-space:nowrap}
+.btn.pri{background:var(--navy);color:#fff}
+.dark .btn.pri{background:var(--teal);color:#0a2540}
+.btn.pri:hover{opacity:.9}
+.btn.sec{background:var(--surface);color:var(--navy);border:1px solid var(--border)}
+.btn.sec:hover{background:#f1f5f9}
+.dark .btn.sec:hover{background:#16223a}
+.btn.am{background:var(--am);color:#fff}
+.btn.sm{padding:7px 13px;font-size:12px}
+
+/* ---------- cards ---------- */
+main{padding:30px 0 70px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;
+  box-shadow:0 1px 3px rgba(10,37,64,.06);margin-bottom:24px}
+.eyebrow{font-size:10.5px;font-weight:750;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--green);margin-bottom:6px}
+.hd{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+.hd h2{font-size:19px;font-weight:750;letter-spacing:-.02em}
+.hd p{font-size:12.5px;color:var(--slate);margin-top:3px;max-width:660px;line-height:1.5}
+.rule{height:3px;border-radius:2px;background:var(--teal);width:34px;margin-bottom:14px}
+.rule.am{background:var(--am)}.rule.rd{background:var(--rd)}
+.rule.bl{background:var(--bl)}.rule.pu{background:var(--pu)}
+
+/* ---------- banner ---------- */
+.banner{border:1px solid #fcd34d;border-left:4px solid var(--am);border-radius:12px;
+  padding:18px 20px;background:linear-gradient(90deg,rgba(245,158,11,.07),transparent 55%);
+  display:flex;gap:16px;align-items:flex-start;margin-bottom:26px}
+.banner .ic{width:38px;height:38px;border-radius:9px;background:rgba(245,158,11,.13);
+  display:grid;place-items:center;font-size:17px;flex:none}
+.banner h3{font-size:14.5px;font-weight:700;margin-bottom:4px}
+.banner p{font-size:12.5px;color:var(--slate);line-height:1.55}
+.banner .acts{display:flex;gap:10px;margin-top:13px;flex-wrap:wrap}
+
+/* ---------- progress hero ---------- */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:34px;align-items:center}
+.dial{position:relative;width:170px;height:170px;flex:none}
+.dial svg{transform:rotate(-90deg)}
+.dial .ctr{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.dial .big{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.dial .sm{font-size:11px;color:var(--slate);margin-top:5px;font-weight:600}
+.stagepath{display:grid;gap:13px}
+.stg{display:flex;align-items:center;gap:14px}
+.stg .nm{font-size:13.5px;font-weight:700;min-width:150px}
+.stg .tr{flex:1;height:6px;background:#eceff3;border-radius:3px;overflow:hidden}
+.dark .stg .tr{background:#1e2a45}
+.stg .tr i{display:block;height:100%;border-radius:3px;background:var(--green)}
+.stg .tr i.am{background:var(--am)}.stg .tr i.n{background:#cbd5e1}
+.stg .vv{font-size:12.5px;font-weight:700;min-width:104px;text-align:right}
+
+/* ---------- stat grid ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;
+  box-shadow:0 1px 3px rgba(10,37,64,.05)}
+.stat .lb{font-size:10.5px;font-weight:750;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--slate);margin-bottom:11px}
+.stat .vl{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.stat .vl em{font-size:14px;font-weight:600;font-style:normal;color:var(--slate)}
+.stat .sb{font-size:11.5px;color:var(--slate);margin-top:9px;line-height:1.45}
+.track{height:5px;background:#eceff3;border-radius:3px;overflow:hidden;margin-top:10px}
+.dark .track{background:#1e2a45}
+.track i{display:block;height:100%;background:var(--green);border-radius:3px}
+.track i.am{background:var(--am)}.track i.rd{background:var(--rd)}.track i.bl{background:var(--bl)}
+
+/* ---------- chart option switcher ---------- */
+.optbar{display:flex;gap:3px;background:#eceff3;padding:4px;border-radius:10px;flex-wrap:wrap}
+.dark .optbar{background:#1a2438}
+.optbar button{border:0;background:transparent;font-family:inherit;font-size:12.5px;font-weight:600;
+  color:var(--slate);padding:8px 15px;border-radius:7px;cursor:pointer;transition:all .14s;white-space:nowrap}
+.optbar button:hover{color:var(--navy)}
+.optbar button.on{background:var(--surface);color:var(--navy);box-shadow:0 1px 3px rgba(10,37,64,.1)}
+
+/* ch1 position track */
+.ptrack{display:grid;gap:22px}
+.prow .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px;flex-wrap:wrap}
+.prow .lb{font-size:13px;font-weight:700}
+.prow .pos{font-size:12.5px;font-weight:700}
+.prow .pos em{font-style:normal;font-weight:500;color:var(--slate)}
+.trackrow{position:relative;height:26px}
+.trail{position:absolute;left:0;right:0;top:10px;height:8px;border-radius:4px;
+  background:linear-gradient(90deg,#fee2e2 0 25%,#fef3c7 25% 50%,#d1fae5 50% 100%)}
+.dark .trail{background:linear-gradient(90deg,rgba(220,38,38,.28) 0 25%,rgba(217,119,6,.24) 25% 50%,rgba(0,163,137,.28) 50% 100%)}
+.pmark{position:absolute;top:2px;width:0;height:0}
+.pmark .pin{position:absolute;transform:translateX(-50%);top:0;width:22px;height:22px;border-radius:50%;
+  background:var(--navy);border:3px solid var(--surface);box-shadow:0 2px 8px rgba(10,37,64,.28)}
+.dark .pmark .pin{background:var(--teal);border-color:#111a2c}
+.pmark.you .pin{background:var(--navy)}
+.qmark{position:absolute;top:22px;font-size:9.5px;font-weight:700;color:var(--slate);transform:translateX(-50%)}
+.peermk{position:absolute;top:14px;width:2px;height:22px;background:var(--slate);opacity:.45}
+.peermk.hosp{opacity:.75}
+
+/* ch2 distribution */
+.bellwrap{display:grid;gap:26px}
+
+/* ch3 small multiples */
+.sm-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.sm-table th{text-align:left;font-size:10.5px;font-weight:750;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--slate);padding:10px 12px;border-bottom:1px solid var(--border)}
+.sm-table td{padding:14px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.dark .sm-table td{border-bottom-color:#1a2438}
+.sm-table tr:last-child td{border-bottom:0}
+
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.legend .li{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--slate)}
+.legend .swatch{width:11px;height:11px;border-radius:3px;flex:none}
+
+.note{font-size:11.5px;color:var(--slate);line-height:1.55;margin-top:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.mb20{margin-bottom:20px}
+
+/* ---------- mandatory course list ---------- */
+.courselist{display:grid;gap:11px}
+.course{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
+  border:1px solid var(--border);border-radius:12px;padding:15px 18px;background:var(--surface);
+  transition:border-color .16s}
+.course:hover{border-color:#cbd5e1}
+.course.pending{border-color:#fcd34d;background:linear-gradient(90deg,rgba(245,158,11,.055),transparent 45%)}
+.cstat{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;
+  font-size:15px;font-weight:750;flex:none}
+.cstat.done{background:rgba(0,163,137,.12);color:var(--green)}
+.cstat.todo{background:rgba(245,158,11,.14);color:var(--am)}
+.cinfo .cname{font-size:13.5px;font-weight:750;letter-spacing:-.01em}
+.cinfo .cdesc{font-size:11.5px;color:var(--slate);margin-top:2px;line-height:1.4}
+.cmeta{display:flex;align-items:center;gap:11px;flex-wrap:wrap;justify-content:flex-end}
+.cdate{font-size:11px;color:var(--slate);min-width:82px;text-align:right}
+@media(max-width:760px){
+  .course{grid-template-columns:auto 1fr;row-gap:11px}
+  .cmeta{grid-column:1/-1;justify-content:flex-start}
+  .cdate{text-align:left}
+  .two{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr}
+}
+@media(max-width:640px){.wrap{padding:0 15px}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <div class="navrow">
+      <div class="brand">
+        <div class="mk">H</div>
+        <div>
+          <h1>HKCA e-Portfolio</h1>
+          <p>My Training Portfolio</p>
+        </div>
+      </div>
+      <div class="navright">
+        <span class="pill info"><span class="dot b"></span>HAT-2</span>
+        <span class="pill ok"><span class="dot g"></span>Prince of Wales Hospital</span>
+        <span class="pill">Dr. Kelvin Wong</span>
+        <button class="btn sec sm" onclick="toggleTheme()" id="thBtn">Dark</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="on">Overview</button>
+      <button>Logbook</button>
+      <button>In-Training Assessments</button>
+      <button>Workplace Assessments</button>
+      <button>Courses &amp; Project</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+
+    <!-- action banner -->
+    <div class="banner">
+      <div class="ic">&#9203;</div>
+      <div style="flex:1">
+        <h3>Your in-training assessment needs your self-reflection</h3>
+        <p>
+          The 6-month assessment for your <strong>Prince of Wales Hospital</strong> rotation closes on
+          <strong>31 December 2026</strong> — 18 days away. Your Supervisor of Training has already
+          collected feedback from 4 department trainers. Add your reflection and learning goals so the
+          assessment can be signed off.
+        </p>
+        <div class="acts">
+          <button class="btn am">Add self-reflection</button>
+          <button class="btn sec">Read trainer feedback</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== training progression ===== -->
+    <div class="card">
+      <div class="hd">
+        <div>
+          <div class="eyebrow">Curriculum Progress</div>
+          <h2>Where I Am</h2>
+          <p>Progress is measured against the curriculum minimums for your stage, not against elapsed time.</p>
+        </div>
+        <span class="pill ok"><span class="dot g"></span>All ITAs satisfactory</span>
+      </div>
+
+      <div class="hero">
+        <div class="dial">
+          <svg width="170" height="170" viewBox="0 0 170 170">
+            <circle cx="85" cy="85" r="72" fill="none" stroke="#eceff3" stroke-width="13"/>
+            <circle cx="85" cy="85" r="72" fill="none" stroke="#00a389" stroke-width="13"
+              stroke-linecap="round" stroke-dasharray="452" stroke-dashoffset="190"/>
+          </svg>
+          <div class="ctr">
+            <div>
+              <div class="big mono">58%</div>
+              <div class="sm">42 / 72 months</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stagepath">
+          <div class="stg">
+            <span class="nm">Clinical Anaesthesia</span>
+            <div class="tr"><i style="width:75%"></i></div>
+            <span class="vv mono">36 / 48 mo</span>
+          </div>
+          <div class="stg">
+            <span class="nm">Intensive Care</span>
+            <div class="tr"><i style="width:100%"></i></div>
+            <span class="vv mono">6 / 6 mo</span>
+          </div>
+          <div class="stg">
+            <span class="nm">Elective Options</span>
+            <div class="tr"><i class="n" style="width:0%"></i></div>
+            <span class="vv mono">0 / 18 mo</span>
+          </div>
+          <div class="stg">
+            <span class="nm">Accredited, last 3 yrs</span>
+            <div class="tr"><i style="width:100%"></i></div>
+            <span class="vv mono">30 / 24 mo</span>
+          </div>
+          <p class="note" style="margin-top:4px">
+            Progressive Fellowship requires 24 of your final 36 months in College-accredited units.
+            You are comfortably ahead on this rule.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== curriculum counters ===== -->
+    <div class="stats mb20">
+      <div class="stat">
+        <div class="rule"></div>
+        <div class="lb">Clinical Fundamentals WBA</div>
+        <div class="vl mono">20<em> / 29</em></div>
+        <div class="track"><i style="width:69%"></i></div>
+        <div class="sb">9 more needed before you can progress from Higher Training</div>
+      </div>
+      <div class="stat">
+        <div class="rule bl"></div>
+        <div class="lb">Specialty Modules WBA</div>
+        <div class="vl mono">12<em> / 31</em></div>
+        <div class="track"><i class="bl" style="width:39%"></i></div>
+        <div class="sb">Needed before Exit Assessment, not before PFY</div>
+      </div>
+      <div class="stat">
+        <div class="rule"></div>
+        <div class="lb">Volume of Practice</div>
+        <div class="vl mono">608<em> / 615</em></div>
+        <div class="track"><i style="width:99%"></i></div>
+        <div class="sb">7 cases from the Higher Training requirement</div>
+      </div>
+      <div class="stat">
+        <div class="rule am"></div>
+        <div class="lb">Multi-Source Feedback</div>
+        <div class="vl mono">1<em> / 2</em></div>
+        <div class="track"><i class="am" style="width:50%"></i></div>
+        <div class="sb">One more MSF required at the end of Higher Training</div>
+      </div>
+      <div class="stat">
+        <div class="rule pu"></div>
+        <div class="lb">Mandatory Courses</div>
+        <div class="vl mono">4<em> / 5</em></div>
+        <div class="track"><i class="bl" style="width:80%"></i></div>
+        <div class="sb">ECHO-A outstanding — required before Exit Assessment</div>
+      </div>
+    </div>
+
+    <!-- ===== mandatory courses detail ===== -->
+    <div class="card">
+      <div class="hd">
+        <div>
+          <div class="eyebrow">Mandatory Courses</div>
+          <h2>Course Completion</h2>
+          <p>
+            All five courses must be completed before you can apply for Exit Assessment. They can be
+            taken at any point during training, so there is no penalty for finishing them early.
+          </p>
+        </div>
+        <span class="pill ok"><span class="dot g"></span>4 of 5 complete</span>
+      </div>
+
+      <div class="courselist">
+        <div class="course">
+          <div class="cstat done">&#10003;</div>
+          <div class="cinfo">
+            <div class="cname">EASE</div>
+            <div class="cdesc">Exposure to Anaesthetic Safety &amp; Emergencies</div>
+          </div>
+          <div class="cmeta">
+            <span class="pill ok">Verified</span>
+            <span class="cdate mono">14 Mar 2024</span>
+          </div>
+        </div>
+
+        <div class="course">
+          <div class="cstat done">&#10003;</div>
+          <div class="cinfo">
+            <div class="cname">EMAC</div>
+            <div class="cdesc">Effective Management of Anaesthesia Crisis</div>
+          </div>
+          <div class="cmeta">
+            <span class="pill ok">Verified</span>
+            <span class="cdate mono">02 Sep 2024</span>
+          </div>
+        </div>
+
+        <div class="course">
+          <div class="cstat done">&#10003;</div>
+          <div class="cinfo">
+            <div class="cname">ADAM-A</div>
+            <div class="cdesc">Advanced and Difficult Airway Management for Anaesthetists</div>
+          </div>
+          <div class="cmeta">
+            <span class="pill ok">Verified</span>
+            <span class="cdate mono">18 Jan 2025</span>
+          </div>
+        </div>
+
+        <div class="course">
+          <div class="cstat done">&#10003;</div>
+          <div class="cinfo">
+            <div class="cname">UGRA</div>
+            <div class="cdesc">Ultrasound Guided Regional Anaesthesia</div>
+          </div>
+          <div class="cmeta">
+            <span class="pill ok">Verified</span>
+            <span class="cdate mono">07 Jun 2025</span>
+          </div>
+        </div>
+
+        <div class="course pending">
+          <div class="cstat todo">&#8226;</div>
+          <div class="cinfo">
+            <div class="cname">ECHO-A</div>
+            <div class="cdesc">HKCA Focused Transthoracic Echocardiography</div>
+          </div>
+          <div class="cmeta">
+            <span class="pill warn">Certificate not uploaded</span>
+            <button class="btn am sm">Upload certificate</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="li"><span class="swatch" style="background:var(--green)"></span>Completed and verified by the College</div>
+        <div class="li"><span class="swatch" style="background:var(--am)"></span>Outstanding — action needed from you</div>
+      </div>
+
+      <p class="note">
+        Two other items are required before Exit Assessment: your <strong>Formal Project (HKCA-E03)</strong>,
+        currently approved with minor revisions, and your <strong>PFY three-domain plan</strong>.
+        Both are tracked under <em>Courses &amp; Project</em>.
+      </p>
+    </div>
+
+    <!-- ============================================================
+         PERCENTILE COMPARISON — three display options
+         ============================================================ -->
+    <div class="card">
+      <div class="hd">
+        <div>
+          <div class="eyebrow">How I Compare</div>
+          <h2>My Position Among Peers</h2>
+          <p>
+            Your position is shown against trainees at the same stage. Comparisons are per dimension —
+            a single blended number would not tell you what to work on next.
+            All 200 HKCA trainees are included in the whole-system comparison.
+          </p>
+        </div>
+        <div class="optbar" id="optbar">
+          <button class="on" data-opt="1">Position track</button>
+          <button data-opt="2">Peer distribution</button>
+          <button data-opt="3">All dimensions</button>
+        </div>
+      </div>
+
+      <!-- ---------- OPTION 1: position track ---------- -->
+      <div id="opt1">
+        <div class="ptrack">
+
+          <!-- VOP -->
+          <div class="prow">
+            <div class="top">
+              <span class="lb">Volume of Practice</span>
+              <span class="pos mono">62nd percentile <em>&middot; above PWH median</em></span>
+            </div>
+            <div class="trackrow">
+              <div class="trail"></div>
+              <div class="peermk hosp" style="left:57%"></div>
+              <div class="peermk" style="left:51%"></div>
+              <div class="pmark" style="left:62%"><div class="pin"></div></div>
+              <div class="qmark" style="left:25%">25th</div>
+              <div class="qmark" style="left:50%">50th</div>
+              <div class="qmark" style="left:75%">75th</div>
+            </div>
+          </div>
+
+          <!-- CF WBA -->
+          <div class="prow">
+            <div class="top">
+              <span class="lb">Clinical Fundamentals WBA</span>
+              <span class="pos mono">54th percentile <em>&middot; near PWH median</em></span>
+            </div>
+            <div class="trackrow">
+              <div class="trail"></div>
+              <div class="peermk hosp" style="left:60%"></div>
+              <div class="peermk" style="left:55%"></div>
+              <div class="pmark" style="left:54%"><div class="pin"></div></div>
+              <div class="qmark" style="left:25%">25th</div>
+              <div class="qmark" style="left:50%">50th</div>
+              <div class="qmark" style="left:75%">75th</div>
+            </div>
+          </div>
+
+          <!-- Specialty WBA -->
+          <div class="prow">
+            <div class="top">
+              <span class="lb">Specialty Modules WBA</span>
+              <span class="pos mono">31st percentile <em>&middot; below college median</em></span>
+            </div>
+            <div class="trackrow">
+              <div class="trail"></div>
+              <div class="peermk hosp" style="left:52%"></div>
+              <div class="peermk" style="left:50%"></div>
+              <div class="pmark" style="left:31%"><div class="pin"></div></div>
+              <div class="qmark" style="left:25%">25th</div>
+              <div class="qmark" style="left:50%">50th</div>
+              <div class="qmark" style="left:75%">75th</div>
+            </div>
+          </div>
+
+          <!-- MSF -->
+          <div class="prow">
+            <div class="top">
+              <span class="lb">Multi-Source Feedback</span>
+              <span class="pos mono">48th percentile <em>&middot; on track</em></span>
+            </div>
+            <div class="trackrow">
+              <div class="trail"></div>
+              <div class="peermk hosp" style="left:58%"></div>
+              <div class="peermk" style="left:53%"></div>
+              <div class="pmark" style="left:48%"><div class="pin"></div></div>
+              <div class="qmark" style="left:25%">25th</div>
+              <div class="qmark" style="left:50%">50th</div>
+              <div class="qmark" style="left:75%">75th</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="legend">
+          <div class="li"><span class="swatch" style="background:var(--navy)"></span>You</div>
+          <div class="li"><span class="swatch" style="background:var(--slate);opacity:.75"></span>PWH median <span class="mono">(n=14)</span></div>
+          <div class="li"><span class="swatch" style="background:var(--slate);opacity:.45"></span>All HKCA median <span class="mono">(n=200)</span></div>
+          <div class="li"><span class="swatch" style="background:linear-gradient(90deg,#fee2e2,#fef3c7,#d1fae5)"></span>Below 25th &middot; 25&ndash;50th &middot; above 50th</div>
+        </div>
+
+        <p class="note">
+          Below the 25th percentile shows a strong flag; below the 50th a gentle nudge. A position
+          below the median is not a failure — it means roughly half of your peers are ahead of you on
+          that one dimension, which is useful to know and often easily corrected.
+        </p>
+      </div>
+
+      <!-- ---------- OPTION 2: peer distribution ---------- -->
+      <div id="opt2" class="hidden">
+        <div class="bellwrap">
+
+          <div>
+            <div class="top" style="display:flex;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px">
+              <span class="lb" style="font-size:13.5px;font-weight:700">Volume of Practice &mdash; peer distribution</span>
+              <span class="pos mono" style="font-size:12.5px;font-weight:700">You are here: 62nd percentile</span>
+            </div>
+            <svg viewBox="0 0 720 190" width="100%" height="190" style="overflow:visible">
+              <!-- quartile shading -->
+              <rect x="40" y="30" width="160" height="110" fill="#fee2e2" opacity=".55"/>
+              <rect x="200" y="30" width="160" height="110" fill="#fef3c7" opacity=".5"/>
+              <rect x="360" y="30" width="320" height="110" fill="#d1fae5" opacity=".5"/>
+              <!-- baseline -->
+              <line x1="40" y1="140" x2="680" y2="140" stroke="#cbd5e1" stroke-width="1.5"/>
+              <!-- distribution curve -->
+              <path d="M40,140 C120,140 150,36 230,36 C300,36 330,70 400,90 C470,110 520,126 680,136 L680,140 Z"
+                    fill="#0a2540" opacity=".10"/>
+              <path d="M40,140 C120,140 150,36 230,36 C300,36 330,70 400,90 C470,110 520,126 680,136"
+                    fill="none" stroke="#0a2540" stroke-width="2.2" opacity=".5"/>
+              <!-- hospital median -->
+              <line x1="536" y1="30" x2="536" y2="140" stroke="#425466" stroke-width="2" stroke-dasharray="5 4" opacity=".8"/>
+              <text x="536" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#425466">PWH median (n=14)</text>
+              <!-- college median -->
+              <line x1="444" y1="46" x2="444" y2="140" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 4"/>
+              <text x="444" y="40" text-anchor="middle" font-size="10" font-weight="600" fill="#94a3b8">College median (n=200)</text>
+              <!-- you -->
+              <line x1="580" y1="18" x2="580" y2="152" stroke="#00a389" stroke-width="2.6"/>
+              <circle cx="580" cy="18" r="7" fill="#00a389" stroke="#fff" stroke-width="2.5"/>
+              <text x="580" y="176" text-anchor="middle" font-size="11" font-weight="750" fill="#067a68">YOU</text>
+              <!-- axis -->
+              <text x="40" y="164" font-size="10.5" fill="#425466" font-weight="600">0th</text>
+              <text x="200" y="164" text-anchor="middle" font-size="10.5" fill="#425466" font-weight="600">25th</text>
+              <text x="360" y="164" text-anchor="middle" font-size="10.5" fill="#425466" font-weight="600">50th</text>
+              <text x="520" y="164" text-anchor="middle" font-size="10.5" fill="#425466" font-weight="600">75th</text>
+              <text x="680" y="164" text-anchor="end" font-size="10.5" fill="#425466" font-weight="600">100th</text>
+            </svg>
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:20px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px">
+              <span class="lb" style="font-size:13.5px;font-weight:700">Specialty Modules WBA &mdash; peer distribution</span>
+              <span class="pos mono" style="font-size:12.5px;font-weight:700;color:#92400e">You are here: 31st percentile</span>
+            </div>
+            <svg viewBox="0 0 720 190" width="100%" height="190" style="overflow:visible">
+              <rect x="40" y="30" width="160" height="110" fill="#fee2e2" opacity=".55"/>
+              <rect x="200" y="30" width="160" height="110" fill="#fef3c7" opacity=".5"/>
+              <rect x="360" y="30" width="320" height="110" fill="#d1fae5" opacity=".5"/>
+              <line x1="40" y1="140" x2="680" y2="140" stroke="#cbd5e1" stroke-width="1.5"/>
+              <path d="M40,140 C130,140 160,60 250,60 C330,60 360,86 440,102 C520,118 580,132 680,137 L680,140 Z"
+                    fill="#0a2540" opacity=".10"/>
+              <path d="M40,140 C130,140 160,60 250,60 C330,60 360,86 440,102 C520,118 580,132 680,137"
+                    fill="none" stroke="#0a2540" stroke-width="2.2" opacity=".5"/>
+              <line x1="400" y1="30" x2="400" y2="140" stroke="#425466" stroke-width="2" stroke-dasharray="5 4" opacity=".8"/>
+              <text x="400" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#425466">PWH median (n=14)</text>
+              <line x1="360" y1="46" x2="360" y2="140" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 4"/>
+              <text x="360" y="40" text-anchor="middle" font-size="10" font-weight="600" fill="#94a3b8">College median (n=200)</text>
+              <line x1="238" y1="18" x2="238" y2="152" stroke="#d97706" stroke-width="2.6"/>
+              <circle cx="238" cy="18" r="7" fill="#d97706" stroke="#fff" stroke-width="2.5"/>
+              <text x="238" y="176" text-anchor="middle" font-size="11" font-weight="750" fill="#92400e">YOU</text>
+              <text x="40" y="164" font-size="10.5" fill="#425466" font-weight="600">0th</text>
+              <text x="200" y="164" text-anchor="middle" font-size="10.5" fill="#425466" font-weight="600">25th</text>
+              <text x="360" y="164" text-anchor="middle" font-size="10.5" fill="#425466" font-weight="600">50th</text>
+              <text x="520" y="164" text-anchor="middle" font-size="10.5" fill="#425466" font-weight="600">75th</text>
+              <text x="680" y="164" text-anchor="end" font-size="10.5" fill="#425466" font-weight="600">100th</text>
+            </svg>
+            <p class="note" style="margin-top:8px">
+              Specialty module assessments accumulate mainly in Higher Training. Being behind here at
+              this stage is common — it becomes urgent closer to Exit Assessment.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ---------- OPTION 3: all dimensions ---------- -->
+      <div id="opt3" class="hidden">
+        <table class="sm-table">
+          <thead>
+            <tr>
+              <th style="width:24%">Dimension</th>
+              <th style="width:34%">Position</th>
+              <th style="width:14%">Percentile</th>
+              <th style="width:28%">Reading</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700">Volume of Practice</td>
+              <td>
+                <div style="position:relative;height:20px">
+                  <div style="position:absolute;left:0;right:0;top:7px;height:6px;border-radius:3px;
+                    background:linear-gradient(90deg,#fee2e2 0 25%,#fef3c7 25% 50%,#d1fae5 50% 100%)"></div>
+                  <div style="position:absolute;left:57%;top:9px;width:2px;height:14px;background:#425466;opacity:.7"></div>
+                  <div style="position:absolute;left:62%;top:2px;width:16px;height:16px;border-radius:50%;
+                    background:var(--navy);border:3px solid var(--surface);transform:translateX(-50%)"></div>
+                </div>
+              </td>
+              <td class="mono" style="font-weight:700">62nd</td>
+              <td style="color:var(--slate)">Above both medians. No action.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700">Clinical Fundamentals WBA</td>
+              <td>
+                <div style="position:relative;height:20px">
+                  <div style="position:absolute;left:0;right:0;top:7px;height:6px;border-radius:3px;
+                    background:linear-gradient(90deg,#fee2e2 0 25%,#fef3c7 25% 50%,#d1fae5 50% 100%)"></div>
+                  <div style="position:absolute;left:60%;top:9px;width:2px;height:14px;background:#425466;opacity:.7"></div>
+                  <div style="position:absolute;left:54%;top:2px;width:16px;height:16px;border-radius:50%;
+                    background:var(--navy);border:3px solid var(--surface);transform:translateX(-50%)"></div>
+                </div>
+              </td>
+              <td class="mono" style="font-weight:700">54th</td>
+              <td style="color:var(--slate)">Close to median. 9 more to reach the minimum.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700">Specialty Modules WBA</td>
+              <td>
+                <div style="position:relative;height:20px">
+                  <div style="position:absolute;left:0;right:0;top:7px;height:6px;border-radius:3px;
+                    background:linear-gradient(90deg,#fee2e2 0 25%,#fef3c7 25% 50%,#d1fae5 50% 100%)"></div>
+                  <div style="position:absolute;left:52%;top:9px;width:2px;height:14px;background:#425466;opacity:.7"></div>
+                  <div style="position:absolute;left:31%;top:2px;width:16px;height:16px;border-radius:50%;
+                    background:var(--am);border:3px solid var(--surface);transform:translateX(-50%)"></div>
+                </div>
+              </td>
+              <td class="mono" style="font-weight:700;color:#92400e">31st</td>
+              <td style="color:var(--slate)">Below median. Discuss with your SOT.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700">Multi-Source Feedback</td>
+              <td>
+                <div style="position:relative;height:20px">
+                  <div style="position:absolute;left:0;right:0;top:7px;height:6px;border-radius:3px;
+                    background:linear-gradient(90deg,#fee2e2 0 25%,#fef3c7 25% 50%,#d1fae5 50% 100%)"></div>
+                  <div style="position:absolute;left:58%;top:9px;width:2px;height:14px;background:#425466;opacity:.7"></div>
+                  <div style="position:absolute;left:48%;top:2px;width:16px;height:16px;border-radius:50%;
+                    background:var(--navy);border:3px solid var(--surface);transform:translateX(-50%)"></div>
+                </div>
+              </td>
+              <td class="mono" style="font-weight:700">48th</td>
+              <td style="color:var(--slate)">On track for end of Higher Training.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="legend">
+          <div class="li"><span class="swatch" style="background:var(--navy)"></span>At or above median</div>
+          <div class="li"><span class="swatch" style="background:var(--am)"></span>Below median (small warning)</div>
+          <div class="li"><span class="swatch" style="background:var(--rd)"></span>Below 25th (strong flag)</div>
+          <div class="li"><span class="swatch" style="background:var(--slate);opacity:.7"></span>PWH median marker</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== current rotation + gates ===== -->
+    <div class="two">
+      <div class="card" style="margin-bottom:0">
+        <div class="hd" style="margin-bottom:14px">
+          <div>
+            <div class="eyebrow">Current Rotation</div>
+            <h2 style="font-size:16px">PWH &middot; Clinical Anaesthesia</h2>
+          </div>
+          <span class="pill info">Declared at ITA start</span>
+        </div>
+        <dl style="display:grid;grid-template-columns:auto 1fr;gap:9px 16px;font-size:12.5px">
+          <dt style="color:var(--slate)">Period</dt><dd class="mono" style="font-weight:600;text-align:right">01 Jul &ndash; 31 Dec 2026</dd>
+          <dt style="color:var(--slate)">Training type</dt><dd style="font-weight:600;text-align:right">Clinical Anaesthesia</dd>
+          <dt style="color:var(--slate)">Learning goals</dt><dd style="font-weight:600;text-align:right">Cardiac subspecialty, advanced airway</dd>
+          <dt style="color:var(--slate)">Credited on sign-off</dt><dd style="font-weight:600;text-align:right">6 months &rarr; Clinical Anaesthesia</dd>
+        </dl>
+        <p class="note">
+          When your SOT signs off a satisfactory ITA, these 6 months are credited to Clinical
+          Anaesthesia automatically. You do not need to log the training period yourself.
+        </p>
+      </div>
+
+      <div class="card" style="margin-bottom:0">
+        <div class="hd" style="margin-bottom:14px">
+          <div>
+            <div class="eyebrow">Next Gate</div>
+            <h2 style="font-size:16px">Higher Training &rarr; Provisional Fellowship</h2>
+          </div>
+        </div>
+        <div style="display:grid;gap:11px;font-size:12.5px">
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <span><span class="dot g" style="display:inline-block;margin-right:7px"></span>Accredited training time</span>
+            <span class="mono" style="font-weight:700;color:#067a68">Met</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <span><span class="dot a" style="display:inline-block;margin-right:7px"></span>Clinical Fundamentals WBA (9 short)</span>
+            <span class="mono" style="font-weight:700;color:#92400e">In progress</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <span><span class="dot a" style="display:inline-block;margin-right:7px"></span>Volume of Practice (7 short)</span>
+            <span class="mono" style="font-weight:700;color:#92400e">Nearly met</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <span><span class="dot r" style="display:inline-block;margin-right:7px"></span>Multi-Source Feedback (1 short)</span>
+            <span class="mono" style="font-weight:700;color:#991b1b">Not started</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <span><span class="dot r" style="display:inline-block;margin-right:7px"></span>Final Fellowship Examination</span>
+            <span class="mono" style="font-weight:700;color:#991b1b">Not yet</span>
+          </div>
+        </div>
+        <p class="note">
+          You cannot enter the Provisional Fellowship Year until all five are complete.
+          Your SOT can arrange the MSF and help plan the remaining WBA.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+/* chart option switcher */
+document.querySelectorAll('#optbar button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#optbar button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    const o=b.dataset.opt;
+    ['1','2','3'].forEach(n=>document.getElementById('opt'+n).classList.toggle('hidden',n!==o));
+  };
+});
+/* tabs */
+document.querySelectorAll('.tabs button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+  };
+});
+/* theme */
+function toggleTheme(){
+  const d=document.documentElement.classList.toggle('dark');
+  document.getElementById('thBtn').textContent=d?'Light':'Dark';
+  localStorage.setItem('trainee-theme',d?'dark':'light');
+}
+(function(){
+  const s=localStorage.getItem('trainee-theme');
+  if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme: dark)').matches)){
+    document.documentElement.classList.add('dark');
+    document.getElementById('thBtn').textContent='Light';
+  }
+})();
+</script>
+</body>
+</html>
