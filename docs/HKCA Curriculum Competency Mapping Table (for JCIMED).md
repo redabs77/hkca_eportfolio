@@ -12,8 +12,12 @@ recipient: JCIMED / zlightinno WBA development team
 ## Purpose
 JCIMED's current iWBA "Curriculum Items" admin config (reviewed 2026-10-06, screenshot `upload_20261006_101256_1.jpg`)
 has only 14 items, all modality `DOPS`, with at least one stage misallocation (Transducer setup marked HT-only).
-This table gives JCIMED the authoritative HKCA-E01 structure, including the real VOP and WBA minimums per code/stage
-(Appendix 1 and Appendix 3 of HKCA-E01), so they can tag every iWBA procedure correctly.
+This table gives JCIMED the authoritative HKCA-E01 **WBA** structure (CEX/CBD/DOPS/ALMAT/MSF counts per code/stage),
+so they can tag every iWBA procedure correctly.
+
+**Scope note: JCIMED only needs the WBA columns. VOP (case-count) minimums shown in this table are for HKCA's own
+internal reference only** — VOP is tracked entirely within our own system (the `VolumeOfPractice` model), not in
+iWBA. Do not ask JCIMED to build or validate VOP case-count tracking; it is out of scope for their system.
 
 **Modality scope confirmed with Albert (2026-10-07): HKCA does not use `PBA` or `ACR`.** Despite JCIMED's reply
 listing `PBA`/`ACR` as available enum values, the College's actual WBA toolset per HKCA-E01 Appendix 2/3 is only
@@ -96,9 +100,9 @@ these modalities for HKCA trainees.
 ---
 
 ## 4. Corrections to Send JCIMED
-1. **Modality gap:** Only DOPS items exist in iWBA. HKCA requires CEX/CBD in every single CF (2.1–2.7) and SM (3.1–3.13) domain, plus ALMAT (PFY) and MSF (college-wide) — none of these exist in iWBA yet.
+1. **Modality gap:** Only DOPS items exist in iWBA. HKCA requires CEX/CBD in every single CF (2.1–2.7) and SM (3.1–3.13) domain, plus ALMAT (PFY) and MSF (×3, one per stage — BT/HT/PFY) — none of these exist in iWBA yet.
 2. **Stage correction:** "Transducer set up and problem solving" is `CF-2.1`, Basic Training only (×1), not HT-mandatory ×3.
-3. **Coding scheme:** Replace free-text procedure labels with the `CF-2.x` / `SM-3.x` codes above; each code should carry its own BT/HT (or Exit Assessment, for SM) minimum count so the API can report fulfilment, not just raw case counts.
+3. **Coding scheme:** Replace free-text procedure labels with the `CF-2.x` / `SM-3.x` codes above; each code should carry its own BT/HT (or Exit Assessment, for SM) **WBA** minimum count so the API can report fulfilment, not just raw case counts. (VOP case-count minimums are HKCA's internal concern — not part of this ask.)
 4. **Missing domains entirely:** No items yet exist for `CF-2.6` (Trauma/Crisis/Resuscitation) or `CF-2.7` beyond the "checking anaesthesia machine" DOPS — both need CEX/CBD items added regardless of modality gaps elsewhere.
 5. **Do not add `PBA`/`ACR` mappings** — confirmed out of scope for HKCA (2026-10-07).
 
