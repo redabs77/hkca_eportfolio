@@ -378,7 +378,7 @@ model CurriculumMilestone {
   editionId       String
   stage           TrainingStage
   milestoneCode   String             // "BAT_TO_HAT_PROGRESSION", "FINAL_EXAM_ELIGIBILITY"
-  requirementsJson Jsonb             // Structured requirement schema (VOP, WBA counts, courses)
+  requirementsJson Json             // Structured requirement schema (VOP, WBA counts, courses)
 
   edition         CurriculumEdition  @relation(fields: [editionId], references: [id], onDelete: Restrict)
 
@@ -391,7 +391,7 @@ model AssessmentTool {
   name            String
   modality        WbaModality
   version         Int          @default(1)
-  rubricSchema    Jsonb        // Question schema, Likert scales, and behavioral anchors
+  rubricSchema    Json        // Question schema, Likert scales, and behavioral anchors
   effectiveFrom   DateTime     @default(now())
   effectiveUntil  DateTime?
 
@@ -458,7 +458,7 @@ model AccreditedTimeLedger {
   authorityId             String          // User who authorized action (BOE member / SOT)
   authorityRole           UserRole
 
-  conditionsJson          Jsonb?          // Conditional requirements attached to credit
+  conditionsJson          Json?          // Conditional requirements attached to credit
   supersedesId            String?         // Reference to previous ledger row if amended/revoked
   effectiveAt             DateTime        @default(now())
   isCurrent               Boolean         @default(true)
@@ -530,7 +530,7 @@ model ItaAssessorResponse {
   toolId              String
 
   // Structured Feedback (U1: No auto-prefill, structured text)
-  domainRatingsJson   Jsonb           // {"1a": 3, "1b": 3, "2a": 4, ...}
+  domainRatingsJson   Json           // {"1a": 3, "1b": 3, "2a": 4, ...}
   notableStrength     String?
   keyAreaForGrowth    String?
 
@@ -550,7 +550,7 @@ model ItaAppeal {
 
   appealDate          DateTime        @default(now())
   groundsForAppeal    String
-  supportingDocsJson  Jsonb?
+  supportingDocsJson  Json?
 
   boeDecision         String?         // "UPHELD", "OVERTURNED_SATISFACTORY", "RE_ASSESSMENT"
   overturnedGrade     Int?
@@ -569,7 +569,7 @@ model RemedialPlan {
   assignedMentorId      String?
 
   triggerReason         String
-  actionItemsJson       Jsonb           // Array of required targets, clinics, simulation sessions
+  actionItemsJson       Json           // Array of required targets, clinics, simulation sessions
   targetReassessmentDate DateTime
   actualReassessmentDate DateTime?
   status                String          @default("ACTIVE") // "ACTIVE", "RESOLVED_SATISFACTORY", "ESCALATED_BOE"
@@ -684,7 +684,7 @@ model WbaAssessment {
   workflowOutcome         String?             // "COMPLETE", "FAIL"
 
   // Full Assessment Timeline & Qualitative Feedback
-  timelineAnswersJson     Jsonb               // Complete step-by-step form answers, Likert ratings
+  timelineAnswersJson     Json               // Complete step-by-step form answers, Likert ratings
 
   syncBatchId             String?
   syncStatus              String              @default("SYNCED")
@@ -701,7 +701,7 @@ model WbaSyncConflict {
   id              String       @id @default(uuid())
   jcimedWbaId     String       @unique
   errorReason     String       // "UNRESOLVED_TRAINEE_IDENTITY", "UNMAPPED_DESCRIPTOR"
-  rawPayloadJson  Jsonb
+  rawPayloadJson  Json
   resolved        Boolean      @default(false)
   resolvedAt      DateTime?
   resolvedBy      String?
@@ -798,8 +798,8 @@ model AuditLog {
   entityId        String
   action          String       // "CREATE", "UPDATE", "REVOKE", "SIGN", "CONTEST"
 
-  beforeJson      Jsonb?
-  afterJson       Jsonb?
+  beforeJson      Json?
+  afterJson       Json?
 
   performedById   String
   performedAt     DateTime     @default(now())
