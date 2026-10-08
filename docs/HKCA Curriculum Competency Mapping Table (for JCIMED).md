@@ -34,17 +34,21 @@ cross-checked, so those remain verified only against the HKCA-E01 PDF directly.
 
 ---
 
-## 1. Clinical Fundamentals (CF) — WBA & VOP minimums (during BT / HT)
+## 1. Clinical Fundamentals (CF) — WBA & VOP minimums, explicit by stage
 
-| Code | Domain | WBA required (BT / HT) | VOP minimum (BT / cumulative by end of HT) |
+**Key: "BT" = Basic Training, "HT" = Higher Training. Where a count is listed only for one stage, it is not required
+again at the other stage. "1 total, either BT or HT" means the requirement is satisfied once, in whichever stage
+it happens — not once per stage.**
+
+| Code | Domain | WBA required | VOP minimum |
 |---|---|---|---|
-| `CF-2.1` | General Anaesthesia and Sedation | CEX/CBD: 1/1 · DOPS (US-guided CVC): 1/— · DOPS (Arterial cannulation): 1/— · DOPS (Transducer set-up & troubleshooting): **1/—** | TIVA 10/50 · MAC/Sedation 10/50 · Central venous cannulation 10/50 · Arterial cannulation 10/50 |
-| `CF-2.2` | Regional Anaesthesia | CEX/CBD: 1/1 · DOPS (Spinal): 1/— · DOPS (Epidural/CSE, non-obs): —/1 · DOPS (Peripheral plexus/nerve block): 1/1 | Spinal blocks 50/100 · Epidural/CSE (non-obs) —/15 · Major plexus/peripheral nerve block —/50 |
-| `CF-2.3` | Airway Management | CEX/CBD: 1/1 · DOPS (Elective airway BVM/LMA/ETT): 1/— · DOPS (RSI): 1/— · DOPS (Fibreoptic intubation): 1 (BT or HT) · DOPS (Airway mgmt with C-spine instability): 1 (BT or HT) · DOPS (Anaesthesia for tracheostomy): 1 (BT or HT) | Supraglottic device insertion 50/— · Direct laryngoscopy & intubation 50/— · Video laryngoscopy & intubation 10/20 · Fibreoptic intubation 3/10 |
-| `CF-2.4` | Acute Pain Management | CEX/CBD: 1/1 (during acute pain round) · DOPS (Setting up PCA/postop analgesic infusion): 1/— | Postop IV PCA 10/80 · Postop central neuraxial analgesia 5/20 · Any acute pain modality (post-CS obstetric) —/20 |
-| `CF-2.5` | Perioperative Medicine | CEX/CBD: 1/1 | No minimum VOP in this section |
-| `CF-2.6` | Trauma, Crisis Management and Resuscitation | CEX/CBD: 1/1 | No minimum VOP in this section |
-| `CF-2.7` | Safety and Quality in Anaesthesia | CEX/CBD: 1/1 · DOPS (Checking anaesthesia machine & breathing system): 1/— · DOPS (Care of patient prone position): 1 (BT or HT) | No minimum VOP in this section |
+| `CF-2.1` | General Anaesthesia and Sedation | CEX/CBD: BT 1, HT 1 · DOPS (US-guided CVC): BT 1 only · DOPS (Arterial cannulation): BT 1 only · DOPS (Transducer set-up & troubleshooting): **BT 1 only** | TIVA: BT 10, cumulative by HT exit 50 · MAC/Sedation: BT 10, cumulative 50 · Central venous cannulation: BT 10, cumulative 50 · Arterial cannulation: BT 10, cumulative 50 |
+| `CF-2.2` | Regional Anaesthesia | CEX/CBD: BT 1, HT 1 · DOPS (Spinal): BT 1 only · DOPS (Epidural/CSE, non-obs): HT 1 only · DOPS (Peripheral plexus/nerve block): BT 1, HT 1 | Spinal blocks: BT 50, cumulative 100 · Epidural/CSE (non-obs): no BT minimum, cumulative by HT exit 15 · Major plexus/peripheral nerve block: no BT minimum, cumulative by HT exit 50 |
+| `CF-2.3` | Airway Management | CEX/CBD: BT 1, HT 1 · DOPS (Elective airway BVM/LMA/ETT): BT 1 only · DOPS (RSI): BT 1 only · DOPS (Fibreoptic intubation): 1 total, either BT or HT · DOPS (Airway mgmt with C-spine instability): 1 total, either BT or HT · DOPS (Anaesthesia for tracheostomy): 1 total, either BT or HT | Supraglottic device insertion: BT 50, no separate HT-exit cumulative minimum · Direct laryngoscopy & intubation: BT 50, no separate HT-exit cumulative minimum · Video laryngoscopy & intubation: BT 10, cumulative 20 · Fibreoptic intubation: BT 3, cumulative 10 |
+| `CF-2.4` | Acute Pain Management | CEX/CBD: BT 1, HT 1 (during acute pain round) · DOPS (Setting up PCA/postop analgesic infusion): BT 1 only | Postop IV PCA: BT 10, cumulative 80 · Postop central neuraxial analgesia: BT 5, cumulative 20 · Any acute pain modality (post-CS obstetric): no BT minimum, cumulative by HT exit 20 |
+| `CF-2.5` | Perioperative Medicine | CEX/CBD: BT 1, HT 1 | No minimum VOP in this section |
+| `CF-2.6` | Trauma, Crisis Management and Resuscitation | CEX/CBD: BT 1, HT 1 | No minimum VOP in this section |
+| `CF-2.7` | Safety and Quality in Anaesthesia | CEX/CBD: BT 1, HT 1 · DOPS (Checking anaesthesia machine & breathing system): BT 1 only · DOPS (Care of patient prone position): 1 total, either BT or HT | No minimum VOP in this section |
 
 **Confirmed correction for JCIMED:** "Transducer set up and problem solving" is a `CF-2.1` (General Anaesthesia and
 Sedation) DOPS item, required **once during Basic Training only** (not HT-mandatory ×3 as currently configured).
