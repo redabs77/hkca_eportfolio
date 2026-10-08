@@ -33,21 +33,32 @@ endpoint: "https://wba.zlightinno.com"
 
 ## 2. Five Critical Gaps Raised to Developers (zlightinno / HKAM)
 
-On **2026-10-01**, Dr. Albert Chan submitted the following 5 formal queries and enhancement requests to the developer team:
+On **2026-10-01**, Dr. Albert Chan submitted 5 formal queries to the developer team. On **2026-10-06**, JCIMED / zlightinno responded with complete architectural resolutions:
 
-| # | Gap / Constraint | Technical Risk to HKCA | Proposed Remedy to zlight |
+| # | Gap / Constraint | Developer Resolution (2026-10-06) | Status |
 |---|---|---|---|
-| **1** | **`hkam_id: null` on junior trainees** | Basic (BAT) and early Higher (HAT) trainees do not hold HKAM Fellow IDs. Matching purely on full name risks severe cross-trainee data corruption. | Add `college_trainee_id` (`hkca_number`) or MCHK Medical Registration Number to payload. |
-| **2** | **N+1 Polling Bottleneck** | Detailed scores/comments require individual `GET /{id}` calls. At 60 req/min, backfilling 2,000 WBAs requires >30 minutes of serialized requests. | Provide batch detail endpoint (`POST /assessments/batch` up to 50 UUIDs) or `include_answers=true` query flag on summary. |
-| **3** | **Missing Core Modalities (CBD, ALMAT, MSF)** | Spec only details CEX, EPA, and DOPS. HKCA curriculum explicitly mandates CBD, ALMAT, and 360° MSF. | Clarify how CBD, ALMAT, and MSF will be mapped or if distinct modalities will be added. |
-| **4** | **Curriculum Domain Mapping** | Generic procedure codes (`DOPS-12`) do not map to HKCA Clinical Fundamentals (2.1–2.7) or Specialty Modules (3.1–3.13). | Support College-specific curriculum competency codes in payload. |
-| **5** | **90-Day Sliding Window Limit** | `updated_before - updated_since <= 90 days` cap breaks naive historical data sync. | Confirm multi-year onboarding export procedure or relaxed date window for initial sync. |
+| **1** | **`hkam_id: null` on junior trainees** | **Resolved (2026-10-07).** `hkam_id` = eHKAM account ID (HKAM single sign-on identity), **not** the HKAM Fellow ID. All trainees (incl. BAT/HAT) are eligible; HKAM rolled out self-registration from 2026-09-30. Null only until a trainee signs in via SSO (pre-SSO = local account by College Admin). eHKAM ID is HKAM's recommended stable cross-college identifier — survives college transfers and MCHK registration-status changes, and cannot be shared (GWS security). iWBA also supports local accounts throughout the transition; every account (eHKAM-linked or local) has a unique `iwba_user_id`. JCIMED also offered to carry HKCA's own **College Trainee Number** as a supplementary field, synced via a mapping table (same mechanism as the curriculum mapping). | **Resolved** |
+| **2** | **N+1 Polling Bottleneck** | Added `POST /api/v1/eportfolio/assessments/batch` accepting up to 50 assessment IDs per call. Under 60 req/min limit, throughput is ~3,000 assessments/min. | **Resolved** |
+| **3** | **Modality Values** | Formal modality enum confirmed: `CEX`, `EPA`, `DOPS`, `CBD`, `MSF`, `PBA`, `ACR`, `ALMAT`. | **Resolved** |
+| **4** | **Curriculum Domain Mapping** | JCIMED shared current 14-item config (all DOPS). Agreed to add curriculum category, training stage, and map College-provided competency codes into API responses. **2026-10-07: JCIMED confirmed support — "just let me know the mapping table."** | **Mapping table finalized** (see [[HKCA Curriculum Competency Mapping Table (for JCIMED)]], cross-checked against the legacy EPS system and HKCA-E01) — ready to send, pending Albert's final go-ahead |
+| **5** | **90-Day Sliding Window Limit** | 90-day limit is per summary query only. Team offered a dedicated backfill endpoint without the 90-day cap for initial historical data rollover. | **Resolved** |
 
 ---
 
-## 3. Impact on HKCA ePortfolio Schema & Architecture
+## 3. Curriculum Review & Discrepancies in iWBA (as of 2026-10-06)
 
-Pending the response from zlightinno:
-* **`wbas` Table Schema:** Must ensure `jcimed_sync_id` (UUID), `modality`, and `sync_status` cleanly ingest the incoming JSON timeline without data loss.
-* **Sync Engine Daemon:** Design the delta-polling background worker to support sliding 90-day time chunking and rate-limit backoff (`429` exponential backoff).
-* **Identity Resolution Layer:** Build a fallback resolver: `hkam_id` $\rightarrow$ `mchk_registration_number` $\rightarrow$ exact name match with SOT verification gate when `hkam_id` is null.
+Analysis of current iWBA admin configuration (`upload_20261006_101256_1.jpg`):
+1. **Modality Coverage:** Only 14 procedures configured, all DOPS. Zero EPAs, Mini-CEX, CBDs, or ALMAT currently exist in iWBA.
+2. **Stage Misallocations:** "Transducer setup" is marked HT mandatory $\times 3$, but should be available/mandatory at Basic Training (BT).
+3. **Coding Scheme:** Procedures currently use free-text strings. Formal mapping table drafted and verified against the official HKCA-E01 curriculum (2026-10-07): see [[HKCA Curriculum Competency Mapping Table (for JCIMED)]].
+   - Clinical Fundamentals: `CF-2.1` to `CF-2.7`
+   - Subspecialties: `SM-3.1` to `SM-3.13`
+4. **Transducer setup fix identified:** Belongs under `CF-2.5` (Perioperative Medicine), should be available at BT not HT-only — flagged in the mapping table doc for JCIMED.
+
+---
+
+## 4. Impact on HKCA ePortfolio Schema & Architecture
+
+* **`wbas` Table Schema:** Modality enum updated to include all 8 JCIMED modalities. Added `iwba_user_id` and `iwba_procedure_code`.
+* **Sync Engine Daemon:** Ingestion pipeline will query `GET /summary` using 90-day slices, chunk IDs into batches of 50, and fetch full records via `POST /assessments/batch`.
+* **Identity Resolution Layer:** Resolution priority: `iwba_user_id` $\rightarrow$ `hkam_id` (eHKAM SSO account ID — NOT the HKAM Fellow ID; confirmed 2026-10-07) $\rightarrow$ `email` $\rightarrow$ SOT manual verification queue. HKCA's own College Trainee Number (`hkcaNumber`) is supplementary only, synced via a mapping table, not used for identity resolution.
