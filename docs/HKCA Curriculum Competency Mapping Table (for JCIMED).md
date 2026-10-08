@@ -116,3 +116,10 @@ these modalities for HKCA trainees.
 - [x] WBA counts (CEX/CBD/DOPS/ALMAT) cross-checked against the live legacy EPS requirement tree (2026-10-07) — MSF corrected to 3× (one per stage); Echo Curriculum DOPS ×1 added as a confirmed-separate item.
 - [x] Echo Curriculum confirmed (2026-10-07, Albert): TTE, any training stage (not stage-locked).
 - [ ] Get Albert's final sign-off on wording before sending to JCIMED.
+
+---
+
+## 6. Third-Party Corroboration (reference only, not authoritative)
+["WBA Guidance for UCH Trainees"](<WBA Guidance for UCH Trainees (J Yau, Apr 2026).pdf>) (Dr. J Yau, UCH, Apr 2026) — a colleague-authored informal guide, shared by Albert 2026-10-07 as "guidance, not mandatory, but a good reference for their milestones." Independently confirms this table's structure: 66 total WBAs, identical CF-2.x/SM-3.x counts, and the same standalone "ECHO curriculum — DOPS ×1" item (matches the legacy EPS finding in §2 above). **Does not mention MSF.**
+
+**New asset not captured elsewhere in this project:** a suggested year-by-year pacing curve (BT Year 1 → BT Year 2 → BT Year 3 → HT Year 4 → HT Year 5 → PFY Year 6) recommending which WBA to attempt in which year, so trainees don't cluster them near stage-gates. Explicitly non-mandatory. Potential future use: a benchmark pacing curve for the Progression Risk "Velocity" signal in the SOT Console prototype, replacing the current placeholder 10% schedule-margin default — not actioned yet, flagged for later discussion.
