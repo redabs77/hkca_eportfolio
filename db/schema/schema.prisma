@@ -117,11 +117,24 @@ model User {
   id              String         @id @default(uuid())
   email           String         @unique
   name            String
-  hkcaNumber      String?        @unique
+  hkcaNumber      String?        @unique  // HKCA's own College Trainee Number. Supplementary only — NOT the
+                                           // primary cross-college identifier. JCIMED has agreed to carry this
+                                           // as a supplementary field in iWBA, synced via a mapping table
+                                           // (same mechanism as the curriculum item mapping), per their
+                                           // 2026-10-07 reply. Do not use for identity resolution.
+  hkamId          String?        @unique  // eHKAM account ID (HKAM single sign-on identity). Per JCIMED's
+                                           // 2026-10-07 clarification: NOT the HKAM Fellow ID. All trainees
+                                           // (including BAT/HAT) are eligible; HKAM rolled out self-registration
+                                           // from 2026-09-30. Null only for trainees who haven't yet signed in
+                                           // via HKAM SSO (using a College-Admin-created local account).
+                                           // Survives college transfers and MCHK registration-status changes
+                                           // (provisional/special/limited) — the most stable cross-college
+                                           // identifier available. eHKAM accounts cannot be shared (GWS security).
   mchkNumber      String?        @unique
   iwbaUserId      String?        @unique  // Permanent HKAM iWBA user ID (JCIMED-confirmed 2026-10-06).
-                                           // Primary identity anchor for trainees without hkam_id (pre-SSO local accounts).
-                                           // Resolution priority: iwbaUserId -> hkcaNumber (hkam_id) -> email -> SOT manual verification.
+                                           // Every iWBA account (eHKAM-linked or local) has one, so it's the
+                                           // single stable identifier even before a trainee completes eHKAM SSO.
+                                           // Resolution priority: iwbaUserId -> hkamId (eHKAM SSO ID) -> email -> SOT manual verification.
   primaryRole     UserRole       @default(TRAINEE)
   isActive        Boolean        @default(true)
   
@@ -150,6 +163,7 @@ model User {
   ledgerActions         AccreditedTimeLedger[]  @relation("LedgerAuthority")
 
   @@index([email, hkcaNumber])
+  @@index([hkamId])
   @@index([isActive])
 }
 
