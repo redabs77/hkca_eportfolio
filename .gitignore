@@ -6,6 +6,7 @@
 # Legacy dumps contain PLAINTEXT PATIENT HKIDs in `patient2.hkid`.
 # Keep all real data entirely outside this repository.
 *.sql
+!db/migrations/**
 *.sql.gz
 *.dump
 *.bak
