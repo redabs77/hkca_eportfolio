@@ -1,0 +1,42 @@
+{
+  "name": "hkca-eporfolio",
+  "version": "1.0.0",
+  "description": "Replacement for the legacy HKCA Electronic Training Portfolio (ETP/EPS) \u2014 a role-aware web application tracking anaesthesia trainees from Basic Anaesthesia Training (BAT) through Higher Anaesthesia Training (HAT) and Provisional Fellowship Year (PFY) to Fellowship.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "npm run test:parity",
+    "postinstall": "prisma skills sync || exit 0",
+    "test:parity": "node tests/parity/verify_parity.mjs",
+    "prisma:generate": "prisma generate --schema db/schema/schema.prisma",
+    "prisma:format": "prisma format --schema db/schema/schema.prisma",
+    "seed": "node scripts/test_seed.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redabs77/hkca_eportfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/redabs77/hkca_eportfolio/issues"
+  },
+  "homepage": "https://github.com/redabs77/hkca_eportfolio#readme",
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@types/node": "^26.6.5",
+    "prisma": "^6.19.3",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^6.19.3",
+    "@types/pg": "^8.23.1",
+    "pg": "^8.23.1"
+  }
+}

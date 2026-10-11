@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HKCA e-Portfolio — ITA Synthesis &amp; Contested Review Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --g50:#fafafa; --g100:#f5f5f5; --g200:#e5e5e5; --g300:#d4d4d4; --g400:#a3a3a3;
+    --g500:#737373; --g600:#525252; --g700:#404040; --g800:#262626; --g900:#171717; --g950:#0a0a0a;
+    --em500:#10b981; --em600:#059669; --em700:#047857;
+    --am500:#f59e0b; --am600:#d97706; --am700:#b45309;
+    --rd500:#ef4444; --rd600:#dc2626; --rd700:#b91c1c;
+    --bl500:#3b82f6; --bl600:#2563eb; --bl700:#1d4ed8;
+    --pu500:#8b5cf6; --pu600:#7c3aed;
+    --bg:#ffffff; --bg2:var(--g50); --bg3:var(--g100);
+    --surface:#ffffff; --raised:#ffffff;
+    --border:var(--g200); --border-sub:var(--g100);
+    --ink:var(--g900); --ink2:var(--g600); --ink3:var(--g500);
+    --shadow:0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:0 4px 12px rgba(0,0,0,.06);
+  }
+  .dark{
+    --bg:var(--g950); --bg2:var(--g900); --bg3:var(--g800);
+    --surface:#0f0f10; --raised:#16161a;
+    --border:rgba(255,255,255,.09); --border-sub:rgba(255,255,255,.05);
+    --ink:var(--g50); --ink2:var(--g400); --ink3:var(--g500);
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+    --shadow-md:0 4px 16px rgba(0,0,0,.4);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-feature-settings:'cv11','ss01';
+    background:var(--bg2); color:var(--ink); line-height:1.5;
+    -webkit-font-smoothing:antialiased; font-size:14px;
+    transition:background-color .15s ease,color .15s ease;
+  }
+  .mono{font-family:'JetBrains Mono',Menlo,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1420px;margin:0 auto;padding:0 22px}
+  .hidden{display:none !important}
+
+  /* ---------- top bar ---------- */
+  .top{position:sticky;top:0;z-index:80;background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:blur(18px) saturate(180%);border-bottom:1px solid var(--border)}
+  .top-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:11px 0}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--em600),var(--em700));
+    display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px;flex:none}
+  .brand h1{font-size:14.5px;font-weight:650;letter-spacing:-.01em;line-height:1.2;white-space:nowrap}
+  .brand p{font-size:11px;color:var(--ink3);line-height:1.2}
+  .top-right{display:flex;align-items:center;gap:9px}
+  .icon-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--surface);border-radius:7px;
+    display:grid;place-items:center;cursor:pointer;font-size:15px;transition:background .14s;color:var(--ink)}
+  .icon-btn:hover{background:var(--bg3)}
+  .who{display:flex;align-items:center;gap:9px;padding-left:11px;border-left:1px solid var(--border)}
+  .who .nm{font-size:12.5px;font-weight:650;line-height:1.2;text-align:right}
+  .who .rl{font-size:10.5px;color:var(--ink3);line-height:1.2;text-align:right}
+  .av{width:31px;height:31px;border-radius:8px;background:var(--em600);color:#fff;display:grid;place-items:center;
+    font-size:12px;font-weight:650;flex:none}
+
+  /* ---------- step rail ---------- */
+  .rail{background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:70}
+  .rail-row{display:flex;align-items:center;gap:0;overflow-x:auto;scrollbar-width:none}
+  .rail-row::-webkit-scrollbar{display:none}
+  .step{display:flex;align-items:center;gap:9px;padding:13px 17px 12px 0;cursor:pointer;
+    border-bottom:2px solid transparent;white-space:nowrap;background:transparent;border-top:0;border-left:0;border-right:0;
+    font-family:inherit;color:var(--ink2);transition:color .14s}
+  .step:hover{color:var(--ink)}
+  .step.on{color:var(--em700);border-bottom-color:var(--em600)}
+  .dark .step.on{color:var(--em500)}
+  .step .idx{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--g300);display:grid;place-items:center;
+    font-size:10.5px;font-weight:750;font-family:'JetBrains Mono',monospace;flex:none;color:var(--ink3)}
+  .step.on .idx{border-color:var(--em600);background:var(--em600);color:#fff}
+  .step.done .idx{border-color:var(--em600);color:var(--em700);background:rgba(16,185,129,.12)}
+  .step .lbl{font-size:12.5px;font-weight:600}
+  .step .sub{font-size:10.5px;color:var(--ink3);font-weight:500}
+  .step-arrow{color:var(--g300);font-size:14px;padding-right:17px;flex:none}
+
+  main{padding:22px 0 70px}
+
+  /* ---------- cards ---------- */
+  .card{background:var(--raised);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
+  .card-pad{padding:17px 18px}
+  .card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:15px;flex-wrap:wrap}
+  .eyebrow{font-size:10.5px;font-weight:750;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+  .h2{font-size:16.5px;font-weight:700;letter-spacing:-.015em;margin-top:3px}
+  .h3{font-size:14px;font-weight:650;letter-spacing:-.01em}
+  .meta{font-size:12.5px;color:var(--ink2)}
+  .mb{margin-bottom:18px}
+  .note{font-size:11.5px;color:var(--ink3);line-height:1.5}
+
+  /* ---------- buttons ---------- */
+  .btn{border:0;font-family:inherit;font-size:12.5px;font-weight:650;padding:8px 14px;border-radius:7px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:all .14s}
+  .btn.pri{background:var(--em700);color:#fff}
+  .btn.pri:hover{background:#065f46}
+  .btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--border)}
+  .btn.sec:hover{background:var(--bg3)}
+  .btn.am{background:var(--am700);color:#fff}
+  .btn.am:hover{background:#92400e}
+  .btn.dng{background:var(--rd600);color:#fff}
+  .btn.dng:hover{background:var(--rd700)}
+  .btn.sm{padding:5px 10px;font-size:11.5px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-row{display:flex;gap:9px;flex-wrap:wrap}
+
+  /* ---------- pills / dots ---------- */
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:650;padding:3px 9px;border-radius:6px;
+    background:var(--bg3);color:var(--ink2);white-space:nowrap}
+  .pill.ok{background:rgba(16,185,129,.11);color:var(--em700)}
+  .dark .pill.ok{color:var(--em500)}
+  .pill.warn{background:rgba(245,158,11,.13);color:var(--am700)}
+  .dark .pill.warn{color:var(--am500)}
+  .pill.bad{background:rgba(239,68,68,.12);color:var(--rd700)}
+  .dark .pill.bad{color:var(--rd500)}
+  .pill.info{background:rgba(59,130,246,.11);color:var(--bl700)}
+  .dark .pill.info{color:var(--bl500)}
+  .pill.purple{background:rgba(139,92,246,.12);color:var(--pu600)}
+  .dot{width:6px;height:6px;border-radius:50%;flex:none}
+  .dot.g{background:var(--em500)} .dot.a{background:var(--am500)} .dot.r{background:var(--rd500)}
+  .dot.b{background:var(--bl500)} .dot.p{background:var(--pu500)}
+
+  /* ---------- banners ---------- */
+  .banner{border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+    display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;background:var(--raised)}
+  .banner.am{border-color:rgba(245,158,11,.35);background:linear-gradient(90deg,rgba(245,158,11,.06),transparent 60%)}
+  .banner.rd{border-color:rgba(239,68,68,.32);background:linear-gradient(90deg,rgba(239,68,68,.06),transparent 60%)}
+  .banner.bl{border-color:rgba(59,130,246,.3);background:linear-gradient(90deg,rgba(59,130,246,.06),transparent 60%)}
+  .banner .ic{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;font-size:17px;flex:none;
+    background:var(--bg3)}
+  .banner.am .ic{background:rgba(245,158,11,.13)}
+  .banner.rd .ic{background:rgba(239,68,68,.12)}
+  .banner.bl .ic{background:rgba(59,130,246,.12)}
+  .banner h3{font-size:14px;font-weight:700;margin-bottom:4px}
+  .banner p{font-size:12.5px;color:var(--ink2);line-height:1.55}
+  .banner .acts{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
+
+  /* ---------- grade pills ---------- */
+  .gradepill{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;
+    font-size:11px;font-weight:750;font-family:'JetBrains Mono',monospace;flex:none}
+  .gradepill.g1{background:rgba(16,185,129,.16);color:var(--em700)} .dark .gradepill.g1{color:var(--em500)}
+  .gradepill.g2{background:rgba(16,185,129,.11);color:var(--em700)} .dark .gradepill.g2{color:var(--em500)}
+  .gradepill.g3{background:rgba(245,158,11,.14);color:var(--am700)} .dark .gradepill.g3{color:var(--am500)}
+  .gradepill.g4{background:rgba(239,68,68,.14);color:var(--rd700)} .dark .gradepill.g4{color:var(--rd500)}
+  .gradepill.gx{background:var(--bg3);color:var(--ink3)}
+
+  /* ---------- shared table ---------- */
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+  thead th{text-align:left;font-size:10.5px;font-weight:750;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--ink3);padding:9px 11px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg2)}
+  tbody td{padding:11px;border-bottom:1px solid var(--border-sub);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:0}
+
+  /* ---------- stats ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+  .stat{background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:15px 16px}
+  .stat .l{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3)}
+  .stat .v{font-size:23px;font-weight:750;letter-spacing:-.02em;margin-top:7px;line-height:1}
+  .stat .s{font-size:11.5px;color:var(--ink2);margin-top:5px}
+
+  /* ---------- trainer matrix (screen 1) ---------- */
+  .trx-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+  .trainee-head{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+  .trainee-head .av-lg{width:44px;height:44px;border-radius:11px;background:var(--g800);color:#fff;
+    display:grid;place-items:center;font-size:15px;font-weight:700;flex:none}
+  .dark .trainee-head .av-lg{background:var(--em600)}
+  .assessor-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;
+    border-bottom:1px solid var(--border-sub)}
+  .assessor-row:last-child{border-bottom:0}
+  .assessor-row .left{display:flex;align-items:center;gap:11px;min-width:0}
+  .assessor-row .ini{width:28px;height:28px;border-radius:7px;background:var(--bg3);color:var(--ink2);
+    display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+  .assessor-row .nm{font-size:12.5px;font-weight:650;line-height:1.25}
+  .assessor-row .rl{font-size:10.5px;color:var(--ink3);line-height:1.25}
+  .matrix td{padding:9px 10px}
+  .matrix .domain{font-weight:600;font-size:12.5px}
+  .matrix .code{font-size:10.5px;color:var(--ink3);font-family:'JetBrains Mono',monospace}
+  .gcell{display:flex;gap:3px}
+  .gbtn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--surface);
+    cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--ink3);
+    display:grid;place-items:center;transition:all .13s}
+  .gbtn:hover{border-color:var(--g400);color:var(--ink)}
+  .gbtn:focus-visible,.sot-opt:focus-visible,.boe-opt:focus-visible,.step:focus-visible,
+  .icon-btn:focus-visible,.btn:focus-visible,.chk .box:focus-visible,#sigpad:focus-visible{
+    outline:2px solid var(--em600);outline-offset:2px}
+  .gbtn.on[data-g="1"]{background:rgba(16,185,129,.18);border-color:var(--em600);color:var(--em700)}
+  .gbtn.on[data-g="2"]{background:rgba(16,185,129,.12);border-color:var(--em600);color:var(--em700)}
+  .gbtn.on[data-g="3"]{background:rgba(245,158,11,.18);border-color:var(--am600);color:var(--am700)}
+  .gbtn.on[data-g="4"]{background:rgba(239,68,68,.16);border-color:var(--rd600);color:var(--rd700)}
+  .gbtn.on[data-g="x"]{background:var(--bg3);border-color:var(--g500);color:var(--ink2)}
+  .dark .gbtn.on[data-g="1"],.dark .gbtn.on[data-g="2"]{color:var(--em500)}
+  .dark .gbtn.on[data-g="3"]{color:var(--am500)}
+  .dark .gbtn.on[data-g="4"]{color:var(--rd500)}
+
+  .grade-legend{border:1px dashed var(--border);border-radius:8px;padding:11px 13px}
+  .grade-legend .gl-h{font-size:10.5px;font-weight:750;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--ink3);margin-bottom:8px}
+  .grade-legend .gl-row{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2);margin-bottom:6px}
+  .grade-legend .gl-row:last-child{margin-bottom:0}
+  .anchor{border-left:2px solid var(--bl600);background:rgba(59,130,246,.04);padding:9px 11px;border-radius:0 7px 7px 0;
+    font-size:11.5px;color:var(--ink2);line-height:1.5;margin-top:4px}
+  .anchor b{color:var(--ink)}
+  .freetext{border:1px solid var(--border);border-radius:9px;padding:13px;background:var(--surface)}
+  .freetext label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--ink3);margin-bottom:7px}
+  .freetext textarea{width:100%;border:0;background:transparent;font-family:inherit;font-size:12.5px;
+    color:var(--ink);resize:vertical;min-height:62px;outline:none;line-height:1.55}
+  .freetext textarea::placeholder{color:var(--ink3)}
+  .guidance{border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.045);border-radius:9px;
+    padding:12px 14px;font-size:12px;color:var(--ink2);line-height:1.55}
+  .guidance b{color:var(--ink)}
+
+  /* ---------- distribution (screen 2) ---------- */
+  .dist-row{display:grid;grid-template-columns:220px 1fr 62px;gap:13px;align-items:center;
+    padding:9px 0;border-bottom:1px solid var(--border-sub)}
+  .dist-row:last-child{border-bottom:0}
+  .dist-row .dm{font-size:12.5px;font-weight:600;line-height:1.3}
+  .dist-row .code{font-size:10.5px;color:var(--ink3);font-family:'JetBrains Mono',monospace}
+  .stack{display:flex;height:20px;border-radius:5px;overflow:hidden;background:var(--bg3);min-width:120px}
+  .stack i{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:750;
+    font-family:'JetBrains Mono',monospace;color:#171717;transition:width .3s ease}
+  .stack i.s1{background:var(--em700);color:#fff}
+  .stack i.s2{background:#34d399;color:#171717}
+  .stack i.s3{background:var(--am500);color:#171717}
+  .stack i.s4{background:var(--rd500);color:#171717}
+  .stack i.sx{background:var(--g400);color:#171717}
+  .divergence{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+    padding:3px 7px;border-radius:5px;background:rgba(245,158,11,.14);color:var(--am700)}
+  .dark .divergence{color:var(--am500)}
+  .comment{border:1px solid var(--border);border-radius:9px;padding:12px 13px;margin-bottom:9px;background:var(--surface)}
+  .comment .ch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+  .comment .who2{font-size:11.5px;font-weight:650;color:var(--ink2)}
+  .comment .body{font-size:12.5px;line-height:1.55;color:var(--ink2)}
+  .comment.strength{border-left:2.5px solid var(--em600)}
+  .comment.growth{border-left:2.5px solid var(--am600)}
+  .sot-grade-panel{border:1px solid var(--border);border-radius:11px;padding:16px;background:var(--bg2)}
+  .sot-grade-panel .q{font-size:12.5px;font-weight:650;margin-bottom:11px}
+  .sot-opts{display:grid;gap:8px}
+  .sot-opt{border:1px solid var(--border);border-radius:9px;padding:11px 13px;background:var(--surface);
+    cursor:pointer;display:flex;align-items:flex-start;gap:11px;transition:all .14s;text-align:left;
+    font-family:inherit;width:100%}
+  .sot-opt:hover{border-color:var(--g400)}
+  .sot-opt.on{border-color:var(--em600);background:rgba(16,185,129,.05);box-shadow:0 0 0 1px var(--em600) inset}
+  .sot-opt .gt{font-size:12.5px;font-weight:700;line-height:1.25}
+  .sot-opt .gd{font-size:11.5px;color:var(--ink2);margin-top:2px;line-height:1.45}
+
+  /* ---------- sign-off (screen 3) ---------- */
+  .f2f-grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;align-items:start}
+  .checklist{display:grid;gap:10px}
+  .chk{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border:1px solid var(--border);
+    border-radius:9px;background:var(--surface)}
+  .chk .box{width:19px;height:19px;border-radius:5px;border:1.5px solid var(--g300);flex:none;display:grid;
+    place-items:center;font-size:11px;color:transparent;cursor:pointer;transition:all .14s;background:var(--surface)}
+  .chk .box.on{background:var(--em600);border-color:var(--em600);color:#fff}
+  .chk .t{font-size:12.5px;font-weight:600;line-height:1.35}
+  .chk .d{font-size:11.5px;color:var(--ink3);margin-top:2px;line-height:1.45}
+  .sigpad{border:2px dashed var(--border);border-radius:11px;height:132px;background:var(--surface);
+    display:grid;place-items:center;cursor:crosshair;position:relative;overflow:hidden}
+  .sigpad .ph{font-size:12px;color:var(--ink3);text-align:center;padding:0 18px;line-height:1.5}
+  .sigpad.signed{border-style:solid;border-color:var(--em600);background:rgba(16,185,129,.03)}
+  .sigpad svg{position:absolute;inset:0;width:100%;height:100%}
+  .sig-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:9px;font-size:11px;color:var(--ink3)}
+  .outcome{border-radius:11px;padding:15px 16px;border:1px solid var(--border);background:var(--bg2)}
+  .outcome.ok{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.05)}
+  .outcome.rd{border-color:rgba(239,68,68,.32);background:rgba(239,68,68,.05)}
+  .outcome .oh{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  .outcome .ob{font-size:12px;color:var(--ink2);line-height:1.55}
+
+  /* ---------- appeal / BOE (screen 4) ---------- */
+  .appeal-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+  .timeline{position:relative;padding-left:26px}
+  .timeline:before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:1.5px;background:var(--border)}
+  .tl-item{position:relative;padding-bottom:17px}
+  .tl-item:last-child{padding-bottom:0}
+  .tl-item .knob{position:absolute;left:-22px;top:3px;width:13px;height:13px;border-radius:50%;
+    background:var(--surface);border:2.5px solid var(--g300)}
+  .tl-item.done .knob{border-color:var(--em600);background:var(--em600)}
+  .tl-item.active .knob{border-color:var(--am500);background:var(--am500)}
+  .tl-item.crit .knob{border-color:var(--rd500);background:var(--rd500)}
+  .tl-item .t{font-size:12.5px;font-weight:650}
+  .tl-item .d{font-size:11.5px;color:var(--ink2);margin-top:2px;line-height:1.5}
+  .tl-item .when{font-size:10.5px;color:var(--ink3);font-family:'JetBrains Mono',monospace;margin-top:3px}
+  .docket{border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--surface);margin-bottom:11px}
+  .docket .dh{font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:8px}
+  .docket .db{font-size:12.5px;line-height:1.6;color:var(--ink2)}
+  .docket .db b{color:var(--ink)}
+  .boe-opts{display:grid;gap:9px}
+  .boe-opt{border:1px solid var(--border);border-radius:10px;padding:13px 14px;background:var(--surface);
+    cursor:pointer;text-align:left;font-family:inherit;transition:all .14s;width:100%}
+  .boe-opt:hover{border-color:var(--g400)}
+  .boe-opt.on{border-color:var(--pu600);background:rgba(139,92,246,.05);box-shadow:0 0 0 1px var(--pu600) inset}
+  .boe-opt .bt{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .boe-opt .bd{font-size:11.5px;color:var(--ink2);margin-top:4px;line-height:1.5}
+  .ledger-preview{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-top:11px}
+  .ledger-preview .lh{background:var(--bg3);padding:8px 11px;font-size:10.5px;font-weight:750;
+    text-transform:uppercase;letter-spacing:.05em;color:var(--ink3)}
+  .ledger-preview .lr{display:flex;justify-content:space-between;gap:12px;padding:9px 11px;font-size:12px;
+    border-bottom:1px solid var(--border-sub)}
+  .ledger-preview .lr:last-child{border-bottom:0}
+  .ledger-preview .lk{color:var(--ink3)}
+  .ledger-preview .lv{font-weight:650;text-align:right}
+
+  .rollover{border-top:1px solid var(--border);padding-top:20px;margin-top:22px}
+  .rollover .rh{font-size:13px;font-weight:700;margin-bottom:4px}
+  .rollover .rp{font-size:11.5px;color:var(--ink3);margin-bottom:13px}
+
+  @media (max-width:1080px){
+    .trx-grid,.f2f-grid,.appeal-grid,.lb-grid{grid-template-columns:1fr}
+    .dist-row{grid-template-columns:1fr 56px;grid-template-areas:"m f" "s s";gap:7px 12px}
+    .dist-row .dm{grid-area:m} .dist-row .frac{grid-area:f} .dist-row .stack{grid-area:s}
+    .who .nm,.who .rl{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important}
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================= TOP BAR ======================= -->
+<div class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand">
+        <div class="mark">H</div>
+        <div>
+          <h1>HKCA e-Portfolio</h1>
+          <p>In-Training Assessment &middot; Synthesis &amp; Review</p>
+        </div>
+      </div>
+      <div class="top-right">
+        <div class="pill info" id="tierBadge">Tier 1 &middot; Trainer input</div>
+        <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">&#9788;</button>
+        <div class="who">
+          <div>
+            <div class="nm" id="userName">Dr. Albert Chan</div>
+            <div class="rl" id="userRole">SOT &middot; Prince of Wales Hospital</div>
+          </div>
+          <div class="av">AC</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= STEP RAIL ======================= -->
+<div class="rail">
+  <div class="wrap">
+    <div class="rail-row" id="railRow">
+      <button class="step on" data-screen="s1">
+        <span class="idx">1</span>
+        <span>
+          <span class="lbl">Trainer Input</span>
+          <span class="sub">Tier 1 &middot; private</span>
+        </span>
+      </button>
+      <span class="step-arrow">&rsaquo;</span>
+      <button class="step" data-screen="s2">
+        <span class="idx">2</span>
+        <span>
+          <span class="lbl">SOT Synthesis</span>
+          <span class="sub">Tier 2 &middot; distribution</span>
+        </span>
+      </button>
+      <span class="step-arrow">&rsaquo;</span>
+      <button class="step" data-screen="s3">
+        <span class="idx">3</span>
+        <span>
+          <span class="lbl">Face-to-Face</span>
+          <span class="sub">Counter-signature</span>
+        </span>
+      </button>
+      <span class="step-arrow">&rsaquo;</span>
+      <button class="step" data-screen="s4">
+        <span class="idx">4</span>
+        <span>
+          <span class="lbl">Contested &amp; Appeal</span>
+          <span class="sub">BOE review</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <!-- ==================================================== -->
+    <!-- SCREEN 1 — TIER 1: PRIVATE TRAINER INPUT MATRIX       -->
+    <!-- ==================================================== -->
+    <section id="screen-s1">
+      <div class="banner bl">
+        <div class="ic">&#128274;</div>
+        <div style="flex:1">
+          <h3>Tier 1 &mdash; Private trainer scoring layer</h3>
+          <p>
+            This matrix is visible <strong>only to the Supervisor of Training</strong>. Individual trainer submissions
+            (<span class="mono">ItaAssessorResponse</span>) are walled off from the trainee at all times, including after sign-off.
+            No fields are pre-filled from previous cycles &mdash; this eliminates rubber-stamping and preserves the
+            independence of each assessor's judgement. Each assessor's anchor text appears beneath the domain row so
+            ratings are calibrated against the same behavioural descriptors.
+          </p>
+        </div>
+      </div>
+
+      <div class="trx-grid">
+        <div>
+          <!-- Assessor register -->
+          <div class="card card-pad mb">
+            <div class="card-h">
+              <div>
+                <div class="eyebrow">Assessor Register</div>
+                <div class="h2">Dr. Kelvin Wong &mdash; Jul &ndash; Dec 2026 cycle</div>
+                <div class="meta" style="margin-top:4px">PWH &middot; Clinical Anaesthesia &middot; HAT-2 &middot; 4 of 4 supervising trainers assigned</div>
+              </div>
+              <span class="pill ok"><span class="dot g"></span>All submissions received</span>
+            </div>
+            <div class="assessor-row">
+              <div class="left">
+                <div class="ini">LK</div>
+                <div>
+                  <div class="nm">Dr. Lisa Kwok</div>
+                  <div class="rl">Consultant &middot; Cardiac Anaesthesia &middot; submitted 12 Dec</div>
+                </div>
+              </div>
+              <span class="pill ok"><span class="dot g"></span>Complete</span>
+            </div>
+            <div class="assessor-row">
+              <div class="left">
+                <div class="ini">MT</div>
+                <div>
+                  <div class="nm">Dr. Michael Tang</div>
+                  <div class="rl">Associate Consultant &middot; General &amp; Obstetric &middot; submitted 14 Dec</div>
+                </div>
+              </div>
+              <span class="pill ok"><span class="dot g"></span>Complete</span>
+            </div>
+            <div class="assessor-row">
+              <div class="left">
+                <div class="ini">SN</div>
+                <div>
+                  <div class="nm">Dr. Sandra Ng</div>
+                  <div class="rl">Consultant &middot; Regional &amp; Acute Pain &middot; submitted 15 Dec</div>
+                </div>
+              </div>
+              <span class="pill ok"><span class="dot g"></span>Complete</span>
+            </div>
+            <div class="assessor-row">
+              <div class="left">
+                <div class="ini">RC</div>
+                <div>
+                  <div class="nm">Dr. Raymond Chu</div>
+                  <div class="rl">Consultant &middot; Neuro &amp; Airway &middot; submitted 16 Dec</div>
+                </div>
+              </div>
+              <span class="pill ok"><span class="dot g"></span>Complete</span>
+            </div>
+            <p class="note" style="margin-top:13px">
+              Trainers are assigned by the SOT at cycle start. Each assesses only cases they personally supervised.
+              Submissions lock on receipt and cannot be edited after the window closes.
+            </p>
+          </div>
+
+          <!-- Rating matrix -->
+          <div class="card card-pad mb">
+            <div class="card-h">
+              <div>
+                <div class="eyebrow">Assessment Domains</div>
+                <div class="h2">Domain scoring matrix</div>
+                <div class="meta" style="margin-top:4px">
+                  Scale 1&ndash;4 with X for insufficient evidence. Showing Dr. Lisa Kwok's submitted ratings.
+                </div>
+              </div>
+              <div class="grade-legend" style="max-width:340px;flex:1">
+                <div class="gl-h">Rating scale &amp; behavioural anchors</div>
+                <div class="gl-row"><span class="gradepill g1">1</span> Performs independently, at consultant level</div>
+                <div class="gl-row"><span class="gradepill g2">2</span> Performs with minimal supervision</div>
+                <div class="gl-row"><span class="gradepill g3">3</span> Requires direct supervision &mdash; development needed</div>
+                <div class="gl-row"><span class="gradepill g4">4</span> Below expected standard for stage</div>
+                <div class="gl-row"><span class="gradepill gx">X</span> Insufficient evidence to rate</div>
+              </div>
+            </div>
+
+            <div style="overflow-x:auto">
+              <table class="matrix">
+                <thead>
+                  <tr>
+                    <th style="width:38%">Clinical domain</th>
+                    <th style="width:12%">Curriculum code</th>
+                    <th style="width:34%">Rating</th>
+                    <th style="width:16%">Anchor applied</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><div class="domain">Pre-operative assessment &amp; optimisation</div></td>
+                    <td><div class="code">CF-2.1</div></td>
+                    <td>
+                      <div class="gcell">
+                        <button class="gbtn" data-g="1">1</button>
+                        <button class="gbtn on" data-g="2">2</button>
+                        <button class="gbtn" data-g="3">3</button>
+                        <button class="gbtn" data-g="4">4</button>
+                        <button class="gbtn" data-g="x">X</button>
+                      </div>
+                    </td>
+                    <td><span class="pill ok">Level 2</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="domain">General anaesthesia &mdash; uncomplicated</div></td>
+                    <td><div class="code">CF-2.2</div></td>
+                    <td>
+                      <div class="gcell">
+                        <button class="gbtn on" data-g="1">1</button>
+                        <button class="gbtn" data-g="2">2</button>
+                        <button class="gbtn" data-g="3">3</button>
+                        <button class="gbtn" data-g="4">4</button>
+                        <button class="gbtn" data-g="x">X</button>
+                      </div>
+                    </td>
+                    <td><span class="pill ok">Level 1</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="domain">Regional anaesthesia &amp; block techniques</div></td>
+                    <td><div class="code">CF-2.3</div></td>
+                    <td>
+                      <div class="gcell">
+                        <button class="gbtn" data-g="1">1</button>
+                        <button class="gbtn" data-g="2">2</button>
+                        <button class="gbtn on" data-g="3">3</button>
+                        <button class="gbtn" data-g="4">4</button>
+                        <button class="gbtn" data-g="x">X</button>
+                      </div>
+                    </td>
+                    <td><span class="pill warn">Level 3</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="domain">Airway management &amp; difficult airway</div></td>
+                    <td><div class="code">CF-2.4</div></td>
+                    <td>
+                      <div class="gcell">
+                        <button class="gbtn on" data-g="1">1</button>
+                        <button class="gbtn" data-g="2">2</button>
+                        <button class="gbtn" data-g="3">3</button>
+                        <button class="gbtn" data-g="4">4</button>
+                        <button class="gbtn" data-g="x">X</button>
+                      </div>
+                    </td>
+                    <td><span class="pill ok">Level 1</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="domain">Cardiac anaesthesia &amp; TOE</div></td>
+                    <td><div class="code">SM-3.4</div></td>
+                    <td>
+                      <div class="gcell">
+                        <button class="gbtn" data-g="1">1</button>
+                        <button class="gbtn" data-g="2">2</button>
+                        <button class="gbtn" data-g="3">3</button>
+                        <button class="gbtn on" data-g="4">4</button>
+                        <button class="gbtn" data-g="x">X</button>
+                      </div>
+                    </td>
+                    <td><span class="pill bad">Level 4</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="domain">Obstetric anaesthesia</div></td>
+                    <td><div class="code">CF-2.5</div></td>
+                    <td>
+                      <div class="gcell">
+                        <button class="gbtn" data-g="1">1</button>
+                        <button class="gbtn on" data-g="2">2</button>
+                        <button class="gbtn" data-g="3">3</button>
+                        <button class="gbtn" data-g="4">4</button>
+                        <button class="gbtn" data-g="x">X</button>
+                      </div>
+                    </td>
+                    <td><span class="pill ok">Level 2</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="domain">Non-technical skills &amp; communication</div></td>
+                    <td><div class="code">CF-2.7</div></td>
+                    <td>
+                      <div class="gcell">
+                        <button class="gbtn on" data-g="1">1</button>
+                        <button class="gbtn" data-g="2">2</button>
+                        <button class="gbtn" data-g="3">3</button>
+                        <button class="gbtn" data-g="4">4</button>
+                        <button class="gbtn" data-g="x">X</button>
+                      </div>
+                    </td>
+                    <td><span class="pill ok">Level 1</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="anchor" style="margin-top:14px">
+              <b>Anchor in force &mdash; Level 4 (Cardiac anaesthesia &amp; TOE):</b>
+              &ldquo;Unable to independently manage bypass separation or interpret TOE findings without prompting;
+              requires step-by-step direction throughout the case.&rdquo; &mdash; VTG 2018 v1.1, E06 Appendix 2.
+            </div>
+
+            <div class="guidance" style="margin-top:14px">
+              <b>Note on this rating:</b> A domain rated 4 does not by itself constitute an unsatisfactory ITA.
+              The summative determination is made by the SOT at synthesis, weighing the distribution across
+              all assessors and the stage-appropriate expectations for the trainee.
+            </div>
+          </div>
+        </div>
+
+        <!-- Side: structured free text -->
+        <div>
+          <div class="card card-pad mb">
+            <div class="card-h" style="margin-bottom:12px">
+              <div>
+                <div class="eyebrow">Structured Comment</div>
+                <div class="h3" style="margin-top:3px">Notable strength</div>
+              </div>
+            </div>
+            <div class="freetext">
+              <textarea aria-label="Notable strength" placeholder="Describe a specific observed strength...">Exceptional calmness during an unexpected difficult airway in a ASA IIIE patient. Anticipated the problem early, verbalised a clear plan, and led the team without prompting.</textarea>
+            </div>
+            <p class="note" style="margin-top:9px">
+              Free text is deliberately confined to these two fields. Narrative commentary is not accepted &mdash;
+              this keeps synthesis objective and appeal-defensible.
+            </p>
+          </div>
+
+          <div class="card card-pad mb">
+            <div class="card-h" style="margin-bottom:12px">
+              <div>
+                <div class="eyebrow">Structured Comment</div>
+                <div class="h3" style="margin-top:3px">Key area for growth</div>
+              </div>
+            </div>
+            <div class="freetext">
+              <textarea aria-label="Key area for growth" placeholder="Identify one specific area for development...">TOE image acquisition remains slow under time pressure. Would benefit from dedicated TOE list exposure with a cardiac consultant before the next cycle.</textarea>
+            </div>
+          </div>
+
+          <div class="card card-pad">
+            <div class="eyebrow">Submission Integrity</div>
+            <div class="h3" style="margin-top:6px;margin-bottom:10px">Locked on receipt</div>
+            <p class="note" style="margin-bottom:11px">
+              This submission was committed on 12 Dec 2026 at 14:32 and is now immutable. Any correction requires
+              a formal annotation, which is itself recorded in the audit trail.
+            </p>
+            <div class="ledger-preview">
+              <div class="lr"><span class="lk">Assessor</span><span class="lv">Dr. Lisa Kwok</span></div>
+              <div class="lr"><span class="lk">Submitted</span><span class="lv mono">2026-12-12 14:32</span></div>
+              <div class="lr"><span class="lk">Domains rated</span><span class="lv mono">7 / 7</span></div>
+              <div class="lr"><span class="lk">Record hash</span><span class="lv mono">a4f8&hellip;c19e</span></div>
+            </div>
+          </div>
+
+          <button class="btn pri" style="width:100%;justify-content:center;margin-top:14px" onclick="go('s2')">
+            Proceed to SOT synthesis &rsaquo;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================== -->
+    <!-- SCREEN 2 — TIER 2: SOT SUMMATIVE SYNTHESIS            -->
+    <!-- ==================================================== -->
+    <section id="screen-s2" class="hidden">
+      <div class="banner am">
+        <div class="ic">&#9878;</div>
+        <div style="flex:1">
+          <h3>Tier 2 &mdash; SOT summative synthesis</h3>
+          <p>
+            All four trainer submissions are collated below as a distribution. The SOT reads the spread, not an average:
+            a single Level 4 with three Level 1s means something quite different from four Level 3s. This is the only
+            record that will be presented to the trainee and counter-signed in the face-to-face meeting.
+          </p>
+        </div>
+      </div>
+
+      <div class="trx-grid">
+        <div>
+          <!-- Distribution -->
+          <div class="card card-pad mb">
+            <div class="card-h">
+              <div>
+                <div class="eyebrow">Aggregated Distribution</div>
+                <div class="h2">Rating spread across 4 assessors</div>
+                <div class="meta" style="margin-top:4px">n = 4 trainers &middot; 7 domains each &middot; 28 discrete judgements</div>
+              </div>
+              <span class="pill warn"><span class="dot a"></span>2 domains show divergence</span>
+            </div>
+
+            <div class="dist-row">
+              <div>
+                <div class="dm">Pre-operative assessment</div>
+                <div class="code">CF-2.1</div>
+              </div>
+              <div class="stack">
+                <i class="s1" style="width:50%">2</i>
+                <i class="s2" style="width:50%">2</i>
+              </div>
+              <div class="frac mono" style="font-size:11px;color:var(--ink3);text-align:right">1&ndash;2</div>
+            </div>
+
+            <div class="dist-row">
+              <div>
+                <div class="dm">General anaesthesia</div>
+                <div class="code">CF-2.2</div>
+              </div>
+              <div class="stack">
+                <i class="s1" style="width:75%">3</i>
+                <i class="s2" style="width:25%">1</i>
+              </div>
+              <div class="frac mono" style="font-size:11px;color:var(--ink3);text-align:right">1&ndash;2</div>
+            </div>
+
+            <div class="dist-row">
+              <div>
+                <div class="dm">Regional anaesthesia</div>
+                <div class="code">CF-2.3</div>
+              </div>
+              <div class="stack">
+                <i class="s2" style="width:25%">1</i>
+                <i class="s3" style="width:50%">2</i>
+                <i class="s4" style="width:25%">1</i>
+              </div>
+              <div class="frac mono" style="font-size:11px;color:var(--ink3);text-align:right">2&ndash;4</div>
+            </div>
+
+            <div class="dist-row">
+              <div>
+                <div class="dm">Airway management</div>
+                <div class="code">CF-2.4</div>
+              </div>
+              <div class="stack">
+                <i class="s1" style="width:75%">3</i>
+                <i class="s2" style="width:25%">1</i>
+              </div>
+              <div class="frac mono" style="font-size:11px;color:var(--ink3);text-align:right">1&ndash;2</div>
+            </div>
+
+            <div class="dist-row">
+              <div>
+                <div class="dm">Cardiac anaesthesia &amp; TOE</div>
+                <div class="code">SM-3.4</div>
+              </div>
+              <div class="stack">
+                <i class="s3" style="width:25%">1</i>
+                <i class="s4" style="width:75%">3</i>
+              </div>
+              <div class="frac mono" style="font-size:11px;color:var(--ink3);text-align:right">3&ndash;4</div>
+            </div>
+
+            <div class="dist-row">
+              <div>
+                <div class="dm">Obstetric anaesthesia</div>
+                <div class="code">CF-2.5</div>
+              </div>
+              <div class="stack">
+                <i class="s1" style="width:50%">2</i>
+                <i class="s2" style="width:50%">2</i>
+              </div>
+              <div class="frac mono" style="font-size:11px;color:var(--ink3);text-align:right">1&ndash;2</div>
+            </div>
+
+            <div class="dist-row">
+              <div>
+                <div class="dm">Non-technical skills</div>
+                <div class="code">CF-2.7</div>
+              </div>
+              <div class="stack">
+                <i class="s1" style="width:100%">4</i>
+              </div>
+              <div class="frac mono" style="font-size:11px;color:var(--ink3);text-align:right">1</div>
+            </div>
+
+            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:15px">
+              <span class="seglegend" style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink3)">
+                <i style="width:8px;height:8px;border-radius:2px;background:var(--em600);display:inline-block"></i>Level 1
+              </span>
+              <span class="seglegend" style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink3)">
+                <i style="width:8px;height:8px;border-radius:2px;background:#34d399;display:inline-block"></i>Level 2
+              </span>
+              <span class="seglegend" style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink3)">
+                <i style="width:8px;height:8px;border-radius:2px;background:var(--am500);display:inline-block"></i>Level 3
+              </span>
+              <span class="seglegend" style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink3)">
+                <i style="width:8px;height:8px;border-radius:2px;background:var(--rd500);display:inline-block"></i>Level 4
+              </span>
+            </div>
+          </div>
+
+          <!-- Divergence -->
+          <div class="card card-pad mb">
+            <div class="card-h">
+              <div>
+                <div class="eyebrow">Divergence Flag</div>
+                <div class="h2">Two domains require explicit reasoning</div>
+              </div>
+              <span class="divergence">&#9888; Spread &ge; 2 levels</span>
+            </div>
+            <div class="ledger-preview" style="margin-top:0">
+              <div class="lr">
+                <span class="lk">CF-2.3 Regional anaesthesia</span>
+                <span class="lv">Rated 2, 3, 3, 4 &mdash; one assessor markedly lower</span>
+              </div>
+              <div class="lr">
+                <span class="lk">SM-3.4 Cardiac anaesthesia</span>
+                <span class="lv">Rated 3, 4, 4, 4 &mdash; consistent underperformance</span>
+              </div>
+            </div>
+            <p class="note" style="margin-top:12px">
+              Where the spread is &ge; 2 levels, the SOT must record their reasoning. This narrative is stored with
+              the summative record and is disclosable if the assessment is later contested. It is the single most
+              important field for appeal defensibility.
+            </p>
+          </div>
+
+          <!-- Collated comments -->
+          <div class="card card-pad mb">
+            <div class="card-h">
+              <div>
+                <div class="eyebrow">Collated Commentary</div>
+                <div class="h2">Strength &amp; growth themes across assessors</div>
+                <div class="meta" style="margin-top:4px">
+                  Comments are pooled here for the SOT. They are <strong>not</strong> individually attributed in the trainee-facing record.
+                </div>
+              </div>
+            </div>
+            <div class="comment strength">
+              <div class="ch">
+                <span class="who2">Cardiac anaesthesia &mdash; strength theme</span>
+                <span class="pill ok">3 of 4 assessors</span>
+              </div>
+              <div class="body">
+                Consistently calm and structured under pressure. Anticipates problems early and communicates the plan clearly to the team.
+              </div>
+            </div>
+            <div class="comment growth">
+              <div class="ch">
+                <span class="who2">Cardiac anaesthesia &mdash; growth theme</span>
+                <span class="pill warn">4 of 4 assessors</span>
+              </div>
+              <div class="body">
+                TOE image acquisition is slow under time pressure; bypass separation still requires prompting. Unanimous across all assessors.
+              </div>
+            </div>
+            <div class="comment growth">
+              <div class="ch">
+                <span class="who2">Regional anaesthesia &mdash; growth theme</span>
+                <span class="pill warn">2 of 4 assessors</span>
+              </div>
+              <div class="body">
+                Block selection is sound but needling technique under supervision needs more repetition. One assessor reported a safety concern with needle visibility.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side: SOT grade -->
+        <div>
+          <div class="sot-grade-panel mb">
+            <div class="q">Summative grade for this cycle</div>
+            <div class="sot-opts" id="sotOpts">
+              <button class="sot-opt" data-grade="1">
+                <span class="gradepill g1">1</span>
+                <span>
+                  <span class="gt">Satisfactory &mdash; performing above stage expectation</span>
+                  <span class="gd">Credit the full rotation period. No conditions attached.</span>
+                </span>
+              </button>
+              <button class="sot-opt on" data-grade="3">
+                <span class="gradepill g3">3</span>
+                <span>
+                  <span class="gt">Satisfactory with development areas</span>
+                  <span class="gd">Credit the rotation. Attach a targeted learning plan for the next cycle.</span>
+                </span>
+              </button>
+              <button class="sot-opt" data-grade="4">
+                <span class="gradepill g4">4</span>
+                <span>
+                  <span class="gt">Unsatisfactory for this cycle</span>
+                  <span class="gd">Credit withheld. Triggers a formal remediation pathway.</span>
+                </span>
+              </button>
+            </div>
+
+            <div style="margin-top:15px">
+              <div class="eyebrow" style="margin-bottom:8px">SOT reasoning (required where spread &ge; 2)</div>
+              <div class="freetext">
+                <textarea aria-label="SOT reasoning for divergence" style="min-height:96px">Cardiac anaesthesia is the outlier: all four assessors independently report the same deficit in TOE and bypass management. I am crediting the rotation because general, airway and obstetric performance is at or above stage expectation, and because this is the trainee's first cardiac exposure. A targeted cardiac plan is attached.</textarea>
+              </div>
+            </div>
+
+            <div class="ledger-preview">
+              <div class="lr"><span class="lk">Trainee</span><span class="lv">Dr. Kelvin Wong</span></div>
+              <div class="lr"><span class="lk">Cycle</span><span class="lv mono">Jul &ndash; Dec 2026</span></div>
+              <div class="lr"><span class="lk">sot_grade</span><span class="lv mono">3</span></div>
+              <div class="lr"><span class="lk">final_grade</span><span class="lv mono">pending appeal window</span></div>
+              <div class="lr"><span class="lk">Rotation credit</span><span class="lv mono">6.0 months &rarr; Clinical Anaesthesia</span></div>
+            </div>
+
+            <button class="btn pri" style="width:100%;justify-content:center;margin-top:15px" onclick="go('s3')">
+              Prepare face-to-face review &rsaquo;
+            </button>
+            <p class="note" style="margin-top:10px;text-align:center">
+              The grade is not final until the trainee counter-signs or the appeal window expires.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================== -->
+    <!-- SCREEN 3 — FACE-TO-FACE COUNTER-SIGNATURE             -->
+    <!-- ==================================================== -->
+    <section id="screen-s3" class="hidden">
+      <div class="banner bl">
+        <div class="ic">&#129309;</div>
+        <div style="flex:1">
+          <h3>Mandatory face-to-face feedback meeting</h3>
+          <p>
+            Counter-signature happens in person, with the SOT and trainee reviewing the synthesis together. The trainee
+            sees the <strong>summative grade and pooled themes</strong> &mdash; never individual assessor submissions.
+            If the trainee disputes the grade, the record moves to <span class="mono">contested</span> and the rotation
+            credit is held pending BOE review.
+          </p>
+        </div>
+      </div>
+
+      <div class="f2f-grid">
+        <div>
+          <div class="card card-pad mb">
+            <div class="card-h">
+              <div>
+                <div class="eyebrow">What the trainee sees</div>
+                <div class="h2">Summative assessment summary</div>
+              </div>
+              <span class="pill info">Trainee view &middot; redacted</span>
+            </div>
+
+            <div class="ledger-preview" style="margin-top:0">
+              <div class="lh">Assessment outcome</div>
+              <div class="lr">
+                <span class="lk">Summative grade</span>
+                <span class="lv"><span class="gradepill g3" style="display:inline-flex">3</span> Satisfactory with development areas</span>
+              </div>
+              <div class="lr">
+                <span class="lk">Rotation period</span>
+                <span class="lv mono">01 Jul &ndash; 31 Dec 2026</span>
+              </div>
+              <div class="lr">
+                <span class="lk">Training category</span>
+                <span class="lv">Clinical Anaesthesia</span>
+              </div>
+              <div class="lr">
+                <span class="lk">Credit on sign-off</span>
+                <span class="lv mono">6.0 months</span>
+              </div>
+              <div class="lr">
+                <span class="lk">Assessors contributing</span>
+                <span class="lv mono">4 &middot; individually anonymous</span>
+              </div>
+            </div>
+
+            <div style="margin-top:16px">
+              <div class="eyebrow" style="margin-bottom:9px">Agreed strength</div>
+              <div class="comment strength" style="margin-bottom:14px">
+                <div class="body">
+                  Consistently calm and structured under pressure. Anticipates problems early and communicates the
+                  plan clearly to the team.
+                </div>
+              </div>
+
+              <div class="eyebrow" style="margin-bottom:9px">Agreed development areas</div>
+              <div class="comment growth" style="margin-bottom:9px">
+                <div class="body">
+                  TOE image acquisition and bypass separation require further supervised exposure before independent
+                  cardiac practice.
+                </div>
+              </div>
+              <div class="comment growth">
+                <div class="body">
+                  Regional block needling technique would benefit from additional repetition under supervision.
+                </div>
+              </div>
+            </div>
+
+            <div class="guidance" style="margin-top:16px">
+              <b>Governance note:</b> Individual trainer scoring forms are held by the College and are not
+              disclosed at any point, including after sign-off. If you wish to dispute this assessment,
+              you may do so in writing within 14 days, and your grounds will be reviewed by the Board of Education.
+            </div>
+          </div>
+
+          <div class="card card-pad">
+            <div class="eyebrow">Discussion Checklist</div>
+            <div class="h3" style="margin-top:6px;margin-bottom:13px">Items confirmed in the meeting</div>
+            <div class="checklist">
+              <div class="chk">
+                <div class="box on" onclick="this.classList.toggle('on')">&#10003;</div>
+                <div>
+                  <div class="t">Summative grade discussed and understood</div>
+                  <div class="d">The trainee has had the opportunity to ask questions about the grade.</div>
+                </div>
+              </div>
+              <div class="chk">
+                <div class="box on" onclick="this.classList.toggle('on')">&#10003;</div>
+                <div>
+                  <div class="t">Development areas discussed with specific actions</div>
+                  <div class="d">Targeted learning plan agreed for the next rotation cycle.</div>
+                </div>
+              </div>
+              <div class="chk">
+                <div class="box on" onclick="this.classList.toggle('on')">&#10003;</div>
+                <div>
+                  <div class="t">Rotation credit implications explained</div>
+                  <div class="d">Trainee understands that 6.0 months will be credited to Clinical Anaesthesia.</div>
+                </div>
+              </div>
+              <div class="chk">
+                <div class="box" onclick="this.classList.toggle('on')">&#10003;</div>
+                <div>
+                  <div class="t">Appeal rights and 14-day window explained</div>
+                  <div class="d">Trainee informed of the formal grounds-for-appeal process.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side: signature -->
+        <div>
+          <div class="card card-pad mb">
+            <div class="card-h" style="margin-bottom:12px">
+              <div>
+                <div class="eyebrow">Trainee Counter-Signature</div>
+                <div class="h3" style="margin-top:3px">Dr. Kelvin Wong</div>
+              </div>
+            </div>
+
+            <div class="sigpad" id="sigpad" onclick="signPad()">
+              <div class="ph">Trainee signs here to confirm the assessment was discussed and the grade understood</div>
+            </div>
+            <div class="sig-meta">
+              <span id="sigStatus">Not yet signed</span>
+              <span class="mono">PWH &middot; 18 Dec 2026</span>
+            </div>
+
+            <p class="note" style="margin-top:11px">
+              Signature confirms the <strong>conversation took place and the grade was explained</strong>. It does not
+              constitute agreement with the grade. A trainee who disagrees may sign and still lodge an appeal.
+            </p>
+
+            <div class="btn-row" style="margin-top:15px">
+              <button class="btn pri" style="flex:1;justify-content:center" onclick="completeSignOff()">
+                Record sign-off &amp; credit rotation
+              </button>
+            </div>
+            <button class="btn sec" style="width:100%;justify-content:center;margin-top:9px" onclick="go('s4')">
+              Trainee disputes the grade
+            </button>
+          </div>
+
+          <div class="outcome ok" id="signOutcome">
+            <div class="oh">What happens on sign-off</div>
+            <div class="ob">
+              The record is committed as <span class="mono">COMPLETED_SATISFACTORY</span>, the 6.0 months are
+              posted to the Accredited Time Ledger as an immutable entry, and the progression gate is re-evaluated.
+              The trainee retains the right to appeal for a further 14 days.
+            </div>
+          </div>
+
+          <div class="card card-pad" style="margin-top:18px">
+            <div class="eyebrow">Audit Trail</div>
+            <div class="ledger-preview" style="margin-top:9px">
+              <div class="lr"><span class="lk">Trainer forms sealed</span><span class="lv mono">4 / 4</span></div>
+              <div class="lr"><span class="lk">SOT synthesis</span><span class="lv mono">signed</span></div>
+              <div class="lr"><span class="lk">F2F meeting held</span><span class="lv mono">18 Dec 2026</span></div>
+              <div class="lr"><span class="lk">Trainee signature</span><span class="lv mono" id="auditSig">pending</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================== -->
+    <!-- SCREEN 4 — CONTESTED & BOE APPEAL                     -->
+    <!-- ==================================================== -->
+    <section id="screen-s4" class="hidden">
+      <div class="banner rd">
+        <div class="ic">&#9878;</div>
+        <div style="flex:1">
+          <h3>Contested assessment &mdash; pending BOE adjudication</h3>
+          <p>
+            The trainee has declined to accept the summative grade. The record is frozen as
+            <span class="mono">contested</span>; the associated rotation credit is held in
+            <span class="mono">pending_boe_review</span> and cannot be posted to the ledger until the Board rules.
+            Both <span class="mono">sot_grade</span> and <span class="mono">final_grade</span> are retained so a
+            successful appeal can unblock progression without erasing the original record.
+          </p>
+          <div class="acts">
+            <span class="pill bad"><span class="dot r"></span>Progression gated</span>
+            <span class="pill warn">Credit held: 6.0 months</span>
+            <span class="pill info">Appeal lodged 20 Dec 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="appeal-grid">
+        <div>
+          <div class="card card-pad mb">
+            <div class="card-h">
+              <div>
+                <div class="eyebrow">Case Timeline</div>
+                <div class="h2">Contested assessment docket</div>
+              </div>
+            </div>
+
+            <div class="timeline">
+              <div class="tl-item done">
+                <div class="knob"></div>
+                <div class="t">Trainer input window closed</div>
+                <div class="d">Four independent submissions received and sealed.</div>
+                <div class="when">16 Dec 2026</div>
+              </div>
+              <div class="tl-item done">
+                <div class="knob"></div>
+                <div class="t">SOT summative synthesis recorded</div>
+                <div class="d">Grade 3 issued, with divergence reasoning attached for two domains.</div>
+                <div class="when">17 Dec 2026</div>
+              </div>
+              <div class="tl-item done">
+                <div class="knob"></div>
+                <div class="t">Face-to-face feedback meeting held</div>
+                <div class="d">Grade explained; trainee declined to counter-sign.</div>
+                <div class="when">18 Dec 2026</div>
+              </div>
+              <div class="tl-item active">
+                <div class="knob"></div>
+                <div class="t">Formal grounds for appeal submitted</div>
+                <div class="d">Trainee statement received within the 14-day window. SOT rationale dossier attached.</div>
+                <div class="when">20 Dec 2026</div>
+              </div>
+              <div class="tl-item crit">
+                <div class="knob"></div>
+                <div class="t">BOE adjudication pending</div>
+                <div class="d">Board of Education panel to review. Progression and credit remain frozen until ruling.</div>
+                <div class="when">Awaiting panel</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card-pad mb">
+            <div class="card-h">
+              <div>
+                <div class="eyebrow">Submissions on Record</div>
+                <div class="h2">Trainee grounds &amp; SOT rationale</div>
+              </div>
+            </div>
+            <div class="docket">
+              <div class="dh">Trainee statement &mdash; submitted 20 Dec 2026</div>
+              <div class="db">
+                <b>Ground:</b> The cardiac anaesthesia assessment is said to reflect a first rotation in a
+                subspecialty rather than inadequate performance. <b>Claim:</b> No prior cardiac exposure was
+                available at this hospital, and the learning objectives declared at rotation start were adjusted
+                mid-cycle; the trainee asks that the grade be reconsidered as Grade 2 and the rotation credited
+                without condition.
+              </div>
+            </div>
+            <div class="docket">
+              <div class="dh">SOT rationale dossier &mdash; attached 20 Dec 2026</div>
+              <div class="db">
+                <b>Position:</b> Grade 3 and credit-with-conditions is supported. All four assessors independently
+                reported the same deficit; the divergence flag was raised and reasoned. <b>Mitigating evidence
+                acknowledged:</b> first cardiac exposure and a mid-cycle objective adjustment are both confirmed
+                against the declared rotation record. <b>Proposed:</b> credit retained, targeted cardiac plan attached.
+              </div>
+            </div>
+            <div class="docket" style="margin-bottom:0">
+              <div class="dh">Rotation &amp; objective record (system-verified)</div>
+              <div class="db">
+                Declared at ITA start: <b>Clinical Anaesthesia</b> with cardiac subspecialty interest.<br>
+                Learning objectives amended: <b>yes</b> &mdash; 14 Oct 2026, approved by SOT.<br>
+                Prior cardiac exposure on record: <b>none</b>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side: BOE ruling -->
+        <div>
+          <div class="card card-pad mb">
+            <div class="card-h" style="margin-bottom:13px">
+              <div>
+                <div class="eyebrow">Board of Education</div>
+                <div class="h3" style="margin-top:3px">Record adjudication</div>
+              </div>
+              <span class="pill purple">BOE only</span>
+            </div>
+
+            <div class="boe-opts" id="boeOpts">
+              <button class="boe-opt on" data-boe="uphold">
+                <span class="bt"><span class="gradepill g3">3</span> Uphold &mdash; SOT grade stands</span>
+                <span class="bd">Credit is posted with the learning plan attached. Grade 3 becomes the final grade.</span>
+              </button>
+              <button class="boe-opt" data-boe="overturn">
+                <span class="bt"><span class="gradepill g2">2</span> Overturn &mdash; amend final grade</span>
+                <span class="bd">final_grade is set to Satisfactory. Credit posted without condition; progression unblocked.</span>
+              </button>
+              <button class="boe-opt" data-boe="reeval">
+                <span class="bt"><span class="gradepill gx">&#8635;</span> Order re-assessment</span>
+                <span class="bd">An independent panel conducts a fresh evaluation; original record retained alongside.</span>
+              </button>
+            </div>
+
+            <div style="margin-top:15px">
+              <div class="eyebrow" style="margin-bottom:8px">Panel reasoning (mandatory)</div>
+              <div class="freetext">
+                <textarea aria-label="BOE panel reasoning" style="min-height:82px" placeholder="Record the Board's reasoning in full..."></textarea>
+              </div>
+            </div>
+
+            <div class="ledger-preview">
+              <div class="lr"><span class="lk">Decision</span><span class="lv">UPHELD</span></div>
+              <div class="lr"><span class="lk">sot_grade</span><span class="lv mono">3</span></div>
+              <div class="lr"><span class="lk">final_grade</span><span class="lv mono">3</span></div>
+              <div class="lr"><span class="lk">Ledger entry</span><span class="lv mono">GRANT 6.0mo</span></div>
+              <div class="lr"><span class="lk">Reason code</span><span class="lv mono">&mdash;</span></div>
+            </div>
+
+            <div class="btn-row" style="margin-top:15px">
+              <button class="btn dng" style="flex:1;justify-content:center" onclick="recordBoe()">Record BOE ruling</button>
+            </div>
+            <p class="note" style="margin-top:10px">
+              A ledger grant, amendment or revocation is recorded as an immutable entry with the BOE actor ID
+              and reason taxonomy. Nothing is deleted; corrections are posted as new rows.
+            </p>
+          </div>
+
+          <div class="outcome rd">
+            <div class="oh">Why this stays manual</div>
+            <div class="ob">
+              No automated scoring or AI inference is permitted to set or amend a summative grade. The system
+              presents the distribution, the divergence flags and the evidence &mdash; the adjudication is a
+              human, panel-level decision recorded against a named BOE actor.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rollover -->
+      <div class="rollover">
+        <div class="rh">Related surfaces</div>
+        <div class="rp">The same lifecycle shown for other states, so the flow can be reviewed end to end.</div>
+        <div class="btn-row">
+          <button class="btn sec sm" onclick="go('s1')">Tier 1 &middot; Trainer input</button>
+          <button class="btn sec sm" onclick="go('s2')">Tier 2 &middot; Synthesis</button>
+          <button class="btn sec sm" onclick="go('s3')">Face-to-face sign-off</button>
+          <button class="btn sec sm">Remedial plan (PIP) view</button>
+          <button class="btn sec sm">Escalation ladder view</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+/* ---------------- navigation ---------------- */
+function go(screen){
+  document.querySelectorAll('main section[id^="screen-"]').forEach(s=>s.classList.add('hidden'));
+  const target = document.getElementById('screen-'+screen);
+  if(target) target.classList.remove('hidden');
+
+  document.querySelectorAll('.step').forEach(b=>{
+    const on = b.dataset.screen===screen;
+    b.classList.toggle('on', on);
+  });
+  syncStepSemantics();
+
+  // tier badge reflects which layer is on screen
+  const badge = document.getElementById('tierBadge');
+  const map = {
+    s1:['Tier 1 &middot; Trainer input','info'],
+    s2:['Tier 2 &middot; SOT synthesis','warn'],
+    s3:['Face-to-face &middot; Sign-off','ok'],
+    s4:['Contested &middot; BOE review','bad']
+  };
+  const [text, cls] = map[screen] || map.s1;
+  badge.innerHTML = text;
+  badge.className = 'pill ' + cls;
+
+  const names = {s1:'Tier 1 trainer input',s2:'Tier 2 SOT synthesis',s3:'Face-to-face sign-off',s4:'Contested and BOE review'};
+  announce('Showing '+(names[screen]||screen));
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.step').forEach(b=>b.onclick=()=>go(b.dataset.screen));
+
+/* ---------------- accessibility layer ---------------- */
+
+/* rail steps: expose current step to assistive tech */
+function syncStepSemantics(){
+  document.querySelectorAll('.step').forEach(b=>{
+    if(b.classList.contains('on')) b.setAttribute('aria-current','step');
+    else b.removeAttribute('aria-current');
+  });
+}
+
+/* rating buttons act as a radio group per domain.
+   Buttons are focusable, arrow-key navigable, and announce selection. */
+document.querySelectorAll('.matrix tbody tr').forEach(row=>{
+  const cell = row.querySelector('.gcell');
+  if(!cell) return;
+  const code = (row.querySelector('.code')||{}).textContent || 'domain';
+  cell.setAttribute('role','radiogroup');
+  cell.setAttribute('aria-label','Rating for '+code);
+
+  const btns = [...cell.querySelectorAll('.gbtn')];
+  btns.forEach(btn=>{
+    const g = btn.dataset.g;
+    const label = g==='x' ? 'Insufficient evidence' : 'Level '+g;
+    btn.setAttribute('role','radio');
+    btn.setAttribute('aria-label',label+' for '+code);
+    btn.setAttribute('aria-checked', btn.classList.contains('on') ? 'true':'false');
+    btn.setAttribute('tabindex', btn.classList.contains('on') ? '0':'-1');
+
+    // keep aria-checked + roving tabindex in sync with the visual state
+    btn.addEventListener('click', ()=>setRating(cell,btn));
+    btn.addEventListener('keydown', e=>{
+      const i = btns.indexOf(btn);
+      let n = -1;
+      if(e.key==='ArrowRight'||e.key==='ArrowDown') n = (i+1)%btns.length;
+      if(e.key==='ArrowLeft' ||e.key==='ArrowUp')   n = (i-1+btns.length)%btns.length;
+      if(e.key===' '||e.key==='Enter'){ e.preventDefault(); setRating(cell,btn); return; }
+      if(n>=0){ e.preventDefault(); setRating(cell,btns[n]); btns[n].focus(); }
+    });
+  });
+});
+function setRating(cell,btn){
+  cell.querySelectorAll('.gbtn').forEach(x=>{
+    x.classList.remove('on');
+    x.setAttribute('aria-checked','false');
+    x.setAttribute('tabindex','-1');
+  });
+  btn.classList.add('on');
+  btn.setAttribute('aria-checked','true');
+  btn.setAttribute('tabindex','0');
+  // mirror into the trailing "anchor applied" pill
+  const row = cell.closest('tr');
+  const pill = row.querySelector('td:last-child .pill');
+  if(pill){
+    const g = btn.dataset.g;
+    const levels = {'1':['Level 1','ok'],'2':['Level 2','ok'],'3':['Level 3','warn'],
+                    '4':['Level 4','bad'],'x':['Insufficient','']};
+    const [label,cls] = levels[g] || ['—',''];
+    pill.textContent = label;
+    pill.className   = 'pill ' + cls;
+  }
+}
+
+/* SOT grade + BOE ruling options are radio groups too */
+function wireRadioGroup(containerSel, itemSel){
+  const group = document.querySelector(containerSel);
+  if(!group) return;
+  group.setAttribute('role','radiogroup');
+  const items = [...group.querySelectorAll(itemSel)];
+  items.forEach(it=>{
+    it.setAttribute('role','radio');
+    it.setAttribute('aria-checked', it.classList.contains('on') ? 'true':'false');
+    it.setAttribute('tabindex', it.classList.contains('on') ? '0':'-1');
+    const sync = ()=>{
+      items.forEach(x=>{
+        x.setAttribute('aria-checked', x.classList.contains('on') ? 'true':'false');
+        x.setAttribute('tabindex', x.classList.contains('on') ? '0':'-1');
+      });
+    };
+    it.addEventListener('click', sync);
+    it.addEventListener('keydown', e=>{
+      const i = items.indexOf(it);
+      let n = -1;
+      if(e.key==='ArrowRight'||e.key==='ArrowDown') n = (i+1)%items.length;
+      if(e.key==='ArrowLeft' ||e.key==='ArrowUp')   n = (i-1+items.length)%items.length;
+      if(e.key===' '||e.key==='Enter'){ e.preventDefault(); it.click(); sync(); return; }
+      if(n>=0){ e.preventDefault(); items[n].click(); items[n].focus(); sync(); }
+    });
+  });
+}
+wireRadioGroup('#sotOpts','.sot-opt');
+wireRadioGroup('#boeOpts','.boe-opt');
+
+/* discussion checklist: real checkbox semantics + keyboard */
+document.querySelectorAll('.chk').forEach(chk=>{
+  const box = chk.querySelector('.box');
+  if(!box) return;
+  const t = (chk.querySelector('.t')||{}).textContent || 'Item';
+  box.setAttribute('role','checkbox');
+  box.setAttribute('tabindex','0');
+  box.setAttribute('aria-label', t.trim());
+  box.setAttribute('aria-checked', box.classList.contains('on') ? 'true':'false');
+  const toggle = ()=>{
+    box.classList.toggle('on');
+    box.setAttribute('aria-checked', box.classList.contains('on') ? 'true':'false');
+  };
+  box.addEventListener('click', e=>{ e.stopPropagation(); toggle(); });
+  box.addEventListener('keydown', e=>{
+    if(e.key===' '||e.key==='Enter'){ e.preventDefault(); toggle(); }
+  });
+});
+
+/* signature pad: reachable and operable from the keyboard */
+(function(){
+  const pad = document.getElementById('sigpad');
+  if(!pad) return;
+  pad.setAttribute('role','button');
+  pad.setAttribute('tabindex','0');
+  pad.setAttribute('aria-label','Apply trainee counter-signature');
+  pad.addEventListener('keydown', e=>{
+    if(e.key===' '||e.key==='Enter'){ e.preventDefault(); signPad(); }
+  });
+})();
+
+/* live region: announce state changes that only exist visually */
+(function(){
+  const live = document.createElement('div');
+  live.id = 'itaLive';
+  live.setAttribute('role','status');
+  live.setAttribute('aria-live','polite');
+  live.style.cssText = 'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;'+
+                       'clip:rect(0 0 0 0);white-space:nowrap;border:0';
+  document.body.appendChild(live);
+})();
+function announce(msg){
+  const live = document.getElementById('itaLive');
+  if(live) live.textContent = msg;
+}
+
+/* ---------------- tier 2: SOT grade selection ---------------- */
+const sotGradeDescriptions = {
+  '1': { sot:'1', final:'pending appeal window', credit:'6.0 months &rarr; Clinical Anaesthesia', decision:'COMPLETED_SATISFACTORY' },
+  '3': { sot:'3', final:'pending appeal window', credit:'6.0 months &rarr; Clinical Anaesthesia', decision:'COMPLETED_SATISFACTORY (with plan)' },
+  '4': { sot:'4', final:'pending appeal window', credit:'withheld pending remediation',         decision:'REMEDIAL_ACTIVE' }
+};
+document.querySelectorAll('#sotOpts .sot-opt').forEach(opt=>{
+  opt.onclick = ()=>{
+    document.querySelectorAll('#sotOpts .sot-opt').forEach(x=>x.classList.remove('on'));
+    opt.classList.add('on');
+    const d = sotGradeDescriptions[opt.dataset.grade];
+    if(!d) return;
+    const rows = document.querySelectorAll('#screen-s2 .ledger-preview .lr');
+    rows.forEach(r=>{
+      const k = r.querySelector('.lk').textContent.trim();
+      const v = r.querySelector('.lv');
+      if(k==='sot_grade')   v.textContent = d.sot;
+      if(k==='final_grade') v.textContent = d.final;
+      if(k==='Rotation credit') v.innerHTML = d.credit;
+    });
+    announce('Summative grade set to '+d.sot+'. Rotation credit: '+(d.credit.replace(/&rarr;/g,'to').replace(/<[^>]+>/g,'')));
+  };
+});
+
+/* ---------------- screen 3: signature ---------------- */
+function signPad(){
+  const pad = document.getElementById('sigpad');
+  pad.classList.add('signed');
+
+  // a deterministic signature stroke, drawn as an inline SVG path
+  pad.innerHTML = `
+    <svg viewBox="0 0 380 132" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M38,92 C58,58 74,44 88,52 C102,60 96,86 108,92 C120,98 132,72 146,58
+               C160,44 172,48 176,66 C180,84 190,94 206,84 C222,74 230,54 246,52
+               C262,50 268,70 280,76 C292,82 304,70 318,64"
+            fill="none" stroke="#047857" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="322" y="112" font-size="10" fill="#737373"
+            font-family="'JetBrains Mono',monospace">K.W.</text>
+    </svg>`;
+  document.getElementById('sigStatus').innerHTML = '<span style="color:var(--em700);font-weight:650">Signed 18 Dec 2026, 15:04</span>';
+  document.getElementById('auditSig').textContent = 'captured';
+  announce('Signature captured for Dr. Kelvin Wong on 18 December 2026.');
+}
+function completeSignOff(){
+  const pad = document.getElementById('sigpad');
+  if(!pad.classList.contains('signed')){
+    signPad(); // capture first, then commit — one click is enough for the demo
+  }
+  const out = document.getElementById('signOutcome');
+  out.className = 'outcome ok';
+  out.innerHTML = `
+    <div class="oh">&#10003; Committed &mdash; rotation credited</div>
+    <div class="ob">
+      Record committed as <span class="mono">COMPLETED_SATISFACTORY</span>.
+      <span class="mono">6.0 months</span> posted to the Accredited Time Ledger as an immutable grant entry
+      (reason: <span class="mono">SATISFACTORY_ITA_COMPLETION</span>). Progression gate re-evaluated.
+      The 14-day appeal window is now open.
+    </div>`;
+  announce('Sign-off recorded. Six months credited to Clinical Anaesthesia. Fourteen day appeal window open.');
+}
+
+/* ---------------- screen 4: BOE ruling ---------------- */
+const boeOutcomes = {
+  uphold:  { decision:'UPHELD',   sot:'3', final:'3', ledger:'GRANT 6.0mo',                reason:'&mdash;',                        cls:'rd' },
+  overturn:{ decision:'OVERTURNED', sot:'3', final:'2', ledger:'GRANT 6.0mo (unconditional)', reason:'SUCCESSFUL_APPEAL_OVERTURN', cls:'ok' },
+  reeval:  { decision:'RE-ASSESS', sot:'3', final:'provisional', ledger:'held &mdash; pending re-assess', reason:'REASSESSMENT_ORDERED',       cls:'am' }
+};
+document.querySelectorAll('#boeOpts .boe-opt').forEach(opt=>{
+  opt.onclick = ()=>{
+    document.querySelectorAll('#boeOpts .boe-opt').forEach(x=>x.classList.remove('on'));
+    opt.classList.add('on');
+    const d = boeOutcomes[opt.dataset.boe];
+    if(!d) return;
+    document.querySelectorAll('#screen-s4 .ledger-preview .lr').forEach(r=>{
+      const k = r.querySelector('.lk').textContent.trim();
+      const v = r.querySelector('.lv');
+      if(k==='Decision')      v.textContent = d.decision;
+      if(k==='sot_grade')     v.textContent = d.sot;
+      if(k==='final_grade')   v.textContent = d.final;
+      if(k==='Ledger entry')  v.innerHTML   = d.ledger;
+      if(k==='Reason code')   v.innerHTML   = d.reason;
+    });
+  };
+});
+function recordBoe(){
+  const picked = document.querySelector('#boeOpts .boe-opt.on');
+  const key = picked ? picked.dataset.boe : 'uphold';
+  const d = boeOutcomes[key];
+  const note = document.querySelector('#screen-s4 textarea');
+  if(note && note.value.trim().length < 10){
+    note.focus();
+    note.style.borderColor = 'var(--rd600)';
+    note.parentElement.style.borderColor = 'var(--rd600)';
+    note.placeholder = 'Panel reasoning is mandatory before the ruling can be recorded.';
+    return;
+  }
+  const box = document.querySelector('#screen-s4 .outcome');
+  box.className = 'outcome ' + (d.cls==='ok' ? 'ok' : d.cls==='am' ? '' : 'rd');
+  box.innerHTML = `
+    <div class="oh">&#10003; Ruling recorded &mdash; ${d.decision}</div>
+    <div class="ob">
+      <span class="mono">sot_grade</span> ${d.sot} retained on the original record;
+      <span class="mono">final_grade</span> set to <span class="mono">${d.final}</span>.
+      Ledger action: ${d.ledger}. The ruling is committed with the BOE actor ID, panel reasoning
+      and a hash-linked audit entry for appeal defensibility.
+    </div>`;
+  announce('Ruling recorded: '+d.decision+'. Final grade '+String(d.final).replace(/<[^>]+>/g,'')+'. Ledger action: '+d.ledger.replace(/&mdash;/g,'-').replace(/<[^>]+>/g,''));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------------- theme ---------------- */
+function toggleTheme(){
+  const dark = document.documentElement.classList.toggle('dark');
+  document.getElementById('themeBtn').innerHTML = dark ? '&#9790;' : '&#9788;';
+  localStorage.setItem('ita-theme', dark?'dark':'light');
+}
+(function initTheme(){
+  const s = localStorage.getItem('ita-theme');
+  if(s==='dark' || (!s && matchMedia('(prefers-color-scheme: dark)').matches)){
+    document.documentElement.classList.add('dark');
+    document.getElementById('themeBtn').innerHTML = '&#9790;';
+  }
+})();
+</script>
+</body>
+</html>
