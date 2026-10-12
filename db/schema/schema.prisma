@@ -503,10 +503,29 @@ model ItaSession {
   status        ItaStatus     @default(PENDING_TRAINER_FEEDBACK)
 
   // SOT Summative Evaluation & Appeals Split (M6)
-  sotGrade        Int? // 1=Exceeds, 2=Often Exceeds, 3=Meets (Pass), 4=Unsatisfactory
+  // sotGrade = the OVERALL assessment: 1=Consistently exceeds, 2=Occasionally exceeds,
+  // 3=Usually meets (PASS), 4=Unsatisfactory. Only 4 is unsatisfactory.
+  sotGrade        Int?
   finalGrade      Int? // Post-appeal authoritative grade evaluated by gates
   sotComments     String?
   learningSummary String?
+
+  // Official HKCA 15-item ITA form (decision I1). The SOT's consolidated grade for each item
+  // is what the trainee signs. Shape: { "<ITEM_CODE>": "1"|"2"|"3"|"4"|"X" } keyed by the 15
+  // codes in domain/ita/itaDomains.ts. X (unable to assess) never counts toward the 4-item rule.
+  itemGradesJson           Json?
+  // Why the SOT's grade differs where trainers' grades spread >= 2 levels. { "<ITEM_CODE>": "reason" }
+  divergenceReasonsJson    Json?
+  // Count of items graded 4, frozen at SOT signing so the audit trail shows what the College
+  // rule saw. Overall is forced to 4 when this is >= 4.
+  unsatisfactoryItemCount  Int?
+  // Required when overall = 4 while unsatisfactoryItemCount < 4 (discretionary unsatisfactory).
+  discretionaryUnsatReason String?
+  // SOT-only brackets on the College form. { "EASE": true, "ADAM-A": true, ... }
+  coursesAttendedJson      Json?
+  formalProjectCompleted   Boolean?
+  // Edition of the form's items and anchors this session was rated against.
+  formVersion              String   @default("HKCA-ITA-15-v1")
 
   // Trainee Reflection & In-Person Sign-Off (H1)
   traineeReflection String?
@@ -544,10 +563,16 @@ model ItaAssessorResponse {
   trainerId    String
   toolId       String
 
-  // Structured Feedback (U1: No auto-prefill, structured text)
-  domainRatingsJson Json // {"1a": 3, "1b": 3, "2a": 4, ...}
-  notableStrength   String?
-  keyAreaForGrowth  String?
+  // Official 15-item form (decision I1; supersedes the U1 two-prompt design). No auto-prefill.
+  // Shape: { "<ITEM_CODE>": { "grade": "1"|"2"|"3"|"4"|"X", "example": "..." } } for all 15
+  // codes in domain/ita/itaDomains.ts. An example is required for grades 1 and 4.
+  domainRatingsJson  Json
+  // "Comments from Specialist Assessors" - optional, one box for the whole form.
+  specialistComments String?
+  // SHA-256 of the canonical submitted record, computed at submit. A sealed response is never
+  // edited; a later correction is a separate annotation in the audit log (H7).
+  recordHash         String?
+  formVersion        String  @default("HKCA-ITA-15-v1")
 
   submittedAt DateTime @default(now())
 
@@ -555,7 +580,8 @@ model ItaAssessorResponse {
   trainer    User           @relation("TrainerAssessor", fields: [trainerId], references: [id], onDelete: Restrict)
   tool       AssessmentTool @relation(fields: [toolId], references: [id], onDelete: Restrict)
 
-  @@index([itaSessionId, trainerId])
+  // One sealed response per trainer per ITA session.
+  @@unique([itaSessionId, trainerId])
 }
 
 model ItaAppeal {

@@ -18,25 +18,41 @@ export interface TrainerItemResponse {
 }
 export type TrainerRatings = Record<string, TrainerItemResponse>;
 
-const VALID: ReadonlyArray<ItaGrade> = [1, 2, 3, 4, "X"];
+/** Grades whose rating must be backed by a concrete example: praise (1) and unsatisfactory (4). */
+export const ITA_EXAMPLE_REQUIRED_GRADES: ReadonlyArray<ItaGrade> = [1, 4];
+export const ITA_MIN_EXAMPLE_CHARS = 10;
+
+/**
+ * Persisted JSON stores grades as strings ("1".."4","X"); the UI and engine use numbers and "X".
+ * Accept either so the same rules run on both. Returns null for anything that is not a valid grade.
+ */
+export function normaliseGrade(raw: unknown): ItaGrade | null {
+  if (raw === "X" || raw === "x") return "X";
+  const n = typeof raw === "string" ? Number(raw) : raw;
+  return n === 1 || n === 2 || n === 3 || n === 4 ? n : null;
+}
+
 
 export class ItaOverallAssessment {
   /**
    * Validates one trainer's Tier-1 submission.
    * - All 15 items are mandatory on the College form (asterisked); "X" counts as an answer.
-   * - An example is mandatory for grade 4 (unsatisfactory must be defensible on appeal).
-   * - Examples for grades 1 and 2 are encouraged, never required.
+   * - An example is mandatory for grade 4 (unsatisfactory must be defensible on appeal) and for
+   *   grade 1 (praise must be specific too). Grade 2 is encouraged but not required; 3 and X optional.
    */
   public static validateTrainerSubmission(ratings: TrainerRatings): { ok: boolean; missing: string[]; needsExample: string[] } {
     const missing: string[] = [];
     const needsExample: string[] = [];
     for (const d of ITA_DOMAINS) {
       const r = ratings[d.code];
-      if (!r || r.grade === null || r.grade === undefined || !VALID.includes(r.grade)) {
+      const g = r ? normaliseGrade(r.grade) : null;
+      if (g === null) {
         missing.push(d.code);
         continue;
       }
-      if (r.grade === 4 && !(r.example && r.example.trim().length >= 10)) needsExample.push(d.code);
+      if (ITA_EXAMPLE_REQUIRED_GRADES.includes(g) && !(r.example && r.example.trim().length >= ITA_MIN_EXAMPLE_CHARS)) {
+        needsExample.push(d.code);
+      }
     }
     return { ok: missing.length === 0 && needsExample.length === 0, missing, needsExample };
   }
@@ -46,8 +62,8 @@ export class ItaOverallAssessment {
     const counts: Record<string, number> = { "1": 0, "2": 0, "3": 0, "4": 0, X: 0 };
     const numeric: number[] = [];
     for (const t of all) {
-      const g = t[code]?.grade;
-      if (g === null || g === undefined) continue;
+      const g = normaliseGrade(t[code]?.grade);
+      if (g === null) continue;
       counts[String(g)]++;
       if (g !== "X") numeric.push(g);
     }
@@ -56,8 +72,9 @@ export class ItaOverallAssessment {
   }
 
   /** Number of the 15 SOT-consolidated items graded 4. */
-  public static countUnsatisfactoryItems(sotItems: Record<string, ItaGrade | null>): number {
-    return ITA_DOMAINS.filter((d) => sotItems[d.code] === 4).length;
+  public static countUnsatisfactoryItems(sotItems: Record<string, unknown>): number {
+    // Only a grade of 4 counts. "X" (unable to assess) never does.
+    return ITA_DOMAINS.filter((d) => normaliseGrade(sotItems[d.code]) === 4).length;
   }
 
   /**
@@ -65,7 +82,7 @@ export class ItaOverallAssessment {
    * - >= 4 items graded 4  → overall MUST be 4 (locked).
    * - below the threshold  → SOT free to choose 1–4 ("but not limited to"); a 4 below threshold needs reasoning.
    */
-  public static overallConstraint(sotItems: Record<string, ItaGrade | null>): {
+  public static overallConstraint(sotItems: Record<string, unknown>): {
     unsatisfactoryItems: number;
     ruleTriggered: boolean;
     allowedOverall: ReadonlyArray<1 | 2 | 3 | 4>;

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
 import { AccreditedTimeLedgerEngine } from "../../domain/ledger/accreditedTime.ts";
 import { ItaStateMachine } from "../../domain/ita/stateMachine.ts";
 import { ItaOverallAssessment } from "../../domain/ita/overallAssessment.ts";
@@ -182,6 +183,16 @@ assert.equal(ItaOverallAssessment.validateTrainerSubmission(full("X")).missing.l
 assert.equal(ItaOverallAssessment.validateTrainerSubmission({}).missing.length, 15, "all 15 mandatory");
 const needEx = ItaOverallAssessment.validateTrainerSubmission({ ...full(3), TECHNICAL_SKILLS: { grade: 4 } });
 assert.deepEqual(needEx.needsExample, ["TECHNICAL_SKILLS"], "grade 4 requires an example");
+const needEx1 = ItaOverallAssessment.validateTrainerSubmission({ ...full(3), CRISIS_MANAGEMENT: { grade: 1 } });
+assert.deepEqual(needEx1.needsExample, ["CRISIS_MANAGEMENT"], "grade 1 (praise) requires an example too");
+assert.equal(
+  ItaOverallAssessment.validateTrainerSubmission({ ...full(3), CRISIS_MANAGEMENT: { grade: 2 } }).ok, true,
+  "grade 2 example is encouraged, not required"
+);
+assert.equal(
+  ItaOverallAssessment.validateTrainerSubmission({ ...full(3), CRISIS_MANAGEMENT: { grade: "1", example: "Led airway rescue calmly." } as any }).ok, true,
+  "persisted string grades are accepted"
+);
 assert.equal(
   ItaOverallAssessment.validateTrainerSubmission({ ...full(3), TECHNICAL_SKILLS: { grade: 4, example: "Needle visibility lost twice during block." } }).ok,
   true
@@ -199,12 +210,44 @@ assert.equal(ItaOverallAssessment.overallConstraint(sot(3) as any).ruleTriggered
 const locked = ItaOverallAssessment.overallConstraint(sot(4) as any);
 assert.equal(locked.ruleTriggered, true, ">= 4 items graded 4 -> rule triggered");
 assert.deepEqual([...locked.allowedOverall], [4], "overall locked to 4 when rule triggered");
+// X never counts toward the 4-item rule (trainer could not assess), even if 4 items are X
+const withX = Object.fromEntries(ITA_DOMAINS.map((d, i) => [d.code, i < 3 ? 4 : i < 8 ? "X" : 3]));
+assert.equal(ItaOverallAssessment.countUnsatisfactoryItems(withX), 3, "X items are not counted as unsatisfactory");
+assert.equal(ItaOverallAssessment.overallConstraint(withX).ruleTriggered, false, "3 fours + 5 X does not trigger the rule");
+// persisted JSON uses string grades
+assert.equal(ItaOverallAssessment.countUnsatisfactoryItems(Object.fromEntries(ITA_DOMAINS.map((d, i) => [d.code, i < 4 ? "4" : "3"]))), 4);
 assert.equal(ItaOverallAssessment.isOverallUnsatisfactory(3), false);
 assert.equal(ItaOverallAssessment.isOverallUnsatisfactory(4), true);
 
 console.log("  ✓ 15 official items, 9 + 6 grouping, mandatory-all validation");
 console.log("  ✓ Grade 3 = pass; only 4 is unsatisfactory (state machine corrected)");
 console.log("  ✓ Divergence (spread >= 2) and >= 4-item overall rule verified\n");
+
+// -----------------------------------------------------------------------------
+// Test Group 2C: synthetic seed rows obey the same rules the app will enforce
+// -----------------------------------------------------------------------------
+console.log("Running Test Group 2C: ITA seed data vs domain rules...");
+{
+  // Repo layout: db/seeds/synthetic_seed.json. Vault scaffold layout: ./synthetic_seed.json.
+  const repoSeed = new URL("../../db/seeds/synthetic_seed.json", import.meta.url);
+  const seed = JSON.parse(readFileSync(existsSync(repoSeed) ? repoSeed : new URL("../../synthetic_seed.json", import.meta.url), "utf-8"));
+  for (const r of seed.ItaAssessorResponse) {
+    const v = ItaOverallAssessment.validateTrainerSubmission(r.domainRatingsJson);
+    assert.equal(v.ok, true, `response ${r.id} violates the trainer-form rules: ${JSON.stringify(v)}`);
+  }
+  let graded = 0;
+  for (const s of seed.ItaSession.filter((x: any) => x.itemGradesJson)) {
+    graded++;
+    const c = ItaOverallAssessment.overallConstraint(s.itemGradesJson);
+    assert.equal(s.unsatisfactoryItemCount, c.unsatisfactoryItems, `session ${s.id}: stored count matches items`);
+    assert.ok(c.allowedOverall.includes(s.sotGrade), `session ${s.id}: overall ${s.sotGrade} allowed by the >=4 rule`);
+    if (s.sotGrade === 4 && !c.ruleTriggered) assert.ok(s.discretionaryUnsatReason, `session ${s.id}: discretionary 4 has a reason`);
+  }
+  assert.ok(graded > 0, "seed has SOT-graded sessions");
+}
+console.log("  ✓ All seeded trainer responses pass 15-item validation (examples on every 1 and 4)");
+console.log("  ✓ Seeded SOT sessions obey the >= 4-item rule and carry a reason for any discretionary 4");
+console.log("  ✓ X items never counted toward the 4-item rule\n");
 
 // -----------------------------------------------------------------------------
 // Test Group 3: Milestone Progression Gates (BAT, HAT, Exit)

@@ -942,7 +942,7 @@ These entities were found in the legacy schema and are required for MVP workflow
 
 | Entity | Why needed | Source evidence |
 |---|---|---|
-| `ita_assessor_responses` | SOT collates per-trainer feedback before synthesis. Legacy models this as `atp_ita1` (17,757 rows) under `atp_mita`. | Legacy `atp_mita` → `atp_ita1` → `atp_ita_assessor` |
+| `ita_assessor_responses` | SOT collates per-trainer feedback before synthesis. Built (migration `1_ita_15_item_form`): per-item `{grade, example}` for the College's 15 items, `specialistComments`, sealed `recordHash`, unique per trainer per session; see decision I1. Legacy models this as `atp_ita1` (17,757 rows) under `atp_mita`. | Legacy `atp_mita` → `atp_ita1` → `atp_ita_assessor` |
 | `ita_assessors` | Tracks trainer invitations + response state per ITA session | Legacy `atp_ita_assessor` (17,545 rows) |
 | `msf_sessions` | MSF session header (one per BAT/HAT/PFY completion) | Legacy `atp_msfs` |
 | `msf_responses` | Individual rater questionnaire responses | Legacy `atp_msf` (q1–q20 + 4 free-text domains) |

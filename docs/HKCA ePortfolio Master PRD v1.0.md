@@ -1,8 +1,8 @@
 ---
 type: prd
 project: "[[HKCA Portfolio Revamp]]"
-version: "1.0.0"
-date: 2026-10-01
+version: "1.1.0"
+date: 2026-10-06
 status: draft_for_review
 stakeholders:
   - "Dr. Albert Chan (Chief of Service / Project Lead)"
@@ -28,7 +28,7 @@ The Hong Kong College of Anaesthesiologists (HKCA) currently relies on a legacy 
 Deliver a state-of-the-art, role-aware, mobile-first web application designed for operating theatre clinicians. The platform tracks anaesthesia trainees across a 6-year continuum:
 $$\text{Basic Anaesthesia Training (BAT, 24m)} \longrightarrow \text{Higher Anaesthesia Training (HAT, 24m)} \longrightarrow \text{Provisional Fellowship Year (PFY, 12m)} \longrightarrow \text{FHKCA / FHKAM}$$
 
-The platform combines an **executive supervisor triage console** (Direction B — Stripe Executive design language) with an **offline-capable Progressive Web Application (PWA) logbook**, backed by an **extensible, schema-driven curriculum engine**.
+The platform combines an **executive supervisor triage console** (featuring a high-density **Linear Precision** tabular roster for multi-trainee overview transitioning into **Stripe Executive** cards for individual trainee drill-downs) with an **offline-capable Progressive Web Application (PWA) logbook**, backed by an **extensible, schema-driven curriculum engine**. Design iterations follow the anti-slop, component-driven **Claude Design methodology** (referencing curated systems from 21st.dev, Land-book, and Linear).
 
 ---
 
@@ -100,13 +100,14 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 * **2-Tier ITA Engine:** Private trainer input matrix $\rightarrow$ SOT summative synthesis $\rightarrow$ Trainee in-person sign-off.
 * **Double-Entry Accredited Time Ledger:** BOE-governed credit allocations and amendments.
 * **Offline-First PWA Logbook:** Fast mobile data entry with automated curriculum classification and 2-year retrospective locks.
-* **Executive SOT Console:** Direction B (Stripe Executive) high-density multi-trainee status triage.
-* **External WBA Asynchronous Sync:** Integration with HKAM iWBA API.
+* **Executive SOT Console:** High-density **Linear Precision** tabular data grid (micro-progress meters, rotation pills, hairline rows) for cohort triage, paired with **Stripe Executive** cards for individual summative assessments.
+* **External WBA Asynchronous Sync:** Ingestion integration with HKAM iWBA API (reflecting JCIMED specifications and quarantine conflict handling).
 
-### 4.2 Explicit Non-Goals / Deferred to Phase 2
+* **4.2 Explicit Non-Goals / Deferred to Phase 2
 * **Intensive Care Medicine (ICM) Specialty Module:** Standalone ICM tutorials, QR-code check-ins, and dedicated ICM assessments are deferred to Phase 2 (schemas reserved).
 * **Pain Medicine Module:** Specialized chronic/acute pain logbooks and pain ITA modules deferred to Phase 2.
 * **Automated Project Reviewer Matching Algorithm:** Handled via admin console assignment in MVP.
+* **Annual Competence Review Committee (ACRC / ARCP Engine):** An automated College-wide annual panel review system that generates a consolidated cohort docket: (1) trainees meeting all stage criteria for routine progression, and (2) trainees flagged for panel review due to performance flags, stalled velocity, or open appeals. (Architecture and data models reserved in Phase 1; dedicated committee scoring UI in Phase 2).
 
 ---
 
@@ -124,13 +125,16 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 ### Feature 2: 2-Tier In-Training Assessment (ITA) Pipeline (P0)
 * **2.1 Tier 1: Private Trainer Input Layer:**
   * SOT assigns supervising trainers for the 6-month cycle.
-  * Trainers access a high-density **"Theatre List" Batch Matrix** rating trainees across dynamic domain rubrics (1–4, X) with behavioral tooltip anchors.
-  * Free-text is focused into structured fields: *"Notable Strength"* and *"Key Area for Growth"*.
+  * Each trainer completes the College's **15-item In-Training Assessment form** (9 Clinical Performance + 6 Communication, Teamwork and Interpersonal items; all mandatory), rating each item X/1/2/3/4 against the expectation for the trainee's level and year, with the item's behavioural anchor one tap away. Prototype: `HKCA_ITA_Trainer_Form.html`.
+  * An **example** is required for any item rated 1 or 4 (praise must be as specific as concern) and recommended for 2. One optional *"Comments from Specialist Assessors"* box replaces the earlier "Notable Strength / Key Area for Growth" prompts (decision I1).
+  * A multi-trainee "Theatre List" batch view (U1) remains a later layer on top of this form.
   * No auto-prefill from previous cycles (eliminates rubber-stamping).
   * Trainees are strictly walled off from viewing individual trainer submissions.
 * **2.2 Tier 2: SOT Summative Synthesis:**
-  * SOT console visualizes score distributions (counts/percentages) and aggregated trainer comments.
-  * SOT enters the official summative rating (`sot_grade`) and reviews learning plan achievements.
+  * SOT console shows, for each of the 15 items, every trainer's grade (spread, not average) and their examples.
+  * SOT records the consolidated grade for each of the 15 items (blank by default, no suggested value) and must record reasons wherever trainers differ by 2 or more levels.
+  * SOT sets the **overall assessment** (`sot_grade`, 1–4). **College rule:** overall is unsatisfactory if, but not limited to, 4 or more of the 15 items are unsatisfactory; the system locks the overall to 4 at that point, and requires reasons for a discretionary 4 below it. Items graded X (unable to assess) never count toward the threshold.
+  * SOT-only fields: compulsory courses (EASE, ADAM-A, EMAC, ECHO-A, USRA-E), formal project completed, and SOT comments/suggestions.
 * **2.3 In-Person Sign-Off & Contested Workflow:**
   * Trainee reviews and signs during a mandatory face-to-face feedback meeting.
   * If a trainee disputes the assessment, the record transitions to **`contested`**, the trainee submits an objection statement, and the grade/credit is held in **`pending_boe_review`** until formal Board adjudication.
@@ -160,16 +164,24 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 * **4.1 Supported Modalities:** Mini-CEX, DOPS, CBD, ALMAT, EPA, and MSF.
 * **4.2 Direct Single Sign-On (SSO):** Integration via HKAM OAuth2 / OpenID Connect (OIDC).
 * **4.3 Deep-Link Initiation:** One-click launch from the trainee dashboard into iWBA pre-populating trainee HKAM ID, supervisor ID, and curriculum descriptor code.
-* **4.4 Asynchronous Ingestion Worker:**
-  * Decoupled delta-polling daemon querying `/api/v1/eportfolio/summary` using sliding 90-day time slices.
+* **4.4 Asynchronous Ingestion Worker (JCIMED Spec Aligned):**
+  * Decoupled delta-polling daemon querying `/api/v1/eportfolio/summary` using sliding 90-day time slices (reflecting the 2026-10-06 JCIMED technical integration clarification).
   * Idempotent upserts keyed on `(jcimed_wba_id, assessment_type)`.
   * Point-in-time immutable snapshot of assessor metadata (`name`, `rank`, `hospital`).
   * Discrepant records divert to a `wba_sync_conflicts` quarantine table.
+  * Webhook notification listener support for real-time assessment completion callbacks where supported by JCIMED.
 
 ### Feature 5: SOT Executive Triage Console (P0)
-* **5.1 Visual Standard:** Direction B — Stripe Executive (institutional navy, calm slate borders, high data density, zero decorative clutter).
+* **5.1 Visual & UX Standard:**
+  * **Cohort Triage & Roster (Linear Precision):** Hairline border table layout, monospaced tabular figures (`JetBrains Mono`), micro-progress meters for WBA/VOP targets, RAG status pills, rotation origin indicators (`In department`, `Rotated in`, `Rotated out`), and a non-disruptive slide-in inspection drawer.
+  * **Individual Trainee Drill-Down (Stripe Executive):** Structured card hierarchy, calm slate borders, and institutional navy accents for deep-dive summative ITA reviews and remedial plans.
+  * **Design Integrity:** Follows the 6-step Claude Design anti-slop process (surface-first composition, zero generic AI cards/gradients, touch targets $\ge 44\text{px}$).
 * **5.2 Multi-Trainee Roster:** Instant triage into *Satisfactory*, *Under Observation / Remedial*, and *Action Required*.
 * **5.3 Deadline Escalation Ladder:** Automated routing for pending sign-offs: SOT $\rightarrow$ Assistant SOT $\rightarrow$ Cluster SOT $\rightarrow$ BOE / Cluster Director. Self-service delegation for SOT planned leave.
+* **5.4 AI-Assisted SOT Synthesis & Progression Drafter:**
+  * Synthesises trainee quarterly logbook entries, WBA outcomes, and supervisor feedback into an editable draft ITA summary.
+  * **Draft-Only Authority Bound:** Architecture physically prohibits autonomous submission, accreditation, or record locking. System enforces a strict hard-stop requiring authenticated SOT review and click-to-commit.
+  * **Governance SLA:** Bound by project [[Model Contract — SOT Review and Progression Assistant]].
 
 ### Feature 6: Formal Projects, Exams & College Gatekeeping (P0)
 * **6.1 Formal Projects (HKCA-E03):** 2-stage workflow (Protocol $\rightarrow$ Manuscript). Double-blind review interface with 30-day automated timer and one-click administrator reassignment.
@@ -188,6 +200,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 | **Security & Privacy** | PDPO & Medical Data Sovereignty | Zero plaintext HKIDs stored; patient identifiers anonymized (synthetic `case_ref`); database-level append-only role for audit logs. |
 | **Auditability** | Cryptographic Hash Chaining | Tamper-evident ledger using `sha256(prev_hash + row_data)`. |
 | **Retention** | Lifecycle Schedule | Training records kept permanently; audit logs hot for 24m / cold for 7yr; abandoned drafts purged at 180d. |
+| **AI Governance & Safety** | Model Contract & Prompt Architecture | All AI services operate strictly under `draft_only` authority with named clinical reviewers; prompts enforce cache breakpoint separation (<25k dynamic tokens); empirical task eval concordance $\ge 90\%$. See [[Model Contract — SOT Review and Progression Assistant]]. |
 
 ---
 
@@ -214,4 +227,5 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 | **§5.4 (WBA & iWBA)** | E2, Albert Directive | OAuth2 SSO, Background Polling Daemon |
 | **§5.5 (SOT Console)** | H2, Direction B | High-Density Triage Board, Escalation Ladder |
 | **§6 (NFRs & Security)** | M4, M5, H6, H7, E1, E4 | Append-Only Hashes, Base Table Queries, `ON DELETE RESTRICT` |
+| **§5.5 & §6 (AI Safety)** | Albert Directive / Model Contract | `draft_only` Hard-Stop, Pinned Snapshot, Cache Breakpoint, [[Model Contract — SOT Review and Progression Assistant]] |
 | **§7 (Migration)** | E5, Rollover Plan | Scoped Active Migration, CI Parity Suite |

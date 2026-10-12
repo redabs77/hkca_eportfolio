@@ -203,7 +203,7 @@ Working decisions made for items U1–U5 to ensure clinical feasibility, mobile 
 **Decided:**
 - **No Auto-Prefill from Previous Cycle:** Explicitly rejected to eliminate "rubber-stamping" and complacency. Assessors must actively select ratings each cycle.
 - **Batch Matrix Rating Screen ("Theatre List" Mode):** Approved in principle. A high-density interactive prototype will be constructed first for user testing before implementation.
-- **Structured Constructive Feedback:** Free text replaced with two focused prompts: *"Notable Strength"* and *"Key Area for Growth / Development"*.
+- **Structured Constructive Feedback:** ~~Free text replaced with two focused prompts: *"Notable Strength"* and *"Key Area for Growth / Development"*.~~ **Superseded by I1 (2026-10-12):** the College's own form uses a per-item example field plus one "Comments from Specialist Assessors" box.
 - **Clinical Behavioral Anchors:** Mandatory integration of contextual tooltips and pop-up descriptors defining rating criteria (e.g. operational difference between *Usually Meets* vs *Occasionally Exceeds*) across all clinical rubrics.
 
 ---
@@ -311,3 +311,31 @@ Working decisions made for items E1–E6 to ensure platform resilience, integrat
 - If a reviewer becomes unresponsive, the system flags the file as `overdue_unresponsive` and alerts the **Formal Project Officer's console**.
 - Provides actionable one-click management: **"Reassign to Alternate Reviewer"** (revoking the previous reviewer's token) or **"Grant Extension"**.
 - Final reminder intervals and threshold dates will be calibrated to the Formal Project Officer's official guidance during implementation.
+
+---
+
+## I1 — Official 15-item ITA form (amends U1; corrects grade semantics)
+
+**Date:** 2026-10-12 · **Source:** College form `Training-ITA-form.doc` (the form trainers already use) · **Status:** prototype, domain code and schema migration done (migration `1_ita_15_item_form`, verified in PGlite; 14/14 parity). Confirmed by Albert 2026-10-12: X excluded from the 4-item rule; praise needs examples too.
+
+**Decided:**
+- **The ITA is the College's 15 feedback items**, in two groups: *Clinical Performance* (9: patient assessment, clinical management, technical skills, knowledge/learning, time management, crisis management, leadership, vigilance, insightfulness) and *Communication, Teamwork and Interpersonal skills* (6: communication with patients, with colleagues, integrity, teamwork, respects patient's right, professional behaviour). All 15 are mandatory (`*`). The earlier 7-domain placeholder was invented and is retired. Catalogue + anchors: `domain/ita/itaDomains.ts`.
+- **Scale:** `1` consistently exceeds · `2` occasionally exceeds · `3` usually meets · `4` unsatisfactory · `X` unable to assess. Each item is rated **against the expectation for the trainee's level and year**, not against other trainees.
+- **Bug found and fixed:** the Sprint 1 state machine treated grade `>= 3` as unsatisfactory. Grade 3 is a **pass**; only **4** is unsatisfactory. Fixed in `domain/ita/stateMachine.ts`; consecutive-failure tests now use grade 4. Prototype colour for 3 changed from amber to neutral so it no longer reads as a warning.
+- **Tier 1 (trainer form, `HKCA_ITA_Trainer_Form.html`):** one rating per item, no defaults, no bulk "set all". Example field per item: **required for 1 and 4** (praise must be as specific as concern), recommended for 2, optional for 3 and X. Behavioural anchor under a "What this covers" toggle per item (plus show-all per group). One optional "Comments from Specialist Assessors" box. Draft autosaves on the device; submit is sealed with a SHA-256 of the record. Trainer sees no overall result and never sees other trainers' forms.
+- **Tier 2 (SOT synthesis):** the SOT records the grade for **each of the 15 items** (this is the form the trainee signs) plus the **overall assessment (1–4)**. Spread is shown, not an average. Where trainers differ by **2 or more levels** (X excluded) the SOT must record why. In the product every SOT grade starts blank — no median or suggestion — to keep U1's no-rubber-stamping intent.
+- **College overall rule, enforced:** overall is unsatisfactory if, *but not limited to*, **4 or more of the 15 SOT items are 4**. At 4+ items the overall is locked to 4. Below 4, the SOT may still award 4 but must give reasons. The rule counts the **SOT's consolidated items**, not any one trainer's ratings.
+- **SOT-only fields on the form:** compulsory courses attended (EASE, ADAM-A, EMAC, ECHO-A, USRA-E), formal project completed, and Supervisor of Training's comments/suggestions. The trainee adds their own comments/suggestions at the face-to-face.
+- **Trainee sees:** overall assessment, the 15 item grades, SOT comments. Never an individual trainer's form or examples.
+
+**Schema change applied as migration `db/migrations/1_ita_15_item_form/` (`0_init` untouched):**
+- `ItaAssessorResponse.domainRatingsJson` keeps its column type; shape is now `{ "<ITEM_CODE>": { "grade": "1|2|3|4|X", "example": "…" } }` for all 15 codes in `itaDomains.ts`.
+- `notableStrength` / `keyAreaForGrowth` dropped, after being copied into new `specialistComments` (backfill verified on old-shape rows). Destructive, acceptable only because no production data exists yet.
+- New on `ItaAssessorResponse`: `recordHash` (SHA-256 of the sealed record), `formVersion`, and a **unique (`itaSessionId`, `trainerId`)** — one sealed response per trainer per session.
+- New on `ItaSession`: `itemGradesJson` (SOT's 15 consolidated grades), `divergenceReasonsJson`, `unsatisfactoryItemCount` (frozen at signing), `discretionaryUnsatReason`, `coursesAttendedJson`, `formalProjectCompleted`, `formVersion`. `sotGrade` remains the overall 1–4.
+- Persisted grades are strings (`"1"`–`"4"`, `"X"`); `normaliseGrade()` in the domain layer accepts either form.
+- Seed generator and `db/seeds/synthetic_seed.json` rebuilt in the new shape. A seed test checks every response and every SOT session against the same domain rules the app will enforce. One synthetic REMEDIAL session was corrected from overall 3 to a discretionary 4 (a remedial plan implies unsatisfactory).
+
+**Confirmed (Albert, 2026-10-12):** `X` items never count toward the 4-item rule — a trainer who did not see the competency (for example no crisis occurred) cannot comment on it.
+
+**Still to confirm with the College:** whether the overall 1/2/3 split is recorded anywhere beyond the form.

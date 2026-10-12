@@ -1120,7 +1120,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. Jasmine Ho: PFY 3-domain plan on track",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": true,
+        "ECHO-A": true,
+        "USRA-E": true
+      },
+      "formalProjectCompleted": true
     },
     {
       "id": "7ce5c793-db8d-5713-84a3-b78493008af0",
@@ -1135,7 +1163,35 @@
       "finalGrade": null,
       "sotComments": "SOT review notes for Dr. Sarah Lau: HAT-1, Contested Jul-Dec 2026 ITA, pending BOE review",
       "isContested": true,
-      "contestedStatement": "Dispute regarding clinical autonomy opportunities during elective lists."
+      "contestedStatement": "Dispute regarding clinical autonomy opportunities during elective lists.",
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "3",
+        "CLINICAL_MANAGEMENT": "4",
+        "TECHNICAL_SKILLS": "4",
+        "KNOWLEDGE_LEARNING": "3",
+        "TIME_MANAGEMENT": "4",
+        "CRISIS_MANAGEMENT": "3",
+        "LEADERSHIP": "3",
+        "VIGILANCE": "3",
+        "INSIGHTFULNESS": "4",
+        "COMM_PATIENTS": "3",
+        "COMM_COLLEAGUES": "3",
+        "INTEGRITY": "3",
+        "TEAMWORK": "3",
+        "RESPECTS_PATIENT_RIGHTS": "3",
+        "PROFESSIONAL_BEHAVIOUR": "3"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 4,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": true,
+        "ECHO-A": true,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "671cccbe-ac37-570c-88ba-b6ef67f4f345",
@@ -1150,7 +1206,35 @@
       "finalGrade": 4,
       "sotComments": "SOT review notes for Dr. Marcus Yip: BAT-2, 2 consecutive unsat ITAs, BOE escalation",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "3",
+        "CLINICAL_MANAGEMENT": "4",
+        "TECHNICAL_SKILLS": "4",
+        "KNOWLEDGE_LEARNING": "3",
+        "TIME_MANAGEMENT": "4",
+        "CRISIS_MANAGEMENT": "3",
+        "LEADERSHIP": "3",
+        "VIGILANCE": "3",
+        "INSIGHTFULNESS": "4",
+        "COMM_PATIENTS": "3",
+        "COMM_COLLEAGUES": "3",
+        "INTEGRITY": "3",
+        "TEAMWORK": "3",
+        "RESPECTS_PATIENT_RIGHTS": "3",
+        "PROFESSIONAL_BEHAVIOUR": "3"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 4,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": false,
+        "ECHO-A": false,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "071b72a5-7c2a-5cd5-ab81-5e046f379a27",
@@ -1161,11 +1245,39 @@
       "cycleEnd": "2026-12-31T23:59:59Z",
       "trainingStage": "HAT",
       "status": "SOT_SYNTHESIS",
-      "sotGrade": 3,
+      "sotGrade": 4,
       "finalGrade": null,
       "sotComments": "SOT review notes for Dr. Priya Nair: HAT-2, Active PIP reassessment due 15 Nov",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "3",
+        "CLINICAL_MANAGEMENT": "3",
+        "TECHNICAL_SKILLS": "4",
+        "KNOWLEDGE_LEARNING": "3",
+        "TIME_MANAGEMENT": "3",
+        "CRISIS_MANAGEMENT": "4",
+        "LEADERSHIP": "3",
+        "VIGILANCE": "3",
+        "INSIGHTFULNESS": "3",
+        "COMM_PATIENTS": "3",
+        "COMM_COLLEAGUES": "3",
+        "INTEGRITY": "3",
+        "TEAMWORK": "3",
+        "RESPECTS_PATIENT_RIGHTS": "3",
+        "PROFESSIONAL_BEHAVIOUR": "3"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 2,
+      "discretionaryUnsatReason": "Fewer than 4 items graded 4, but the pattern on technical skills and crisis management is unsafe without a structured plan.",
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": true,
+        "ECHO-A": true,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "4a973452-ae5e-533b-8955-a7f3089c7c15",
@@ -1180,7 +1292,35 @@
       "finalGrade": null,
       "sotComments": "SOT review notes for Dr. Felix Tam: BAT-3, Formative warning flag M2",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "3",
+        "CLINICAL_MANAGEMENT": "3",
+        "TECHNICAL_SKILLS": "3",
+        "KNOWLEDGE_LEARNING": "3",
+        "TIME_MANAGEMENT": "4",
+        "CRISIS_MANAGEMENT": "3",
+        "LEADERSHIP": "3",
+        "VIGILANCE": "3",
+        "INSIGHTFULNESS": "3",
+        "COMM_PATIENTS": "3",
+        "COMM_COLLEAGUES": "3",
+        "INTEGRITY": "3",
+        "TEAMWORK": "3",
+        "RESPECTS_PATIENT_RIGHTS": "3",
+        "PROFESSIONAL_BEHAVIOUR": "3"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 1,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": false,
+        "ECHO-A": false,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "8891fca7-5a1e-57a7-aea0-bde9e1620498",
@@ -1195,7 +1335,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. Chloe Cheung: BAT-1, On track",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": false,
+        "ECHO-A": false,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "fa9124f6-9107-5ccd-99f5-2f6437f030b0",
@@ -1210,7 +1378,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. David Lam: BAT-2, On track",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": false,
+        "ECHO-A": false,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "427a0194-8966-5010-ad3f-c2a33647ca51",
@@ -1225,7 +1421,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. Elena Tsang: HAT-2, Final Exam passed",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": true,
+        "ECHO-A": true,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "05827d2e-6855-5417-8296-fed5c167da04",
@@ -1240,7 +1464,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. Gordon Shum: HAT-1, ICU completed",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": true,
+        "ECHO-A": true,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "8da1a2e4-3826-508e-a8a7-3903349e3923",
@@ -1255,7 +1507,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. Hannah Koo: BAT-1, High VOP velocity",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": false,
+        "ECHO-A": false,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "9c39723d-23a7-517a-bb75-80bd10c781c1",
@@ -1270,7 +1550,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. Ian Chow: BAT-2, Preparing for Intermediate",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": false,
+        "ECHO-A": false,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "e7d4f097-0d2e-5368-8292-95d6d7cac8de",
@@ -1285,7 +1593,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. Karen Mak: HAT-1, On track",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": true,
+        "ECHO-A": true,
+        "USRA-E": false
+      },
+      "formalProjectCompleted": false
     },
     {
       "id": "d97490a1-2932-5054-a08e-717805de472b",
@@ -1300,7 +1636,35 @@
       "finalGrade": 2,
       "sotComments": "SOT review notes for Dr. Leo Fung: PFY, Exit assessment candidate",
       "isContested": false,
-      "contestedStatement": null
+      "contestedStatement": null,
+      "itemGradesJson": {
+        "PATIENT_ASSESSMENT": "2",
+        "CLINICAL_MANAGEMENT": "2",
+        "TECHNICAL_SKILLS": "2",
+        "KNOWLEDGE_LEARNING": "2",
+        "TIME_MANAGEMENT": "2",
+        "CRISIS_MANAGEMENT": "2",
+        "LEADERSHIP": "2",
+        "VIGILANCE": "2",
+        "INSIGHTFULNESS": "2",
+        "COMM_PATIENTS": "1",
+        "COMM_COLLEAGUES": "2",
+        "INTEGRITY": "1",
+        "TEAMWORK": "2",
+        "RESPECTS_PATIENT_RIGHTS": "2",
+        "PROFESSIONAL_BEHAVIOUR": "2"
+      },
+      "divergenceReasonsJson": {},
+      "unsatisfactoryItemCount": 0,
+      "discretionaryUnsatReason": null,
+      "coursesAttendedJson": {
+        "EASE": true,
+        "ADAM-A": true,
+        "EMAC": true,
+        "ECHO-A": true,
+        "USRA-E": true
+      },
+      "formalProjectCompleted": true
     }
   ],
   "ItaAssessorResponse": [
@@ -1310,13 +1674,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "3",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "19e987c7b3ade2dca811d1fc52785cc0d2eb7091fb841a17fe7328b9e45d5dc7"
     },
     {
       "id": "36b1d81a-7617-5bfc-9e97-25b003be82a2",
@@ -1324,13 +1744,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "3",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "19e987c7b3ade2dca811d1fc52785cc0d2eb7091fb841a17fe7328b9e45d5dc7"
     },
     {
       "id": "a9ecddfa-54d0-5358-9f53-454a0695468d",
@@ -1338,13 +1814,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "b9f1eb0a-66de-5bc5-b542-f3d6a1c92209",
@@ -1352,13 +1884,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "8f107eee-a814-5193-9b2b-592cc3f63df1",
@@ -1366,13 +1954,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "98dd7cbd77eac90de3aab90bd0d77d867eaf588c2396219b57bb7ca7adbefbe4"
     },
     {
       "id": "c42944f9-fe8c-5ecc-b816-00c486a64206",
@@ -1380,13 +2024,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "98dd7cbd77eac90de3aab90bd0d77d867eaf588c2396219b57bb7ca7adbefbe4"
     },
     {
       "id": "c12d0d1e-8022-53e3-8935-5380de568599",
@@ -1394,13 +2094,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "98dd7cbd77eac90de3aab90bd0d77d867eaf588c2396219b57bb7ca7adbefbe4"
     },
     {
       "id": "ef315cd7-cf38-5df4-acf2-cf81532ff22b",
@@ -1408,13 +2164,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "98dd7cbd77eac90de3aab90bd0d77d867eaf588c2396219b57bb7ca7adbefbe4"
     },
     {
       "id": "1fb38ced-f514-5c74-b302-6c50d0668b23",
@@ -1422,13 +2234,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "75060fe67f62f4e7aa448b4a4b7e6601f0470e7e73a4166f454a7d3af41810eb"
     },
     {
       "id": "ff9664c2-02ef-57f1-a235-e0004c8fbde6",
@@ -1436,13 +2304,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "75060fe67f62f4e7aa448b4a4b7e6601f0470e7e73a4166f454a7d3af41810eb"
     },
     {
       "id": "bd73692f-9a6f-5b9f-87ba-5c364724db9d",
@@ -1450,13 +2374,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "3",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "7917ed84f03605382b48f2664dd3ab113a4b37036a425086274c0412bfaa28cb"
     },
     {
       "id": "9ef3fd7d-f2d5-5c16-9e9f-a08f2f1d8fc9",
@@ -1464,13 +2444,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 3,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "3",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "3",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "4",
+          "example": "Synthetic example: needed direct supervisor intervention on two lists this cycle."
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "3",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "3",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "3",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "3",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "3",
+          "example": ""
+        },
+        "TEAMWORK": {
+          "grade": "3",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "3",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "3",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "7917ed84f03605382b48f2664dd3ab113a4b37036a425086274c0412bfaa28cb"
     },
     {
       "id": "c5b21a6e-7803-5192-a7f2-5f049fd8b8a2",
@@ -1478,13 +2514,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "22e9d597-65b1-5fe0-a885-d3e5c0f4458e",
@@ -1492,13 +2584,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "5b7946be-911f-5424-a55b-17c237dcb07b",
@@ -1506,13 +2654,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "fd30363c-be84-5272-9edd-d99ed14b1346",
@@ -1520,13 +2724,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "3ebee552-1ccb-5e2c-b91f-6e5536adef61",
@@ -1534,13 +2794,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "25193545-62d4-5a9b-8297-31ee854b6655",
@@ -1548,13 +2864,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "f4a9cd72-54ba-5874-b785-650ba244379f",
@@ -1562,13 +2934,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "afef0e88-451a-53bc-baae-1db5051e4cb0",
@@ -1576,13 +3004,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "0f7bc06c-51b3-536d-b92a-9c22537e27ae",
@@ -1590,13 +3074,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "5a40f206-8fae-5cf0-94ac-21c636d85842",
@@ -1604,13 +3144,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "ae8ee4ba-29cd-563e-ae05-1594c334cbc9",
@@ -1618,13 +3214,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "fd098365-e3af-5e70-8d11-b8effb95491a",
@@ -1632,13 +3284,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "d544ab61-1c23-5673-a73e-055fb3f4118f",
@@ -1646,13 +3354,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "2c4e814f-20ab-5488-b984-1a5801f52d64",
@@ -1660,13 +3424,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "47b446a3-b223-5951-a3ff-3e140150fee0",
@@ -1674,13 +3494,69 @@
       "trainerId": "103df24b-c00f-53e3-aaad-03e1978db09a",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     },
     {
       "id": "718e1dac-f1e5-5ff0-b343-701ee6581c09",
@@ -1688,13 +3564,69 @@
       "trainerId": "0a891330-c655-51c2-9f5c-01de25cfb280",
       "toolId": "919c8ecb-ff62-57c5-99e4-bf7b1b4a7fa0",
       "domainRatingsJson": {
-        "1a": 2,
-        "1b": 2,
-        "1c": 3,
-        "2a": 2
+        "PATIENT_ASSESSMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CLINICAL_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "TECHNICAL_SKILLS": {
+          "grade": "2",
+          "example": ""
+        },
+        "KNOWLEDGE_LEARNING": {
+          "grade": "2",
+          "example": ""
+        },
+        "TIME_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "CRISIS_MANAGEMENT": {
+          "grade": "2",
+          "example": ""
+        },
+        "LEADERSHIP": {
+          "grade": "2",
+          "example": ""
+        },
+        "VIGILANCE": {
+          "grade": "2",
+          "example": ""
+        },
+        "INSIGHTFULNESS": {
+          "grade": "2",
+          "example": ""
+        },
+        "COMM_PATIENTS": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "COMM_COLLEAGUES": {
+          "grade": "2",
+          "example": ""
+        },
+        "INTEGRITY": {
+          "grade": "1",
+          "example": "Synthetic example: consistently ahead of expectation for level, noted by theatre team."
+        },
+        "TEAMWORK": {
+          "grade": "2",
+          "example": ""
+        },
+        "RESPECTS_PATIENT_RIGHTS": {
+          "grade": "2",
+          "example": ""
+        },
+        "PROFESSIONAL_BEHAVIOUR": {
+          "grade": "2",
+          "example": ""
+        }
       },
-      "notableStrength": "Strong team communication in theatre.",
-      "keyAreaForGrowth": "Further autonomy in complex regional blocks."
+      "specialistComments": "Strong team communication in theatre. Further autonomy in complex regional blocks would help.",
+      "recordHash": "12e638247db71ea263bf31529c1369ace36a35fd5ffec384f26901e2a3a87d36"
     }
   ],
   "ItaAppeal": [

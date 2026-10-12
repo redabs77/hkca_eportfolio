@@ -3,8 +3,11 @@ import fs from "fs";
 
 async function runSeed() {
   const pg = new PGlite();
-  const ddl = fs.readFileSync("db/migrations/0_init/migration.sql", "utf-8");
-  await pg.exec(ddl);
+  // Apply every migration in numeric order (0_init, 1_..., 2_...)
+  const migrationDirs = fs.readdirSync("db/migrations").filter(d => /^\d+_/.test(d)).sort((x, y) => parseInt(x) - parseInt(y));
+  for (const d of migrationDirs) {
+    await pg.exec(fs.readFileSync(`db/migrations/${d}/migration.sql`, "utf-8"));
+  }
 
   const rawSeed = JSON.parse(fs.readFileSync("db/seeds/synthetic_seed.json", "utf-8"));
   
