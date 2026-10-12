@@ -326,6 +326,7 @@ Working decisions made for items E1–E6 to ensure platform resilience, integrat
 - **Tier 2 (SOT synthesis):** the SOT records the grade for **each of the 15 items** (this is the form the trainee signs) plus the **overall assessment (1–4)**. Spread is shown, not an average. Where trainers differ by **2 or more levels** (X excluded) the SOT must record why. In the product every SOT grade starts blank — no median or suggestion — to keep U1's no-rubber-stamping intent.
 - **College overall rule, enforced:** overall is unsatisfactory if, *but not limited to*, **4 or more of the 15 SOT items are 4**. At 4+ items the overall is locked to 4. Below 4, the SOT may still award 4 but must give reasons. The rule counts the **SOT's consolidated items**, not any one trainer's ratings.
 - **SOT-only fields on the form:** compulsory courses attended (EASE, ADAM-A, EMAC, ECHO-A, USRA-E), formal project completed, and Supervisor of Training's comments/suggestions. The trainee adds their own comments/suggestions at the face-to-face.
+- **Applies to all stages:** Albert confirmed 2026-10-12 that PFY uses the same 15-item form as BAT and HAT. (The PFY 3-domain plan is a separate sign-off.)
 - **Trainee sees:** overall assessment, the 15 item grades, SOT comments. Never an individual trainer's form or examples.
 
 **Schema change applied as migration `db/migrations/1_ita_15_item_form/` (`0_init` untouched):**
