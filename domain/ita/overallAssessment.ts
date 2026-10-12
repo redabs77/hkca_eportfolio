@@ -18,8 +18,8 @@ export interface TrainerItemResponse {
 }
 export type TrainerRatings = Record<string, TrainerItemResponse>;
 
-/** Grades whose rating must be backed by a concrete example: praise (1) and unsatisfactory (4). */
-export const ITA_EXAMPLE_REQUIRED_GRADES: ReadonlyArray<ItaGrade> = [1, 4];
+/** Only an unsatisfactory (4) rating must be backed by a concrete example. Examples for 1-3 and X are optional. */
+export const ITA_EXAMPLE_REQUIRED_GRADES: ReadonlyArray<ItaGrade> = [4];
 export const ITA_MIN_EXAMPLE_CHARS = 10;
 
 /**
@@ -37,8 +37,8 @@ export class ItaOverallAssessment {
   /**
    * Validates one trainer's Tier-1 submission.
    * - All 15 items are mandatory on the College form (asterisked); "X" counts as an answer.
-   * - An example is mandatory for grade 4 (unsatisfactory must be defensible on appeal) and for
-   *   grade 1 (praise must be specific too). Grade 2 is encouraged but not required; 3 and X optional.
+   * - An example is mandatory for grade 4 only (unsatisfactory must be defensible on appeal).
+   *   Examples for 1, 2, 3 and X are optional.
    */
   public static validateTrainerSubmission(ratings: TrainerRatings): { ok: boolean; missing: string[]; needsExample: string[] } {
     const missing: string[] = [];

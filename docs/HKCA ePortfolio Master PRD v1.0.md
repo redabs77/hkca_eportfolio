@@ -126,7 +126,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 * **2.1 Tier 1: Private Trainer Input Layer:**
   * SOT assigns supervising trainers for the 6-month cycle.
   * Each trainer completes the College's **15-item In-Training Assessment form** (9 Clinical Performance + 6 Communication, Teamwork and Interpersonal items; all mandatory), rating each item X/1/2/3/4 against the expectation for the trainee's level and year, with the item's behavioural anchor one tap away. Prototype: `HKCA_ITA_Trainer_Form.html`.
-  * An **example** is required for any item rated 1 or 4 (praise must be as specific as concern) and recommended for 2. One optional *"Comments from Specialist Assessors"* box replaces the earlier "Notable Strength / Key Area for Growth" prompts (decision I1).
+  * An **example** is required only for an item rated 4 (unsatisfactory must be defensible); for 1, 2, 3 and X it is optional. One optional *"Comments from Specialist Assessors"* box replaces the earlier "Notable Strength / Key Area for Growth" prompts (decision I1).
   * A multi-trainee "Theatre List" batch view (U1) remains a later layer on top of this form.
   * No auto-prefill from previous cycles (eliminates rubber-stamping).
   * Trainees are strictly walled off from viewing individual trainer submissions.

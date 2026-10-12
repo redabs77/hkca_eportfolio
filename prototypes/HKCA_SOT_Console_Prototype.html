@@ -180,7 +180,7 @@
     font-size:11px;font-weight:750;font-family:'JetBrains Mono',monospace;flex:none}
   .gradepill.g1{background:rgba(16,185,129,.16);color:var(--em700)} .dark .gradepill.g1{color:var(--em500)}
   .gradepill.g2{background:rgba(16,185,129,.11);color:var(--em700)} .dark .gradepill.g2{color:var(--em500)}
-  .gradepill.g3{background:rgba(245,158,11,.14);color:var(--am700)} .dark .gradepill.g3{color:var(--am500)}
+  .gradepill.g3{background:rgba(64,64,64,.09);color:var(--g700)} .dark .gradepill.g3{background:rgba(255,255,255,.09);color:var(--g300)}   /* 3 = usually meets = PASS, so neutral */
   .gradepill.g4{background:rgba(239,68,68,.14);color:var(--rd700)} .dark .gradepill.g4{color:var(--rd500)}
   .gradepill.gx{background:var(--bg3);color:var(--ink3)}
   .grade-row{display:flex;align-items:center;gap:9px}
@@ -751,7 +751,7 @@
           <thead>
             <tr>
               <th style="min-width:190px">Trainee</th><th>Period</th><th>Training type</th>
-              <th>Trainer feedback</th><th>Stage</th><th>Action</th>
+              <th>Trainer feedback</th><th>Items graded 4</th><th>Stage</th><th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -763,8 +763,9 @@
               <td class="mono">Jul &ndash; Dec 2026</td>
               <td><span class="pill info">Clinical Anaesthesia</span></td>
               <td><span class="pill ok"><span class="dot g"></span>4 of 4 submitted (Tier 1)</span></td>
-              <td><span class="pill warn">Tier 2 &middot; SOT grade synthesis pending</span></td>
-              <td><button class="btn pri sm">Open ITA</button></td>
+              <td><span class="meta">Not yet graded</span></td>
+              <td><span class="pill warn">Tier 2 &middot; SOT synthesis pending (15 items + overall)</span></td>
+              <td><a class="btn pri sm" href="HKCA_ITA_Synthesis_Flow.html" style="text-decoration:none">Open ITA</a></td>
             </tr>
             <tr>
               <td>
@@ -774,6 +775,7 @@
               <td class="mono">Jan &ndash; Dec 2026</td>
               <td><span class="pill purple">PFY &middot; 3 domains</span></td>
               <td><span class="pill ok"><span class="dot g"></span>5 of 5 submitted (Tier 1)</span></td>
+              <td><span class="meta">PFY plan</span></td>
               <td><span class="pill warn">Tier 2 &middot; awaiting trainee signature</span></td>
               <td><button class="btn pri sm">Open ITA</button></td>
             </tr>
@@ -785,7 +787,8 @@
               <td class="mono">Jul &ndash; Dec 2026</td>
               <td><span class="pill info">Clinical Anaesthesia</span></td>
               <td><span class="pill ok"><span class="dot g"></span>4 of 4 submitted (Tier 1)</span></td>
-              <td><span class="pill warn">Grade <span class="gradepill g3" style="width:16px;height:16px;font-size:10px;vertical-align:-2px">3</span> &middot; PIP reassess 15 Nov</span></td>
+              <td><span class="mono">2 / 15</span></td>
+              <td><span class="pill warn">Overall <span class="gradepill g4" style="width:16px;height:16px;font-size:10px;vertical-align:-2px">4</span> &middot; discretionary &middot; PIP reassess 15 Nov</span></td>
               <td><button class="btn am sm">Open remedial plan</button></td>
             </tr>
             <tr class="flag">
@@ -796,6 +799,7 @@
               <td class="mono">Jan &ndash; Jun 2026</td>
               <td><span class="pill info">Clinical Anaesthesia</span></td>
               <td><span class="pill bad"><span class="dot r"></span>2 consecutive unsatisfactory</span></td>
+              <td><span class="mono" style="color:var(--rd700);font-weight:700">4 / 15</span><div class="id-cell">College rule met</div></td>
               <td><span class="pill bad">BOE escalation triggered</span></td>
               <td><button class="btn am sm">Open BOE escalation</button></td>
             </tr>
@@ -807,17 +811,20 @@
               <td class="mono">Jul &ndash; Dec 2026</td>
               <td><span class="pill info">Clinical Anaesthesia</span></td>
               <td><span class="pill ok"><span class="dot g"></span>4 of 4 submitted (Tier 1)</span></td>
-              <td><span class="pill bad">Contested &middot; Grade <span class="gradepill g4" style="width:16px;height:16px;font-size:10px;vertical-align:-2px">4</span>, pending BOE</span></td>
+              <td><span class="mono" style="color:var(--rd700);font-weight:700">5 / 15</span><div class="id-cell">College rule met</div></td>
+              <td><span class="pill bad">Contested &middot; Overall <span class="gradepill g4" style="width:16px;height:16px;font-size:10px;vertical-align:-2px">4</span>, pending BOE</span></td>
               <td><button class="btn am sm">View appeal</button></td>
             </tr>
           </tbody>
         </table>
       </div>
       <p class="note">
-        <b>2-tier ITA model:</b> Tier 1 is the private, un-prefilled trainer scoring layer (<span class="mono">ItaAssessorResponse</span>) &mdash;
-        domain ratings, notable strengths and growth areas, visible only to the SOT. Tier 2 is the official, summative
-        SOT grade (<span class="mono">ItaSession.sotGrade</span>) that the trainee counter-signs. A trainee may contest the Tier 2 grade,
-        opening a formal <span class="mono">ItaAppeal</span> for BOE review. Second consecutive unsatisfactory Tier 2 grade escalates
+        <b>2-tier ITA model:</b> Tier 1 is each trainer's private, un-prefilled form on the College's 15 feedback items
+        (<span class="mono">ItaAssessorResponse</span>; X/1/2/3/4, with an example required for a 4 only), visible only to the SOT and the College.
+        Tier 2 is the SOT's consolidated grade for each of the 15 items plus the overall assessment
+        (<span class="mono">ItaSession.sotGrade</span>), which the trainee counter-signs. The overall is unsatisfactory (4) when 4 or more items are
+        graded 4; X items are not counted and a 3 is a pass. A trainee may contest the Tier 2 result, opening a formal
+        <span class="mono">ItaAppeal</span> for BOE review. A second consecutive unsatisfactory result escalates
         automatically to the Board of Education (SOT &rarr; Assistant SOT &rarr; Cluster SOT &rarr; BOE).
       </p>
     </div>
@@ -923,7 +930,7 @@
           <div>
             <div class="h3">Dr. Sarah Lau &mdash; HAT-1 <span class="pill bad" style="margin-left:6px">Contested &middot; BOE</span></div>
             <div class="meta" style="margin-top:4px">
-              Grade 4 (unsatisfactory) for Jul&ndash;Dec 2026 cycle contested by trainee &middot; VOP 420 of 615 &middot; CF WBA 15 of 29
+              Overall 4 (unsatisfactory; 5 of 15 items graded 4) for Jul&ndash;Dec 2026 cycle contested by trainee &middot; VOP 420 of 615 &middot; CF WBA 15 of 29
             </div>
             <div class="meta" style="color:var(--rd700);margin-top:4px;font-weight:600">
               Formal appeal filed 3 Oct 2026. Grading remains provisional pending BOE review of grounds for appeal.
@@ -941,7 +948,7 @@
           <div>
             <div class="h3">Dr. Priya Nair &mdash; HAT-2 <span class="pill warn" style="margin-left:6px">Active remedial</span></div>
             <div class="meta" style="margin-top:4px">
-              Grade 3 (usually meets) &middot; Active Remedial Plan (PIP) &middot; VOP 440 of 615 &middot; CF WBA 18 of 29 &middot; reassessment target 15 Nov
+              Overall 4 (discretionary: 2 of 15 items graded 4, SOT reasons on record) &middot; Active Remedial Plan (PIP) &middot; VOP 440 of 615 &middot; CF WBA 18 of 29 &middot; reassessment target 15 Nov
             </div>
             <div class="meta" style="color:var(--am700);margin-top:4px;font-weight:600">
               Mentor: Assistant SOT. 3 action items in progress; needs 20 supervised paediatric cases before reassessment.
@@ -956,7 +963,7 @@
 
       <p class="note">
         Assessment risk is computed from ITA grade history and remedial/appeal status only, independent of velocity risk above.
-        Thresholds (e.g. 2 consecutive unsatisfactory &rarr; BOE) are fixed curriculum rules, not configurable.
+        Only an overall grade of 4 is unsatisfactory; 3 (usually meets) is a pass. Thresholds (2 consecutive unsatisfactory &rarr; BOE; 4 of 15 items &rarr; overall 4) are fixed curriculum rules, not configurable.
       </p>
     </div>
   </section>
@@ -1086,7 +1093,7 @@
       <div class="eyebrow">ITA history</div>
       <div class="card card-pad">
         <dl class="kv">
-          <dt>Jul&ndash;Dec 2026</dt><dd><span class="pill warn">In progress</span></dd>
+          <dt>Jul&ndash;Dec 2026</dt><dd><span class="pill warn">SOT synthesis pending</span></dd>
           <dt>Jan&ndash;Jun 2026</dt><dd><span class="grade-row" style="justify-content:flex-end"><span class="gradepill g2" title="2 &mdash; Occasionally exceeds expectation">2</span></span></dd>
           <dt>Jul&ndash;Dec 2025</dt><dd><span class="grade-row" style="justify-content:flex-end"><span class="gradepill g2" title="2 &mdash; Occasionally exceeds expectation">2</span></span></dd>
           <dt>Jan&ndash;Jun 2025 (ICU)</dt><dd><span class="grade-row" style="justify-content:flex-end"><span class="gradepill g1" title="1 &mdash; Consistently exceeds expectation">1</span></span></dd>
@@ -1097,7 +1104,8 @@
           <div class="gl-row"><span class="gradepill g2">2</span> Occasionally exceeds expectation</div>
           <div class="gl-row"><span class="gradepill g3">3</span> Usually meets expectation</div>
           <div class="gl-row"><span class="gradepill g4">4</span> Unsatisfactory</div>
-          <div class="gl-row"><span class="gradepill gx">X</span> Unable to assess</div>
+          <div class="gl-row"><span class="gradepill gx">X</span> Unable to assess (not counted below)</div>
+          <div class="note" style="margin-top:8px">Overall is unsatisfactory (4) when 4 or more of the 15 items are graded 4. A 3 is a pass.</div>
         </div>
       </div>
     </div>
@@ -1117,7 +1125,8 @@
     <div class="dr-sec">
       <div class="eyebrow">Actions</div>
       <div class="btn-row">
-        <button class="btn pri sm" data-need-sot>Initiate next ITA</button>
+        <a class="btn pri sm" href="HKCA_ITA_Synthesis_Flow.html" style="text-decoration:none">Open current ITA (15 items)</a>
+        <button class="btn sec sm" data-need-sot>Initiate next ITA</button>
         <button class="btn sec sm">Verify logbook (18 pending)</button>
         <button class="btn sec sm">Export progression summary</button>
       </div>
@@ -1137,7 +1146,7 @@ const ROSTER = [
     cf:{n:15, t:29}, sm:{n:7, t:31}, vop:{n:420, t:615},
     msf:{n:1, t:3}, itaStatus:'bad', ita:{txt:'Contested &middot; BOE review', cls:'bad'}, health:'bad',
     courses:{done:2, total:5, easeOverdue:false}, project:'NOT_STARTED',
-    ita2:{tier1:'4 / 4 trainer forms in', tier2:'Grade 4 contested by trainee', ladder:'BOE', unsat:1}
+    ita2:{tier1:'4 / 4 trainer forms in', tier2:'Overall 4 contested by trainee', ladder:'BOE', unsat:1}
   },
   {
     id:'2024-008', name:'Dr. Marcus Yip', stage:'BAT-2', admitted:'2024',
@@ -1155,7 +1164,7 @@ const ROSTER = [
     cf:{n:18, t:29}, sm:{n:10, t:31}, vop:{n:440, t:615},
     msf:{n:1, t:3}, itaStatus:'warn', ita:{txt:'Remedial plan active', cls:'warn'}, health:'warn',
     courses:{done:3, total:5, easeOverdue:false}, project:'STAGE1_PENDING',
-    ita2:{tier1:'4 / 4 trainer forms in', tier2:'Grade 3 &middot; PIP reassess 15 Nov', ladder:'A-SOT', unsat:1}
+    ita2:{tier1:'4 / 4 trainer forms in', tier2:'Overall 4 (discretionary) &middot; PIP reassess 15 Nov', ladder:'A-SOT', unsat:1}
   },
   {
     id:'2023-022', name:'Dr. Felix Tam', stage:'BAT-3', admitted:'2023',
@@ -1173,7 +1182,7 @@ const ROSTER = [
     cf:{n:20, t:29}, sm:{n:12, t:31}, vop:{n:608, t:615},
     msf:{n:1, t:3}, itaStatus:'warn', ita:{txt:'SOT synthesis ready', cls:'warn'}, health:'ok',
     courses:{done:4, total:5, easeOverdue:false}, project:'PROTOCOL_APPROVED',
-    ita2:{tier1:'4 / 4 trainer forms in', tier2:'Awaiting SOT summative grade', ladder:'SOT', unsat:0}
+    ita2:{tier1:'4 / 4 trainer forms in', tier2:'Awaiting SOT synthesis (15 items + overall)', ladder:'SOT', unsat:0}
   },
   {
     id:'2021-004', name:'Dr. Jasmine Ho', stage:'PFY', admitted:'2021',
@@ -1182,7 +1191,7 @@ const ROSTER = [
     cf:{n:29, t:29}, sm:{n:31, t:31}, vop:{n:623, t:615},
     msf:{n:3, t:3}, itaStatus:'ok', ita:{txt:'Ready for sign-off', cls:'warn'}, health:'ok',
     courses:{done:5, total:5, easeOverdue:false}, project:'MANUSCRIPT_SUBMITTED',
-    ita2:{tier1:'5 / 5 trainer forms in', tier2:'Grade 2 &middot; awaiting trainee signature', ladder:'SOT', unsat:0}
+    ita2:{tier1:'5 / 5 trainer forms in', tier2:'Overall 2 &middot; awaiting trainee signature', ladder:'SOT', unsat:0}
   },
   {
     id:'2025-003', name:'Dr. Chloe Cheung', stage:'BAT-1', admitted:'2025',
@@ -1301,9 +1310,9 @@ function accreditedSegBar(m){
       <span><i style="background:var(--pu500)"></i>El ${m.el.n}/${m.el.t}</span>
     </div>`;
 }
-function itaListPill(status){
+function itaListPill(status, ita){
   if(status==='bad')  return '<span class="pill bad"><span class="dot r"></span>Unsatisfactory &middot; flagged</span>';
-  if(status==='warn') return '<span class="pill warn"><span class="dot a"></span>Satisfactory</span>';
+  if(status==='warn') return `<span class="pill warn"><span class="dot a"></span>${(ita && ita.txt) || 'In progress'}</span>`;
   return '<span class="pill ok"><span class="dot g"></span>Satisfactory</span>';
 }
 function coursesPill(c){
@@ -1363,7 +1372,7 @@ function renderRoster(){
       <td>${meter(t.msf.n,t.msf.t, t.msf.n>=t.msf.t?'':'a')}</td>
       <td>${coursesPill(t.courses)}</td>
       <td>${projectPill(t.project)}</td>
-      <td>${itaListPill(t.itaStatus)}</td>
+      <td>${itaListPill(t.itaStatus, t.ita)}</td>
       <td><button class="btn sec sm" onclick="openDrawer('${t.name}','${t.id}','${t.stage}','${t.parent||'Prince of Wales Hospital'}')">View</button></td>
     </tr>`;
   }).join('');

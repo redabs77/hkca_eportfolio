@@ -274,7 +274,7 @@
           <span><i class="chip k4">4</i>Unsatisfactory</span>
           <span><i class="chip kx">X</i>Unable to assess</span>
         </div>
-        <p class="privacy"><b>Examples:</b> a rating of 1 or 4 needs a specific example, so praise is as concrete as concern. For a 2 it is encouraged.</p>
+        <p class="privacy"><b>Examples:</b> a rating of 4 needs a specific example. For 1, 2, 3 and X an example or comment is optional.</p>
         <p class="privacy" style="margin-top:6px"><b>Private to the SOT and the College.</b> Your ratings are never shown to the trainee. Nothing is pre-filled
           from earlier cycles. The overall result is decided by the SOT, not by your individual ratings.</p>
       </div>
@@ -393,7 +393,7 @@ $('#tally').innerHTML = ['1','2','3','4','X'].map(g=>`<div><b class="mono" id="t
 /* ---------- state helpers ---------- */
 const grade = c => (S.r[c]||{}).g || null;
 const example = c => ((S.r[c]||{}).ex || '');
-const needsEx = c => (grade(c)==='4' || grade(c)==='1') && example(c).trim().length < 10;   // praise must be specific too
+const needsEx = c => grade(c)==='4' && example(c).trim().length < 10;   // only an unsatisfactory rating needs a reason; 1-3 and X are optional
 const rated = ()=>DOMAINS.filter(d=>grade(d.c)).length;
 
 function setGrade(c,g,{focusNext=false}={}){
@@ -404,7 +404,7 @@ function setGrade(c,g,{focusNext=false}={}){
   say(`${d.l}: ${GFULL[g]}. ${rated()} of 15 rated.`);
   if(focusNext){
     const nx = DOMAINS[d.i+1];
-    if(g==='4' || g==='1'){ $('textarea',$('#item-'+c)).focus(); }   // a 1 or a 4 needs its example straight away
+    if(g==='4'){ $('textarea',$('#item-'+c)).focus(); }   // a 4 needs its example straight away
     else if(nx){ focusRow(nx.c); }
   }
 }
@@ -428,19 +428,18 @@ function paintRow(c){
   row.classList.remove('missing');
   const ex = $('.ex',row), add = $('.addex',row);
   if(!g){ ex.classList.add('hidden'); add.classList.add('hidden'); return; }
-  const forced = (g==='4'||g==='1'), encouraged = (g==='2'), open = forced||encouraged||cur.exOpen||example(c);
+  const forced = (g==='4'), open = forced||cur.exOpen||example(c);
   if(open){
     const had = $('textarea',ex);
     const label = g==='4' ? ['Example of unsatisfactory performance','req','Required'] :
-                  g==='1' ? ['Example of better-than-expected performance','req','Required'] :
                   g==='X' ? ['Why could this not be assessed?','rec','Optional'] :
-                  g==='2' ? ['Example of better-than-expected performance','rec','Recommended'] :
+                  (g==='1'||g==='2') ? ['Example of better-than-expected performance','rec','Optional'] :
                   ['Example of performance','rec','Optional'];
-    const errTxt = g==='1' ? 'A specific example is required for a 1 (consistently exceeds expectation).' : 'A specific example is required for an unsatisfactory (4) rating.';
+    const errTxt = 'A specific example is required for an unsatisfactory (4) rating.';
     if(!had || ex.dataset.mode!==g){
       const val = had ? had.value : example(c);
       ex.innerHTML = `<label for="ex-${c}"><span>${label[0]}</span><em class="${label[1]}">${label[2]}</em></label>
-        <textarea id="ex-${c}" ${locked()?'disabled':''} placeholder="${g==='4'?'What was observed, where and when \u2014 specific enough to stand up if the assessment is contested.':g==='1'?'What was observed, where and when \u2014 specific enough that another assessor would recognise it.':'Optional \u2014 a specific case or behaviour.'}">${esc(val)}</textarea>
+        <textarea id="ex-${c}" ${locked()?'disabled':''} placeholder="${g==='4'?'What was observed, where and when \u2014 specific enough to stand up if the assessment is contested.':'Optional \u2014 a specific case or behaviour.'}">${esc(val)}</textarea>
         <div class="err" id="err-${c}">${errTxt}</div>`;
       ex.dataset.mode = g;
       $('textarea',ex).addEventListener('input',e=>{
@@ -466,7 +465,7 @@ function paintRail(){
   const un = DOMAINS.filter(d=>!grade(d.c)), ne = DOMAINS.filter(d=>needsEx(d.c));
   let t = '';
   if(un.length) t += `<div><a data-jump="${un[0].c}">${un.length} item${un.length>1?'s':''} still to rate</a></div>`;
-  if(ne.length) t += `<div style="margin-top:5px"><a data-jump="${ne[0].c}">${ne.length} ${ne.length>1?'ratings of 1 or 4 need':'rating of 1 or 4 needs'} an example</a></div>`;
+  if(ne.length) t += `<div style="margin-top:5px"><a data-jump="${ne[0].c}">${ne.length} unsatisfactory ${ne.length>1?'ratings need':'rating needs'} an example</a></div>`;
   if(!un.length && !ne.length) t = 'All 15 items rated. Ready to review.';
   $('#todo').innerHTML = t;
   $$('#todo a').forEach(a=>a.onclick=()=>jump(a.dataset.jump));

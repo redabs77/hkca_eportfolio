@@ -565,7 +565,7 @@ model ItaAssessorResponse {
 
   // Official 15-item form (decision I1; supersedes the U1 two-prompt design). No auto-prefill.
   // Shape: { "<ITEM_CODE>": { "grade": "1"|"2"|"3"|"4"|"X", "example": "..." } } for all 15
-  // codes in domain/ita/itaDomains.ts. An example is required for grades 1 and 4.
+  // codes in domain/ita/itaDomains.ts. An example is required for grade 4 only; 1-3 and X are optional.
   domainRatingsJson  Json
   // "Comments from Specialist Assessors" - optional, one box for the whole form.
   specialistComments String?

@@ -183,12 +183,12 @@ assert.equal(ItaOverallAssessment.validateTrainerSubmission(full("X")).missing.l
 assert.equal(ItaOverallAssessment.validateTrainerSubmission({}).missing.length, 15, "all 15 mandatory");
 const needEx = ItaOverallAssessment.validateTrainerSubmission({ ...full(3), TECHNICAL_SKILLS: { grade: 4 } });
 assert.deepEqual(needEx.needsExample, ["TECHNICAL_SKILLS"], "grade 4 requires an example");
-const needEx1 = ItaOverallAssessment.validateTrainerSubmission({ ...full(3), CRISIS_MANAGEMENT: { grade: 1 } });
-assert.deepEqual(needEx1.needsExample, ["CRISIS_MANAGEMENT"], "grade 1 (praise) requires an example too");
-assert.equal(
-  ItaOverallAssessment.validateTrainerSubmission({ ...full(3), CRISIS_MANAGEMENT: { grade: 2 } }).ok, true,
-  "grade 2 example is encouraged, not required"
-);
+for (const g of [1, 2, 3, "X"] as const) {
+  assert.equal(
+    ItaOverallAssessment.validateTrainerSubmission({ ...full(3), CRISIS_MANAGEMENT: { grade: g } }).ok, true,
+    `grade ${g}: example is optional`
+  );
+}
 assert.equal(
   ItaOverallAssessment.validateTrainerSubmission({ ...full(3), CRISIS_MANAGEMENT: { grade: "1", example: "Led airway rescue calmly." } as any }).ok, true,
   "persisted string grades are accepted"
@@ -245,7 +245,7 @@ console.log("Running Test Group 2C: ITA seed data vs domain rules...");
   }
   assert.ok(graded > 0, "seed has SOT-graded sessions");
 }
-console.log("  ✓ All seeded trainer responses pass 15-item validation (examples on every 1 and 4)");
+console.log("  ✓ All seeded trainer responses pass 15-item validation (an example on every 4)");
 console.log("  ✓ Seeded SOT sessions obey the >= 4-item rule and carry a reason for any discretionary 4");
 console.log("  ✓ X items never counted toward the 4-item rule\n");
 
