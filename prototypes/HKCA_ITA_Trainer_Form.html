@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HKCA e-Portfolio — In-Training Assessment · Trainer form</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+  Surface: OPERATE (a trainer works through 15 fixed items, fast, often on a phone between cases).
+  Source of truth: HKCA "In Training Assessment" form — 15 feedback items, scale X/1/2/3/4, explanatory notes.
+  Illustrative data only: synthetic trainee and trainer. Nothing here is pre-filled from earlier cycles.
+-->
+<style>
+  :root{
+    --g50:#fafafa; --g100:#f5f5f5; --g200:#e5e5e5; --g300:#d4d4d4; --g400:#a3a3a3;
+    --g500:#737373; --g600:#525252; --g700:#404040; --g800:#262626; --g900:#171717; --g950:#0a0a0a;
+    --em500:#10b981; --em600:#059669; --em700:#047857;
+    --rd500:#ef4444; --rd600:#dc2626; --rd700:#b91c1c;
+    --am600:#d97706; --am700:#b45309;
+    --bg:#ffffff; --bg2:var(--g50); --bg3:var(--g100);
+    --surface:#ffffff; --border:var(--g200); --border-sub:var(--g100);
+    --ink:var(--g900); --ink2:var(--g600); --ink3:var(--g500);
+    --focus:var(--em600);
+    /* grade colours: 3 is a PASS, so it is neutral — not amber */
+    --c1:var(--em700); --c1t:rgba(5,150,105,.14);
+    --c2:var(--em700); --c2t:rgba(5,150,105,.08);
+    --c3:var(--g700);  --c3t:rgba(64,64,64,.08);
+    --c4:var(--rd700); --c4t:rgba(220,38,38,.10);
+    --cx:var(--g600);  --cxt:var(--g100);
+  }
+  .dark{
+    --bg:var(--g950); --bg2:var(--g900); --bg3:var(--g800);
+    --surface:#111113; --border:rgba(255,255,255,.10); --border-sub:rgba(255,255,255,.05);
+    --ink:var(--g50); --ink2:var(--g400); --ink3:var(--g500); --focus:var(--em500);
+    --c1:#34d399; --c1t:rgba(52,211,153,.16); --c2:#6ee7b7; --c2t:rgba(52,211,153,.09);
+    --c3:#d4d4d4; --c3t:rgba(255,255,255,.07); --c4:#f87171; --c4t:rgba(248,113,113,.14);
+    --cx:var(--g400); --cxt:var(--g800);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-padding-top:84px}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg2);color:var(--ink);
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;transition:background-color .15s,color .15s}
+  .mono{font-family:'JetBrains Mono',Menlo,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  .hidden{display:none !important}
+  button{font-family:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+
+  /* ---------- top bar ---------- */
+  .top{position:sticky;top:0;z-index:60;background:var(--bg);border-bottom:1px solid var(--border)}
+  .top-row{display:flex;align-items:center;justify-content:space-between;gap:16px;height:56px}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .mark{width:30px;height:30px;border-radius:8px;background:var(--em700);color:#fff;display:grid;place-items:center;
+    font-weight:700;font-size:14px;flex:none}
+  .brand b{font-size:14px;font-weight:650;letter-spacing:-.01em;display:block;line-height:1.2;white-space:nowrap}
+  .brand span{font-size:11.5px;color:var(--ink3);display:block;line-height:1.2}
+  .top-right{display:flex;align-items:center;gap:12px}
+  .who{text-align:right;line-height:1.25}
+  .who b{font-size:12.5px;font-weight:650;display:block}
+  .who span{font-size:11px;color:var(--ink3)}
+  .icon-btn{width:34px;height:34px;border:1px solid var(--border);background:var(--surface);border-radius:8px;
+    cursor:pointer;display:grid;place-items:center;font-size:15px}
+  .icon-btn:hover{background:var(--bg3)}
+
+  /* ---------- layout ---------- */
+  main{padding:26px 0 120px}
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start}
+  h1.title{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  .lede{font-size:13px;color:var(--ink2);margin-top:5px;max-width:62ch}
+
+  /* ---------- assignment context (read-only, system-supplied) ---------- */
+  .ctx{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:20px;
+    border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .ctx div{padding:11px 16px 11px 0;min-width:0}
+  .ctx dt{font-size:10.5px;font-weight:650;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+  .ctx dd{font-size:13px;font-weight:600;margin-top:2px;overflow-wrap:anywhere}
+
+  /* ---------- expectation framing + scale ---------- */
+  .frame{margin-top:20px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+  .frame p{font-size:13px;line-height:1.55}
+  .frame p b{font-weight:650}
+  .scale{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:11px;font-size:12px;color:var(--ink2)}
+  .scale span{display:inline-flex;align-items:center;gap:7px}
+  .chip{font-style:normal;display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:5px;
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700}
+  .chip.k1{background:var(--c1t);color:var(--c1)} .chip.k2{background:var(--c2t);color:var(--c2)}
+  .chip.k3{background:var(--c3t);color:var(--c3)} .chip.k4{background:var(--c4t);color:var(--c4)}
+  .chip.kx{background:var(--cxt);color:var(--cx)}
+  .privacy{font-size:12px;color:var(--ink3);margin-top:11px;line-height:1.5}
+  .privacy b{color:var(--ink2);font-weight:600}
+
+  /* ---------- sections ---------- */
+  .sec{margin-top:34px}
+  .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding-bottom:9px;
+    border-bottom:1.5px solid var(--ink)}
+  .sec-h h2{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .sec-h .sub{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--ink3)}
+  .linkbtn{background:none;border:0;padding:3px 0;font-size:12px;font-weight:600;color:var(--em700);cursor:pointer;
+    text-decoration:underline;text-underline-offset:3px}
+  .dark .linkbtn{color:var(--em500)}
+
+  /* ---------- an item ---------- */
+  .item{padding:17px 0 18px;border-bottom:1px solid var(--border);scroll-margin-top:84px}
+  .item-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .item .no{font-size:11.5px;color:var(--ink3);width:20px;flex:none}
+  .item h3{font-size:14.5px;font-weight:650;letter-spacing:-.01em;flex:1 1 220px;min-width:0}
+  .item h3 i{font-style:normal;color:var(--rd600);margin-left:3px}
+  .anchor-btn{background:none;border:0;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;padding:6px 0;
+    display:inline-flex;align-items:center;gap:5px;min-height:32px}
+  .anchor-btn:hover{color:var(--ink)}
+  .anchor-btn .car{display:inline-block;transition:transform .15s;font-size:10px}
+  .anchor-btn[aria-expanded="true"] .car{transform:rotate(90deg)}
+  .anchor{margin:4px 0 0 32px;font-size:12.5px;color:var(--ink2);line-height:1.6;max-width:68ch}
+  .grades{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:12px 0 0 32px}
+  .g{border:1px solid var(--border);background:var(--surface);border-radius:9px;min-height:50px;padding:6px 4px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center;
+    transition:background .12s,border-color .12s,color .12s}
+  .g b{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;line-height:1.1;color:var(--ink2)}
+  .g span{font-size:10.5px;line-height:1.2;color:var(--ink3);font-weight:500}
+  .g:hover{border-color:var(--g400)}
+  .g[aria-checked="true"]{border-width:1.5px}
+  .g[data-g="1"][aria-checked="true"]{background:var(--c1t);border-color:var(--c1)} .g[data-g="1"][aria-checked="true"] b,.g[data-g="1"][aria-checked="true"] span{color:var(--c1)}
+  .g[data-g="2"][aria-checked="true"]{background:var(--c2t);border-color:var(--c2)} .g[data-g="2"][aria-checked="true"] b,.g[data-g="2"][aria-checked="true"] span{color:var(--c2)}
+  .g[data-g="3"][aria-checked="true"]{background:var(--c3t);border-color:var(--c3)} .g[data-g="3"][aria-checked="true"] b,.g[data-g="3"][aria-checked="true"] span{color:var(--c3)}
+  .g[data-g="4"][aria-checked="true"]{background:var(--c4t);border-color:var(--c4)} .g[data-g="4"][aria-checked="true"] b,.g[data-g="4"][aria-checked="true"] span{color:var(--c4)}
+  .g[data-g="X"][aria-checked="true"]{background:var(--cxt);border-color:var(--cx);border-style:dashed} .g[data-g="X"][aria-checked="true"] b,.g[data-g="X"][aria-checked="true"] span{color:var(--cx)}
+  .g[disabled]{cursor:default;opacity:.7}
+  .ex{margin:10px 0 0 32px}
+  .ex label{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;font-weight:650;color:var(--ink2);margin-bottom:5px}
+  .ex label em{font-style:normal;font-weight:600}
+  .ex label em.req{color:var(--rd700)} .dark .ex label em.req{color:var(--rd500)}
+  .ex label em.rec{color:var(--ink3)}
+  .ex textarea{width:100%;min-height:68px;resize:vertical;border:1px solid var(--border);border-radius:8px;background:var(--surface);
+    padding:9px 11px;font:inherit;font-size:13px;line-height:1.5;color:var(--ink)}
+  .ex textarea::placeholder{color:var(--ink3)}
+  .ex.bad textarea{border-color:var(--rd600)}
+  .ex .err{display:none;font-size:11.5px;color:var(--rd700);margin-top:4px;font-weight:600}
+  .dark .ex .err{color:var(--rd500)}
+  .ex.bad .err{display:block}
+  .item.missing .grades{outline:2px solid var(--rd600);outline-offset:3px;border-radius:10px}
+  .addex{margin:6px 0 0 32px}
+
+  /* ---------- closing ---------- */
+  .closing{margin-top:34px}
+  .closing label{font-size:15px;font-weight:700;letter-spacing:-.01em;display:block;padding-bottom:9px;border-bottom:1.5px solid var(--ink);margin-bottom:11px}
+  .closing textarea{width:100%;min-height:104px;resize:vertical;border:1px solid var(--border);border-radius:8px;background:var(--surface);
+    padding:10px 12px;font:inherit;font-size:13px;line-height:1.55;color:var(--ink)}
+  .closing .note{font-size:12px;color:var(--ink3);margin-top:6px}
+
+  /* ---------- rail ---------- */
+  .rail{position:sticky;top:76px;align-self:start}
+  .rail h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3)}
+  .progress-n{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:8px}
+  .progress-n small{font-size:14px;font-weight:500;color:var(--ink3);letter-spacing:0;margin-left:3px}
+  .ticks{display:flex;gap:3px;margin-top:13px;flex-wrap:nowrap}
+  .ticks .gap{width:9px;flex:none}
+  .tick{flex:1;height:26px;border-radius:4px;border:1px solid var(--border);background:var(--surface);cursor:pointer;
+    padding:0;min-width:0;position:relative;transition:background .12s}
+  .tick[data-g="1"]{background:var(--c1);border-color:var(--c1)} .tick[data-g="2"]{background:var(--c2);border-color:var(--c2);opacity:.6}
+  .tick[data-g="3"]{background:var(--c3);border-color:var(--c3);opacity:.4} .tick[data-g="4"]{background:var(--c4);border-color:var(--c4)}
+  .tick[data-g="X"]{background:repeating-linear-gradient(45deg,var(--cx) 0 2px,transparent 2px 5px);border-color:var(--cx)}
+  .tick.cur{box-shadow:0 0 0 2px var(--bg2),0 0 0 3.5px var(--ink)}
+  .tally{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:16px}
+  .tally div{text-align:center;padding:7px 0;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+  .tally b{display:block;font-family:'JetBrains Mono',monospace;font-size:15px;line-height:1.2}
+  .tally span{font-size:10.5px;color:var(--ink3);font-family:'JetBrains Mono',monospace}
+  .todo{margin-top:16px;font-size:12.5px;color:var(--ink2);line-height:1.5}
+  .todo a{color:var(--ink);font-weight:600;text-underline-offset:3px;cursor:pointer}
+  .btn{border:0;font-size:13.5px;font-weight:650;padding:0 18px;min-height:44px;border-radius:9px;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+  .btn.pri{background:var(--em700);color:#fff} .btn.pri:hover{background:#065f46}
+  .btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--border)} .btn.sec:hover{background:var(--bg3)}
+  .btn:disabled{opacity:.42;cursor:not-allowed}
+  .rail .btn{width:100%;margin-top:18px}
+  .keys{margin-top:18px;font-size:11.5px;color:var(--ink3);line-height:1.7}
+  kbd{font-family:'JetBrains Mono',monospace;font-size:10.5px;border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface);color:var(--ink2)}
+  .saved{font-size:11.5px;color:var(--ink3);margin-top:12px;min-height:17px}
+
+  /* ---------- review sheet ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90;display:flex;align-items:flex-end;justify-content:center}
+  .sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border:1px solid var(--border);
+    border-radius:16px 16px 0 0;padding:22px 22px 24px}
+  @media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:16px}}
+  .sheet h2{font-size:18px;font-weight:700;letter-spacing:-.015em}
+  .sheet .meta{font-size:12.5px;color:var(--ink2);margin-top:4px}
+  .rev{margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .rev-row{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:start;padding:9px 12px;border-bottom:1px solid var(--border-sub);font-size:12.5px}
+  .rev-row:last-child{border-bottom:0}
+  .rev-row .nm{font-weight:600}
+  .rev-row .exq{grid-column:2/4;color:var(--ink2);font-size:12px;line-height:1.5}
+  .sheet .acts{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .sheet .acts .btn{flex:1 1 180px}
+  .sheet .fine{font-size:11.5px;color:var(--ink3);margin-top:12px;line-height:1.5}
+
+  /* ---------- sealed state ---------- */
+  .sealed{margin-top:20px;border:1px solid var(--em600);background:rgba(5,150,105,.06);border-radius:10px;padding:14px 16px}
+  .sealed b{display:block;font-size:14px;margin-bottom:3px}
+  .sealed p{font-size:12.5px;color:var(--ink2);line-height:1.55}
+  .sealed .mono{font-size:11.5px;color:var(--ink2);word-break:break-all}
+
+  /* ---------- mobile ---------- */
+  .dock{display:none}
+  @media (max-width:1020px){
+    .cols{grid-template-columns:1fr}
+    .rail{display:none}
+    .dock{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--bg);border-top:1px solid var(--border);
+      padding:10px 16px calc(10px + env(safe-area-inset-bottom));align-items:center;gap:14px}
+    .dock .dn{font-size:13px;font-weight:650;white-space:nowrap}
+    .dock .dn small{display:block;font-size:11px;color:var(--ink3);font-weight:500}
+    .dock .bar{flex:1;display:flex;gap:2px}
+    .dock .bar i{flex:1;height:6px;border-radius:2px;background:var(--border)}
+    .dock .bar i.s1,.dock .bar i.s2{background:var(--c1)} .dock .bar i.s3{background:var(--c3);opacity:.5}
+    .dock .bar i.s4{background:var(--c4)} .dock .bar i.sx{background:var(--cx)}
+    .dock .btn{padding:0 16px}
+    .who{display:none}
+  }
+  @media (max-width:640px){
+    .wrap{padding:0 14px}
+    .ctx{grid-template-columns:1fr 1fr}
+    .item .no{width:auto}
+    .anchor,.grades,.ex,.addex{margin-left:0}
+    .grades{gap:4px}
+    .g{min-height:56px}
+    .g span{font-size:9.5px}
+    h1.title{font-size:19px}
+  }
+  @media (pointer:coarse){.g{min-height:56px}.anchor-btn{min-height:44px}}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand">
+        <div class="mark">H</div>
+        <div><b>HKCA e-Portfolio</b><span>In-Training Assessment &middot; Trainer form</span></div>
+      </div>
+      <div class="top-right">
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode" onclick="toggleTheme()">&#9788;</button>
+        <div class="who"><b>Dr. Lisa Kwok</b><span>Consultant &middot; Prince of Wales Hospital</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+<div class="wrap">
+  <div class="cols">
+    <div>
+      <h1 class="title">In-Training Assessment</h1>
+      <p class="lede">Rate each of the 15 feedback items for this trainee. The SOT collects feedback from all supervising
+        trainers and summarises it for the face-to-face meeting.</p>
+
+      <dl class="ctx" aria-label="Assessment details (set by the SOT)">
+        <div><dt>Trainee</dt><dd>Dr. Kelvin Wong</dd></div>
+        <div><dt>Year of training</dt><dd>Year 2 of Higher Training</dd></div>
+        <div><dt>Level</dt><dd>Higher Trainee</dd></div>
+        <div><dt>Assessment period</dt><dd class="mono" style="font-size:12.5px">01 Jul &ndash; 31 Dec 2026</dd></div>
+        <div><dt>Training unit</dt><dd>PWH &middot; Clinical Anaesthesia</dd></div>
+        <div><dt>Date of assessment</dt><dd class="mono" style="font-size:12.5px" id="today">&mdash;</dd></div>
+      </dl>
+
+      <div class="frame">
+        <p><b>Rate against what is expected at this trainee&rsquo;s level of experience</b> &mdash; a Higher Trainee in year 2 &mdash;
+          not against a consultant, and not against other trainees.</p>
+        <div class="scale" aria-label="Rating scale">
+          <span><i class="chip k1">1</i>Consistently exceeds expectation</span>
+          <span><i class="chip k2">2</i>Occasionally exceeds expectation</span>
+          <span><i class="chip k3">3</i>Usually meets expectation</span>
+          <span><i class="chip k4">4</i>Unsatisfactory</span>
+          <span><i class="chip kx">X</i>Unable to assess</span>
+        </div>
+        <p class="privacy"><b>Private to the SOT and the College.</b> Your ratings are never shown to the trainee. Nothing is pre-filled
+          from earlier cycles. The overall result is decided by the SOT, not by your individual ratings.</p>
+      </div>
+
+      <div id="sealedBanner"></div>
+
+      <div id="form">
+        <section class="sec" aria-labelledby="h-clin">
+          <div class="sec-h">
+            <h2 id="h-clin">Clinical Performance</h2>
+            <div class="sub"><span class="mono" id="cnt-clin">0 / 9</span><button class="linkbtn" data-toggle-anchors="CLINICAL_PERFORMANCE">Show all anchors</button></div>
+          </div>
+          <div id="list-clin"></div>
+        </section>
+
+        <section class="sec" aria-labelledby="h-comm">
+          <div class="sec-h">
+            <h2 id="h-comm">Communication, Teamwork and Interpersonal skills</h2>
+            <div class="sub"><span class="mono" id="cnt-comm">0 / 6</span><button class="linkbtn" data-toggle-anchors="COMMUNICATION_TEAMWORK_INTERPERSONAL">Show all anchors</button></div>
+          </div>
+          <div id="list-comm"></div>
+        </section>
+
+        <div class="closing">
+          <label for="comments">Comments from Specialist Assessors</label>
+          <textarea id="comments" placeholder="Anything the SOT should know that the items above do not capture (optional)."></textarea>
+          <p class="note">Optional. Be specific and factual &mdash; this may be read again if the assessment is contested.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- desktop rail -->
+    <aside class="rail" aria-label="Progress">
+      <h2>Progress</h2>
+      <div class="progress-n mono"><span id="pn">0</span><small>of 15 rated</small></div>
+      <div class="ticks" id="ticks" role="group" aria-label="Jump to item"></div>
+      <div class="tally" id="tally"></div>
+      <div class="todo" id="todo"></div>
+      <button class="btn pri" id="reviewBtn">Review &amp; submit</button>
+      <div class="saved" id="saved" role="status"></div>
+      <div class="keys">
+        <div><kbd>1</kbd>&ndash;<kbd>4</kbd> <kbd>X</kbd> rate the focused item, then move on</div>
+        <div><kbd>&uarr;</kbd> <kbd>&darr;</kbd> change item &nbsp; <kbd>?</kbd> show anchor</div>
+      </div>
+      <button class="linkbtn" style="margin-top:18px" id="resetBtn">Reset this prototype</button>
+    </aside>
+  </div>
+</div>
+</main>
+
+<!-- mobile dock -->
+<div class="dock" id="dock">
+  <div class="dn mono"><span id="dn">0</span> / 15<small>rated</small></div>
+  <div class="bar" id="dbar"></div>
+  <button class="btn pri" id="reviewBtn2">Review</button>
+</div>
+
+<div id="live" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
+
+<script>
+/* The 15 official items — mirrors domain/ita/itaDomains.ts (source of truth for the build). */
+const DOMAINS = [
+ {c:'PATIENT_ASSESSMENT',g:'CLINICAL_PERFORMANCE',l:'Patient assessment',a:'Able to gather clinical information from the patient (history taking, examination +/- investigations) or significant others, colleagues, medical records, etc., considering the nature and urgency of the intervention. Able to suggest appropriate investigation or means of further assessment if needed.'},
+ {c:'CLINICAL_MANAGEMENT',g:'CLINICAL_PERFORMANCE',l:'Clinical management',a:'Able to formulate and execute management plans, including anticipation of potential problems; resource planning (equipment and manpower), workplace organization, post-operative management.'},
+ {c:'TECHNICAL_SKILLS',g:'CLINICAL_PERFORMANCE',l:'Technical skills',a:'Able to perform clinical procedures efficiently, with working knowledge on equipment and anatomy, attention to patient safety and risk, procedural and situational awareness throughout the procedure.'},
+ {c:'KNOWLEDGE_LEARNING',g:'CLINICAL_PERFORMANCE',l:'Knowledge, ability to apply knowledge, and initiative to learn',a:'Adequate understanding of basic and clinical sciences appropriate to the level of training. Ability to apply the knowledge in clinical practice. Able to develop learning strategy for oneself, and takes an active interest in self-learning.'},
+ {c:'TIME_MANAGEMENT',g:'CLINICAL_PERFORMANCE',l:'Time management and prioritization',a:'Attend patients timely, efficiently runs theatre lists, allocates and prioritizes cases effectively, prioritizes tasks to match the workload and patient needs, multi-task when necessary.'},
+ {c:'CRISIS_MANAGEMENT',g:'CLINICAL_PERFORMANCE',l:'Crisis management',a:'Able to keep calm and function effectively in adverse and complex situations, effective utilization of internal (attention) and external resources.'},
+ {c:'LEADERSHIP',g:'CLINICAL_PERFORMANCE',l:'Leadership',a:'Able to form a team, align values and priorities, and provide directions when necessary.'},
+ {c:'VIGILANCE',g:'CLINICAL_PERFORMANCE',l:'Vigilance',a:"Situational awareness, being attentive to both patient's and the workplace condition, and be prepared for potential or un-expected changes and risks."},
+ {c:'INSIGHTFULNESS',g:'CLINICAL_PERFORMANCE',l:'Insightfulness',a:'Recognizes his / her limits in expertise and experience, seeks advice from appropriate staff when required.'},
+ {c:'COMM_PATIENTS',g:'COMMUNICATION_TEAMWORK_INTERPERSONAL',l:'Communication with patients +/- relatives',a:'Present patients +/- relatives of the nature, risks and benefits of the peri-operative care in a language they can understand. Provides written information to facilitate understanding if needed. Active listening, encourages discussion and questions.'},
+ {c:'COMM_COLLEAGUES',g:'COMMUNICATION_TEAMWORK_INTERPERSONAL',l:'Communication with colleagues',a:'Synthesizes and communicates relevant information, conveys management plan to colleagues in all formats. Keeps clear, accurate, legible written or electronic records. Active listening. Demonstrates a respectful attitude to colleagues.'},
+ {c:'INTEGRITY',g:'COMMUNICATION_TEAMWORK_INTERPERSONAL',l:'Integrity',a:"Honest, answerable to one's decisions."},
+ {c:'TEAMWORK',g:'COMMUNICATION_TEAMWORK_INTERPERSONAL',l:'Teamwork',a:'Participates in team approach for patient care, safely hands over patient care to others, works with others to prevent and resolve conflicts.'},
+ {c:'RESPECTS_PATIENT_RIGHTS',g:'COMMUNICATION_TEAMWORK_INTERPERSONAL',l:"Respects patient\u2019s right",a:"Respect patient confidentiality and privacy, ensure patient's right for access to information, fair treatment and autonomy over medical decisions."},
+ {c:'PROFESSIONAL_BEHAVIOUR',g:'COMMUNICATION_TEAMWORK_INTERPERSONAL',l:'Professional behaviour',a:'Be fair and non-discriminative to patients and colleagues. Polite. Punctual. Maintains contact and be readily available at work.'}
+];
+const GR = [['1','Consistently exceeds'],['2','Occasionally exceeds'],['3','Usually meets'],['4','Unsatisfactory'],['X','Unable to assess']];
+const GFULL = {'1':'Consistently exceeds expectation','2':'Occasionally exceeds expectation','3':'Usually meets expectation','4':'Unsatisfactory','X':'Unable to assess'};
+const KEY = 'ita-trainer-draft-v1';
+let S = {r:{}, comments:'', sealed:null};          // r[code] = {g, ex}
+try{ const d = JSON.parse(localStorage.getItem(KEY)||'null'); if(d) S = d; }catch(e){}
+const $ = (s,el=document)=>el.querySelector(s), $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const say = m=>{ $('#live').textContent = m; };
+const locked = ()=>!!S.sealed;
+
+$('#today').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+
+/* ---------- render ---------- */
+function rowHTML(d,i){
+  const n = String(i+1).padStart(2,'0');
+  return `<article class="item" id="item-${d.c}" data-code="${d.c}">
+    <div class="item-head">
+      <span class="no mono">${n}</span>
+      <h3 id="lbl-${d.c}">${esc(d.l)}<i aria-hidden="true">*</i></h3>
+      <button class="anchor-btn" aria-expanded="false" aria-controls="anc-${d.c}"><span class="car" aria-hidden="true">&#9654;</span>What this covers</button>
+    </div>
+    <p class="anchor hidden" id="anc-${d.c}">${esc(d.a)}</p>
+    <div class="grades" role="radiogroup" aria-labelledby="lbl-${d.c}" aria-describedby="anc-${d.c}">
+      ${GR.map(([g,t])=>`<button type="button" class="g" role="radio" aria-checked="false" tabindex="-1" data-g="${g}" aria-label="${g==='X'?'X, unable to assess':g+', '+GFULL[g]}"><b>${g}</b><span>${t}</span></button>`).join('')}
+    </div>
+    <div class="ex hidden"></div>
+    <div class="addex hidden"><button class="linkbtn" type="button">+ Add an example</button></div>
+  </article>`;
+}
+DOMAINS.forEach((d,i)=>{ d.i=i; });
+$('#list-clin').innerHTML = DOMAINS.filter(d=>d.g==='CLINICAL_PERFORMANCE').map(d=>rowHTML(d,d.i)).join('');
+$('#list-comm').innerHTML = DOMAINS.filter(d=>d.g!=='CLINICAL_PERFORMANCE').map(d=>rowHTML(d,d.i)).join('');
+
+$('#ticks').innerHTML = DOMAINS.map((d,i)=>`${i===9?'<span class="gap"></span>':''}<button class="tick" data-code="${d.c}" aria-label="Item ${i+1}: ${esc(d.l)}" title="${i+1}. ${esc(d.l)}"></button>`).join('');
+$('#dbar').innerHTML = DOMAINS.map(()=>'<i></i>').join('');
+$('#tally').innerHTML = ['1','2','3','4','X'].map(g=>`<div><b class="mono" id="t-${g}">0</b><span>${g}</span></div>`).join('');
+
+/* ---------- state helpers ---------- */
+const grade = c => (S.r[c]||{}).g || null;
+const example = c => ((S.r[c]||{}).ex || '');
+const needsEx = c => grade(c)==='4' && example(c).trim().length < 10;
+const rated = ()=>DOMAINS.filter(d=>grade(d.c)).length;
+
+function setGrade(c,g,{focusNext=false}={}){
+  if(locked()) return;
+  S.r[c] = Object.assign(S.r[c]||{}, {g});
+  paintRow(c); paintRail(); save();
+  const d = DOMAINS.find(x=>x.c===c);
+  say(`${d.l}: ${GFULL[g]}. ${rated()} of 15 rated.`);
+  if(focusNext){
+    const nx = DOMAINS[d.i+1];
+    if(g==='4'){ $('textarea',$('#item-'+c)).focus(); }          // a 4 needs its example straight away
+    else if(nx){ focusRow(nx.c); }
+  }
+}
+function focusRow(c){
+  const row = $('#item-'+c); if(!row) return;
+  const target = $('.g[tabindex="0"]',row) || $('.g',row);
+  target.focus({preventScroll:true});
+  row.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
+}
+
+/* ---------- paint one row ---------- */
+function paintRow(c){
+  const row = $('#item-'+c), g = grade(c), cur = S.r[c]||{};
+  const btns = $$('.g',row);
+  btns.forEach(b=>{
+    const on = b.dataset.g===g;
+    b.setAttribute('aria-checked',on?'true':'false');
+    b.tabIndex = on || (!g && b.dataset.g==='1') ? 0 : -1;
+    b.disabled = locked();
+  });
+  row.classList.remove('missing');
+  const ex = $('.ex',row), add = $('.addex',row);
+  if(!g){ ex.classList.add('hidden'); add.classList.add('hidden'); return; }
+  const forced = g==='4', encouraged = (g==='1'||g==='2'), open = forced||encouraged||cur.exOpen||example(c);
+  if(open){
+    const had = $('textarea',ex);
+    const label = g==='4' ? ['Example of unsatisfactory performance','req','Required'] :
+                  g==='X' ? ['Why could this not be assessed?','rec','Optional'] :
+                  (g==='1'||g==='2') ? ['Example of better-than-expected performance','rec','Recommended'] :
+                  ['Example of performance','rec','Optional'];
+    if(!had || ex.dataset.mode!==g){
+      const val = had ? had.value : example(c);
+      ex.innerHTML = `<label for="ex-${c}"><span>${label[0]}</span><em class="${label[1]}">${label[2]}</em></label>
+        <textarea id="ex-${c}" ${locked()?'disabled':''} placeholder="${g==='4'?'What was observed, where and when \u2014 specific enough to stand up if the assessment is contested.':'Optional \u2014 a specific case or behaviour.'}">${esc(val)}</textarea>
+        <div class="err" id="err-${c}">A specific example is required for an unsatisfactory (4) rating.</div>`;
+      ex.dataset.mode = g;
+      $('textarea',ex).addEventListener('input',e=>{
+        S.r[c] = Object.assign(S.r[c]||{}, {ex:e.target.value});
+        ex.classList.toggle('bad', needsEx(c) && ex.dataset.touched==='1');
+        paintRail(); save();
+      });
+      $('textarea',ex).addEventListener('blur',()=>{ ex.dataset.touched='1'; ex.classList.toggle('bad',needsEx(c)); });
+    }
+    ex.classList.remove('hidden'); add.classList.add('hidden');
+  } else { ex.classList.add('hidden'); add.classList.toggle('hidden',locked()); }
+}
+
+/* ---------- rail / progress ---------- */
+function paintRail(){
+  const n = rated();
+  $('#pn').textContent = n; $('#dn').textContent = n;
+  const cl = DOMAINS.filter(d=>d.g==='CLINICAL_PERFORMANCE' && grade(d.c)).length;
+  $('#cnt-clin').textContent = cl+' / 9'; $('#cnt-comm').textContent = (n-cl)+' / 6';
+  $$('#ticks .tick').forEach(t=>{ const g=grade(t.dataset.code); if(g) t.dataset.g=g; else delete t.dataset.g; });
+  $$('#dbar i').forEach((el,i)=>{ const g=grade(DOMAINS[i].c); el.className = g?'s'+g.toLowerCase():''; });
+  ['1','2','3','4','X'].forEach(g=>$('#t-'+g).textContent = DOMAINS.filter(d=>grade(d.c)===g).length);
+  const un = DOMAINS.filter(d=>!grade(d.c)), ne = DOMAINS.filter(d=>needsEx(d.c));
+  let t = '';
+  if(un.length) t += `<div><a data-jump="${un[0].c}">${un.length} item${un.length>1?'s':''} still to rate</a></div>`;
+  if(ne.length) t += `<div style="margin-top:5px"><a data-jump="${ne[0].c}">${ne.length} unsatisfactory rating${ne.length>1?'s need':' needs'} an example</a></div>`;
+  if(!un.length && !ne.length) t = 'All 15 items rated. Ready to review.';
+  $('#todo').innerHTML = t;
+  $$('#todo a').forEach(a=>a.onclick=()=>jump(a.dataset.jump));
+  const ready = !un.length && !ne.length && !locked();
+  [$('#reviewBtn'),$('#reviewBtn2')].forEach(b=>{ b.disabled = !ready; b.textContent = locked()?'Submitted':(b.id==='reviewBtn2'?'Review':'Review & submit'); });
+}
+function jump(c){ const row=$('#item-'+c); if(!row) return; row.scrollIntoView({block:'center'});
+  const ta = $('textarea',row); (needsEx(c)&&ta ? ta : ($('.g[tabindex="0"]',row)||$('.g',row))).focus({preventScroll:true}); }
+$$('#ticks .tick').forEach(t=>t.onclick=()=>jump(t.dataset.code));
+
+function save(){
+  try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){}
+  if(!locked()){ const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); $('#saved').textContent = 'Draft saved on this device \u00b7 '+t; }
+}
+
+/* ---------- wiring: radiogroups, anchors, keys ---------- */
+$$('.item').forEach(row=>{
+  const c = row.dataset.code, btns = $$('.g',row);
+  btns.forEach(b=>{
+    b.addEventListener('click',()=>setGrade(c,b.dataset.g));
+    b.addEventListener('keydown',e=>{
+      const i = btns.indexOf(b), k = e.key;
+      if(k==='ArrowRight'){ e.preventDefault(); const n=btns[(i+1)%5]; n.focus(); setGrade(c,n.dataset.g); }
+      else if(k==='ArrowLeft'){ e.preventDefault(); const n=btns[(i+4)%5]; n.focus(); setGrade(c,n.dataset.g); }
+      else if(k==='ArrowDown'){ e.preventDefault(); const nx=DOMAINS[DOMAINS.findIndex(d=>d.c===c)+1]; if(nx) focusRow(nx.c); }
+      else if(k==='ArrowUp'){ e.preventDefault(); const pv=DOMAINS[DOMAINS.findIndex(d=>d.c===c)-1]; if(pv) focusRow(pv.c); }
+      else if('1234'.includes(k) || k.toLowerCase()==='x'){ e.preventDefault(); setGrade(c,k.toUpperCase(),{focusNext:true}); }
+      else if(k==='?'){ e.preventDefault(); $('.anchor-btn',row).click(); }
+    });
+  });
+  const ab = $('.anchor-btn',row), an = $('.anchor',row);
+  ab.addEventListener('click',()=>{ const open = ab.getAttribute('aria-expanded')!=='true'; ab.setAttribute('aria-expanded',open); an.classList.toggle('hidden',!open); });
+  $('.addex .linkbtn',row).addEventListener('click',()=>{ S.r[c]=Object.assign(S.r[c]||{}, {exOpen:true}); paintRow(c); $('textarea',row).focus(); });
+  row.addEventListener('focusin',()=>{ $$('#ticks .tick').forEach(t=>t.classList.toggle('cur',t.dataset.code===c)); });
+});
+$$('[data-toggle-anchors]').forEach(btn=>btn.addEventListener('click',()=>{
+  const grp = btn.dataset.toggleAnchors, open = btn.textContent.startsWith('Show');
+  DOMAINS.filter(d=>d.g===grp).forEach(d=>{ const row=$('#item-'+d.c); $('.anchor-btn',row).setAttribute('aria-expanded',open); $('.anchor',row).classList.toggle('hidden',!open); });
+  btn.textContent = open?'Hide all anchors':'Show all anchors';
+}));
+$('#comments').value = S.comments||'';
+$('#comments').addEventListener('input',e=>{ S.comments=e.target.value; save(); });
+
+/* ---------- review & seal ---------- */
+function openReview(){
+  const ne = DOMAINS.filter(d=>needsEx(d.c));
+  if(rated()<15 || ne.length){ const first = DOMAINS.find(d=>!grade(d.c)) || ne[0];
+    DOMAINS.filter(d=>!grade(d.c)).forEach(d=>$('#item-'+d.c).classList.add('missing'));
+    ne.forEach(d=>{ const ex=$('#item-'+d.c+' .ex'); ex.dataset.touched='1'; ex.classList.add('bad'); });
+    jump(first.c); say('Complete all items before submitting.'); return; }
+  const chip = g=>`<i class="chip k${g.toLowerCase()}">${g}</i>`;
+  const rows = DOMAINS.map(d=>{ const g=grade(d.c), ex=example(d.c).trim();
+    return `<div class="rev-row">${chip(g)}<span class="nm">${esc(d.l)}</span><span class="mono" style="color:var(--ink3);font-size:11px">${String(d.i+1).padStart(2,'0')}</span>${ex&&(g==='4'||g==='1'||g==='2')?`<div class="exq">${esc(ex)}</div>`:''}</div>`; }).join('');
+  const el = document.createElement('div'); el.className='scrim'; el.id='scrim';
+  el.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-h">
+    <h2 id="sh-h">Review before you submit</h2>
+    <p class="meta">Dr. Kelvin Wong &middot; Higher Trainee year 2 &middot; 01 Jul &ndash; 31 Dec 2026</p>
+    <div class="rev">${rows}</div>
+    ${S.comments.trim()?`<p class="meta" style="margin-top:14px"><b>Comments:</b> ${esc(S.comments.trim())}</p>`:''}
+    <div class="acts"><button class="btn sec" id="sh-back">Keep editing</button><button class="btn pri" id="sh-go">Submit &amp; seal</button></div>
+    <p class="fine">Once submitted, this form is sealed and cannot be edited. A later correction is recorded as a separate, dated annotation in the audit trail.</p></div>`;
+  document.body.appendChild(el);
+  const close=()=>{ el.remove(); $('#reviewBtn').focus(); };
+  $('#sh-back').onclick = close; el.addEventListener('click',e=>{ if(e.target===el) close(); });
+  el.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+  $('#sh-go').onclick = ()=>{ seal(); el.remove(); };
+  $('#sh-go').focus();
+}
+async function digest(txt){
+  try{ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+       return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+  catch(e){ let h=2166136261; for(const ch of txt){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619)>>>0; } return 'fnv1a-'+h.toString(16); }
+}
+async function seal(){
+  const payload = JSON.stringify({r:S.r, comments:S.comments});
+  const hash = await digest(payload);
+  S.sealed = {at:new Date().toISOString(), hash};
+  save(); lockForm();
+  window.scrollTo({top:0,behavior:'smooth'});
+  say('Submission sealed. Thank you.');
+}
+function lockForm(){
+  DOMAINS.forEach(d=>paintRow(d.c));
+  $$('textarea,#comments').forEach(t=>t.disabled=true);
+  $$('.addex').forEach(a=>a.classList.add('hidden'));
+  const at = new Date(S.sealed.at);
+  $('#sealedBanner').innerHTML = `<div class="sealed" role="status"><b>Submitted and sealed</b>
+    <p>The SOT can now see your ratings. You can no longer edit this form.<br>
+    <span class="mono">${at.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} &middot; SHA-256 ${S.sealed.hash.slice(0,12)}&hellip;${S.sealed.hash.slice(-6)}</span></p></div>`;
+  $('#saved').textContent = 'Sealed \u2014 read only'; paintRail();
+}
+$('#reviewBtn').onclick = openReview; $('#reviewBtn2').onclick = openReview;
+$('#resetBtn').onclick = ()=>{ localStorage.removeItem(KEY); location.reload(); };
+
+/* ---------- theme ---------- */
+function toggleTheme(){ const d=document.documentElement.classList.toggle('dark'); $('#themeBtn').innerHTML=d?'&#9790;':'&#9788;'; localStorage.setItem('ita-theme',d?'dark':'light'); }
+(function(){ const s=localStorage.getItem('ita-theme'); if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme: dark)').matches)){ document.documentElement.classList.add('dark'); $('#themeBtn').innerHTML='&#9790;'; } })();
+
+/* ---------- init ---------- */
+DOMAINS.forEach(d=>paintRow(d.c)); paintRail();
+if(S.sealed) lockForm(); else if(rated()) $('#saved').textContent='Draft restored from this device';
+</script>
+</body>
+</html>

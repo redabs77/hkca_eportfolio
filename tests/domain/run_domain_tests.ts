@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { AccreditedTimeLedgerEngine } from "../../domain/ledger/accreditedTime.ts";
 import { ItaStateMachine } from "../../domain/ita/stateMachine.ts";
+import { ItaOverallAssessment } from "../../domain/ita/overallAssessment.ts";
+import { ITA_DOMAINS, ITA_COMPULSORY_COURSES } from "../../domain/ita/itaDomains.ts";
 import { MilestoneProgressionEngine } from "../../domain/progression/milestoneGates.ts";
 
 console.log("================================================================================");
@@ -91,7 +93,7 @@ const unsat1 = ItaStateMachine.processSignOff(
     traineeId: "t-2",
     rotationId: "rot-2",
     status: "AWAITING_F2F_MEETING",
-    sotGrade: 3,
+    sotGrade: 4,
     isContested: false,
     trainerResponsesCount: 4,
     minRequiredTrainerResponses: 4,
@@ -100,7 +102,7 @@ const unsat1 = ItaStateMachine.processSignOff(
     hasActiveAppeal: false,
   },
   true,
-  3 // Grade 3
+  4 // Grade 4 = unsatisfactory (the only failing grade)
 );
 assert.equal(unsat1.newConsecutiveUnsat, 1);
 assert.equal(unsat1.nextStatus, "REMEDIAL_ACTIVE");
@@ -147,9 +149,62 @@ const unsat2 = ItaStateMachine.processSignOff(
 assert.equal(unsat2.nextStatus, "ESCALATED_BOE");
 assert.equal(unsat2.escalationLevel, "BOE", "2 consecutive fails must trigger automatic BOE escalation");
 
+// 2.3 Grade 3 ("usually meets expectation") is a PASS — must not create an unsatisfactory streak
+const passWithPlan = ItaStateMachine.processSignOff(
+  {
+    id: "ita-5", traineeId: "t-4", rotationId: "rot-5", status: "AWAITING_F2F_MEETING", sotGrade: 3,
+    isContested: false, trainerResponsesCount: 4, minRequiredTrainerResponses: 4,
+    consecutiveUnsatisfactoryCount: 0, lifetimeUnsatisfactoryCount: 0, hasActiveAppeal: false,
+  },
+  true,
+  3
+);
+assert.equal(passWithPlan.nextStatus, "COMPLETED_SATISFACTORY", "Grade 3 must complete satisfactorily");
+assert.equal(passWithPlan.newConsecutiveUnsat, 0, "Grade 3 must not count as unsatisfactory");
+
 console.log("  ✓ Contested state machine transitions verified");
 console.log("  ✓ Consecutive fail streak reset confirmed");
 console.log("  ✓ Automatic 2-consecutive fail BOE escalation verified\n");
+
+// -----------------------------------------------------------------------------
+// Test Group 2B: Official 15-item ITA form (trainer validation + overall-assessment rule)
+// -----------------------------------------------------------------------------
+console.log("Running Test Group 2B: Official 15-item ITA form...");
+
+assert.equal(ITA_DOMAINS.length, 15, "College form has exactly 15 feedback items");
+assert.equal(ITA_DOMAINS.filter((d) => d.group === "CLINICAL_PERFORMANCE").length, 9);
+assert.equal(ITA_DOMAINS.filter((d) => d.group === "COMMUNICATION_TEAMWORK_INTERPERSONAL").length, 6);
+assert.equal(new Set(ITA_DOMAINS.map((d) => d.code)).size, 15, "domain codes unique");
+assert.deepEqual([...ITA_COMPULSORY_COURSES], ["EASE", "ADAM-A", "EMAC", "ECHO-A", "USRA-E"]);
+
+const full = (g: any) => Object.fromEntries(ITA_DOMAINS.map((d) => [d.code, { grade: g }]));
+assert.equal(ItaOverallAssessment.validateTrainerSubmission(full("X")).missing.length, 0, "X is a valid answer");
+assert.equal(ItaOverallAssessment.validateTrainerSubmission({}).missing.length, 15, "all 15 mandatory");
+const needEx = ItaOverallAssessment.validateTrainerSubmission({ ...full(3), TECHNICAL_SKILLS: { grade: 4 } });
+assert.deepEqual(needEx.needsExample, ["TECHNICAL_SKILLS"], "grade 4 requires an example");
+assert.equal(
+  ItaOverallAssessment.validateTrainerSubmission({ ...full(3), TECHNICAL_SKILLS: { grade: 4, example: "Needle visibility lost twice during block." } }).ok,
+  true
+);
+
+const dist = ItaOverallAssessment.distribution(
+  [{ TIME_MANAGEMENT: { grade: 2 } }, { TIME_MANAGEMENT: { grade: 4 } }, { TIME_MANAGEMENT: { grade: "X" } }] as any,
+  "TIME_MANAGEMENT"
+);
+assert.equal(dist.spread, 2);
+assert.equal(dist.divergent, true, "spread >= 2 levels is divergent; X is excluded from spread");
+
+const sot = (n4: number) => Object.fromEntries(ITA_DOMAINS.map((d, i) => [d.code, i < n4 ? 4 : 3]));
+assert.equal(ItaOverallAssessment.overallConstraint(sot(3) as any).ruleTriggered, false, "3 items graded 4 -> rule not triggered");
+const locked = ItaOverallAssessment.overallConstraint(sot(4) as any);
+assert.equal(locked.ruleTriggered, true, ">= 4 items graded 4 -> rule triggered");
+assert.deepEqual([...locked.allowedOverall], [4], "overall locked to 4 when rule triggered");
+assert.equal(ItaOverallAssessment.isOverallUnsatisfactory(3), false);
+assert.equal(ItaOverallAssessment.isOverallUnsatisfactory(4), true);
+
+console.log("  ✓ 15 official items, 9 + 6 grouping, mandatory-all validation");
+console.log("  ✓ Grade 3 = pass; only 4 is unsatisfactory (state machine corrected)");
+console.log("  ✓ Divergence (spread >= 2) and >= 4-item overall rule verified\n");
 
 // -----------------------------------------------------------------------------
 // Test Group 3: Milestone Progression Gates (BAT, HAT, Exit)

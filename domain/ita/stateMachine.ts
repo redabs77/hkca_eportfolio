@@ -49,7 +49,9 @@ export class ItaStateMachine {
       throw new Error("SOT Grade must be on the standard 1–4 Likert scale.");
     }
 
-    const isUnsatisfactory = sotGrade >= 3; // Grade 3 (Borderline/Needs attention) or Grade 4 (Unsatisfactory)
+    // College scale: 1 consistently exceeds, 2 occasionally exceeds, 3 usually meets expectation, 4 unsatisfactory.
+    // Only 4 is unsatisfactory — 3 is a pass (a development plan may still be attached by the SOT).
+    const isUnsatisfactory = sotGrade === 4;
     return {
       nextStatus: "AWAITING_F2F_MEETING",
       isUnsatisfactory,
@@ -76,7 +78,7 @@ export class ItaStateMachine {
     }
 
     // Trainee signed
-    const isUnsat = sotGrade >= 3;
+    const isUnsat = sotGrade === 4; // 3 = usually meets expectation = satisfactory
     let newConsecutive = isUnsat ? ctx.consecutiveUnsatisfactoryCount + 1 : 0; // Satisfactory resets the streak!
     let newLifetime = isUnsat ? ctx.lifetimeUnsatisfactoryCount + 1 : ctx.lifetimeUnsatisfactoryCount;
 
