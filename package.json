@@ -14,7 +14,11 @@
     "prisma:generate": "prisma generate --schema db/schema/schema.prisma",
     "prisma:format": "prisma format --schema db/schema/schema.prisma",
     "seed": "node scripts/test_seed.mjs",
-    "test:domain": "node tests/domain/run_domain_tests.ts"
+    "test:domain": "node tests/domain/run_domain_tests.ts",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -30,14 +34,23 @@
   "homepage": "https://github.com/redabs77/hkca_eportfolio#readme",
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "postcss": "^8.5.30",
     "prisma": "^6.19.3",
+    "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^6.19.3",
     "@types/pg": "^8.23.1",
-    "pg": "^8.23.1"
+    "next": "^16.4.2",
+    "pg": "^8.23.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1"
   }
 }

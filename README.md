@@ -34,7 +34,7 @@ db/
   seeds/      Synthetic fixtures (never real data)
 tests/
   parity/     Legacy-vs-new verification suite
-src/          Next.js application
+src/          Next.js application (App Router; `npm run dev`, `npm run build`)
 ```
 
 ---
@@ -49,7 +49,7 @@ src/          Next.js application
 | Migration plan | Drafted — 4-phase, parity-tested |
 | Prototypes | 4 HTML prototypes complete |
 | Migration tooling | **Not started** |
-| Application | **Not started** |
+| Application | **Skeleton built** — Next.js 16 / Tailwind 4, 4 role surfaces, tokens from prototypes, SOT roster live on seed data via the domain engine. All other screens are marked placeholders. No auth, no database connection yet |
 
 ---
 

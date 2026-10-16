@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+/*
+ * HKCA ePortfolio design tokens — lifted from the approved prototypes
+ * (HKCA_SOT_Console_Prototype.html). Same type family, same semantic colours, same status pills
+ * across surfaces; only density and elevation differ (README → Design direction).
+ */
+
+:root {
+  --g50: #fafafa; --g100: #f5f5f5; --g200: #e5e5e5; --g300: #d4d4d4; --g400: #a3a3a3;
+  --g500: #737373; --g600: #525252; --g700: #404040; --g800: #262626; --g900: #171717; --g950: #0a0a0a;
+
+  --bg: #ffffff; --bg-2: var(--g50); --bg-3: var(--g100);
+  --surface: #ffffff; --raised: #ffffff;
+  --border: var(--g200); --border-sub: var(--g100);
+  --ink: var(--g900); --ink-2: var(--g600); --ink-3: var(--g500);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.06);
+
+  /* semantic status — each carries a tinted bg so pills never rely on colour alone */
+  --ok: #047857;   --ok-bg: #ecfdf5;
+  --warn: #b45309; --warn-bg: #fffbeb;
+  --bad: #b91c1c;  --bad-bg: #fef2f2;
+  --info: #1d4ed8; --info-bg: #eff6ff;
+  --accent: #2563eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: var(--g950); --bg-2: var(--g900); --bg-3: var(--g800);
+    --surface: #0f0f10; --raised: #16161a;
+    --border: rgb(255 255 255 / 0.09); --border-sub: rgb(255 255 255 / 0.05);
+    --ink: var(--g50); --ink-2: var(--g400); --ink-3: var(--g500);
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 16px rgb(0 0 0 / 0.4);
+    --ok: #34d399;   --ok-bg: rgb(16 185 129 / 0.12);
+    --warn: #fbbf24; --warn-bg: rgb(245 158 11 / 0.12);
+    --bad: #f87171;  --bad-bg: rgb(239 68 68 / 0.12);
+    --info: #60a5fa; --info-bg: rgb(59 130 246 / 0.12);
+    --accent: #60a5fa;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: var(--g950); --bg-2: var(--g900); --bg-3: var(--g800);
+  --surface: #0f0f10; --raised: #16161a;
+  --border: rgb(255 255 255 / 0.09); --border-sub: rgb(255 255 255 / 0.05);
+  --ink: var(--g50); --ink-2: var(--g400); --ink-3: var(--g500);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 16px rgb(0 0 0 / 0.4);
+  --ok: #34d399;   --ok-bg: rgb(16 185 129 / 0.12);
+  --warn: #fbbf24; --warn-bg: rgb(245 158 11 / 0.12);
+  --bad: #f87171;  --bad-bg: rgb(239 68 68 / 0.12);
+  --info: #60a5fa; --info-bg: rgb(59 130 246 / 0.12);
+  --accent: #60a5fa;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: var(--font-jetbrains), Menlo, monospace;
+
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--border);
+  --color-line-sub: var(--border-sub);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-accent: var(--accent);
+
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-md);
+}
+
+html { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

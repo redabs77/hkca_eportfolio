@@ -71,3 +71,4 @@ logs/
 tmp/
 temp/
 package-lock.json
+next-env.d.ts
