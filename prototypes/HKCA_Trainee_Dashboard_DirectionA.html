@@ -10,8 +10,8 @@
 <style>
 :root{
   --navy:#0a2540; --navy-l:#1b3a5d; --border:#e3e8ee; --slate:#425466;
-  --teal:#00d4b2; --green:#00a389; --surface:#fff; --page:#f8fafc;
-  --am:#d97706; --rd:#dc2626; --bl:#2563eb; --pu:#7c3aed;
+  --teal:#00d4b2; --green:#007a67; --surface:#fff; --page:#f8fafc;
+  --am:#b45309; --rd:#b91c1c; --bl:#1d4ed8; --pu:#6d28d9;
 }
 .dark{
   --navy:#e8eef7; --navy-l:#cbd8e8; --border:#1e2a45; --slate:#8fa3c0;
@@ -243,8 +243,8 @@ main{padding:30px 0 70px}
           assessment can be signed off.
         </p>
         <div class="acts">
-          <button class="btn am">Add self-reflection</button>
-          <button class="btn sec">Read trainer feedback</button>
+          <button class="btn am" onclick="openReflectionModal()">Add self-reflection</button>
+          <button class="btn sec" onclick="openSotSummaryModal()">View SOT assessment summary</button>
         </div>
       </div>
     </div>
@@ -330,9 +330,9 @@ main{padding:30px 0 70px}
       <div class="stat">
         <div class="rule am"></div>
         <div class="lb">Multi-Source Feedback</div>
-        <div class="vl mono">1<em> / 2</em></div>
-        <div class="track"><i class="am" style="width:50%"></i></div>
-        <div class="sb">One more MSF required at the end of Higher Training</div>
+        <div class="vl mono">1<em> / 3</em></div>
+        <div class="track"><i class="am" style="width:33%"></i></div>
+        <div class="sb">Stage 2 of 3 &middot; BAT completed, HAT due before PFY, 3rd in PFY</div>
       </div>
       <div class="stat">
         <div class="rule pu"></div>
@@ -567,10 +567,10 @@ main{padding:30px 0 70px}
               <!-- college median -->
               <line x1="444" y1="46" x2="444" y2="140" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 4"/>
               <text x="444" y="40" text-anchor="middle" font-size="10" font-weight="600" fill="#94a3b8">College median (n=200)</text>
-              <!-- you -->
-              <line x1="580" y1="18" x2="580" y2="152" stroke="#00a389" stroke-width="2.6"/>
-              <circle cx="580" cy="18" r="7" fill="#00a389" stroke="#fff" stroke-width="2.5"/>
-              <text x="580" y="176" text-anchor="middle" font-size="11" font-weight="750" fill="#067a68">YOU</text>
+              <!-- you: 62nd percentile -> x = 40 + (640 * 0.62) = 436.8 ~ 437 -->
+              <line x1="437" y1="18" x2="437" y2="152" stroke="#00a389" stroke-width="2.6"/>
+              <circle cx="437" cy="18" r="7" fill="#00a389" stroke="#fff" stroke-width="2.5"/>
+              <text x="437" y="176" text-anchor="middle" font-size="11" font-weight="750" fill="#067a68">YOU</text>
               <!-- axis -->
               <text x="40" y="164" font-size="10.5" fill="#425466" font-weight="600">0th</text>
               <text x="200" y="164" text-anchor="middle" font-size="10.5" fill="#425466" font-weight="600">25th</text>
@@ -640,7 +640,7 @@ main{padding:30px 0 70px}
                 </div>
               </td>
               <td class="mono" style="font-weight:700">62nd</td>
-              <td style="color:var(--slate)">Above both medians. No action.</td>
+              <td style="color:var(--slate)">Above both medians. 7 cases remaining for stage minimum.</td>
             </tr>
             <tr>
               <td style="font-weight:700">Clinical Fundamentals WBA</td>
@@ -740,8 +740,8 @@ main{padding:30px 0 70px}
             <span class="mono" style="font-weight:700;color:#92400e">Nearly met</span>
           </div>
           <div style="display:flex;justify-content:space-between;gap:12px">
-            <span><span class="dot r" style="display:inline-block;margin-right:7px"></span>Multi-Source Feedback (1 short)</span>
-            <span class="mono" style="font-weight:700;color:#991b1b">Not started</span>
+            <span><span class="dot a" style="display:inline-block;margin-right:7px"></span>Multi-Source Feedback (1 of 3 total &middot; 2nd due for PFY)</span>
+            <span class="mono" style="font-weight:700;color:#92400e">HAT MSF pending</span>
           </div>
           <div style="display:flex;justify-content:space-between;gap:12px">
             <span><span class="dot r" style="display:inline-block;margin-right:7px"></span>Final Fellowship Examination</span>
@@ -758,7 +758,83 @@ main{padding:30px 0 70px}
   </div>
 </main>
 
+<!-- Modal: Add Self-Reflection -->
+<div id="modalReflection" class="hidden" style="position:fixed;inset:0;background:rgba(10,37,64,.65);backdrop-filter:blur(3px);z-index:100;display:grid;place-items:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:580px;width:100%;padding:28px;box-shadow:0 12px 36px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:18px;font-weight:750">Trainee Self-Reflection &amp; Goals</h3>
+      <button onclick="closeModal('modalReflection')" style="background:transparent;border:0;font-size:20px;cursor:pointer;color:var(--slate)">&times;</button>
+    </div>
+    <p style="font-size:13px;color:var(--slate);margin-bottom:18px">
+      Complete your reflection for the Jul&ndash;Dec 2026 cycle at <strong>Prince of Wales Hospital</strong>. This will be reviewed with your SOT during the face-to-face feedback meeting.
+    </p>
+    <div style="display:grid;gap:14px">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">Clinical Strengths &amp; Progress Achieved</label>
+        <textarea style="width:100%;height:80px;padding:10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px" placeholder="Describe clinical domains or cases where you demonstrated independent progress..."></textarea>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">Areas Identified for Growth &amp; Support Needed</label>
+        <textarea style="width:100%;height:80px;padding:10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px" placeholder="Identify specific subspecialties, techniques, or EPA targets for next cycle..."></textarea>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+      <button class="btn sec sm" onclick="closeModal('modalReflection')">Cancel</button>
+      <button class="btn pri sm" onclick="saveReflection()">Submit Reflection to SOT</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: View SOT Assessment Summary -->
+<div id="modalSotSummary" class="hidden" style="position:fixed;inset:0;background:rgba(10,37,64,.65);backdrop-filter:blur(3px);z-index:100;display:grid;place-items:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:580px;width:100%;padding:28px;box-shadow:0 12px 36px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:18px;font-weight:750">SOT Assessment Summary (Tier 2)</h3>
+      <button onclick="closeModal('modalSotSummary')" style="background:transparent;border:0;font-size:20px;cursor:pointer;color:var(--slate)">&times;</button>
+    </div>
+    <div style="background:rgba(2,132,199,.08);border:1px solid rgba(2,132,199,.25);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12.5px;color:var(--slate)">
+      <strong>Governance Notice (PRD §5.2):</strong> Individual trainer scoring forms (<span class="mono">ItaAssessorResponse</span>) are private to the College. This view shows only the aggregated synthesis prepared by your Supervisor of Training.
+    </div>
+    <div style="display:grid;gap:12px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <span style="color:var(--slate)">Supervising Centre</span>
+        <span style="font-weight:600">Prince of Wales Hospital (NTEC)</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <span style="color:var(--slate)">Trainer Inputs Collated</span>
+        <span class="mono" style="font-weight:600">4 of 4 submitted</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <span style="color:var(--slate)">Current Summative Status</span>
+        <span class="pill warn">Awaiting Trainee Self-Reflection</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:22px">
+      <button class="btn pri sm" onclick="closeModal('modalSotSummary')">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
+function openReflectionModal(){
+  const m=document.getElementById('modalReflection');
+  m.classList.remove('hidden');
+  m.style.display='grid';
+}
+function openSotSummaryModal(){
+  const m=document.getElementById('modalSotSummary');
+  m.classList.remove('hidden');
+  m.style.display='grid';
+}
+function closeModal(id){
+  const m=document.getElementById(id);
+  m.classList.add('hidden');
+  m.style.display='none';
+}
+function saveReflection(){
+  alert('Self-reflection submitted successfully. Your SOT will review this during your face-to-face feedback meeting.');
+  closeModal('modalReflection');
+}
 /* chart option switcher */
 document.querySelectorAll('#optbar button').forEach(b=>{
   b.onclick=()=>{

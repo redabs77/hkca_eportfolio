@@ -338,3 +338,67 @@ Working decisions made for items E1–E6 to ensure platform resilience, integrat
 - Seed generator and `db/seeds/synthetic_seed.json` rebuilt in the new shape. A seed test checks every response and every SOT session against the same domain rules the app will enforce. One synthetic REMEDIAL session was corrected from overall 3 to a discretionary 4 (a remedial plan implies unsatisfactory).
 
 **Confirmed (Albert, 2026-10-12):** `X` items never count toward the 4-item rule — a trainer who did not see the competency (for example no crisis occurred) cannot comment on it.
+
+---
+
+## S1 — Admin Bulk Ingestion Engine (Secretariat Operations)
+
+**Date:** 2026-10-16 · **Source:** Stakeholder Survey (HKCA Secretariat / Phoebe) · **Status:** Decided (incorporate into Admin specifications).
+
+**Decided:**
+- Build an Administrative Bulk CSV Ingestion tool in the College Secretariat Console.
+- Solves Secretariat pain point of slow, manual one-by-one record entry for batch events.
+- **Supported ingestion streams:** Mandatory course completions (EASE, EMAC, ADAM-A, ECHO-A, USRA-E), Fellowship exam pass lists (Intermediate and Final), rotation cohort allocations, and training centre appointment updates.
+- **Engine architecture:**
+  - Client-side CSV/Excel parsing and schema validation against active trainee identifiers (HKCA Trainee ID / email).
+  - Dry-run validation docket showing matching records, unmatched/unregistered trainees, and diff previews before execution.
+  - Transactional batch commit with complete rollback on foreign key violations.
+  - Full audit logging linking every bulk insert/update to the authenticated College Admin user.
+
+---
+
+## S2 — One-Click Fellowship Exit Dossier & Portfolio Compiler (MVP Scope)
+
+**Date:** 2026-10-16 · **Source:** Stakeholder Survey (HKCA Secretariat & SOT consensus) · **Status:** Decided (added to MVP scope).
+
+**Decided:**
+- Implement an automated Fellowship Exit application compiler within the core system.
+- Replaces manual paper/PDF compilation during the final Fellowship application at month 70–72.
+- **Compiled dossier contents:**
+  1. Executive Summary & Verification Hash (cryptographically signed snapshot of Fellowship readiness).
+  2. Accredited Time Ledger attestation (72 accredited calendar months verified across BAT, HAT, PFY).
+  3. Volume of Practice (VOP) curriculum compliance audit (verifying all stage gates: 218 BT, 615 HT, subspecialty quotas).
+  4. 3-Stage Multi-Source Feedback (MSF) summary (BAT, HAT, PFY completions).
+  5. 15-Item In-Training Assessment (ITA) longitudinal summary ladder.
+  6. Verified Mandatory Course completion certificates with College verification timestamps.
+  7. Board-approved Formal Project manuscript completion sign-off.
+  8. Intermediate & Final Fellowship Examination passing records.
+- Export formats: Standardized high-craft College PDF dossier + interactive digital verification portal for BOE adjudicators.
+
+---
+
+## S3 — Trainee Document Lifecycle & Versioning (PFY Exit Documents)
+
+**Date:** 2026-10-16 · **Source:** Stakeholder Survey (HKCA Secretariat / Phoebe) · **Status:** Decided.
+
+**Decided:**
+- Implement versioned, mutable document management for trainees prior to verification.
+- Trainees (especially PFY trainees preparing for Exit) can upload, delete, update, and replace supporting documents (course certificates, formal project revisions, exemption petitions) while the document state is `DRAFT` or `PENDING_REVIEW`.
+- Once verified by an SOT or College Secretariat administrator, the document status transitions to `VERIFIED` and is locked to prevent unauthorized tampering.
+- If rejected or flagged by the Secretariat, the document returns to `ACTION_REQUIRED` status with admin commentary, unlocking trainee re-upload while preserving previous rejection history in the audit log.
+
+---
+
+## S4 — Unified Echocardiography Logbook & Assessment Integration (Core MVP)
+
+**Date:** 2026-10-16 · **Source:** Stakeholder Survey (SOTs QMH & TMH) · **Status:** Decided (elevated to Core MVP alongside core Anaesthesia VOP/ITA).
+
+**Decided:**
+- The Echocardiography Logbook is unified directly into the core platform rather than deferred as an isolated sub-system or Phase 2 add-on.
+- **Echocardiography DOPS Workflow Modernization:**
+  - Eliminates the legacy bug requiring trainers to log in with trainee credentials.
+  - Standardizes Echo DOPS and case verifications under the same responsive, tokenized magic-link email workflow as general WBAs.
+  - Automatically dispatches email notifications to designated Echo trainers upon trainee submission.
+- **Integrated Dashboard & Milestones:**
+  - Echocardiography requirements are tracked directly within the Trainee Dashboard and SOT Departmental Overview alongside core subspecialty requirements (Cardiac, Neuro, Paediatric, Obstetric, Regional, ICU).
+  - Trainees log echocardiography cases (TTE/TOE) with subspecialty procedural tagging and structured study indications.
