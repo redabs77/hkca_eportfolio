@@ -110,6 +110,53 @@ enum ProjectStatus {
   REJECTED
 }
 
+enum BulkIngestionType {
+  MANDATORY_COURSE
+  EXAM_RESULT
+  ROTATION_ALLOCATION
+  CENTRE_APPOINTMENT
+  OTHER
+}
+
+enum BulkIngestionStatus {
+  PENDING_VALIDATION
+  VALIDATED
+  COMMITTED
+  ROLLED_BACK
+  FAILED
+}
+
+enum ExitDossierStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ACTION_REQUIRED
+}
+
+enum DocumentCategory {
+  MANDATORY_COURSE_CERT
+  FORMAL_PROJECT_MANUSCRIPT
+  PFY_EVALUATION
+  EXEMPTION_PETITION
+  EXIT_SUPPORTING_DOC
+  OTHER
+}
+
+enum DocumentStatus {
+  DRAFT
+  PENDING_REVIEW
+  VERIFIED
+  ACTION_REQUIRED
+}
+
+enum EchoStudyType {
+  TTE
+  TOE
+  FOCUS
+}
+
 // =============================================================================
 // 2. USER DIRECTORY & ROLE-BASED ACCESS CONTROL (RBAC)
 // =============================================================================
@@ -162,6 +209,13 @@ model User {
   pfySotSignatures      PfyPlan[]              @relation("PfySotSigner")
   pfyCosSignatures      PfyPlan[]              @relation("PfyCosSigner")
   ledgerActions         AccreditedTimeLedger[] @relation("LedgerAuthority")
+
+  // Stakeholder Survey Extensions (S1-S4)
+  bulkBatchesExecuted   BulkIngestionBatch[]    @relation("BulkBatchExecutor")
+  exitDossiersReviewed  FellowshipExitDossier[] @relation("ExitDossierReviewer")
+  documentsVerified     DocumentRecord[]        @relation("DocumentVerifier")
+  coursesVerified       MandatoryCourse[]       @relation("CourseVerifier")
+  echoStudiesSupervised EchoStudy[]             @relation("EchoSupervisor")
 
   @@index([email, hkcaNumber])
   @@index([hkamId])
@@ -229,6 +283,12 @@ model TraineeProfile {
   examApplications  ExamApplication[]
   formalProjects    FormalProject[]
   pfyPlans          PfyPlan[]
+
+  // Stakeholder Survey Extensions (S1-S4)
+  mandatoryCourses MandatoryCourse[]
+  documents        DocumentRecord[]
+  echoStudies      EchoStudy[]
+  exitDossiers     FellowshipExitDossier[]
 
   @@index([currentStage, isSuspended])
   @@index([parentHospitalId])
@@ -856,4 +916,165 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([performedById, performedAt])
   @@index([performedAt])
+}
+
+// =============================================================================
+// 11. STAKEHOLDER EXTENSIONS: BULK INGESTION, EXIT DOSSIER, DOCUMENTS, ECHO (S1-S4)
+// =============================================================================
+
+// S1: Administrative Bulk CSV Ingestion Engine
+model BulkIngestionBatch {
+  id                String              @id @default(uuid())
+  batchType         BulkIngestionType
+  status            BulkIngestionStatus @default(PENDING_VALIDATION)
+  fileName          String
+  totalRows         Int                 @default(0)
+  successRows       Int                 @default(0)
+  errorRows         Int                 @default(0)
+  dryRunSummaryJson Json?
+  errorLogJson      Json?
+  executedById      String
+  executedAt        DateTime            @default(now())
+  committedAt       DateTime?
+
+  // Relations
+  executedByUser User @relation("BulkBatchExecutor", fields: [executedById], references: [id], onDelete: Restrict)
+
+  @@index([batchType, status])
+  @@index([executedById, executedAt])
+}
+
+// S2: One-Click Fellowship Exit Dossier & Portfolio Compiler
+model FellowshipExitDossier {
+  id           String            @id @default(uuid())
+  traineeId    String
+  status       ExitDossierStatus @default(DRAFT)
+  version      Int               @default(1)
+  academicYear String
+
+  // Automated Snapshot Aggregations
+  executiveSummaryJson     Json
+  accreditedMonthsSnapshot Decimal   @db.Decimal(5, 2)
+  vopAuditSnapshotJson     Json
+  msfSummaryJson           Json
+  itaLadderJson            Json
+  courseCertificatesJson   Json
+  formalProjectApproved    Boolean   @default(false)
+  formalProjectSignedAt    DateTime?
+  examRecordsJson          Json
+
+  // Cryptographic Verification Hash (S2)
+  verificationHash    String
+  qrVerificationToken String @unique @default(uuid())
+
+  // Review & Approval Workflow
+  submittedAt   DateTime?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  boeApprovedAt DateTime?
+  boeComments   String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  trainee        TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  reviewedByUser User?          @relation("ExitDossierReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, status])
+  @@index([qrVerificationToken])
+}
+
+// S3: Trainee Document Lifecycle & Versioning
+model DocumentRecord {
+  id            String           @id @default(uuid())
+  traineeId     String
+  category      DocumentCategory
+  status        DocumentStatus   @default(DRAFT)
+  title         String
+  fileName      String
+  fileUrl       String
+  fileSizeBytes Int?
+  mimeType      String?
+  fileHash      String?
+  version       Int              @default(1)
+
+  reviewerFeedback String?
+  verifiedById     String?
+  verifiedAt       DateTime?
+
+  uploadedAt DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  deletedAt  DateTime?
+  deletedBy  String?
+
+  // Relations
+  trainee        TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  verifiedByUser User?          @relation("DocumentVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, category, status])
+  @@index([status])
+}
+
+// Mandatory Courses (EASE, EMAC, ADAM-A, ECHO-A, USRA-E)
+model MandatoryCourse {
+  id             String             @id @default(uuid())
+  traineeId      String
+  courseCode     String
+  courseName     String
+  completionDate DateTime           @db.Date
+  status         VerificationStatus @default(PENDING)
+  documentId     String?
+
+  verifiedById String?
+  verifiedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Relations
+  trainee        TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  verifiedByUser User?          @relation("CourseVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+
+  @@unique([traineeId, courseCode])
+  @@index([traineeId, status])
+}
+
+// S4: Unified Echocardiography Logbook & DOPS
+model EchoStudy {
+  id        String        @id @default(uuid())
+  traineeId String
+  studyDate DateTime      @db.Date
+  echoType  EchoStudyType @default(TTE)
+
+  maskedHospitalNumber String?
+  indication           String
+  viewsObtainedJson    Json
+  findingsSummary      String
+
+  isDops          Boolean   @default(false)
+  dopsRating      Int?
+  dopsFeedback    String?
+  supervisorId    String?
+  supervisorToken String?   @unique
+  tokenExpiresAt  DateTime?
+
+  status     VerificationStatus @default(PENDING)
+  verifiedAt DateTime?
+  recordHash String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  trainee    TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  supervisor User?          @relation("EchoSupervisor", fields: [supervisorId], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, studyDate])
+  @@index([supervisorId, status])
+  @@index([supervisorToken])
 }
