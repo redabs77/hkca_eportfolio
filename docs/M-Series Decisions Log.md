@@ -202,9 +202,27 @@ Working decisions made for items U1–U5 to ensure clinical feasibility, mobile 
 
 **Decided:**
 - **No Auto-Prefill from Previous Cycle:** Explicitly rejected to eliminate "rubber-stamping" and complacency. Assessors must actively select ratings each cycle.
-- **Batch Matrix Rating Screen ("Theatre List" Mode):** Approved in principle. A high-density interactive prototype will be constructed first for user testing before implementation.
+- **Batch Matrix Rating Screen ("Trainee List View"; originally called "Theatre List Mode"):** Approved in principle. A high-density interactive prototype will be constructed first for user testing before implementation.
 - **Structured Constructive Feedback:** ~~Free text replaced with two focused prompts: *"Notable Strength"* and *"Key Area for Growth / Development"*.~~ **Superseded by I1 (2026-10-12):** the College's own form uses a per-item example field plus one "Comments from Specialist Assessors" box.
 - **Clinical Behavioral Anchors:** Mandatory integration of contextual tooltips and pop-up descriptors defining rating criteria (e.g. operational difference between *Usually Meets* vs *Occasionally Exceeds*) across all clinical rubrics.
+
+---
+
+## U1 extension — Trainee List View (trainer batch view)
+
+**Date:** 2026-10-16 · **Status:** prototype built (`repo-scaffold/HKCA_ITA_Trainee_List.html`); interaction logic smoke-tested (jsdom) and rendered in headless Chromium at 1440 px and 390 px (light/dark; no console errors, no horizontal overflow on phone). Screen-reader and real-device checks pending.
+
+**Naming (Albert, 2026-10-16):** the feature is called **Trainee List View** (alt. *Overall Trainee List*). "Theatre List" is retired: it reads as an operating-theatre case list, which this is not. It is the list of trainees one trainer has been asked to assess this round. The College's own anchor text ("runs theatre lists") is unchanged.
+
+**Decided:**
+- **Same form, same rules, faster entry.** Trainees × the 15 College items in one grid; scale, anchors, level-relative framing and the required-example-for-4-only rule are identical to the single-trainee form (I1). X is never a warning.
+- **No shortcuts that reintroduce rubber-stamping (U1):** no defaults, no fill-down, no "set all", nothing from earlier cycles. A non-blocking note at review if all 15 ratings are identical.
+- **Seal per trainee.** Each trainee is reviewed and sealed on their own (one sealed response per trainer per trainee/session; SHA-256 of that record). There is no "submit all".
+- **Keyboard-first on desktop:** 1–4/X rate and advance; advance direction is switchable (next item vs next trainee); a 4 jumps straight to its required example.
+- **Phones:** the matrix is replaced by a **By item** layout (one item at a time, every trainee beneath it). It is also available on desktop.
+- **Privacy unchanged:** trainer sees no overall result and no other trainer's ratings; trainee never sees any of it.
+
+**Open:** screen-reader pass on the grid; real-phone touch test; whether the SOT assignment supplies each trainee's level/year (assumed yes).
 
 ---
 

@@ -84,7 +84,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 | Role | Persona & Scope | Primary Jobs to be Done |
 | :--- | :--- | :--- |
 | **Trainee** | Basic (BAT), Higher (HAT), or Provisional Fellow (PFY). Scoped to self. | Mobile logbook entry in recovery; proactive rotation declaration; WBA initiation; reviewing feedback; exam registration. |
-| **Trainer / Assessor** | Specialist Anaesthetist / Consultant in accredited centre. Scoped to hospital. | Completing private ITA feedback ("theatre list" batch matrix); bedside WBA evaluation; reviewing logbook cases. |
+| **Trainer / Assessor** | Specialist Anaesthetist / Consultant in accredited centre. Scoped to hospital. | Completing private ITA feedback ("Trainee List View" batch matrix); bedside WBA evaluation; reviewing logbook cases. |
 | **Supervisor of Training (SOT / Assistant SOT)** | Clinical lead for training at hospital level. Scoped to hospital trainees. | Multi-trainee RAG status triage; synthesizing trainer feedback into summative ITAs; logbook verification; exam gating. |
 | **Cluster SOT / COS** | Cluster Training Director / Chief of Service. Scoped to hospital cluster. | Cross-hospital rotation oversight; Level 2 deadline escalation; PFY 3-domain plan sign-off. |
 | **College Admin / BOE** | HKCA Board of Education & Administrative Staff. College-wide scope. | Accreditation registry; curriculum edition management; approving credit revocations/appeals; formal project reviewer assignment. |
@@ -127,7 +127,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
   * SOT assigns supervising trainers for the 6-month cycle.
   * Each trainer completes the College's **15-item In-Training Assessment form** (9 Clinical Performance + 6 Communication, Teamwork and Interpersonal items; all mandatory), rating each item X/1/2/3/4 against the expectation for the trainee's level and year, with the item's behavioural anchor one tap away. Prototype: `HKCA_ITA_Trainer_Form.html`.
   * An **example** is required only for an item rated 4 (unsatisfactory must be defensible); for 1, 2, 3 and X it is optional. One optional *"Comments from Specialist Assessors"* box replaces the earlier "Notable Strength / Key Area for Growth" prompts (decision I1).
-  * A multi-trainee "Theatre List" batch view (U1) remains a later layer on top of this form.
+  * A multi-trainee "Trainee List View" batch view (U1; formerly called "Theatre List") remains a later layer on top of this form.
   * No auto-prefill from previous cycles (eliminates rubber-stamping).
   * Trainees are strictly walled off from viewing individual trainer submissions.
 * **2.2 Tier 2: SOT Summative Synthesis:**
