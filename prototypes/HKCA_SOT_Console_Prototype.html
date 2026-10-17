@@ -435,6 +435,8 @@
   .mlist label:last-child{border-bottom:0}
   .attest{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font-size:12.5px;cursor:pointer;background:var(--bg2)}
   @media(max-width:1100px){.lbr{grid-template-columns:24px 1fr}.lbr > :nth-child(3),.lbr > :nth-child(4){grid-column:2}.acts{justify-content:flex-start}}
+
+  .tab .cnt[style*="display: none"]{display:none}
 </style>
 </head>
 <body>
@@ -485,6 +487,7 @@
       <button class="tab" data-tab="logbook">Logbook Verification <span class="cnt hot">18</span></button>
       <button class="tab" data-tab="rotations">Rotations <span class="cnt hot">3</span></button>
       <button class="tab" data-tab="itas">ITAs <span class="cnt hot">4</span></button>
+      <button class="tab" data-tab="goals">Learning goals <span class="cnt hot" id="goalsCnt">0</span></button>
       <button class="tab" data-tab="review">Progression Risk <span class="cnt crit">5</span></button>
     </nav>
   </div>
@@ -604,6 +607,7 @@
         <div class="seg" id="lbScopeSeg">
           <button class="on" data-lbscope="mine">My trainees</button>
           <button data-lbscope="all" id="lbScopeAll">All trainees</button>
+          <button data-lbscope="pool" id="lbScopePool">Unassigned pool</button>
         </div>
       </div>
 
@@ -849,9 +853,11 @@
           <div class="eyebrow">ITA round &middot; Jul &ndash; Dec 2026</div>
           <div class="h2">Trainer invitations &amp; sign-off assignment</div>
           <div class="meta" style="margin-top:2px" id="invSummary"></div>
+          <div class="note" id="hoAlert" style="color:var(--rd700);display:none"></div>
         </div>
         <div class="btn-row">
           <button class="btn pri" onclick="openInvite()" data-need-sot>Invite all trainers</button>
+          <button class="btn sec" onclick="openHandover()" data-need-sot>Transfer responsibilities</button>
           <button class="btn sec" onclick="autoBalance()" data-need-sot title="Flagged trainees stay with the SOT; the rest are spread evenly">Auto-balance</button>
         </div>
       </div>
@@ -863,6 +869,7 @@
         <span class="meta" id="itaSelN">0 selected</span>
         <span class="sp"></span>
         <label class="ctl" style="border:0;background:transparent;padding:0"><input type="checkbox" id="itaMineCb" onchange="itaMine=this.checked;renderItaRound()"> Mine only</label>
+        <select class="ctl sm" id="itaField" data-need-sot aria-label="Role"><option value="asot">ITA sign-off by</option><option value="verifier">Logbook verifier</option></select>
         <select class="ctl sm" id="itaAssignTo" data-need-sot></select>
         <button class="btn sec sm" onclick="itaAssignSelected()" data-need-sot>Assign selected</button>
       </div>
@@ -871,15 +878,14 @@
         <table>
           <thead>
             <tr><th style="width:34px"></th><th style="min-width:190px">Trainee</th><th>Stage</th><th style="min-width:210px">Trainers</th>
-                <th style="min-width:170px">Invitation</th><th style="min-width:190px">Sign-off by</th></tr>
+                <th style="min-width:170px">Invitation</th><th style="min-width:190px">Logbook verifier</th><th style="min-width:190px">ITA sign-off by</th></tr>
           </thead>
           <tbody id="itaRoundBody"></tbody>
         </table>
       </div>
       <p class="note">
-        Each trainee has one named sign-off owner &mdash; the SOT or an ASOT &mdash; who holds the face-to-face discussion. The ASOT's sign-off is final;
-        it does not need SOT countersignature. Trainees rotated out are excluded (their exit assessment is run by the host hospital).
-        Only the SOT can invite trainers or change assignments.
+        Two roles: the <b>logbook verifier</b> is ongoing and verifies the trainee's logbook; the <b>ITA sign-off ASOT</b> holds the face-to-face discussion and can be assigned later in the cycle. The SOT can hold either role. An ASOT's sign-off is final and needs no SOT countersignature. Trainees rotated out are excluded (their exit assessment is run by the host hospital).
+        Only the SOT can invite trainers, change assignments or transfer responsibilities.
       </p>
     </div>
 
@@ -991,7 +997,32 @@
   <!-- ==================================================== -->
   <!-- TAB 5 — FALLING BEHIND                                -->
   <!-- ==================================================== -->
-  <section id="tab-review" class="hidden">
+  <section id="tab-goals" class="hidden">
+    <div class="card card-pad mb">
+      <div class="card-h" style="margin-bottom:12px">
+        <div>
+          <div class="eyebrow">ITA cycle &middot; Jul &ndash; Dec 2026</div>
+          <div class="h2">Learning goals</div>
+          <div class="meta" id="goalsSub" style="margin-top:2px"></div>
+        </div>
+        <div class="btn-row"><button class="btn sec sm" onclick="goalsReset()" title="Restore the sample learning-goal data shared by the prototypes">Reset demo data</button></div>
+      </div>
+      <div class="lb-tabs" id="goalsTabs" role="tablist"></div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
+          <tbody id="goalsBody"></tbody>
+        </table>
+      </div>
+      <p class="note">
+        At the start of each ITA cycle the trainee sets 2&ndash;5 goals. The SOT signs them off, which locks them. At the ITA they appear beside the College's
+        15 items so each goal can be judged achieved, partly or not. Changes after signing need the SOT's approval. Goals are advisory and do not change the College grade.
+      </p>
+    </div>
+  </section>
+
+  
+<section id="tab-review" class="hidden">
 
     <div class="banner">
       <b>Two independent risk signals, shown separately.</b> <u>Velocity risk</u> projects whether a trainee's current
@@ -1373,11 +1404,12 @@ Thank you.</textarea>
   <button class="btn sm" onclick="bulkRemind()">Send reminder</button>
   <button class="btn sm" onclick="exportRoster(true)">Export selected</button>
   <select class="ctl" id="bulkAsot" data-need-sot></select>
-  <button class="btn sm" onclick="bulkAssign()" data-need-sot>Assign ASOT</button>
+  <button class="btn sm" onclick="bulkAssign()" data-need-sot>Assign verifier</button>
   <button class="btn sm" onclick="clearSel()">Clear</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="hkca-goals-store.js"></script>
 <script>
 /* ---------------- roster data ---------------- */
 const ROSTER = [
@@ -1549,7 +1581,11 @@ const ASSIGN_SEED = {
   '2023-022':'raymond','2025-003':'raymond','2023-009':'raymond','2023-018':'raymond',
   '2024-019':'tina','2022-031':'tina','2025-012':'tina'
 };
-ROSTER.forEach(t=>{ t.asot = ASSIGN_SEED[t.id] || 'winnie'; });
+const ASOT_UNASSIGNED = new Set(['2023-022','2025-003','2023-009','2024-025','2024-019']);   // ITA sign-off ASOT is assigned late in the cycle
+ROSTER.forEach(t=>{
+  t.verifier = t.id==='2024-033' ? null : (ASSIGN_SEED[t.id] || 'winnie');   // logbook verifier: ongoing
+  t.asot = ASOT_UNASSIGNED.has(t.id) ? null : (ASSIGN_SEED[t.id] || 'winnie'); // ITA sign-off ASOT: per cycle
+});
 
 const TRAINERS = ['Dr. C.K. Leung','Dr. M. Fong','Dr. S. Wan','Dr. H. Yuen','Dr. T. Poon','Dr. J. Cheng','Dr. R. Lai','Dr. P. Ngai'];
 function ptrainees(){ return ROSTER.filter(t=>t.rot.kind!=='out'); }   // in the ITA round at PWH
@@ -1568,13 +1604,16 @@ ptrainees().forEach(t=>{
 const TODAY = new Date(2026,9,17);
 const DAY = 864e5;
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const RULES = {ita:30, logbook:7, handshake:5, signature:14};
+const RULES = {ita:30, logbook:7, handshake:5, signature:14, asot:30, goalsDue:14, goalsSign:7};
 const RULE_DEF = {
   ita:       {label:'Chase trainers for ITA input', suffix:'before the rotation ends', opts:[[14,'2 weeks'],[30,'1 month'],[60,'2 months'],[90,'3 months']]},
   logbook:   {label:'Logbook entry unverified for', suffix:'', opts:[[3,'3 days'],[7,'7 days'],[14,'14 days']]},
   handshake: {label:'Rotation handshake unanswered for', suffix:'', opts:[[3,'3 days'],[5,'5 days'],[10,'10 days']]},
   signature: {label:'Trainee ITA signature pending for', suffix:'', opts:[[7,'7 days'],[14,'14 days'],[21,'21 days']]}
 };
+RULE_DEF.asot = {label:'ITA sign-off ASOT still unassigned', suffix:'before the cycle ends', opts:[[14,'2 weeks'],[30,'1 month'],[45,'6 weeks']]};
+RULE_DEF.goalsDue = {label:'Learning goals not submitted after', suffix:'', opts:[[7,'1 week'],[14,'2 weeks'],[21,'3 weeks']]};
+RULE_DEF.goalsSign = {label:'Goals awaiting your sign-off for', suffix:'', opts:[[3,'3 days'],[7,'7 days'],[14,'14 days']]};
 const ACTIVITY = [
   {t:'14 Oct 2026 16:40', a:'Dr. Raymond Ng (ASOT)', x:'Signed off ITA &mdash; Lam, David &middot; Jan&ndash;Jun 2026 &middot; final'},
   {t:'09 Oct 2026 11:05', a:'Dr. Winnie Ho (ASOT)',  x:'Signed off ITA &mdash; Chow, Ian &middot; Jan&ndash;Jun 2026 &middot; final'},
@@ -1669,6 +1708,7 @@ const COLS = [
   {k:'msf',label:'MSF'},
   {k:'courses',label:'Courses',min:118},
   {k:'project',label:'Formal Project',min:140},
+  {k:'goals',label:'Learning goals',min:150},
   {k:'ita',label:'Last ITA'},
   {k:'act',label:'Action',fixed:true,nosort:true}
 ];
@@ -1698,6 +1738,7 @@ function sortVal(t,k){
     case 'stage':   return (STAGE_ORDER[stagePrefix(t.stage)]??9)*10 + (parseInt(t.stage.split('-')[1])||0);
     case 'rot':     return ({in:0,own:1,out:2})[t.rot.kind] ?? 1;
     case 'asot':    return t.asot ? asotById(t.asot).name : 'zzz';
+    case 'goals':   return ['NOT_SET','DRAFT','CHANGES_REQUESTED','SUBMITTED','CHANGE_PROPOSED','SIGNED'].indexOf((GoalsStore.get(t.id)||{status:'NOT_SET'}).status);
     case 'acc':     return t.months.cur;
     case 'cf': case 'sm': case 'vop': case 'msf': return t[k].n / t[k].t;
     case 'courses': return t.courses.done / t.courses.total;
@@ -1718,7 +1759,7 @@ function visibleRows(){
     if(view.presence==='in' && k!=='in') return false;
     if(view.presence==='out' && k!=='out') return false;
     if(view.status && t.health!==view.status) return false;
-    if(view.mine && t.asot!==mineId()) return false;
+    if(view.mine && t.verifier!==mineId()) return false;
     return true;
   });
   const key = view.sortKey, dir = view.sortDir;
@@ -1748,6 +1789,7 @@ function cellFor(k,t){
     case 'msf':     return `<td>${meter(t.msf.n,t.msf.t, t.msf.n>=t.msf.t?'':'a')}</td>`;
     case 'courses': return `<td>${coursesPill(t.courses)}</td>`;
     case 'project': return `<td>${projectPill(t.project)}</td>`;
+    case 'goals':   { const gs = (GoalsStore.get(t.id)||{status:'NOT_SET'}).status; return `<td><span class="pill ${GoalsStore.TONE[gs]}">${GoalsStore.LABEL[gs]}</span></td>`; }
     case 'ita':     return `<td>${itaListPill(t.itaStatus, t.ita)}</td>`;
     case 'act':     return `<td><button class="btn sec sm" onclick="openDrawer('${t.name}','${t.id}','${t.stage}','${t.parent||'Prince of Wales Hospital'}')">View</button></td>`;
   }
@@ -1839,7 +1881,7 @@ function bulkAssign(){
   if(role==='asst') return;
   const ids = Array.from(selected).filter(id=>ROSTER.some(t=>t.id===id));
   if(!ids.length) return;
-  setAsot(ids, document.getElementById('bulkAsot').value);
+  setAsot(ids, document.getElementById('bulkAsot').value, 'verifier');
 }
 function plain(s){ return String(s).replace(/&middot;/g,'·').replace(/&rarr;/g,'→').replace(/&amp;/g,'&').replace(/&mdash;/g,'—').replace(/&ndash;/g,'–'); }
 function exportRoster(onlySel){
@@ -1877,30 +1919,34 @@ function renderLog(){
   ACTIVITY.forEach(e=>{ e.fresh=false; });
 }
 
-/* ---------------- ASOT assignment ---------------- */
-function setAsot(ids, asotId){
-  const a = asotById(asotId), changed = [];
-  ids.forEach(id=>{ const t = ROSTER.find(x=>x.id===id); if(t && t.asot!==asotId){ t.asot = asotId; changed.push(t); } });
-  if(!changed.length){ toast('Already assigned'); return; }
+/* ---------------- roles: logbook verifier (ongoing) and ITA sign-off ASOT (per cycle) ---------------- */
+const activeAsots = () => ASOTS.filter(a=>a.active!==false);
+const ROLE_LABEL = {asot:'ITA sign-off', verifier:'logbook verification'};
+const nameOf = id => id ? asotById(id).name : 'Unassigned';
+function setAsot(ids, asotId, field){
+  field = field || 'asot'; asotId = asotId || null;
+  const changed = [];
+  ids.forEach(id=>{ const t = ROSTER.find(x=>x.id===id); if(t && t[field]!==asotId){ t[field] = asotId; delete t.cover; changed.push(t); } });
+  if(!changed.length){ toast('Already set'); return; }
   const who = changed.length<=2 ? changed.map(t=>lastFirst(t.name)).join(' and ') : changed.length+' trainees';
-  logEvent(`Assigned ${who} to ${a.name} for ITA sign-off`);
+  logEvent(asotId ? `Assigned ${who} to ${nameOf(asotId)} for ${ROLE_LABEL[field]}` : `Cleared ${ROLE_LABEL[field]} for ${who}`);
   renderAll();
-  toast(`${who} assigned to ${a.name.replace('Dr. ','')}`);
+  toast(asotId ? `${who} assigned to ${nameOf(asotId).replace('Dr. ','')}` : `Cleared for ${who}`);
 }
 function autoBalance(){
   if(role==='asst') return;
-  const counts = {}; ASOTS.forEach(a=>counts[a.id]=0);
+  const act = activeAsots(), counts = {}; act.forEach(a=>counts[a.id]=0);
   const pool = ptrainees().slice().sort((a,b)=>sortVal(a,'stage')-sortVal(b,'stage') || lastFirst(a.name).localeCompare(lastFirst(b.name)));
   const plan = {};
   pool.filter(t=>t.health==='bad').forEach(t=>{ plan[t.id]='sot'; counts.sot++; });
   pool.filter(t=>t.health!=='bad').forEach(t=>{
-    const pick = ASOTS.slice().sort((a,b)=>counts[a.id]-counts[b.id] || ASOTS.indexOf(a)-ASOTS.indexOf(b))[0];
+    const pick = act.slice().sort((a,b)=>counts[a.id]-counts[b.id] || act.indexOf(a)-act.indexOf(b))[0];
     plan[t.id] = pick.id; counts[pick.id]++;
   });
-  pool.forEach(t=>{ t.asot = plan[t.id]; });
-  logEvent('Auto-balanced ITA sign-off across ' + ASOTS.length + ' assessors (flagged trainees kept with SOT)');
+  pool.forEach(t=>{ t.asot = plan[t.id]; delete t.cover; });
+  logEvent('Auto-balanced ITA sign-off across ' + act.length + ' assessors (flagged trainees kept with SOT)');
   renderAll();
-  toast('Sign-off balanced: ' + ASOTS.map(a=>counts[a.id]).join(' / '));
+  toast('Sign-off balanced: ' + act.map(a=>counts[a.id]).join(' / '));
 }
 
 /* ---------------- ITA round table ---------------- */
@@ -1911,6 +1957,12 @@ function invitePill(i){
   if(i.got>=i.total) return `<span class="pill ok"><span class="dot g"></span>All ${i.total} forms in</span>`;
   return `<span class="pill warn"><span class="dot a"></span>${i.got} of ${i.total} in</span><div class="id-cell">Invited ${i.at} &middot; due ${i.due}</div>`;
 }
+function asotSelect(t,field,dis){
+  const cur = t[field];
+  const opts = ['<option value="">Unassigned</option>'].concat(ASOTS.filter(a=>a.active!==false || a.id===cur)
+    .map(a=>`<option value="${a.id}" ${a.id===cur?'selected':''}>${a.name} (${a.tag})${a.active===false?' \u2013 inactive':''}</option>`)).join('');
+  return `<select class="ctl sm" data-need-sot ${dis} aria-label="${ROLE_LABEL[field]} for ${lastFirst(t.name)}" onchange="setAsot(['${t.id}'],this.value,'${field}')">${opts}</select>`;
+}
 function renderItaRound(){
   const body = document.getElementById('itaRoundBody'); if(!body) return;
   const all = ptrainees();
@@ -1919,25 +1971,31 @@ function renderItaRound(){
   const dis = role==='asst' ? 'disabled' : '';
   body.innerHTML = rows.map(t=>{
     const ts = trainersFor(t);
+    const cover = t.cover ? `<div class="id-cell">On cover until ${t.cover.until} &middot; <a class="lb-title" tabindex="0" onclick="endCover('${t.id}')">End cover</a></div>` : '';
     return `<tr class="${t.asot===mineId()?'mine':''}">
       <td><input type="checkbox" aria-label="Select ${lastFirst(t.name)}" ${itaSel.has(t.id)?'checked':''} onchange="itaToggle('${t.id}',this.checked)"></td>
-      <td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td>
+      <td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div>${cover}</td>
       <td>${stagePill(t.stage)}</td>
       <td><span class="meta" title="${ts.join(', ')}">${ts.length} trainers</span><div class="id-cell">${ts.slice(0,2).join(', ')} +${ts.length-2}</div></td>
       <td>${invitePill(INV[t.id])}</td>
-      <td><select class="ctl sm" data-need-sot ${dis} aria-label="Sign-off by for ${lastFirst(t.name)}" onchange="setAsot(['${t.id}'],this.value)">
-        ${ASOTS.map(a=>`<option value="${a.id}" ${a.id===t.asot?'selected':''}>${a.name} (${a.tag})</option>`).join('')}</select></td>
+      <td>${asotSelect(t,'verifier',dis)}</td>
+      <td>${asotSelect(t,'asot',dis)}${t.asot?'':'<div class="id-cell">Needed before 1 Dec</div>'}</td>
     </tr>`;
-  }).join('') || '<tr class="empty-row"><td colspan="6">No trainees assigned to you yet.</td></tr>';
+  }).join('') || '<tr class="empty-row"><td colspan="7">No trainees signed off by you yet.</td></tr>';
 
-  document.getElementById('loadChips').innerHTML = ASOTS.map(a=>{
-    const n = all.filter(t=>t.asot===a.id).length;
-    return `<div class="${a.id===mineId()?'me':''}"><div class="n">${n}</div><div class="l">${a.name} &middot; ${a.tag}${a.id===mineId()?' (you)':''}</div></div>`;
-  }).join('');
+  document.getElementById('loadChips').innerHTML = ASOTS.filter(a=>a.active!==false || ROSTER.some(t=>t.verifier===a.id||t.asot===a.id)).map(a=>{
+    const v = all.filter(t=>t.verifier===a.id).length, s = all.filter(t=>t.asot===a.id).length;
+    return `<div class="${a.id===mineId()?'me':''}"><div class="n">${v} <span style="color:var(--ink3);font-weight:500">/</span> ${s}</div><div class="l">${a.name} &middot; ${a.tag}${a.id===mineId()?' (you)':''}${a.active===false?' &middot; inactive':''}</div></div>`;
+  }).join('') + '<div style="border-style:dashed"><div class="l" style="max-width:190px">Each card: trainees verified / ITA sign-offs</div></div>';
 
   const invited = all.filter(t=>INV[t.id]).length, done = all.filter(t=>INV[t.id] && INV[t.id].got>=INV[t.id].total).length;
+  const un = all.filter(t=>!t.asot).length;
   document.getElementById('invSummary').textContent =
-    `${invited} of ${all.length} trainees have trainer invitations out \u00b7 ${done} complete \u00b7 ${all.length-invited} not yet invited`;
+    `${invited} of ${all.length} invited \u00b7 ${done} complete \u00b7 ${un} without an ITA sign-off ASOT`;
+  const gone = ASOTS.filter(a=>a.active===false && ROSTER.some(t=>t.verifier===a.id||t.asot===a.id));
+  const al = document.getElementById('hoAlert');
+  al.innerHTML = gone.map(a=>`${a.name} is inactive but still holds ${ROSTER.filter(t=>t.verifier===a.id||t.asot===a.id).length} trainee(s). <a class="lb-title" tabindex="0" onclick="openHandover('${a.id}')">Transfer now</a>`).join('<br>');
+  al.style.display = gone.length ? '' : 'none';
   document.getElementById('itaSelN').textContent = itaSel.size + ' selected';
   const sa = document.getElementById('itaSelAll');
   sa.checked = rows.length>0 && rows.every(t=>itaSel.has(t.id));
@@ -1952,8 +2010,97 @@ function itaAssignSelected(){
   if(role==='asst') return;
   if(!itaSel.size){ toast('Tick one or more trainees first'); return; }
   const ids = Array.from(itaSel); itaSel.clear();
-  setAsot(ids, document.getElementById('itaAssignTo').value);
+  setAsot(ids, document.getElementById('itaAssignTo').value, document.getElementById('itaField').value);
 }
+function refreshAsotOptions(){
+  const act = activeAsots().map(a=>`<option value="${a.id}">${a.name} (${a.tag})</option>`).join('');
+  const f = document.getElementById('itaAssignTo'), v = f.value;
+  f.innerHTML = '<option value="">Unassigned</option>' + act; f.value = v;
+  const b = document.getElementById('bulkAsot'), bv = b.value; b.innerHTML = act; if(bv) b.value = bv;
+}
+
+/* ---------------- handover: transfer responsibilities ---------------- */
+const ho = {out:null, inc:'', newName:'', scope:'both', sel:new Set(), temp:false, until:'', deactivate:false};
+function hoHeld(){
+  return ROSTER.filter(t=> ((ho.scope!=='asot') && t.verifier===ho.out) || ((ho.scope!=='verifier') && t.asot===ho.out));
+}
+function openHandover(outId){
+  if(role==='asst') return;
+  Object.assign(ho, {out: outId || 'winnie', inc:'', newName:'', scope:'both', temp:false, until:'2026-12-31', deactivate:false});
+  ho.sel = new Set(hoHeld().map(t=>t.id));
+  lbModalOpen({ey:'Roles & handover', title:'Transfer responsibilities', body:'<div id="hoMain"></div>', ok:'Transfer',
+    onOk: hoConfirm, check: hoCheck});
+  hoRender();
+}
+function hoRender(){
+  const m = document.getElementById('hoMain'); if(!m) return;
+  const o = asotById(ho.out), isSot = ho.out==='sot';
+  const vN = ROSTER.filter(t=>t.verifier===ho.out).length, sN = ROSTER.filter(t=>t.asot===ho.out).length;
+  const pend = LB.filter(e=>e.state!=='verified' && trOf(e).verifier===ho.out).length;
+  const opt = (v,l,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${l}</option>`;
+  let h = `<div class="field"><div class="lbl">Handing over from</div>
+    <select class="ctl" style="width:100%" onchange="ho.out=this.value;ho.inc='';ho.sel=new Set(hoHeld().map(t=>t.id));hoRender()">
+      ${ASOTS.map(a=>opt(a.id,`${a.name} (${a.tag})${a.active===false?' \u2013 inactive':''}`,ho.out)).join('')}</select>
+    <p class="note">${o.name} verifies logbooks for <b>${vN}</b> trainee${vN===1?'':'s'}, signs off ITAs for <b>${sN}</b>, and has <b>${pend}</b> logbook entr${pend===1?'y':'ies'} waiting. Pending items move with the role. Anything already signed or verified stays under the original name.</p></div>`;
+  if(isSot){
+    h += `<div class="banner" style="margin-bottom:0"><b>The SOT role is not transferred here.</b> The College admin appoints an acting or replacement SOT. Until then, ASOT assignments stay as they are. You can notify the College admin below.</div>`;
+    m.innerHTML = h; hoRefreshOk(); return;
+  }
+  h += `<div class="field"><div class="lbl">Hand over to</div>
+    <select class="ctl" style="width:100%" onchange="ho.inc=this.value;hoRender()">
+      <option value="">Choose&hellip;</option>${activeAsots().filter(a=>a.id!==ho.out&&a.id!=='sot').map(a=>opt(a.id,`${a.name} (${a.tag})`,ho.inc)).join('')}
+      ${opt('__new','Add a new ASOT\u2026',ho.inc)}</select>
+    ${ho.inc==='__new' ? `<input class="ctl" style="width:100%;margin-top:8px" placeholder="Full name, e.g. Dr. Mary Chan" value="${ho.newName}" oninput="ho.newName=this.value;hoRefreshOk()"><p class="note">The new ASOT is invited and becomes active when they accept. You can assign trainees to them now.</p>` : ''}</div>
+    <div class="field"><div class="lbl">What to hand over</div>
+      ${[['both','Both roles: logbook verifier and ITA sign-off'],['verifier','Logbook verifier only'],['asot','ITA sign-off only']].map(([v,l])=>
+        `<label class="radio"><input type="radio" name="hoScope" ${ho.scope===v?'checked':''} onchange="ho.scope='${v}';ho.sel=new Set(hoHeld().map(t=>t.id));hoRender()"><div>${l}</div></label>`).join('')}</div>
+    <div class="field"><div class="lbl">Trainees (${ho.sel.size} of ${hoHeld().length})</div>
+      <div class="mlist">${hoHeld().map(t=>`<label><input type="checkbox" ${ho.sel.has(t.id)?'checked':''} onchange="this.checked?ho.sel.add('${t.id}'):ho.sel.delete('${t.id}');hoRefreshOk()"><span>${lastFirst(t.name)} <span class="meta">${t.stage}</span></span></label>`).join('') || '<div class="prev-row">Nothing to hand over for this choice.</div>'}</div></div>
+    <div class="field" style="margin-bottom:0"><div class="lbl">How long</div>
+      <label class="radio"><input type="radio" name="hoTemp" ${!ho.temp?'checked':''} onchange="ho.temp=false;hoRender()"><div>Permanent<div class="s">${o.name} leaves or stops these duties.</div></div></label>
+      <label class="radio"><input type="radio" name="hoTemp" ${ho.temp?'checked':''} onchange="ho.temp=true;hoRender()"><div>Temporary cover<div class="s">For leave. Reverts automatically on the end date.</div>
+        ${ho.temp?`<input type="date" class="ctl sm" style="margin-top:6px" value="${ho.until}" onchange="ho.until=this.value;hoRefreshOk()">`:''}</div></label>
+      ${!ho.temp?`<label class="attest" style="margin-top:8px"><input type="checkbox" ${ho.deactivate?'checked':''} onchange="ho.deactivate=this.checked"><span>Mark ${o.name} as no longer active</span></label>`:''}</div>`;
+  m.innerHTML = h; hoRefreshOk();
+}
+function hoRefreshOk(){ document.getElementById('lbmBody').dispatchEvent(new Event('change')); }
+function hoCheck(){
+  const ok = document.getElementById('lbmOk');
+  if(ho.out==='sot'){ ok.textContent = 'Notify College admin'; return true; }
+  const n = ho.sel.size;
+  ok.textContent = n ? `Transfer ${n} trainee${n===1?'':'s'}` : 'Transfer';
+  document.getElementById('lbmMeta').textContent = '';
+  const incOk = ho.inc && (ho.inc!=='__new' || ho.newName.trim().length>3);
+  return !!(incOk && n>0 && (!ho.temp || ho.until));
+}
+function hoConfirm(){
+  if(ho.out==='sot'){
+    logEvent('Notified College admin: SOT cover or replacement needed'); lbModalClose(); toast('College admin notified'); return;
+  }
+  let inc = ho.inc;
+  if(inc==='__new'){
+    inc = 'n'+Date.now().toString(36);
+    ASOTS.push({id:inc, name:ho.newName.trim(), tag:'ASOT', active:true});
+  }
+  const fields = ho.scope==='both' ? ['verifier','asot'] : [ho.scope];
+  const until = ho.until ? `${+ho.until.split('-')[2]} ${MON[+ho.until.split('-')[1]-1]}` : '';
+  const ids = Array.from(ho.sel); let moved = 0;
+  ids.forEach(id=>{
+    const t = ROSTER.find(x=>x.id===id); const from = {verifier:t.verifier, asot:t.asot};
+    let any = false;
+    fields.forEach(f=>{ if(t[f]===ho.out){ t[f] = inc; any = true; } });
+    if(any){ moved++; if(ho.temp) t.cover = {until, from, by:ho.out}; else delete t.cover; }
+  });
+  if(!ho.temp && ho.deactivate) asotById(ho.out).active = false;
+  logEvent(`Handover: ${moved} trainee${moved===1?'':'s'} from ${nameOf(ho.out)} to ${nameOf(inc)} (${ho.scope==='both'?'verifier + ITA sign-off':ROLE_LABEL[ho.scope]}${ho.temp?', cover until '+until:', permanent'})`);
+  lbModalClose(); renderAll(); toast(`${moved} trainee${moved===1?'':'s'} handed over to ${nameOf(inc).replace('Dr. ','')}`);
+}
+function endCover(id){
+  const t = ROSTER.find(x=>x.id===id); if(!t || !t.cover) return;
+  const f = t.cover.from; t.verifier = f.verifier; t.asot = f.asot; delete t.cover;
+  logEvent(`Cover ended: ${lastFirst(t.name)} returned to ${nameOf(f.asot||f.verifier)}`); renderAll(); toast('Cover ended');
+}
+
 /* existing "awaiting your action" table: add a Sign-off by column */
 function enhanceItaTable(){
   const tbl = document.getElementById('itaAwaitTable'); if(!tbl) return;
@@ -1970,7 +2117,7 @@ function refreshItaSignoff(){
   tbl.querySelectorAll('tbody tr').forEach(tr=>{
     const cell = tr.querySelector('.nm-cell'); const orig = cell.dataset.orig || cell.textContent;
     const t = ROSTER.find(x=>x.name===orig); const td = tr.querySelector('.signcell');
-    td.innerHTML = t ? `<span class="meta">${asotById(t.asot).name.replace('Dr. ','')}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '';
+    td.innerHTML = t ? (t.asot ? `<span class="meta">${asotById(t.asot).name.replace('Dr. ','')}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '<span class="pill">Unassigned</span>') : '';
   });
 }
 function formatStaticNames(){
@@ -2059,7 +2206,7 @@ function reminders(){
       due:new Date(2026,9,9+RULES.signature), tab:'itas', btn:'Remind trainee'},
     {id:'pip', title:'Remedial plan reassessment &mdash; Nair, Priya', detail:'PIP reassessment date 15 Nov (fixed date)',
       due:new Date(2026,10,15), tab:'review', btn:'Send reminder'}
-  ].map(r=>Object.assign(r,{diff:Math.round((r.due-TODAY)/DAY)})).sort((a,b)=>a.due-b.due);
+  ].concat(goalReminders()).map(r=>Object.assign(r,{diff:Math.round((r.due-TODAY)/DAY)})).sort((a,b)=>a.due-b.due);
 }
 function remRow(r,later){
   const lab = r.diff<0 ? `<span class="pill bad">Overdue ${-r.diff}d</span>` : r.diff===0 ? '<span class="pill warn">Due today</span>' : `<span class="pill">In ${r.diff}d</span>`;
@@ -2083,6 +2230,7 @@ function renderHome(){
     {n:lbPending(), l:'Logbook entries to verify', tab:'logbook', c:'bl'},
     {n:3, l:'Rotation handshakes pending', tab:'rotations', c:'am'},
     {n:o.forms, l:`Trainer ITA forms outstanding &middot; ${o.tr} trainees`, tab:'itas', c:'am'},
+    {n:goalsAction(), l:'Learning goals to sign off', tab:'goals', c:'am'},
     {n:3, l:'Trainees falling behind', tab:'review', c:'rd'}
   ];
   document.getElementById('sotAlerts').innerHTML = tiles.map(t=>
@@ -2102,6 +2250,7 @@ function renderHome(){
   const outN = ROSTER.filter(t=>t.rot.kind==='out').length;
   const links = [
     {t:'itas', b:'In-Training Assessments', s:'4 awaiting sign-off \u00b7 invitations & ASOT assignment'},
+    {t:'goals', b:'Learning goals', s:goalsAction()+' to sign off \u00b7 locked once signed'},
     {t:'roster', b:'Trainee List', s:`${ROSTER.length} trainees \u00b7 ${outN} rotated out`},
     {t:'logbook', b:'Logbook Verification', s:lbPending()+' entries to verify'},
     {t:'rotations', b:'Rotations', s:'3 handshakes pending \u00b7 6-month timeline'},
@@ -2175,10 +2324,15 @@ let lbActive = null, lbPanelId = null, lbModalCfg = null;
 const trOf = e => ROSTER.find(t=>t.id===e.tid);
 const lbById = id => LB.find(e=>e.id===id);
 function lbScoped(){
+  if(lb.scope==='pool') return LB.filter(e=>!trOf(e).verifier);
   const mineOnly = role==='asst' || lb.scope==='mine';
-  return LB.filter(e=>!mineOnly || trOf(e).asot===mineId());
+  return LB.filter(e=>!mineOnly || trOf(e).verifier===mineId());
 }
-function lbPending(){ return lbScoped().filter(e=>e.state!=='verified').length; }
+function lbPending(){ return LB.filter(e=>e.state!=='verified' && (role!=='asst' || trOf(e).verifier===mineId())).length; }
+function lbClaim(tid){
+  const t = ROSTER.find(x=>x.id===tid); t.verifier = mineId();
+  logEvent(`Logbook: ${nameOf(mineId())} claimed ${lastFirst(t.name)} as logbook verifier`); renderAll(); toast(`${lastFirst(t.name)} is now yours to verify`);
+}
 function needsChoice(e){ return !e.cat; }
 function isDupNow(e){ return e.tab==='dup' && e.cat===e.sug; }
 function outcome(e){
@@ -2263,6 +2417,10 @@ function renderLogbook(){
   const pages = Math.max(1, Math.ceil(rows.length/lb.size)); if(lb.page>pages) lb.page = pages;
   const slice = rows.slice((lb.page-1)*lb.size, lb.page*lb.size);
   let html = '';
+  if(lb.scope==='pool'){
+    const un = ROSTER.filter(t=>!t.verifier && ptrainees().includes(t));
+    html += `<div class="banner" style="margin-bottom:10px"><b>No logbook verifier.</b> Anyone can claim these trainees. ${un.map(t=>`${lastFirst(t.name)} <button class="btn sec sm" onclick="lbClaim('${t.id}')">Claim</button>`).join(' ') || 'None right now.'}</div>`;
+  }
   if(lb.tab==='ready'){
     let cur = null;
     slice.forEach(e=>{
@@ -2284,7 +2442,9 @@ function renderLogbook(){
 
   // scope control
   const asst = role==='asst';
-  document.querySelectorAll('#lbScopeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.lbscope===(asst?'mine':lb.scope)));
+  document.querySelectorAll('#lbScopeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.lbscope===((asst&&lb.scope==='all')?'mine':lb.scope)));
+  const poolN = LB.filter(e=>e.state!=='verified' && !trOf(e).verifier).length;
+  document.getElementById('lbScopePool').textContent = 'Unassigned pool' + (poolN?' ('+poolN+')':'');
   document.getElementById('lbScopeAll').disabled = asst;
 
   // bulk bar + badges
@@ -2463,14 +2623,121 @@ document.addEventListener('keydown', ev=>{
   else if(ev.key==='Enter' && lbActive && ev.target===document.body){ lbPanelOpen(lbActive); }
 });
 
+/* ================= learning goals (SOT side) ================= */
+const TODAY_ISO = '2026-10-17';
+function iso2d(s){ const p = s.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function goalPeople(){ return ptrainees().filter(t=> role!=='asst' || t.verifier===mineId()); }
+function gset(t){ return GoalsStore.get(t.id) || {status:'NOT_SET', goals:[], comments:[]}; }
+function goalsAction(){ return goalPeople().filter(t=>['SUBMITTED','CHANGE_PROPOSED'].includes(gset(t).status)).length; }
+function goalPill(st){ const tone = GoalsStore.TONE[st]; return `<span class="pill ${tone}">${GoalsStore.LABEL[st]}</span>`; }
+const goalsUI = {tab:'action'};
+const G_TABS = [['action','Needs your sign-off',['SUBMITTED','CHANGE_PROPOSED']],['waiting','Waiting on trainee',['NOT_SET','DRAFT','CHANGES_REQUESTED']],['signed','Signed',['SIGNED']]];
+function goalDetail(t,s){
+  switch(s.status){
+    case 'SUBMITTED': return `Submitted ${GoalsStore.fmt(s.submittedAt)} &middot; ${s.goals.length} goals`;
+    case 'CHANGE_PROPOSED': return `Change proposed ${GoalsStore.fmt(s.proposal.at)} &middot; ${s.proposal.reason}`;
+    case 'CHANGES_REQUESTED': return `You asked for changes${s.comments.length?': '+s.comments[s.comments.length-1].text:''}`;
+    case 'DRAFT': return `Draft saved &middot; not submitted`;
+    case 'NOT_SET': { const due = new Date(iso2d(s.notifiedAt||'2026-07-01').getTime()+RULES.goalsDue*DAY);
+      return `Notified ${GoalsStore.fmt(s.notifiedAt||'2026-07-01')} &middot; due ${due.getDate()} ${MON[due.getMonth()]}`; }
+    case 'SIGNED': return `Signed ${GoalsStore.fmt(s.signedAt)} by ${s.signedBy.replace('Dr. ','')} &middot; version ${s.version}`;
+  }
+  return '';
+}
+function renderGoals(){
+  const body = document.getElementById('goalsBody'); if(!body) return;
+  const ppl = goalPeople();
+  const cnt = {}; G_TABS.forEach(([k,,st])=>cnt[k]=ppl.filter(t=>st.includes(gset(t).status)).length);
+  document.getElementById('goalsTabs').innerHTML = G_TABS.map(([k,l])=>`<button class="lb-tab ${goalsUI.tab===k?'on':''}" role="tab" aria-selected="${goalsUI.tab===k}" onclick="goalsUI.tab='${k}';renderGoals()">${l} <span class="cnt ${k==='action'&&cnt[k]?'hot':''}">${cnt[k]}</span></button>`).join('') +
+    '<span class="sp"></span>' + (goalsUI.tab==='waiting' ? `<button class="btn pri sm" ${cnt.waiting?'':'disabled'} onclick="goalsRemindAll()">Remind ${cnt.waiting} trainee${cnt.waiting===1?'':'s'}</button>` : '');
+  const st = G_TABS.find(x=>x[0]===goalsUI.tab)[2];
+  const rows = ppl.filter(t=>st.includes(gset(t).status)).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+  const asst = role==='asst';
+  body.innerHTML = rows.map(t=>{
+    const s = gset(t);
+    let act = '';
+    if(goalsUI.tab==='action') act = `<button class="btn pri sm" onclick="goalReview('${t.id}')">${asst?'View':'Review'}</button>`;
+    else if(goalsUI.tab==='waiting') act = `<button class="btn sec sm" onclick="goalRemind('${t.id}')">Remind trainee</button>`;
+    else act = `<button class="btn sec sm" onclick="goalReview('${t.id}')">View</button>`;
+    return `<tr><td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td><td>${stagePill(t.stage)}</td>
+      <td>${goalPill(s.status)}</td><td class="meta">${goalDetail(t,s)}</td><td>${act}</td></tr>`;
+  }).join('') || '<tr class="empty-row"><td colspan="5">Nothing here.</td></tr>';
+  document.getElementById('goalsSub').textContent = `${cnt.action} to sign off \u00b7 ${cnt.waiting} waiting on trainees \u00b7 ${cnt.signed} signed`;
+  const badge = document.getElementById('goalsCnt'); if(badge){ badge.textContent = cnt.action; badge.style.display = cnt.action ? '' : 'none'; }
+}
+function goalList(goals){
+  return goals.map((g,i)=>`<div style="padding:9px 0;border-bottom:1px solid var(--border-sub)"><div style="font-weight:650;font-size:13px">${i+1}. ${GoalsStore.esc(g.text)}</div>
+    <div class="meta"><b>Success:</b> ${GoalsStore.esc(g.success)}</div><div class="meta"><b>Evidence:</b> ${GoalsStore.esc(g.evidence)}</div></div>`).join('');
+}
+function goalReview(id){
+  const t = ROSTER.find(x=>x.id===id), s = gset(t), asst = role==='asst';
+  const canAct = !asst && (s.status==='SUBMITTED' || s.status==='CHANGE_PROPOSED');
+  let body = '', okLabel = 'Close', ok = ()=>lbModalClose(), extra = '';
+  if(s.status==='CHANGE_PROPOSED'){
+    body = `<p class="meta" style="margin-bottom:10px"><b>Reason:</b> ${GoalsStore.esc(s.proposal.reason)}</p>
+      <div class="grid2"><div><div class="eyebrow" style="margin-bottom:4px">Signed (locked) &middot; v${s.version}</div>${goalList(s.goals)}</div>
+      <div><div class="eyebrow" style="margin-bottom:4px">Proposed</div>${goalList(s.proposal.goals)}</div></div>`;
+    if(canAct){ okLabel = 'Approve change'; ok = ()=>goalDecide(id,'approve'); extra = `<button class="btn sec" onclick="goalDecide('${id}','decline')">Decline change</button>`; }
+  } else {
+    body = goalList(s.goals) + (s.comments.length ? `<p class="note">Earlier comment: ${GoalsStore.esc(s.comments[s.comments.length-1].text)}</p>` : '');
+    if(canAct){ okLabel = 'Sign off & lock'; ok = ()=>goalDecide(id,'sign'); extra = `<button class="btn sec" onclick="goalDecide('${id}','changes')">Request changes</button>`; }
+    if(s.status==='SIGNED') body += `<p class="note">Signed ${GoalsStore.fmt(s.signedAt)} by ${s.signedBy}. Locked. The trainee can propose a change, which needs your approval.</p>`;
+  }
+  if(canAct) body += `<div class="field" style="margin-top:14px;margin-bottom:6px"><div class="lbl">Comment to trainee ${s.status==='SUBMITTED'?'(required to request changes)':'(optional)'}</div><textarea class="ctl" id="gComment"></textarea></div><div class="btn-row">${extra}</div>`;
+  if(asst && (s.status==='SUBMITTED'||s.status==='CHANGE_PROPOSED')) body += '<p class="note">Only the SOT can sign off learning goals.</p>';
+  lbModalOpen({ey:`${lastFirst(t.name)} \u00b7 ${t.stage} \u00b7 ${GoalsStore.CYCLE}`, title:'Learning goals', body, ok:okLabel, onOk:ok});
+}
+function goalDecide(id,act){
+  const t = ROSTER.find(x=>x.id===id), c = (document.getElementById('gComment')||{value:''}).value.trim(), who = 'Dr. Albert Chan';
+  if(act==='changes' && !c){ toast('Add a comment so the trainee knows what to change'); return; }
+  GoalsStore.update(id, s=>{
+    if(act==='sign'){ s.status='SIGNED'; s.version=(s.version||0)+1; s.signedBy=who; s.signedAt=TODAY_ISO; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    if(act==='changes'){ s.status='CHANGES_REQUESTED'; s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    if(act==='approve'){ s.versions=(s.versions||[]).concat([{v:s.version,goals:s.goals,signedAt:s.signedAt}]); s.goals=s.proposal.goals; s.version++; s.signedAt=TODAY_ISO; s.signedBy=who; s.proposal=null; s.status='SIGNED'; }
+    if(act==='decline'){ s.proposal=null; s.status='SIGNED'; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+  });
+  const msg = {sign:'signed off and locked',changes:'sent back for changes',approve:'change approved',decline:'change declined'}[act];
+  logEvent(`Learning goals: ${lastFirst(t.name)} ${msg}`);
+  lbModalClose(); renderAll(); toast(`Learning goals ${msg}`);
+}
+function goalRemind(id){
+  const t = ROSTER.find(x=>x.id===id); logEvent(`Learning goals: reminder sent to ${lastFirst(t.name)}`); toast('Reminder sent');
+}
+function goalsRemindAll(){
+  const n = goalPeople().filter(t=>G_TABS[1][2].includes(gset(t).status)).length;
+  logEvent(`Learning goals: reminder sent to ${n} trainees`); toast(`Reminder sent to ${n} trainees`);
+}
+function goalsReset(){ GoalsStore.reset(); renderAll(); toast('Learning-goal demo data reset'); }
+window.addEventListener('storage', e=>{ if(e.key===GoalsStore.KEY) renderAll(); });
+function goalReminders(){
+  const out = [], ppl = ptrainees();
+  const sets = ppl.map(t=>({t, s:gset(t)}));
+  const un = ppl.filter(t=>!t.asot);
+  if(un.length) out.push({id:'asot-unassigned', title:`ITA sign-off ASOT not assigned &mdash; ${un.length} trainee${un.length===1?'':'s'}`,
+    detail:'Assign before the cycle ends on 31 Dec', due:new Date(2026,11,31-RULES.asot), tab:'itas', btn:'Assign now'});
+  const late = sets.filter(x=>['NOT_SET','DRAFT','CHANGES_REQUESTED'].includes(x.s.status));
+  if(late.length){
+    const due = Math.min(...late.map(x=>iso2d(x.s.notifiedAt||'2026-07-01').getTime()+RULES.goalsDue*DAY));
+    out.push({id:'goals-late', title:`Learning goals not submitted &mdash; ${late.length} trainee${late.length===1?'':'s'}`,
+      detail:late.slice(0,3).map(x=>lastFirst(x.t.name)).join('; ')+(late.length>3?` +${late.length-3} more`:''), due:new Date(due), tab:'goals', btn:'Remind trainees'});
+  }
+  const wait = sets.filter(x=>['SUBMITTED','CHANGE_PROPOSED'].includes(x.s.status));
+  if(wait.length){
+    const due = Math.min(...wait.map(x=>iso2d((x.s.status==='CHANGE_PROPOSED' && x.s.proposal ? x.s.proposal.at : x.s.submittedAt) || TODAY_ISO).getTime()+RULES.goalsSign*DAY));
+    out.push({id:'goals-sign', title:`Learning goals waiting for your sign-off &mdash; ${wait.length}`,
+      detail:wait.slice(0,3).map(x=>lastFirst(x.t.name)).join('; ')+(wait.length>3?` +${wait.length-3} more`:''), due:new Date(due), tab:'goals', btn:'Review'});
+  }
+  return out;
+}
+
 function renderAll(){
-  renderRoster(); renderItaRound(); refreshItaSignoff(); renderLog(); renderLogbook();
+  refreshAsotOptions(); renderRoster(); renderItaRound(); refreshItaSignoff(); renderLog(); renderGoals(); renderLogbook();
 }
 
 /* ---------------- tabs ---------------- */
 function go(id){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on', b.dataset.tab===id));
-  ['home','roster','logbook','rotations','itas','review'].forEach(t=>{
+  ['home','roster','logbook','rotations','itas','goals','review'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden', t!==id);
   });
   window.scrollTo({top:0,behavior:'smooth'});
@@ -2574,9 +2841,6 @@ function toggleTheme(){
 })();
 
 /* ---------------- init ---------------- */
-const asotOpts = ASOTS.map(a=>`<option value="${a.id}">${a.name} (${a.tag})</option>`).join('');
-document.getElementById('itaAssignTo').innerHTML = asotOpts;
-document.getElementById('bulkAsot').innerHTML = asotOpts;
 formatStaticNames(); enhanceItaTable(); buildColMenu(); syncControls(); renderTimeline();
 applyRole();
 </script>

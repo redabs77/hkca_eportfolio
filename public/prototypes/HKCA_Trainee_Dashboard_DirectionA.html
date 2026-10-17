@@ -197,6 +197,20 @@ main{padding:30px 0 70px}
   .hero{grid-template-columns:1fr}
 }
 @media(max-width:640px){.wrap{padding:0 15px}}
+
+/* ---------- learning goals ---------- */
+.gl-item{padding:12px 0;border-bottom:1px solid var(--border)}
+.gl-item:last-child{border-bottom:0}
+.gl-item h4{font-size:13.5px;font-weight:700}
+.gl-item .m{font-size:12.5px;color:var(--slate);margin-top:2px}
+.gl-item textarea,.gl-ed input,.gl-ed textarea{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px;background:var(--surface);color:var(--navy)}
+.gl-ed .row{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;display:grid;gap:8px}
+.gl-ed label{font-size:11.5px;font-weight:700;color:var(--slate)}
+.gl-lock{font-size:12px;color:var(--slate);margin-top:10px}
+.gl-bn{border:1px solid var(--border);border-left:4px solid var(--teal);border-radius:12px;padding:18px 20px;margin-bottom:20px;background:var(--surface);display:flex;gap:16px;align-items:flex-start}
+.gl-bn h3{font-size:14.5px;font-weight:700;margin-bottom:4px}
+.gl-bn p{font-size:12.5px;color:var(--slate);line-height:1.55}
+.gl-bn .acts{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -231,6 +245,8 @@ main{padding:30px 0 70px}
 <main>
   <div class="wrap">
 
+    <div id="goalsMount"></div>
+
     <!-- action banner -->
     <div class="banner">
       <div class="ic">&#9203;</div>
@@ -239,7 +255,7 @@ main{padding:30px 0 70px}
         <p>
           The 6-month assessment for your <strong>Prince of Wales Hospital</strong> rotation closes on
           <strong>31 December 2026</strong> — 18 days away. Your Supervisor of Training has already
-          collected feedback from 4 department trainers. Add your reflection and learning goals so the
+          collected feedback from 4 department trainers. Reflect on how you got on with your learning goals so the
           assessment can be signed off.
         </p>
         <div class="acts">
@@ -759,6 +775,17 @@ main{padding:30px 0 70px}
 </main>
 
 <!-- Modal: Add Self-Reflection -->
+<div id="modalGoals" class="hidden" style="position:fixed;inset:0;background:rgba(10,37,64,.65);backdrop-filter:blur(3px);z-index:100;display:grid;place-items:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:620px;width:100%;max-height:92vh;overflow:auto;padding:28px;box-shadow:0 12px 36px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <h3 id="glTitle" style="font-size:18px;font-weight:750"></h3>
+      <button onclick="closeModal('modalGoals')" aria-label="Close" style="background:transparent;border:0;font-size:20px;cursor:pointer;color:var(--slate)">&times;</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--slate);margin-bottom:16px">2 to 5 goals. Once your SOT signs them off they are locked.</p>
+    <div class="gl-ed" id="glBody"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px" id="glActs"></div>
+  </div>
+</div>
 <div id="modalReflection" class="hidden" style="position:fixed;inset:0;background:rgba(10,37,64,.65);backdrop-filter:blur(3px);z-index:100;display:grid;place-items:center;padding:20px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:580px;width:100%;padding:28px;box-shadow:0 12px 36px rgba(0,0,0,.25)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -815,7 +842,81 @@ main{padding:30px 0 70px}
   </div>
 </div>
 
+<script src="hkca-goals-store.js"></script>
 <script>
+
+/* ===== learning goals (set at cycle start, signed by SOT, locked, reviewed at ITA) ===== */
+const GL_ID='2022-019', GL_TODAY='2026-10-17', GL_MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let glEd=null;
+function glDue(s){ const d=new Date(new Date((s.notifiedAt||'2026-07-01')+'T00:00:00').getTime()+14*864e5); return d.getDate()+' '+GL_MON[d.getMonth()]; }
+function glList(s, reflect){
+  const E=GoalsStore.esc;
+  return s.goals.map((g,i)=>`<div class="gl-item"><h4>${i+1}. ${E(g.text)}</h4>
+    <div class="m"><b>Success:</b> ${E(g.success)}</div><div class="m"><b>Evidence:</b> ${E(g.evidence||'\u2014')}</div>
+    ${reflect?`<div style="margin-top:8px"><label style="font-size:11.5px;font-weight:700;color:var(--slate)">Notes for my ITA (progress so far)</label>
+      <textarea rows="2" placeholder="What have you done towards this goal?" onchange="glReflect('${g.id}',this.value)">${E((s.reflections||{})[g.id]||'')}</textarea></div>`:''}</div>`).join('');
+}
+function renderGoalsMount(){
+  const m=document.getElementById('goalsMount'); if(!m) return;
+  const s=GoalsStore.get(GL_ID)||{status:'NOT_SET',goals:[],comments:[]}, E=GoalsStore.esc, st=s.status, last=s.comments[s.comments.length-1];
+  const reset='<a href="#" style="color:var(--slate);font-size:11.5px" onclick="glReset();return false">Reset demo data</a>';
+  let h='';
+  if(st==='NOT_SET'||st==='DRAFT'){
+    h=`<div class="gl-bn"><div style="flex:1"><div class="eyebrow">New this cycle &middot; due ${glDue(s)}</div>
+      <h3>${st==='DRAFT'?'Finish your learning goals':'Set your learning goals for Jul \u2013 Dec 2026'}</h3>
+      <p>Choose 2 to 5 goals for this cycle. Your SOT signs them off and they are then locked. They come back at your ITA, where your SOT reviews how you got on, alongside the College assessment items.</p>
+      <div class="acts"><button class="btn pri" onclick="glEdit('set')">${st==='DRAFT'?'Continue draft':'Set learning goals'}</button></div></div></div>`;
+  } else if(st==='CHANGES_REQUESTED'){
+    h=`<div class="gl-bn" style="border-left-color:var(--am)"><div style="flex:1"><div class="eyebrow">Your SOT asked for changes</div>
+      <h3>Update your learning goals</h3><p>&ldquo;${E(last?last.text:'')}&rdquo;</p>
+      <div class="acts"><button class="btn am" onclick="glEdit('set')">Edit and resubmit</button></div></div></div>`;
+  } else {
+    const pill = st==='SIGNED' ? '<span class="pill ok">Signed &middot; locked</span>' : st==='SUBMITTED' ? '<span class="pill warn">Awaiting SOT sign-off</span>' : '<span class="pill info">Change awaiting SOT approval</span>';
+    const foot = st==='SIGNED' ? `<div class="gl-lock">Signed ${GoalsStore.fmt(s.signedAt)} by ${E(s.signedBy)} &middot; version ${s.version}. Locked. If your circumstances change, <a href="#" onclick="glEdit('change');return false" style="color:var(--bl);font-weight:650">propose a change</a> for your SOT to approve.</div>`
+      : st==='SUBMITTED' ? `<div class="gl-lock">Submitted ${GoalsStore.fmt(s.submittedAt)}. You can&rsquo;t edit while your SOT is reviewing.</div>`
+      : `<div class="gl-lock">Your signed goals stay in force until your SOT approves the change.</div>`;
+    h=`<div class="card" style="margin-bottom:20px"><div class="hd"><div><div class="eyebrow">ITA cycle &middot; Jul &ndash; Dec 2026</div><h2>My learning goals</h2>
+      <p>Your SOT will review these with you at your ITA.</p></div>${pill}</div>${glList(s, st==='SIGNED')}${foot}</div>`;
+  }
+  m.innerHTML=h+`<div style="text-align:right;margin:-12px 0 12px">${reset}</div>`;
+}
+function glEdit(mode){
+  const s=GoalsStore.get(GL_ID)||{goals:[]};
+  const base = mode==='change' ? s.goals : s.goals;
+  glEd={mode, reason:'', goals: base.length ? base.map(g=>Object.assign({},g)) : [GoalsStore.newGoal(),GoalsStore.newGoal()]};
+  glDraw();
+  const m=document.getElementById('modalGoals'); m.classList.remove('hidden'); m.style.display='grid';
+}
+function glDraw(){
+  const E=GoalsStore.esc, ch=glEd.mode==='change';
+  document.getElementById('glTitle').textContent = ch ? 'Propose a change to your goals' : 'My learning goals \u00b7 Jul \u2013 Dec 2026';
+  document.getElementById('glBody').innerHTML = (ch?`<div class="row" style="border:0;padding:0;margin-bottom:12px"><label>Why is the change needed?</label><textarea rows="2" oninput="glEd.reason=this.value">${E(glEd.reason)}</textarea></div>`:'') +
+    glEd.goals.map((g,i)=>`<div class="row"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">Goal ${i+1}</b>
+      ${glEd.goals.length>2?`<button class="btn sec sm" onclick="glDel(${i})">Remove</button>`:''}</div>
+      <label>What do you want to achieve?</label><input value="${E(g.text)}" oninput="glEd.goals[${i}].text=this.value" placeholder="e.g. Run an ASA I\u2013II list with indirect supervision">
+      <label>What will success look like? (measurable)</label><input value="${E(g.success)}" oninput="glEd.goals[${i}].success=this.value" placeholder="e.g. 10 consecutive lists with no supervisor intervention">
+      <label>Evidence you will use</label><input value="${E(g.evidence)}" oninput="glEd.goals[${i}].evidence=this.value" placeholder="e.g. Logbook and 2 DOPS"></div>`).join('') +
+    (glEd.goals.length<5?'<button class="btn sec sm" onclick="glAdd()">+ Add a goal</button>':'');
+  document.getElementById('glActs').innerHTML = (ch?'':'<button class="btn sec" onclick="glSave(\'DRAFT\')">Save draft</button>') +
+    `<button class="btn pri" onclick="glSave('${ch?'CHANGE':'SUBMITTED'}')">${ch?'Send for SOT approval':'Submit to SOT'}</button>`;
+}
+function glAdd(){ if(glEd.goals.length<5){ glEd.goals.push(GoalsStore.newGoal()); glDraw(); } }
+function glDel(i){ glEd.goals.splice(i,1); glDraw(); }
+function glSave(kind){
+  const full=glEd.goals.filter(g=>g.text.trim()&&g.success.trim());
+  if(kind!=='DRAFT' && (full.length<2 || full.length!==glEd.goals.length)){ alert('Each goal needs a description and what success looks like. Use at least 2 goals.'); return; }
+  if(kind==='CHANGE' && !glEd.reason.trim()){ alert('Say why the change is needed.'); return; }
+  GoalsStore.update(GL_ID, s=>{
+    if(kind==='DRAFT'){ s.goals=glEd.goals; s.status='DRAFT'; }
+    else if(kind==='SUBMITTED'){ s.goals=glEd.goals; s.status='SUBMITTED'; s.submittedAt=GL_TODAY; }
+    else { s.proposal={goals:glEd.goals, reason:glEd.reason.trim(), at:GL_TODAY}; s.status='CHANGE_PROPOSED'; }
+  });
+  closeModal('modalGoals'); renderGoalsMount();
+}
+function glReflect(gid,v){ GoalsStore.update(GL_ID, s=>{ s.reflections=s.reflections||{}; s.reflections[gid]=v; }); }
+function glReset(){ GoalsStore.reset(); renderGoalsMount(); }
+window.addEventListener('storage', e=>{ if(e.key===GoalsStore.KEY) renderGoalsMount(); });
+renderGoalsMount();
 function openReflectionModal(){
   const m=document.getElementById('modalReflection');
   m.classList.remove('hidden');
