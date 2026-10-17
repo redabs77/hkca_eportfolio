@@ -611,6 +611,36 @@
   .tl-name .lb-title:hover,.rp-tbl .lb-title:hover{color:var(--acc-t);text-decoration:underline}
   .tl-today-layer b{width:1.5px;opacity:.55}
   #inCard{border-left:4px solid var(--in-f)} #planCard{border-left:4px solid var(--pp-f)}
+  /* ---- VOP browse & progress ---- */
+  .vop-mode{margin:0 0 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .vop-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 10px}
+  .vop-bar .ctl{max-width:210px}
+  .vop-sum{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin:2px 0 10px}
+  .vop-sum b{color:var(--ink);font-weight:700}
+  .vop-tbl td,.vop-tbl th{white-space:nowrap}
+  .vop-tbl td.op{white-space:normal;min-width:160px}
+  .vop-th{cursor:pointer;user-select:none} .vop-th:hover{color:var(--ink)}
+  .vop-dom{border:1px solid var(--border-sub);border-radius:12px;margin-bottom:8px;overflow:hidden;background:var(--raised)}
+  .vop-dom>button{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:18px 64px minmax(160px,1.2fr) minmax(160px,2fr) 110px 120px;gap:12px;align-items:center;padding:11px 14px}
+  .vop-dom>button:hover{background:var(--bg3)} .vop-dom>button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .vop-dom .code{font-size:11.5px;font-weight:750;color:var(--ink3);letter-spacing:.03em}
+  .vop-dom .nm{font-weight:650;font-size:13.5px}
+  .vop-bar2{height:9px;border-radius:99px;background:var(--bg3);position:relative;overflow:hidden}
+  .vop-bar2 i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+  .vop-bar2 .p{background:var(--in-bg);filter:saturate(1.4)} .vop-bar2 .v{background:var(--ok-f)}
+  .vop-bar2.cfb .v{background:var(--in-f)}
+  .vop-items{padding:2px 14px 12px 44px;border-top:1px solid var(--border-sub)}
+  .vop-items table{width:100%}
+  .vop-hm{border-collapse:separate;border-spacing:3px;font-size:12px}
+  .vop-hm th{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.03em;padding:2px 2px 6px;text-align:center;vertical-align:bottom;white-space:normal;min-width:54px}
+  .vop-hm th.nm,.vop-hm td.nm{position:sticky;left:0;background:var(--raised);text-align:left;min-width:150px;z-index:1;padding-right:8px}
+  .vop-hm td.c{text-align:center;border-radius:7px;height:30px;min-width:54px;font-weight:650;cursor:pointer;font-variant-numeric:tabular-nums}
+  .vop-hm td.c:hover{outline:2px solid var(--acc)}
+  .vop-hm .gap{width:10px;min-width:10px}
+  .vop-key{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin:8px 0 12px}
+  .vop-key i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  body.vop-mode #lbBulk{display:none !important}
+  body.vop-mode #tab-logbook > details.card{display:none}
 </style>
 </head>
 <body>
@@ -791,8 +821,8 @@
       <div class="card-h" style="margin-bottom:12px">
         <div>
           <div class="eyebrow">Logbook</div>
-          <div class="h2" style="display:flex;align-items:center;gap:8px">Verification
-            <span class="tipwrap"><button class="info" aria-describedby="lbTip" aria-label="How verification works">i</button>
+          <div class="h2" style="display:flex;align-items:center;gap:8px"><span id="lbH2">Verification</span>
+            <span class="tipwrap" id="lbTipWrap"><button class="info" aria-describedby="lbTip" aria-label="How verification works">i</button>
               <span class="tip" id="lbTip" role="tooltip">The system suggests a curriculum category for each case. Approve to credit it, change the category, send it back to the trainee, or reject it. Your corrections help tune the classifier for PWH. Shortcuts: j / k move, a approves, Enter opens details.</span></span>
           </div>
           <div class="meta" id="lbSub" style="margin-top:2px"></div>
@@ -804,6 +834,8 @@
         </div>
       </div>
 
+      <div class="vop-mode"><div class="seg" id="lbModeSeg" role="group" aria-label="Logbook view"><button class="on" data-m="verify" onclick="lbSetMode('verify')">To verify</button><button data-m="browse" onclick="lbSetMode('browse')">Browse &amp; progress</button></div></div>
+      <div id="lbVerifyWrap">
       <div class="lb-tabs" id="lbTabs" role="tablist"></div>
       <div class="lb-filters">
         <input type="text" class="ctl" id="lbQ" placeholder="Search case or trainee" style="width:210px" oninput="lb.q=this.value.toLowerCase();lb.page=1;renderLogbook()">
@@ -815,6 +847,8 @@
       <div id="lbList"></div>
       <div class="lb-pager" id="lbPager"></div>
       <p class="note">Cases logged more than 2 years after the case date cannot be accredited (curriculum rule). Approved entries stay open to correction until a milestone locks them.</p>
+      </div>
+      <div id="vopWrap" class="hidden"></div>
     </div>
 
     <details class="card card-pad">
@@ -1196,6 +1230,7 @@
     <div>
       <div class="h2" id="drName">Dr. Kelvin Wong</div>
       <div class="meta" id="drMeta">HKCA 2022-019 &middot; HAT-2 &middot; Prince of Wales Hospital</div>
+      <div style="margin-top:8px"><button class="btn sec sm" onclick="vopFromDrawer()">View VOP</button></div>
     </div>
     <button class="icon-btn" onclick="closeDrawer()" aria-label="Close">&times;</button>
   </div>
@@ -2719,6 +2754,183 @@ LB.forEach(e=>{ if(e.state==='verified'){ e.hist.push({t:e.at+' 2026',a:e.by,x:'
 let vseqN = 6;
 const lb = {tab:'ready', scope:'all', q:'', trainee:'', site:'', page:1, size:25};
 const lbSel = new Set();
+/* ================= VOP: browse all cases + progress by domain ================= */
+const vopUI = {mode:'verify',view:'cases',tid:'',q:'',dom:'',item:'',status:'',site:'',from:'',to:'',changed:false,sort:'dateDesc',page:1,size:25,open:{},cSort:'year',cStage:''};
+/* Requirements: HKCA Curriculum Competency Mapping Table. bt = Basic Training minimum, cum = cumulative by Higher Training exit. SM = minimum by Exit Assessment. */
+const VOP_DOMS = [
+ {dom:'CF-2.1',kind:'CF',name:'General Anaesthesia and Sedation',short:'2.1 GA & sedation',items:[{id:'tiva',name:'TIVA',bt:10,cum:50},{id:'mac',name:'MAC / Sedation',bt:10,cum:50},{id:'cvc',name:'Central venous cannulation',bt:10,cum:50},{id:'art',name:'Arterial cannulation',bt:10,cum:50}]},
+ {dom:'CF-2.2',kind:'CF',name:'Regional Anaesthesia',short:'2.2 Regional',items:[{id:'spinal',name:'Spinal block',bt:50,cum:100},{id:'epid',name:'Epidural / CSE (non-obstetric)',bt:null,cum:15},{id:'plex',name:'Major plexus / peripheral nerve block',bt:null,cum:50}]},
+ {dom:'CF-2.3',kind:'CF',name:'Airway Management',short:'2.3 Airway',items:[{id:'sga',name:'Supraglottic device insertion',bt:50,cum:null},{id:'dl',name:'Direct laryngoscopy & intubation',bt:50,cum:null},{id:'vl',name:'Video laryngoscopy & intubation',bt:10,cum:20},{id:'fob',name:'Fibreoptic intubation',bt:3,cum:10}]},
+ {dom:'CF-2.4',kind:'CF',name:'Acute Pain Management',short:'2.4 Acute pain',items:[{id:'pca',name:'Postop IV PCA',bt:10,cum:80},{id:'neur',name:'Postop central neuraxial analgesia',bt:5,cum:20},{id:'pcs',name:'Any acute pain modality (post-CS obstetric)',bt:null,cum:20}]},
+ {dom:'SM-3.1',kind:'SM',name:'General Surgery / Urology / Gynaecology / Endoscopic',short:'3.1 Surgery',items:[{id:'elec',name:'Elective cases',cum:100},{id:'emerg',name:'Emergency cases',cum:100}]},
+ {dom:'SM-3.2',kind:'SM',name:'Head & Neck / ENT',short:'3.2 ENT',items:[{id:'airs',name:'Airway surgery',cum:30},{id:'hn',name:'H&N / ENT (not otherwise specified)',cum:30}]},
+ {dom:'SM-3.3',kind:'SM',name:'Orthopaedic Surgery',short:'3.3 Ortho',items:[{id:'hip',name:'Hip fracture',cum:30},{id:'joint',name:'Major joint replacement',cum:20},{id:'cspine',name:'Cervical spine surgery',cum:5},{id:'ortho',name:'Other orthopaedic',cum:100}]},
+ {dom:'SM-3.4',kind:'SM',name:'Paediatric Anaesthesia',short:'3.4 Paeds',items:[{id:'paed',name:'Age 8 years or under',cum:100}]},
+ {dom:'SM-3.5',kind:'SM',name:'Obstetric Anaesthesia and Analgesia',short:'3.5 Obstetric',items:[{id:'csga',name:'Caesarean section under GA',cum:10},{id:'csreg',name:'Caesarean section under regional',cum:50},{id:'lab',name:'Labour epidural',cum:30}]},
+ {dom:'SM-3.6',kind:'SM',name:'Neuroanaesthesia',short:'3.6 Neuro',items:[{id:'inr',name:'Interventional neuro-radiological procedures',cum:5},{id:'nsx',name:'Neurosurgical procedures',cum:50}]},
+ {dom:'SM-3.7',kind:'SM',name:'Ophthalmic Anaesthesia',short:'3.7 Eye',items:[{id:'eye',name:'Ophthalmic surgery',cum:20}]},
+ {dom:'SM-3.8',kind:'SM',name:'Anaesthesia Outside Operating Theatre',short:'3.8 Outside OT',items:[{id:'oot',name:'Anaesthesia outside theatre',cum:20}]},
+ {dom:'SM-3.9',kind:'SM',name:'Cardiac Surgery and Interventional Cardiology',short:'3.9 Cardiac',items:[{id:'cpb',name:'Cardiac surgery with CPB',cum:10},{id:'card',name:'Other cardiac / interventional cardiology',cum:10}]},
+ {dom:'SM-3.10',kind:'SM',name:'Thoracic Surgery',short:'3.10 Thoracic',items:[{id:'thor',name:'Thoracic surgery',cum:30}]},
+ {dom:'SM-3.11',kind:'SM',name:'Vascular Surgery',short:'3.11 Vascular',items:[{id:'vasc',name:'Vascular surgery',cum:20}]}
+];
+const VOP_OPS = {spinal:['Caesarean section','TURP','Inguinal hernia repair','Knee arthroscopy','Hip hemiarthroplasty'],epid:['Laparotomy','Open nephrectomy'],plex:['ORIF forearm','Shoulder arthroscopy','Carpal tunnel release'],tiva:['Lap cholecystectomy','Thyroidectomy','Tonsillectomy'],mac:['Cataract surgery','Colonoscopy','Cystoscopy'],cvc:['Whipple procedure','Liver resection'],art:['Major abdominal surgery','AAA repair'],sga:['Day-case hernia repair','Cystoscopy','Hysteroscopy'],dl:['Appendicectomy','Laparotomy','Mastectomy'],vl:['Thyroidectomy','Neck dissection'],fob:['Awake intubation, cervical spine'],pca:['Total knee replacement','Colectomy'],neur:['Laparotomy with epidural'],pcs:['Caesarean section'],elec:['Hysterectomy','Cholecystectomy','TURP'],emerg:['Perforated viscus','Appendicectomy','Ectopic pregnancy'],airs:['Tonsillectomy','Microlaryngoscopy'],hn:['Parotidectomy','Neck dissection'],hip:['Hip hemiarthroplasty','DHS fixation'],joint:['Total knee replacement','Total hip replacement'],cspine:['ACDF'],ortho:['ORIF ankle','Arthroscopy'],paed:['Inguinal hernia repair, child','Adenotonsillectomy, child','Circumcision, child'],csga:['Category 1 caesarean section'],csreg:['Elective caesarean section'],lab:['Labour epidural'],inr:['Aneurysm coiling'],nsx:['Craniotomy','Burr hole'],eye:['Vitrectomy','Strabismus surgery'],oot:['MRI sedation','Endoscopy suite'],cpb:['CABG','Aortic valve replacement'],card:['TAVI','Ablation'],thor:['VATS lobectomy'],vasc:['Femoral-popliteal bypass','Carotid endarterectomy'],oth:['General anaesthesia, various']};
+const vopDom = k => VOP_DOMS.find(d=>d.dom===k);
+function vopTarget(it,d,stage){ if(d.kind==='SM') return it.cum; if(/^BAT/.test(stage)) return it.bt; return it.cum!=null ? it.cum : it.bt; }
+function vopHash(s){ let h = 2166136261; String(s).split('').forEach(c=>{ h ^= c.charCodeAt(0); h = Math.imul(h,16777619); }); return h>>>0; }
+function vopRng(seed){ let a = seed>>>0; return ()=>{ a |= 0; a = a+0x6D2B79F5|0; let t = Math.imul(a^a>>>15,1|a); t = t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const vopCache = {};
+function vopCases(t){
+  if(vopCache[t.id]) return vopCache[t.id];
+  const rnd = vopRng(vopHash(t.id)), stage = String(t.stage);
+  const months = {'BAT-1':9,'BAT-2':21,'BAT-3':33,'HAT-1':45,'HAT-2':57,'HAT-3':69}[stage] || (/^PFY/.test(stage)?81:21);
+  const t0 = TODAY.getTime() - months*30.4375*DAY, pCF = Math.min(1.1,t.vop.n/t.vop.t);
+  const smFrac = {'BAT':.08,'HAT-1':.35,'HAT-2':.6,'HAT-3':.85,'PFY':1.05}[/^BAT/.test(stage)?'BAT':(/^PFY/.test(stage)?'PFY':stage)] || .3;
+  const hosp = ['PWH'].concat(rp(t).hist.map(h=>h.c).filter(c=>c!=='PWH')); if(rp(t).home!=='PWH') hosp.push(rp(t).home);
+  const plan = []; let cf = 0;
+  VOP_DOMS.forEach(d=>d.items.forEach(it=>{
+    let c;
+    if(d.kind==='CF'){ const tg = vopTarget(it,d,stage); c = Math.round((tg!=null?tg:it.cum*.25)*pCF*(.55+rnd()*.9)*(/fob|epid|plex|pcs/.test(it.id)?.6:1)); cf += c; }
+    else c = Math.round(it.cum*smFrac*(.3+rnd()*.9));
+    plan.push([d,it,c]);
+  }));
+  const k = cf>t.vop.n ? t.vop.n/cf*.98 : 1; if(k<1) plan.forEach(p=>{ if(p[0].kind==='CF') p[2] = Math.floor(p[2]*k); });
+  const cfItems = plan.filter(p=>p[0].kind==='CF').reduce((a,p)=>a+p[2],0);
+  const out = []; let n = 0;
+  const add = (d,it,c)=>{ for(let i=0;i<c;i++){ const ops = VOP_OPS[it.id]||VOP_OPS.oth;
+    out.push({id:t.id+'-'+(++n),tid:t.id,ms:t0+rnd()*(TODAY.getTime()-t0),hosp:hosp[rnd()<.78?0:Math.floor(rnd()*hosp.length)],dom:d.dom,item:it.id,itemName:it.name,op:ops[Math.floor(rnd()*ops.length)],asa:[1,1,2,2,2,3,3,4][Math.floor(rnd()*8)],sup:Math.min(4,1+Math.floor(rnd()*(months>40?4:3)*rnd()+(months>40?1:0))),status:'verified',changed:rnd()<.06}); } };
+  plan.forEach(p=>add(p[0],p[1],p[2]));
+  const rest = Math.max(0,t.vop.n-cfItems); for(let i=0;i<rest;i++) add(VOP_DOMS[Math.floor(rnd()*4)],{id:'oth',name:'Other clinical fundamentals case'},1);
+  out.sort((a,b)=>b.ms-a.ms);
+  const nPend = LB.filter(e=>e.tid===t.id && e.state!=='verified').length;
+  out.forEach((c,i)=>{ c.date = isoOf(new Date(c.ms)); c.status = i<nPend ? 'pending' : (rnd()<.004?'rejected':(rnd()<.004?'returned':'verified')); });
+  return vopCache[t.id] = out;
+}
+function vopTrainees(){
+  const asst = role==='asst', mineOnly = asst || lb.scope==='mine';
+  return ptrainees().filter(t=>!mineOnly || t.verifier===mineId()).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+}
+function vopProgress(t){
+  const cs = vopCases(t), stage = String(t.stage), cnt = {};
+  cs.forEach(c=>{ const k = c.dom+'|'+c.item, o = cnt[k]||(cnt[k]={v:0,p:0}); if(c.status==='verified') o.v++; else if(c.status==='pending'||c.status==='returned') o.p++; });
+  return VOP_DOMS.map(d=>{
+    const items = d.items.map(it=>{ const o = cnt[d.dom+'|'+it.id]||{v:0,p:0}, tg = vopTarget(it,d,stage); return {id:it.id,name:it.name,bt:it.bt,cum:it.cum,target:tg,v:o.v,p:o.p}; });
+    const withT = items.filter(i=>i.target!=null), tot = withT.reduce((a,i)=>a+i.target,0);
+    const vOK = withT.reduce((a,i)=>a+Math.min(i.v,i.target),0), vpOK = withT.reduce((a,i)=>a+Math.min(i.v+i.p,i.target),0);
+    return {d,items,met:withT.filter(i=>i.v>=i.target).length,of:withT.length,pctV:tot?vOK/tot:0,pctVP:tot?vpOK/tot:0};
+  });
+}
+/* ---- shell ---- */
+function lbSetMode(m){ vopUI.mode = m; if(m==='browse' && lb.scope==='pool') lb.scope = role==='asst'?'mine':'all'; vopUI.page = 1; renderLogbook(); }
+function lbApplyMode(){
+  const b = vopUI.mode==='browse';
+  document.body.classList.toggle('vop-mode',b);
+  document.getElementById('lbVerifyWrap').classList.toggle('hidden',b);
+  document.getElementById('vopWrap').classList.toggle('hidden',!b);
+  document.getElementById('lbH2').textContent = b ? 'Volume of practice' : 'Verification';
+  const tw = document.getElementById('lbTipWrap'); if(tw) tw.style.display = b ? 'none' : '';
+  document.querySelectorAll('#lbModeSeg button').forEach(x=>x.classList.toggle('on',x.dataset.m===vopUI.mode));
+  const asst = role==='asst';
+  document.querySelectorAll('#lbScopeSeg button').forEach(x=>x.classList.toggle('on', x.dataset.lbscope===((asst&&lb.scope==='all')?'mine':lb.scope)));
+  document.getElementById('lbScopePool').style.display = b ? 'none' : '';
+  document.getElementById('lbScopeAll').disabled = asst;
+}
+function vopSet(k,v){ vopUI[k] = v; if(k!=='page') vopUI.page = 1; if(k==='dom') vopUI.item = ''; renderVop(); }
+function vopGo(view,tid,dom,item){ vopUI.mode='browse'; vopUI.view = view; if(tid!==undefined) vopUI.tid = tid; vopUI.dom = dom||''; vopUI.item = item||''; vopUI.status=''; vopUI.page = 1; if(!vopTrainees().some(t=>t.id===vopUI.tid) && vopUI.tid && view!=='cases'){ lb.scope = role==='asst'?'mine':'all'; } renderLogbook(); }
+function vopFromDrawer(){ closeDrawer(); go('logbook'); vopGo('progress',window.drawerTid||''); }
+function vopTraineeOpts(allowAll){ const trs = vopTrainees(); return (allowAll?`<option value="">All trainees (${trs.length})</option>`:'')+trs.map(t=>`<option value="${t.id}" ${vopUI.tid===t.id?'selected':''}>${lastFirst(t.name)} \u00b7 ${t.stage}</option>`).join(''); }
+function renderVop(){
+  lbApplyMode();
+  const trs = vopTrainees();
+  if(vopUI.tid && !trs.some(t=>t.id===vopUI.tid)) vopUI.tid = '';
+  if(vopUI.view==='progress' && !vopUI.tid && trs.length) vopUI.tid = trs[0].id;
+  document.getElementById('lbSub').textContent = vopUI.view==='cohort' ? `Cohort progress \u00b7 ${trs.length} trainees` : vopUI.view==='progress' ? 'Progress against the curriculum minimums' : 'Every logged case, not just those waiting for you';
+  const seg = (k,l)=>`<button class="${vopUI.view===k?'on':''}" onclick="vopSet('view','${k}')">${l}</button>`;
+  document.getElementById('vopWrap').innerHTML = `<div class="vop-mode"><div class="seg" role="group" aria-label="VOP view">${seg('cases','Cases')}${seg('progress','Progress by trainee')}${seg('cohort','Cohort')}</div></div><div id="vopBody"></div>`;
+  ({cases:vopCasesView,progress:vopProgressView,cohort:vopCohortView})[vopUI.view](document.getElementById('vopBody'),trs);
+}
+/* ---- cases ---- */
+function vopFiltered(trs){
+  const ids = vopUI.tid ? [vopUI.tid] : trs.map(t=>t.id), q = vopUI.q.trim().toLowerCase();
+  let rows = []; ids.forEach(id=>{ const t = ROSTER.find(x=>x.id===id); if(t) rows = rows.concat(vopCases(t)); });
+  rows = rows.filter(c=>(!vopUI.dom||c.dom===vopUI.dom)&&(!vopUI.item||c.item===vopUI.item)&&(!vopUI.status||(vopUI.status==='pending'?(c.status==='pending'||c.status==='returned'):c.status===vopUI.status))&&(!vopUI.site||c.hosp===vopUI.site)&&(!vopUI.from||c.date>=vopUI.from)&&(!vopUI.to||c.date<=vopUI.to)&&(!vopUI.changed||c.changed)&&(!q||(c.op+' '+c.itemName+' '+lastFirst(ROSTER.find(x=>x.id===c.tid).name)).toLowerCase().indexOf(q)>=0));
+  const nm2 = c=>lastFirst(ROSTER.find(x=>x.id===c.tid).name);
+  const cmp = {dateDesc:(a,b)=>b.ms-a.ms,dateAsc:(a,b)=>a.ms-b.ms,trainee:(a,b)=>nm2(a).localeCompare(nm2(b))||b.ms-a.ms,module:(a,b)=>a.dom.localeCompare(b.dom,undefined,{numeric:true})||b.ms-a.ms}[vopUI.sort];
+  return rows.sort(cmp);
+}
+function vopCasesView(el,trs){
+  const rows = vopFiltered(trs), pages = Math.max(1,Math.ceil(rows.length/vopUI.size)); if(vopUI.page>pages) vopUI.page = pages;
+  const slice = rows.slice((vopUI.page-1)*vopUI.size,vopUI.page*vopUI.size);
+  const cnt = s=>rows.filter(c=>s==='pending'?(c.status==='pending'||c.status==='returned'):c.status===s).length;
+  const d = vopUI.dom ? vopDom(vopUI.dom) : null;
+  const sites = Array.from(new Set(rows.concat(vopUI.site?[]:[]).map(c=>c.hosp))).sort();
+  const opt = (v,l,c)=>`<option value="${v}" ${v===c?'selected':''}>${l}</option>`;
+  const stPill = s=>({verified:'<span class="pill ok">Verified</span>',pending:'<span class="pill warn">Pending</span>',returned:'<span class="pill">Sent back</span>',rejected:'<span class="pill bad">Rejected</span>'})[s];
+  const th = (k,l,asc,desc)=>`<th class="vop-th" onclick="vopSet('sort','${vopUI.sort===desc?asc:desc}')" aria-sort="${vopUI.sort===desc?'descending':vopUI.sort===asc?'ascending':'none'}">${l}${vopUI.sort===desc?' \u2193':vopUI.sort===asc?' \u2191':''}</th>`;
+  el.innerHTML = `<div class="vop-bar">
+      <select class="ctl" aria-label="Trainee" onchange="vopSet('tid',this.value)">${vopTraineeOpts(true)}</select>
+      <select class="ctl" aria-label="Module" onchange="vopSet('dom',this.value)"><option value="">All modules</option><optgroup label="Clinical Fundamentals">${VOP_DOMS.filter(x=>x.kind==='CF').map(x=>opt(x.dom,x.dom.replace('CF-','')+' '+x.name,vopUI.dom)).join('')}</optgroup><optgroup label="Specialty modules">${VOP_DOMS.filter(x=>x.kind==='SM').map(x=>opt(x.dom,x.dom.replace('SM-','')+' '+x.name,vopUI.dom)).join('')}</optgroup></select>
+      <select class="ctl" aria-label="Procedure" onchange="vopSet('item',this.value)" ${d?'':'disabled'}><option value="">${d?'All procedures':'Procedure (pick a module)'}</option>${d?d.items.map(i=>opt(i.id,i.name,vopUI.item)).join(''):''}</select>
+      <select class="ctl" aria-label="Status" onchange="vopSet('status',this.value)">${opt('','Any status',vopUI.status)}${opt('verified','Verified',vopUI.status)}${opt('pending','Pending',vopUI.status)}${opt('rejected','Rejected',vopUI.status)}</select>
+      ${sites.length>1||vopUI.site?`<select class="ctl" aria-label="Hospital" onchange="vopSet('site',this.value)"><option value="">All hospitals</option>${sites.map(s=>opt(s,s,vopUI.site)).join('')}</select>`:''}
+    </div>
+    <div class="vop-bar">
+      <input type="text" class="ctl" placeholder="Search operation or trainee" style="width:230px" value="${vopUI.q.replace(/"/g,'&quot;')}" oninput="vopUI.q=this.value;vopUI.page=1;vopDebounce()" aria-label="Search">
+      <label class="meta" style="display:flex;align-items:center;gap:6px">From <input type="date" class="ctl" value="${vopUI.from}" onchange="vopSet('from',this.value)"></label>
+      <label class="meta" style="display:flex;align-items:center;gap:6px">To <input type="date" class="ctl" value="${vopUI.to}" onchange="vopSet('to',this.value)"></label>
+      <button class="chip ${vopUI.from===isoOf(new Date(TODAY.getTime()-90*DAY))&&!vopUI.to?'on':''}" onclick="vopUI.from='${isoOf(new Date(TODAY.getTime()-90*DAY))}';vopSet('to','')">Last 3 months</button>
+      <button class="chip ${vopUI.from===isoOf(new Date(TODAY.getTime()-365*DAY))&&!vopUI.to?'on':''}" onclick="vopUI.from='${isoOf(new Date(TODAY.getTime()-365*DAY))}';vopSet('to','')">Last 12 months</button>
+      <label class="chk" style="display:inline-flex;gap:6px;font-size:12.5px"><input type="checkbox" ${vopUI.changed?'checked':''} onchange="vopSet('changed',this.checked)"> Classification changed</label>
+      <span style="flex:1"></span>
+      <button class="btn sec sm" onclick="vopReset()">Reset filters</button>
+      <button class="btn sec sm" onclick="vopCsv()">Export CSV</button>
+    </div>
+    <div class="vop-sum"><span><b>${rows.length}</b> case${rows.length===1?'':'s'}</span><span><b>${cnt('verified')}</b> verified</span><span><b>${cnt('pending')}</b> pending</span><span><b>${cnt('rejected')}</b> rejected</span>${vopUI.tid?`<a class="lb-title" style="cursor:pointer" onclick="vopSet('view','progress')">See progress for ${lastFirst(ROSTER.find(x=>x.id===vopUI.tid).name)} \u2192</a>`:''}</div>
+    <div class="tbl-scroll"><table class="vop-tbl"><thead><tr>${th('d','Date','dateAsc','dateDesc')}${vopUI.tid?'':th('t','Trainee','trainee','trainee')}<th>Hospital</th>${th('m','Module claimed','module','module')}<th>Procedure</th><th>Operation</th><th>ASA</th><th>Supervision</th><th>Status</th></tr></thead><tbody>${
+      slice.map(c=>{ const t = ROSTER.find(x=>x.id===c.tid); return `<tr><td class="mono">${fmtD(D(c.date))}</td>${vopUI.tid?'':`<td><button class="lb-title" style="border:0;background:none;padding:0;font:inherit;cursor:pointer" onclick="vopGo('cases','${t.id}')">${lastFirst(t.name)}</button> <span class="meta">${t.stage}</span></td>`}<td>${c.hosp}</td><td>${c.dom.replace(/^(CF|SM)-/,'')} ${vopDom(c.dom).name.replace(/ and .*/,'').replace(/ \/ .*/,'')}${c.changed?' <span class="pill info" title="You or the system changed the suggested category">changed</span>':''}</td><td>${c.itemName}</td><td class="op">${c.op}</td><td>${c.asa}</td><td>${c.sup}</td><td>${stPill(c.status)}</td></tr>`; }).join('') || `<tr><td colspan="9" class="q-empty">No cases match these filters.</td></tr>`}</tbody></table></div>
+    <div class="lb-pager"><span>${rows.length?((vopUI.page-1)*vopUI.size+1)+'\u2013'+Math.min(rows.length,vopUI.page*vopUI.size)+' of '+rows.length:'0 cases'}</span><span style="display:flex;gap:8px;align-items:center"><select class="ctl" onchange="vopUI.size=+this.value;vopSet('page',1)" aria-label="Rows per page">${[25,50,100].map(n=>opt(String(n),n+' per page',String(vopUI.size))).join('')}</select><button class="btn sec sm" ${vopUI.page<=1?'disabled':''} onclick="vopSet('page',vopUI.page-1)">Previous</button><span>Page ${vopUI.page} of ${pages}</span><button class="btn sec sm" ${vopUI.page>=pages?'disabled':''} onclick="vopSet('page',vopUI.page+1)">Next</button></span></div>
+    <p class="note">Sample data. Progress counts verified cases only.</p>`;
+}
+let vopTimer = null; function vopDebounce(){ clearTimeout(vopTimer); vopTimer = setTimeout(()=>{ const f = document.activeElement && document.activeElement.getAttribute('aria-label')==='Search'; renderVop(); if(f){ const i = document.querySelector('#vopBody input[aria-label=Search]'); if(i){ i.focus(); i.setSelectionRange(i.value.length,i.value.length); } } },250); }
+function vopReset(){ Object.assign(vopUI,{q:'',dom:'',item:'',status:'',site:'',from:'',to:'',changed:false,page:1,sort:'dateDesc'}); renderVop(); }
+function vopCsv(){
+  const rows = vopFiltered(vopTrainees()), esc = s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const csv = ['Date,Trainee,Stage,Hospital,Module,Procedure,Operation,ASA,Supervision,Status'].concat(rows.map(c=>{ const t = ROSTER.find(x=>x.id===c.tid); return [c.date,lastFirst(t.name),t.stage,c.hosp,c.dom,c.itemName,c.op,c.asa,c.sup,c.status].map(esc).join(','); })).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download = 'vop-cases.csv'; document.body.appendChild(a); a.click(); a.remove(); toast(`Exported ${rows.length} cases`);
+}
+/* ---- progress ---- */
+function vopProgressView(el,trs){
+  const t = ROSTER.find(x=>x.id===vopUI.tid); if(!t){ el.innerHTML = '<p class="note">No trainees in this scope.</p>'; return; }
+  const pr = vopProgress(t), cs = vopCases(t), stage = String(t.stage), bat = /^BAT/.test(stage);
+  const cfN = cs.filter(c=>vopDom(c.dom).kind==='CF'), ver = cfN.filter(c=>c.status==='verified').length;
+  const bar = (p,cls)=>`<div class="vop-bar2 ${cls||''}"><i class="p" style="width:${Math.min(100,p.pctVP*100).toFixed(1)}%"></i><i class="v" style="width:${Math.min(100,p.pctV*100).toFixed(1)}%"></i></div>`;
+  const row = p=>{ const d = p.d, open = !!vopUI.open[d.dom], pv = p.items.reduce((a,i)=>a+i.v,0), pp = p.items.reduce((a,i)=>a+i.p,0);
+    return `<div class="vop-dom"><button onclick="vopUI.open['${d.dom}']=!vopUI.open['${d.dom}'];renderVop()" aria-expanded="${open}"><span aria-hidden="true">${open?'\u25be':'\u25b8'}</span><span class="code">${d.dom.replace(/^(CF|SM)-/,'')}</span><span class="nm">${d.name}</span>${bar(p,d.kind==='CF'?'cfb':'')}<span class="meta">${Math.round(p.pctV*100)}%${pp?` <span title="${pp} pending, not counted yet">(+${pp} pending)</span>`:''}</span><span class="meta">${p.of?`${p.met} of ${p.of} item${p.of===1?'':'s'} met`:'No minimum yet'}</span></button>
+      ${open?`<div class="vop-items"><table><thead><tr><th>Procedure</th><th>Verified</th><th>Pending</th>${d.kind==='CF'?`<th>BT minimum</th><th>Cumulative minimum</th>`:'<th>Minimum</th>'}<th>Status</th><th></th></tr></thead><tbody>${p.items.map(i=>`<tr><td>${i.name}</td><td><b>${i.v}</b></td><td>${i.p||'\u2014'}</td>${d.kind==='CF'?`<td>${i.bt!=null?i.bt:'\u2014'}</td><td>${i.cum!=null?i.cum:'<span class="meta" title="No separate cumulative minimum">\u2014</span>'}</td>`:`<td>${i.cum}</td>`}<td>${i.target==null?'<span class="meta">No BT minimum</span>':i.v>=i.target?'<span class="pill ok">Met</span>':`<span class="pill warn">${i.target-i.v} to go</span>`}</td><td><a class="lb-title" style="cursor:pointer" onclick="vopGo('cases','${t.id}','${d.dom}','${i.id}')">Cases</a></td></tr>`).join('')}</tbody></table>
+        <p style="margin:8px 0 0"><a class="lb-title" style="cursor:pointer" onclick="vopGo('cases','${t.id}','${d.dom}')">View all ${pv+pp} ${d.dom} cases \u2192</a></p></div>`:''}</div>`; };
+  el.innerHTML = `<div class="vop-bar"><select class="ctl" aria-label="Trainee" onchange="vopSet('tid',this.value)">${vopTraineeOpts(false)}</select><span class="meta">${stagePill(stage)} &nbsp; Minimums shown for ${bat?'Basic Training (BT)':'Higher Training (cumulative by HT exit)'}</span></div>
+    <div class="vop-sum"><span><b>${cfN.length}</b> Clinical Fundamentals cases logged, <b>${ver}</b> verified</span><span>Solid bar = verified. Lighter = pending, not yet counted.</span></div>
+    <div class="eyebrow" style="margin:12px 0 8px">Clinical Fundamentals</div>${pr.filter(p=>p.d.kind==='CF').map(row).join('')}
+    <p class="note" style="margin:2px 0 14px">2.5 Perioperative Medicine, 2.6 Trauma and Crisis, and 2.7 Safety and Quality have no VOP minimum.</p>
+    <div class="eyebrow" style="margin:12px 0 8px">Specialty modules (minimum by Exit Assessment)</div>${pr.filter(p=>p.d.kind==='SM').map(row).join('')}
+    <p class="note">Pain Medicine and Intensive Care are not tracked here. ICU time is tracked as a rotation.</p>`;
+}
+/* ---- cohort heatmap ---- */
+function vopCohortView(el,trs){
+  const cols = VOP_DOMS, rows = trs.filter(t=>!vopUI.cStage||String(t.stage).indexOf(vopUI.cStage)===0).map(t=>({t,pr:vopProgress(t)}));
+  const cfMean = r=>r.pr.filter(p=>p.d.kind==='CF').reduce((a,p)=>a+p.pctV,0)/4;
+  const cmp = {year:(a,b)=>stRank(a.t.stage)-stRank(b.t.stage)||lastFirst(a.t.name).localeCompare(lastFirst(b.t.name)),name:(a,b)=>lastFirst(a.t.name).localeCompare(lastFirst(b.t.name)),low:(a,b)=>cfMean(a)-cfMean(b)}[vopUI.cSort];
+  rows.sort(cmp);
+  const cf = p=>{ const v = p.pctV; return v>=.9?['var(--ok-bg)','var(--ok-f)']:v>=.6?['var(--wn-bg)','var(--wn-f)']:['var(--bd-bg)','var(--bd-f)']; };
+  const sm = p=>[`rgba(110,150,235,${(.07+Math.min(1,p.pctV)*.5).toFixed(2)})`,'var(--ink)'];
+  const opt = (v,l,c)=>`<option value="${v}" ${v===c?'selected':''}>${l}</option>`;
+  el.innerHTML = `<div class="vop-bar"><select class="ctl" aria-label="Stage" onchange="vopSet('cStage',this.value)">${opt('','All stages',vopUI.cStage)}${opt('BAT','BAT',vopUI.cStage)}${opt('HAT','HAT',vopUI.cStage)}${opt('PFY','PFY',vopUI.cStage)}</select>
+      <select class="ctl" aria-label="Sort" onchange="vopSet('cSort',this.value)">${opt('year','Sort: Training year',vopUI.cSort)}${opt('name','Sort: Last name',vopUI.cSort)}${opt('low','Sort: Furthest behind first',vopUI.cSort)}</select><span class="meta">${rows.length} trainees. Click a cell to open that trainee's domain.</span></div>
+    <div class="vop-key"><span><i style="background:var(--ok-bg)"></i>90% or more of the minimum for their stage</span><span><i style="background:var(--wn-bg)"></i>60 to 89%</span><span><i style="background:var(--bd-bg)"></i>under 60%</span><span><i style="background:rgba(110,150,235,.35)"></i>Specialty modules: darker = closer to the Exit Assessment minimum (no red, since most are done later)</span></div>
+    <div class="tbl-scroll"><table class="vop-hm"><thead><tr><th class="nm">Trainee</th>${cols.map((c,i)=>`${i===4?'<th class="gap"></th>':''}<th title="${c.name}">${c.short.replace(' ','<br>')}</th>`).join('')}</tr></thead><tbody>${
+      rows.map(r=>`<tr><td class="nm"><button class="lb-title" style="border:0;background:none;padding:0;font:inherit;cursor:pointer;color:var(--ink)" onclick="vopGo('progress','${r.t.id}')"><b>${lastFirst(r.t.name)}</b></button> <span class="meta">${r.t.stage}</span></td>${r.pr.map((p,i)=>{ const [bg,fg] = p.d.kind==='CF'?cf(p):sm(p); return `${i===4?'<td class="gap"></td>':''}<td class="c" style="background:${bg};color:${fg}" title="${lastFirst(r.t.name)} \u00b7 ${p.d.name}: ${Math.round(p.pctV*100)}% verified, ${p.met} of ${p.of} items met" onclick="vopUI.open['${p.d.dom}']=true;vopGo('progress','${r.t.id}')">${p.of?Math.round(Math.min(1,p.pctV)*100):'\u2014'}</td>`; }).join('')}</tr>`).join('') || '<tr><td colspan="17" class="q-empty">No trainees.</td></tr>'}</tbody></table></div>`;
+}
+
 let lbActive = null, lbPanelId = null, lbModalCfg = null;
 const trOf = e => ROSTER.find(t=>t.id===e.tid);
 const lbById = id => LB.find(e=>e.id===id);
@@ -2796,6 +3008,7 @@ function lbRows(tab){
 const LB_TABS = [['ready','Ready to approve'],['decide','Needs a decision'],['dup','Duplicates'],['verified','Verified']];
 function renderLogbook(){
   const list = document.getElementById('lbList'); if(!list) return;
+  lbApplyMode(); if(vopUI.mode==='browse'){ renderVop(); return; }
   const sc = lbScoped();
   const counts = {}; LB_TABS.forEach(([k])=>counts[k]=sc.filter(e=>e.state===k).length);
   const tabsEl = document.getElementById('lbTabs');
@@ -3213,6 +3426,7 @@ function bulkApprove(){
 
 /* ---------------- drawer ---------------- */
 function openDrawer(name, id, stage, parent){
+  window.drawerTid = id;
   document.getElementById('drName').textContent = name;
   document.getElementById('drMeta').textContent = `HKCA ${id} · ${stage} · Parent: ${parent}`;
   document.getElementById('scrim').classList.add('on');
