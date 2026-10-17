@@ -454,6 +454,7 @@
   .dark .kpi .ico{background:rgba(255,255,255,.1)}
   .kpi .kl{grid-area:kl;font-size:13px;font-weight:650;line-height:1.25}
   .kpi .kn{grid-area:kn;font-size:36px;font-weight:750;letter-spacing:-.035em;line-height:1.05;margin-top:6px;font-variant-numeric:tabular-nums}
+  .kpi .kn small{font-size:15px;font-weight:600;opacity:.7;letter-spacing:0;margin-left:2px}
   .kpi .ks{grid-area:ks;font-size:12px;opacity:.85}
   .hm-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .hm-cardbtn{all:unset;box-sizing:border-box;cursor:pointer;display:block;background:var(--raised);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:17px 18px}
@@ -548,6 +549,25 @@
   .dark .pill.ok{color:var(--ok-f)} .dark .pill.warn{color:var(--wn-f)} .dark .pill.bad{color:var(--bd-f)} .dark .pill.info{color:var(--in-f)} .dark .pill.purple{color:var(--pp-f)}
   .pill.stg{font-weight:700} .pill.stg.bat{background:var(--t1b);color:var(--t1f)} .pill.stg.hat{background:var(--t5b);color:var(--t5f)} .pill.stg.pfy{background:var(--t3b);color:var(--t3f)}
   tr[data-stage=BAT] td:first-child{box-shadow:inset 3px 0 0 var(--s-bat)} tr[data-stage=HAT] td:first-child{box-shadow:inset 3px 0 0 var(--s-hat)} tr[data-stage=PFY] td:first-child{box-shadow:inset 3px 0 0 var(--s-pfy)}
+
+  /* ---- scale for 30+ trainees ---- */
+  .tbl-scroll.tall{max-height:min(66vh,700px);overflow:auto;border:1px solid var(--border-sub);border-radius:12px}
+  .tbl-scroll.tall thead th{background:var(--bg3);box-shadow:0 1px 0 var(--border)}
+  table.compact tbody td{padding:6px 11px}
+  table.compact .nm-cell{display:inline}
+  table.compact .nm-cell + .id-cell{display:inline;margin-left:6px}
+  table.compact .seglegend{display:none}
+  table.compact tbody td{white-space:nowrap}
+  table.compact .meter{gap:8px}
+  #itaRoundBody td{white-space:nowrap}
+  .ctl.un{border-color:var(--am500);background:var(--wn-bg)}
+  .ita-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0 10px}
+  .ita-filters .chip{display:inline-flex;gap:7px;align-items:center}
+  .ita-filters .chip b{font-size:11px;opacity:.75;font-variant-numeric:tabular-nums}
+  #rosterTable thead th:nth-child(1),#rosterTable tbody td:nth-child(1){position:sticky;left:0;z-index:3;min-width:42px;max-width:42px;background:var(--raised)}
+  #rosterTable thead th:nth-child(2),#rosterTable tbody td:nth-child(2){position:sticky;left:42px;z-index:3;background:var(--raised);box-shadow:1px 0 0 var(--border-sub)}
+  #rosterTable thead th:nth-child(-n+2){background:var(--bg3);z-index:4}
+  #rosterTable tbody tr:hover td:nth-child(-n+2){background:var(--bg2)}
 </style>
 </head>
 <body>
@@ -696,6 +716,7 @@
           <label class="ctl"><input type="checkbox" id="mineFilter" onchange="setView('mine',this.checked)"> My trainees</label>
           <input type="text" id="rosterFilter" class="ctl" placeholder="Search name or HKCA no." style="width:190px"
             oninput="q=this.value.toLowerCase();renderRoster()">
+          <button class="btn sec" id="densBtn" onclick="toggleDensity()" title="Switch row density">Compact rows</button>
           <details class="colmenu" id="colMenu"><summary class="btn sec">Columns</summary><div class="menu" id="colMenuBody"></div></details>
           <button class="btn sec" onclick="resetView()">Reset view</button>
           <button class="btn sec" onclick="exportRoster(false)">Export list</button>
@@ -707,8 +728,8 @@
         Sensitive records (warning letters, remedial notices) are visible only to the parent-hospital SOT.
       </p>
 
-      <div class="tbl-scroll">
-        <table>
+      <div class="tbl-scroll tall" id="rosterScroll">
+        <table id="rosterTable">
           <thead id="rosterHead"></thead>
           <tbody id="rosterBody"></tbody>
         </table>
@@ -1002,11 +1023,12 @@
         <button class="btn sec sm" onclick="itaAssignSelected()" data-need-sot>Assign selected</button>
       </div>
 
-      <div class="tbl-scroll">
-        <table>
+      <div class="ita-filters" id="itaChips"></div>
+      <div class="tbl-scroll tall" id="itaScroll">
+        <table class="compact">
           <thead>
-            <tr><th style="width:34px"></th><th style="min-width:190px">Trainee</th><th>Stage</th><th style="min-width:210px">Trainers</th>
-                <th style="min-width:170px">Invitation</th><th style="min-width:190px">Logbook verifier</th><th style="min-width:190px">ITA sign-off by</th></tr>
+            <tr><th style="width:34px"></th><th style="min-width:190px">Trainee</th><th>Stage</th><th style="min-width:90px">Trainers</th>
+                <th style="min-width:250px">Trainer ITA forms</th><th style="min-width:190px">Logbook verifier</th><th style="min-width:190px">ITA sign-off by</th></tr>
           </thead>
           <tbody id="itaRoundBody"></tbody>
         </table>
@@ -1900,6 +1922,13 @@ function visibleRows(){
   return rows;
 }
 
+let density = 'compact';
+function toggleDensity(){ density = density==='compact' ? 'comfortable' : 'compact'; renderRoster(); }
+function rotCompact(r){
+  const kind = r.kind==='in' ? ['info','b','Rotated in'] : r.kind==='out' ? ['purple','p','Rotated out'] : ['ok','g','In department'];
+  const full = plain(r.label)+' \u00b7 '+r.since, short = plain(r.label).split('\u00b7')[0].trim();
+  return `<span class="pill ${kind[0]}" title="${full}"><span class="dot ${kind[1]}"></span>${kind[2]}</span> <span class="id-cell" style="display:inline;margin-left:6px" title="${full}">${short}</span>`;
+}
 function cellFor(k,t){
   switch(k){
     case 'sel':  return `<td><input type="checkbox" aria-label="Select ${lastFirst(t.name)}" ${selected.has(t.id)?'checked':''} onchange="toggleSel('${t.id}',this.checked)"></td>`;
@@ -1909,7 +1938,7 @@ function cellFor(k,t){
       return `<td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div>${hosp}${parentNote}</td>`;
     }
     case 'stage':   return `<td>${stagePill(t.stage)}</td>`;
-    case 'rot':     return `<td>${rotBadge(t.rot)}</td>`;
+    case 'rot':     return `<td>${density==='compact' ? rotCompact(t.rot) : rotBadge(t.rot)}</td>`;
     case 'asot':    return `<td>${t.asot ? `<span class="meta">${asotById(t.asot).name.replace('Dr. ','')}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '<span class="meta">&mdash;</span>'}</td>`;
     case 'acc':     return `<td>${accreditedSegBar(t.months)}</td>`;
     case 'cf':      return `<td>${meter(t.cf.n,t.cf.t, t.cf.n>=t.cf.t?'':'a')}</td>`;
@@ -1926,6 +1955,8 @@ function cellFor(k,t){
 }
 
 function renderRoster(){
+  document.getElementById('rosterTable').classList.toggle('compact', density==='compact');
+  document.getElementById('densBtn').textContent = density==='compact' ? 'Compact rows' : 'Comfortable rows';
   const data = rosterData();
   const cols = COLS.filter(c=>c.fixed || !view.hidden.includes(c.k));
   const rows = visibleRows();
@@ -2079,25 +2110,31 @@ function autoBalance(){
 }
 
 /* ---------------- ITA round table ---------------- */
-let itaMine = false;
+let itaMine = false, itaFilter = 'all', itaQ = '';
 const itaSel = new Set();
 function invitePill(i,t){
   if(!i) return '<span class="pill">Not invited</span>';
   const x = t ? itain(t) : null, thin = x && x.got<RULES.minForms;
-  const wba = x ? `<div class="id-cell">WBA trainers ${x.wbaGot} of ${x.wba} &middot; invited ${i.at}</div>` : `<div class="id-cell">Invited ${i.at}</div>`;
+  const wba = x ? `<span class="id-cell" style="display:inline;margin-left:6px" title="Trainers who did a WBA with this trainee: ${x.wbaGot} of ${x.wba} have responded">WBA ${x.wbaGot}/${x.wba}</span>` : '';
   if(i.got>=i.total) return `<span class="pill ok"><span class="dot g"></span>${i.total} received</span>${wba}`;
-  return `<span class="pill ${thin?'warn':'info'}"><span class="dot ${thin?'a':'b'}"></span>${i.got} of ${i.total} received</span>${thin?' <span class="pill warn">Thin input</span>':''}${wba}`;
+  return `<span class="pill ${thin?'warn':'info'}"><span class="dot ${thin?'a':'b'}"></span>${i.got} of ${i.total} received</span>${thin?' <span class="pill warn">Thin</span>':''}${wba}`;
+}
+function itaMatch(t,f){
+  if(f==='noasot') return !t.asot;
+  if(f==='thin') return !!(itain(t) && itain(t).got<RULES.minForms);
+  if(f==='notinv') return !INV[t.id];
+  return true;
 }
 function asotSelect(t,field,dis){
   const cur = t[field];
   const opts = ['<option value="">Unassigned</option>'].concat(ASOTS.filter(a=>a.active!==false || a.id===cur)
     .map(a=>`<option value="${a.id}" ${a.id===cur?'selected':''}>${a.name} (${a.tag})${a.active===false?' \u2013 inactive':''}</option>`)).join('');
-  return `<select class="ctl sm" data-need-sot ${dis} aria-label="${ROLE_LABEL[field]} for ${lastFirst(t.name)}" onchange="setAsot(['${t.id}'],this.value,'${field}')">${opts}</select>`;
+  return `<select class="ctl sm ${cur?'':'un'}" data-need-sot ${dis} aria-label="${ROLE_LABEL[field]} for ${lastFirst(t.name)}" onchange="setAsot(['${t.id}'],this.value,'${field}')">${opts}</select>`;
 }
 function renderItaRound(){
   const body = document.getElementById('itaRoundBody'); if(!body) return;
   const all = ptrainees();
-  const rows = all.filter(t=>!itaMine || t.asot===mineId())
+  const rows = all.filter(t=>!itaMine || t.asot===mineId()).filter(t=>itaMatch(t,itaFilter)).filter(t=>!itaQ || (lastFirst(t.name)+' '+t.id).toLowerCase().includes(itaQ))
     .sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
   const dis = role==='asst' ? 'disabled' : '';
   body.innerHTML = rows.map(t=>{
@@ -2105,12 +2142,12 @@ function renderItaRound(){
     const cover = t.cover ? `<div class="id-cell">On cover until ${t.cover.until} &middot; <a class="lb-title" tabindex="0" onclick="endCover('${t.id}')">End cover</a></div>` : '';
     return `<tr class="${t.asot===mineId()?'mine':''}">
       <td><input type="checkbox" aria-label="Select ${lastFirst(t.name)}" ${itaSel.has(t.id)?'checked':''} onchange="itaToggle('${t.id}',this.checked)"></td>
-      <td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div>${cover}</td>
+      <td><div class="nm-cell">${lastFirst(t.name)}</div><span class="id-cell mono" style="display:inline;margin-left:6px">${t.id}</span>${cover}</td>
       <td>${stagePill(t.stage)}</td>
-      <td><span class="meta" title="${ts.join(', ')}">${ts.length} trainers</span><div class="id-cell">${ts.slice(0,2).join(', ')} +${ts.length-2}</div></td>
+      <td><span class="meta" title="${ts.join(', ')}">${ts.length} trainers</span></td>
       <td>${invitePill(INV[t.id],t)}</td>
       <td>${asotSelect(t,'verifier',dis)}</td>
-      <td>${asotSelect(t,'asot',dis)}${t.asot?'':'<div class="id-cell">Needed before 1 Dec</div>'}</td>
+      <td>${asotSelect(t,'asot',dis)}</td>
     </tr>`;
   }).join('') || '<tr class="empty-row"><td colspan="7">No trainees signed off by you yet.</td></tr>';
 
@@ -2131,6 +2168,10 @@ function renderItaRound(){
   const sa = document.getElementById('itaSelAll');
   sa.checked = rows.length>0 && rows.every(t=>itaSel.has(t.id));
   document.getElementById('itaMineCb').checked = itaMine;
+  const cnt = f => all.filter(t=>itaMatch(t,f)).length;
+  document.getElementById('itaChips').innerHTML = [['all','All'],['noasot','No sign-off ASOT'],['thin','Thin trainer input'],['notinv','Not invited']].map(([k,l])=>
+    `<button class="chip ${itaFilter===k?'on':''}" onclick="itaFilter='${k}';renderItaRound()">${l} <b>${cnt(k)}</b></button>`).join('') +
+    `<input type="search" class="ctl sm" id="itaSearch" placeholder="Search trainee" value="${itaQ}" oninput="itaQ=this.value.toLowerCase();var p=this.selectionStart;renderItaRound();var s=document.getElementById('itaSearch');s.focus();s.setSelectionRange(p,p)" style="width:170px;margin-left:auto">`;
 }
 function itaToggle(id,on){ on ? itaSel.add(id) : itaSel.delete(id); document.getElementById('itaSelN').textContent = itaSel.size+' selected'; }
 function itaToggleAll(on){
@@ -2391,17 +2432,17 @@ function attentionRows(){
 function renderHome(){
   const asst = role==='asst', ppl = ptrainees(), n = ppl.length;
   /* KPI cards: one per task type, fixed colour */
-  const invited = ppl.filter(t=>INV[t.id]), received = invited.reduce((a,t)=>a+INV[t.id].got,0), thin = thinInput().length;
+  const invited = ppl.filter(t=>INV[t.id]), meetsN = invited.filter(t=>INV[t.id].got>=RULES.minForms).length, thin = thinInput().length;
   const kp = [
     {k:'ita', tab:'itas', label:'ITAs to sign off', n:4, sub:`of ${n} this cycle`},
     {k:'logbook', tab:'logbook', label:'Logbook to verify', n:lbPending(), sub:`oldest waiting ${logbookOldest()} days`},
     asst ? null : {k:'goals', tab:'goals', label:'Learning goals to sign off', n:goalsAction(), sub:`${ppl.filter(t=>['NOT_SET','DRAFT','CHANGES_REQUESTED'].includes(gset(t).status)).length} not yet submitted`},
     {k:'rot', tab:'rotations', label:'Rotation handshakes', n:3, sub:'waiting for a reply'},
-    {k:'forms', tab:'itas', label:'Trainer ITA forms received', n:received, sub:thin ? `${thin} trainee${thin===1?'':'s'} below ${RULES.minForms} forms` : `every trainee has ${RULES.minForms}+`},
+    {k:'forms', tab:'itas', label:'Trainer ITA forms received', n:`${meetsN}<small> of ${invited.length}</small>`, sub:`trainees have ${RULES.minForms}+ forms` + (thin ? ` &middot; ${thin} need more input` : '')},
     {k:'risk', tab:'review', label:'Trainees flagged', n:FLAGGED, sub:'on progression risk'}
   ].filter(Boolean);
   document.getElementById('kpis').innerHTML = kp.map(c=>`<button class="kpi t-${c.k}" onclick="go('${c.tab}')"><span class="ico">${svg(c.k)}</span><span class="kl">${c.label}</span><span class="kn">${c.n}</span><span class="ks">${c.sub}</span></button>`).join('');
-  document.getElementById('homeSub').innerHTML = `<b>${kp.filter(c=>c.k!=='forms'&&c.k!=='risk').reduce((a,c)=>a+(c.n?1:0),0)}</b> of your task areas have items waiting`;
+  document.getElementById('homeSub').innerHTML = `<b>${kp.filter(c=>['ita','logbook','goals','rot'].includes(c.k)).reduce((a,c)=>a+c.n,0)} items</b> waiting for you &middot; ${FLAGGED} trainees flagged`;
 
   /* sign-off ownership donut */
   const holders = ASOTS.filter(a=>ppl.some(t=>t.asot===a.id)).map(a=>({l:a.name.replace('Dr. ','')+(a.id==='sot'?' (SOT)':''), v:ppl.filter(t=>t.asot===a.id).length}));
@@ -2427,12 +2468,11 @@ function renderHome(){
       <td style="text-align:right"><button class="btn sec sm" onclick="go('${r.tab}')">Open</button></td></tr>`).join('') || '<tr><td colspan="5" class="q-empty">Nothing needs attention.</td></tr>'}</tbody></table>`;
 
   /* right rail: this cycle */
-  const meets = invited.filter(t=>INV[t.id].got>=RULES.minForms).length;
   const asg = ppl.filter(t=>t.asot).length, lbv = LB.filter(e=>e.state==='verified').length;
   const gs = ppl.filter(t=>gset(t).status==='SIGNED').length;
   const row = (tab,l,a,b,c,note)=>`<button class="pg-row" onclick="go('${tab}')"><div class="pg-l"><span>${l}</span><b>${a} of ${b}</b></div><div class="pg"><i class="${c||''}" style="width:${b?Math.round(a/b*100):0}%"></i></div>${note?`<div class="pg-n">${note}</div>`:''}</button>`;
   document.getElementById('cycleRows').innerHTML =
-    row('itas','Trainer ITA forms received',meets,invited.length,'t',`trainees with ${RULES.minForms} or more forms &middot; voluntary`) + row('itas','ITA sign-off ASOT assigned',asg,n,'b') + row('goals','Learning goals signed',gs,n,'p') + row('logbook','Logbook entries verified',lbv,LB.length);
+    row('itas','ITA sign-off ASOT assigned',asg,n,'b') + row('goals','Learning goals signed',gs,n,'p') + row('logbook','Logbook entries verified',lbv,LB.length);
   const left = Math.round((new Date(2026,11,31)-TODAY)/DAY);
   document.getElementById('cycleFoot').textContent = `Cycle ends 31 Dec, in ${left} days.`;
   const by = {BAT:0,HAT:0,PFY:0}; ROSTER.forEach(t=>{ const k = String(t.stage).slice(0,3); if(by[k]!==undefined) by[k]++; });
