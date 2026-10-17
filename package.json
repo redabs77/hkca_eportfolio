@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "npm run test:parity",
-    "postinstall": "prisma skills sync || exit 0",
+    "postinstall": "prisma generate --schema db/schema/schema.prisma || exit 0",
     "test:parity": "node tests/parity/verify_parity.mjs",
     "prisma:generate": "prisma generate --schema db/schema/schema.prisma",
     "prisma:format": "prisma format --schema db/schema/schema.prisma",

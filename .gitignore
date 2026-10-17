@@ -10,9 +10,9 @@
 *.sql.gz
 *.dump
 *.bak
-data/
-dumps/
-legacy-data/
+/data/
+/dumps/
+/legacy-data/
 *.csv
 *.xlsx
 
