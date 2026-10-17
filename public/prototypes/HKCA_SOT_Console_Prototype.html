@@ -610,6 +610,7 @@
   .tl-name .lb-title{font-weight:650;font-size:12.5px}
   .tl-name .lb-title:hover,.rp-tbl .lb-title:hover{color:var(--acc-t);text-decoration:underline}
   .tl-today-layer b{width:1.5px;opacity:.55}
+  #inCard{border-left:4px solid var(--in-f)} #planCard{border-left:4px solid var(--pp-f)}
 </style>
 </head>
 <body>
@@ -866,6 +867,7 @@
       <div class="tl-wrap"><div class="tl-body" id="tlBody"></div></div>
     </div>
 
+    <div class="card card-pad mb" id="inCard"></div>
     <div class="card card-pad mb" id="planCard"></div>
     <div class="card card-pad mb" id="rlogCard"></div>
   </section>
@@ -2406,7 +2408,10 @@ function _oldTimeline(){
 }
 
 /* ================= rotations: plan privately, confirm, handshake ================= */
-const HOSP = {PWH:'Prince of Wales Hospital',QMH:'Queen Mary Hospital',QEH:'Queen Elizabeth Hospital',TMH:'Tuen Mun Hospital',NDH:'North District Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital',HKCH:"Hong Kong Children's Hospital",PYNEH:'Pamela Youde Nethersole Eastern Hospital',UCH:'United Christian Hospital'};
+const HOSP = {PWH:'Prince of Wales Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital',NDH:'North District Hospital',PYNEH:'Pamela Youde Nethersole Eastern Hospital',QMH:'Queen Mary Hospital',QEH:'Queen Elizabeth Hospital',KWH:'Kwong Wah Hospital',UCH:'United Christian Hospital',TKOH:'Tseung Kwan O Hospital',PMH:'Princess Margaret Hospital',CMC:'Caritas Medical Centre',YCH:'Yan Chai Hospital',TMH:'Tuen Mun Hospital',HKCH:"Hong Kong Children's Hospital",OTHER:'Other (say which in Focus)'};
+const HOSP_GROUPS = [['NTEC, your cluster',['PWH','AHNH','NDH']],['Hong Kong East',['PYNEH']],['Hong Kong West',['QMH']],['Kowloon Central',['QEH','KWH']],['Kowloon East',['UCH','TKOH']],['Kowloon West',['PMH','CMC','YCH']],['New Territories West',['TMH']],['Other centres',['HKCH','OTHER']]];
+function hospOpts(cur, home){ return HOSP_GROUPS.map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}" ${k===cur?'selected':''}>${k===home?'Stay at '+k+' (parent hospital)':k+' \u00b7 '+HOSP[k]}</option>`).join('')}</optgroup>`).join(''); }
+const ACC_LIMIT = {def:36};   // months of clinical anaesthesia training an accredited centre may give one trainee (varies by centre)
 const TRAIN_TYPES = ['Clinical Anaesthesia','Subspecialty module','Provisional Fellowship','Exit assessment','Other'];
 const REQ_TYPES = ['Course','Exam leave','Study leave','Other'];
 const FUND = ['Self-funded','Department','Hospital Authority','Not applicable'];
@@ -2428,10 +2433,10 @@ const ROTP = {};
 const CUR = (c,type,focus)=>({c:c||'PWH',type:type||'Clinical Anaesthesia',focus:focus||'',s:'2026-07-01',e:'2026-12-31',st:null});
 (function seedRot(){
   const put = (n,o)=>{ const t = ROSTER.find(x=>lastFirst(x.name)===n); if(t) ROTP[t.id] = Object.assign({home:'PWH',hist:[]},o); };
-  put('Raman, Priya',{home:'TMH',segs:[CUR('TMH'),{c:'PWH',type:'Clinical Anaesthesia',focus:'Paediatric subspecialty',s:'2027-01-01',e:'2027-06-30',st:'sent',conf:{send:{by:'Dr. M. Ip (TMH)',at:'2026-09-20'},recv:null},chk:'PWH accredited to 31 Dec 2029 \u00b7 2 of 3 paediatric slots free',reqs:[{type:'Exam leave',title:'Intermediate written',dur:'2 weeks, Mar 2027',fund:'Not applicable',backfill:true},{type:'Study leave',title:'FRCA viva study leave',dur:'',fund:'Not applicable',backfill:false}]}],hist:[{c:'TMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
+  put('Raman, Priya',{home:'TMH',segs:[CUR('TMH'),{c:'PWH',type:'Clinical Anaesthesia',focus:'Paediatric subspecialty',s:'2027-01-01',e:'2027-06-30',st:'sent',conf:{send:{by:'Dr. M. Ip (TMH)',at:'2026-09-20'},recv:null},reqs:[{type:'Exam leave',title:'Intermediate written',dur:'2 weeks, Mar 2027',fund:'Not applicable',backfill:true},{type:'Study leave',title:'FRCA viva study leave',dur:'',fund:'Not applicable',backfill:false}]}],hist:[{c:'TMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
   put('Cheng, Wai Lun',{home:'NDH',segs:[CUR('NDH'),{c:'PWH',type:'Clinical Anaesthesia',focus:'',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'NDH SOT',at:'2026-09-28'},recv:{by:'Dr. Albert Chan',at:'2026-10-02'}},reqs:[]}],hist:[{c:'NDH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
-  put('Wong, Kelvin',{segs:[CUR(),{c:'QMH',type:'Clinical Anaesthesia',focus:'Cardiac subspecialty',s:'2027-01-01',e:'2027-06-30',st:'sent',conf:{send:{by:'Dr. Albert Chan',at:'2026-09-12'},recv:null},chk:'QMH accredited to 31 Dec 2029 \u00b7 max rotation 36 months \u00b7 capacity available',reqs:[{type:'Course',title:'Peter Kam Course',dur:'3 days',fund:'Self-funded',backfill:false}]}],hist:[{c:'PWH',type:'Clinical Anaesthesia \u00b7 ICU',s:'2026-01-01',e:'2026-06-30'},{c:'PWH',type:'Clinical Anaesthesia',s:'2025-07-01',e:'2025-12-31'},{c:'TMH',type:'Clinical Anaesthesia',s:'2025-01-01',e:'2025-06-30'}]});
-  put('Tam, Felix',{segs:[CUR(),{c:'TMH',type:'Clinical Anaesthesia',focus:'',s:'2027-01-01',e:'2027-06-30',st:'planned',reqs:[],cond:{exam:'Intermediate exam',decideBy:'2026-12-01',fallback:'Stay at PWH \u00b7 Clinical Anaesthesia',res:null}}],hist:[{c:'TMH',type:'Clinical Anaesthesia',s:'2025-07-01',e:'2025-12-31'},{c:'PWH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
+  put('Wong, Kelvin',{segs:[CUR(),{c:'QMH',type:'Clinical Anaesthesia',focus:'Cardiac subspecialty',s:'2027-01-01',e:'2027-06-30',st:'sent',conf:{send:{by:'Dr. Albert Chan',at:'2026-09-12'},recv:null},reqs:[{type:'Course',title:'Peter Kam Course',dur:'3 days',fund:'Self-funded',backfill:false}]}],hist:[{c:'PWH',type:'Clinical Anaesthesia \u00b7 ICU',s:'2026-01-01',e:'2026-06-30'},{c:'PWH',type:'Clinical Anaesthesia',s:'2025-07-01',e:'2025-12-31'},{c:'TMH',type:'Clinical Anaesthesia',s:'2025-01-01',e:'2025-06-30'}]});
+  put('Tam, Felix',{segs:[CUR(),{c:'TMH',type:'Clinical Anaesthesia',focus:'',s:'2027-01-01',e:'2027-06-30',st:'planned',reqs:[],cond:{exam:'Intermediate exam',decideBy:'2026-12-01',fallback:'Stay at PWH \u00b7 Clinical Anaesthesia',res:null}}],hist:[{c:'TMH',type:'Clinical Anaesthesia',s:'2023-04-01',e:'2025-12-31'},{c:'PWH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
   put('Tsang, Elena',{segs:[CUR('PWH','Clinical Anaesthesia','Cardiac'),{c:'HKCH',type:'Subspecialty module',focus:'Paediatric anaesthesia',s:'2027-01-01',e:'2027-03-31',st:'planned',reqs:[],cond:null}],hist:[{c:'QMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
   put('Lau, Sarah',{segs:[CUR(),{c:'PWH',type:'Clinical Anaesthesia',focus:'ICU',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'Dr. Albert Chan',at:'2026-10-05'},recv:{by:'Dr. Albert Chan',at:'2026-10-05'}},reqs:[]}],hist:[{c:'QMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
   put('Fung, Leo',{segs:[CUR('QMH','Exit assessment'),{c:'PWH',type:'Provisional Fellowship',focus:'',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'QMH SOT',at:'2026-10-01'},recv:{by:'Dr. Albert Chan',at:'2026-10-03'}},reqs:[]}],hist:[]});
@@ -2493,7 +2498,7 @@ function renderRotations(){
 }
 
 /* ---- plan table ---- */
-function rqChips(s){ const q = s.reqs||[]; if(!q.length) return '<span class="meta">\u2014</span>'; return q.slice(0,2).map(x=>`<span class="rq" title="${x.type}: ${x.title}${x.dur?' \u00b7 '+x.dur:''}${x.fund&&x.fund!=='Not applicable'?' \u00b7 '+x.fund:''}${x.backfill?' \u00b7 backfill needed':''}">${x.title}${x.dur?' \u00b7 '+x.dur:''}</span>`).join('')+(q.length>2?`<span class="rq">+${q.length-2}</span>`:''); }
+function rqChips(s){ const q = s.reqs||[]; if(!q.length) return '<span class="meta">\u2014</span>'; return q.slice(0,2).map(x=>`<span class="rq" title="${x.type}: ${x.title}${x.dur?' \u00b7 '+x.dur:''}${x.fund&&x.fund!=='Not applicable'?' \u00b7 '+x.fund:''}${x.backfill?' \u00b7 needs cover':''}">${x.title}${x.dur?' \u00b7 '+x.dur:''}</span>`).join('')+(q.length>2?`<span class="rq">+${q.length-2}</span>`:''); }
 function condCell(s){ const c = s.cond; if(!c) return '<span class="meta">\u2014</span>';
   return c.res==='pass' ? `<span class="pill ok">${c.exam}: passed</span>` : `<span class="pill warn">After ${c.exam}</span><div class="id-cell">Decide by ${fmtD(D(c.decideBy))}</div><div class="id-cell" title="If not passed">Fallback: ${c.fallback}</div>`; }
 function stCell(x){
@@ -2515,29 +2520,38 @@ function actCell(x){
   if(s.st==='sent') return `<button class="btn sec sm" onclick="rotRemind(${K})">Remind</button>` + (p.mineSend?` <button class="btn sec sm" data-need-sot onclick="rotWithdraw(${K})">Withdraw</button>`:'');
   return `<button class="btn sec sm" onclick="rotHistory('${t.id}')">View</button>`;
 }
-function renderPlan(){
-  const fut = futureSegs(), sorter = rotSorter();
-  const planned = new Set(fut.map(x=>x.t.id));
-  const none = rotRows().filter(t=>rp(t).home==='PWH' && !planned.has(t.id) && ptrainees().includes(t) && segKind(rp(t),rp(t).segs[rp(t).segs.length-1])!=='out');
-  const f = rotUI.filter;
-  const items = [];
-  if(f!=='none') fut.forEach(x=>items.push({t:x.t,x}));
-  if(f!=='round') none.forEach(t=>items.push({t,none:true}));
-  items.sort((a,b)=>sorter(a.t,b.t)||0);
-  const chip = (k,l,n)=>`<button class="chip ${f===k?'on':''}" onclick="rotSet('filter','${k}')">${l} <span class="cnt">${n}</span></button>`;
-  const asst = role==='asst';
-  document.getElementById('planCard').innerHTML = `
-    <div class="card-h" style="margin-bottom:10px"><div><div class="eyebrow">Rotation plan</div><div class="h2" style="margin-top:3px">Next rotations</div>
-      <div class="meta" style="margin-top:3px">${asst ? 'You can prepare plans. Only the SOT can confirm.' : 'Plans are private until you confirm. Confirming sends the handshake to the receiving SOT.'}</div></div></div>
-    <div class="chips" style="margin:0 0 10px">${chip('round','This round',fut.length)}${chip('none','Not planned yet',none.length)}${chip('all','All',fut.length+none.length)}</div>
-    <div class="tbl-scroll"><table class="rp-tbl"><thead><tr><th style="min-width:170px">Trainee</th><th style="min-width:230px">Rotation</th><th style="min-width:160px">Special requirements</th><th style="min-width:190px">Exam condition</th><th style="min-width:170px">Status</th><th style="min-width:210px">Action</th></tr></thead><tbody>${
-    items.map(it=>{ const t = it.t;
-      const head = `<td><button class="lb-title" onclick="rotHistory('${t.id}')"><b>${nm(t)}</b></button><div style="margin-top:3px">${stagePill(t.stage)}</div></td>`;
-      if(it.none) return `<tr>${head}<td><span class="meta">No next rotation planned yet</span></td><td></td><td></td><td><span class="pill">Not planned</span></td><td><button class="btn sec sm" onclick="rotEdit('${t.id}',-1)">Plan rotation</button></td></tr>`;
+function accMonths(r,c){ return r.hist.concat(r.segs.filter(x=>x.st===null)).filter(x=>x.c===c && /^Clinical Anaesthesia/.test(x.type)).reduce((a,x)=>a+monthsOf(x.s, D(x.e)>TODAY?isoOf(TODAY):x.e),0); }
+function accWarn(r,s){ if(!/^Clinical Anaesthesia/.test(s.type) || !s.e || s.e<=s.s) return null; const have = accMonths(r,s.c), add = monthsOf(s.s,s.e), lim = ACC_LIMIT[s.c]||ACC_LIMIT.def; return have+add>lim ? {have,add,lim} : null; }
+function rotStay(tid){ const t = ROSTER.find(x=>x.id===tid), r = rp(t); r.segs.push({c:r.home,type:'Clinical Anaesthesia',focus:'',s:'2027-01-01',e:'2027-06-30',st:'planned',reqs:[],cond:null}); rotLog(`Planned ${nm(t)} to stay at ${r.home} (private)`); renderAll(); toast(`Planned to stay at ${r.home}. Confirm when ready.`); }
+function rotTable(items, incoming){
+  return `<div class="tbl-scroll"><table class="rp-tbl"><thead><tr><th style="min-width:160px">Trainee</th><th style="min-width:240px">Rotation</th><th style="min-width:170px">Special requirements</th>${incoming?'':'<th style="min-width:190px">Exam condition</th>'}<th style="min-width:170px">Status</th><th style="min-width:210px">Action</th></tr></thead><tbody>${
+    items.map(it=>{ const t = it.t, parent = rp(t).home;
+      const head = `<td><button class="lb-title" onclick="rotHistory('${t.id}')"><b>${nm(t)}</b></button><div style="margin-top:3px">${stagePill(t.stage)}${incoming?` <span class="id-cell" style="display:inline">parent ${parent}</span>`:''}</div></td>`;
+      if(it.none) return `<tr>${head}<td><span class="meta">No next rotation planned yet</span></td><td></td><td></td><td><span class="pill">Not planned</span></td><td><button class="btn sec sm" onclick="rotEdit('${t.id}',-1)">Plan rotation</button> <button class="btn sec sm" onclick="rotStay('${t.id}')">Stay at ${parent}</button></td></tr>`;
       const {s,i,r} = it.x, p = segParty(r,i), mo = monthsOf(s.s,s.e);
-      return `<tr>${head}<td><b>${s.c} \u00b7 ${s.focus||s.type}</b><div class="id-cell">${fmtRange(s.s,s.e)} \u00b7 ${mo} month${mo===1?'':'s'}${p.from!==p.to?' \u00b7 '+p.from+' \u2192 '+p.to:' \u00b7 within PWH'}</div>${s.chk?`<div class="id-cell" style="color:var(--ok-f)">\u2713 ${s.chk}</div>`:''}</td><td>${rqChips(s)}</td><td>${condCell(s)}</td><td>${stCell(it.x)}</td><td>${actCell(it.x)}</td></tr>`; }).join('')
-    || '<tr><td colspan="6" class="q-empty">Nothing here.</td></tr>'}</tbody></table></div>`;
-  if(asst) document.querySelectorAll('#planCard [data-need-sot]').forEach(b=>b.disabled=true);
+      const where = incoming ? `${p.from} \u2192 PWH` : (p.from===p.to ? `Stay at ${p.to}` : `${p.from} \u2192 ${p.to}`);
+      return `<tr>${head}<td><b>${s.c} \u00b7 ${s.focus||s.type}</b><div class="id-cell">${fmtRange(s.s,s.e)} \u00b7 ${mo} month${mo===1?'':'s'} \u00b7 ${where}</div>${incoming?'':(()=>{const w=accWarn(r,s);return w?`<div class="id-cell" style="color:var(--wn-f)">\u26a0 Would exceed ${w.lim} months of clinical anaesthesia at ${s.c} (${w.have} + ${w.add} = ${w.have+w.add}). The Board admin is warned.</div>`:''})()}</td><td>${rqChips(s)}</td>${incoming?'':`<td>${condCell(s)}</td>`}<td>${stCell(it.x)}</td><td>${actCell(it.x)}</td></tr>`; }).join('')
+    || `<tr><td colspan="${incoming?5:6}" class="q-empty">Nothing here.</td></tr>`}</tbody></table></div>`;
+}
+function renderPlan(){
+  const fut = futureSegs(), sorter = rotSorter(), asst = role==='asst';
+  const inc = fut.filter(x=>!segParty(x.r,x.i).mineSend), out = fut.filter(x=>segParty(x.r,x.i).mineSend);
+  const needMe = inc.filter(x=>x.s.st==='sent' && myMissing(x.r,x.i)).length;
+  const planned = new Set(out.map(x=>x.t.id));
+  const none = rotRows().filter(t=>rp(t).home==='PWH' && !planned.has(t.id) && ptrainees().includes(t) && segKind(rp(t),rp(t).segs[rp(t).segs.length-1])!=='out');
+  inc.sort((a,b)=>sorter(a.t,b.t));
+  document.getElementById('inCard').innerHTML = `<div class="card-h" style="margin-bottom:10px"><div><div class="eyebrow">Incoming to PWH</div><div class="h2" style="margin-top:3px;display:flex;align-items:center;gap:8px">Trainees coming to you ${needMe?`<span class="pill warn">${needMe} need${needMe===1?'s':''} your confirmation</span>`:''}</div>
+    <div class="meta" style="margin-top:3px">Planned by another hospital's SOT. They appear here once the sending SOT has confirmed.</div></div></div>${rotTable(inc.map(x=>({t:x.t,x})),true)}`;
+  const f = rotUI.filter, items = [];
+  if(f!=='none') out.forEach(x=>items.push({t:x.t,x}));
+  if(f!=='round') none.forEach(t=>items.push({t,none:true}));
+  items.sort((a,b)=>sorter(a.t,b.t));
+  const chip = (k,l,n)=>`<button class="chip ${f===k?'on':''}" onclick="rotSet('filter','${k}')">${l} <span class="cnt">${n}</span></button>`;
+  document.getElementById('planCard').innerHTML = `
+    <div class="card-h" style="margin-bottom:10px"><div><div class="eyebrow">Outgoing from PWH</div><div class="h2" style="margin-top:3px">Your trainees' next rotations</div>
+      <div class="meta" style="margin-top:3px">${asst ? 'You can prepare plans. Only the SOT can confirm.' : 'Plans are private until you confirm. Confirming sends the handshake to the receiving SOT.'}</div></div></div>
+    <div class="chips" style="margin:0 0 10px">${chip('round','This round',out.length)}${chip('none','Not planned yet',none.length)}${chip('all','All',out.length+none.length)}</div>${rotTable(items,false)}`;
+  if(asst) document.querySelectorAll('#inCard [data-need-sot], #planCard [data-need-sot]').forEach(b=>b.disabled=true);
 }
 function renderRlog(){
   document.getElementById('rlogCard').innerHTML = `<details><summary style="cursor:pointer;font-weight:650;font-size:13px">Recent changes <span class="cnt">${RLOG.length}</span></summary>
@@ -2549,6 +2563,7 @@ function rotSend(key){ const {t,r,i,s} = rotFind(key), p = segParty(r,i); if(rol
   s.conf = s.conf||{}; s.conf.send = {by:'Dr. Albert Chan',at:TODAY_ISO};
   if(p.from===p.to){ s.conf.recv = {by:'Dr. Albert Chan',at:TODAY_ISO}; s.st='confirmed'; rotLog(`Confirmed ${nm(t)}: ${s.c} ${s.focus||s.type}, ${fmtRange(s.s,s.e)}`); toast('Confirmed. Within PWH, so no other SOT is needed.'); }
   else { s.st='sent'; rotLog(`Sent ${nm(t)} to ${s.c} ${s.focus||s.type}. Waiting for ${s.c} SOT.`); toast(`Handshake sent to the ${s.c} SOT`); }
+  { const w = accWarn(r,s); if(w){ rotLog(`Warning: ${nm(t)} would reach ${w.have+w.add} months of clinical anaesthesia at ${s.c} (limit ${w.lim}). Board admin notified.`); } }
   renderAll(); }
 function rotConfirm(key){ const {t,r,i,s} = rotFind(key), p = segParty(r,i); if(role==='asst') return;
   s.conf = s.conf||{}; if(p.mineSend) s.conf.send = {by:'Dr. Albert Chan',at:TODAY_ISO}; if(p.mineRecv) s.conf.recv = {by:'Dr. Albert Chan',at:TODAY_ISO};
@@ -2561,14 +2576,24 @@ function rotReturn(key){ const {t,s} = rotFind(key);
     body:`<div class="field"><div class="lbl">Note for the sending SOT</div><textarea id="rrNote" class="ctl" rows="3" style="width:100%" placeholder="For example: no paediatric slot in January, could start in April"></textarea></div><p class="note">The rotation goes back to the sending SOT. Most of this conversation happens by message first, so use this only to record the outcome.</p>`,
     onOk:()=>{ s.st='returned'; s.retNote = document.getElementById('rrNote').value.trim(); rotLog(`Returned ${nm(t)} (${s.c}): ${s.retNote}`); lbModalClose(); renderAll(); toast('Returned with your note'); }});
 }
-function rotResolve(key){ const {t,s} = rotFind(key), c = s.cond;
-  lbModalOpen({ey:'Exam result',title:`${nm(t)}: ${c.exam} result`,ok:'Save',check:()=>!!document.querySelector('input[name=rres]:checked'),
-    body:`<label class="chk" style="display:block;margin-bottom:8px"><input type="radio" name="rres" value="pass"> Passed. Go ahead with the plan to ${s.c}.</label><label class="chk" style="display:block"><input type="radio" name="rres" value="fail"> Not passed. Use the fallback: <b>${c.fallback}</b></label><p class="note">If the plan goes ahead you can confirm and send it to the receiving SOT. The fallback removes this plan.</p>`,
-    onOk:()=>{ const v = document.querySelector('input[name=rres]:checked').value; lbModalClose();
+function rotResolve(key){ const {t,r,s} = rotFind(key), c = s.cond;
+  lbModalOpen({ey:'Exam result',title:`${nm(t)}: ${c.exam} result`,ok:'Save',check:rrValid,
+    body:`<label class="chk" style="display:block;margin-bottom:10px"><input type="radio" name="rres" value="pass" onchange="rrToggle()"> <b>Passed.</b> Go ahead with the plan to ${s.c}.</label>
+      <label class="chk" style="display:block"><input type="radio" name="rres" value="alt" onchange="rrToggle()"> <b>Not passed, or plans have changed.</b> Choose another plan.</label>
+      <div id="rrSub" style="display:none;margin:10px 0 0 24px">
+        ${c.fallback?`<p class="note" style="margin:0 0 8px">Your noted fallback: ${c.fallback}</p>`:''}
+        <label class="chk" style="display:block;margin-bottom:8px"><input type="radio" name="ralt" value="stay" onchange="rrToggle()"> Stay at ${r.home} (parent hospital)</label>
+        <label class="chk" style="display:block;margin-bottom:8px"><input type="radio" name="ralt" value="else" onchange="rrToggle()"> Rotate somewhere else <select id="rrDest" class="ctl sm" style="margin-left:6px" onchange="rrToggle()"><option value="">Choose a hospital</option>${hospOpts('',r.home).replace(`<option value="${r.home}" `,`<option value="${r.home}" hidden `)}</select></label>
+        <label class="chk" style="display:block"><input type="radio" name="ralt" value="later" onchange="rrToggle()"> Decide later (remove this plan)</label>
+      </div><p class="note">The new plan keeps the same dates and special requirements, and stays private until you confirm it. You can edit it first.</p>`,
+    onOk:()=>{ const v = document.querySelector('input[name=rres]:checked').value, alt = (document.querySelector('input[name=ralt]:checked')||{}).value; lbModalClose();
       if(v==='pass'){ c.res='pass'; rotLog(`${nm(t)} passed the ${c.exam}. Plan to ${s.c} can be confirmed.`); toast('Saved. You can confirm and send the plan now.'); }
-      else { const r = rp(t); r.segs.splice(r.segs.indexOf(s),1); rotLog(`${nm(t)} did not pass the ${c.exam}. Plan to ${s.c} cancelled. Fallback: ${c.fallback}`); toast('Plan removed. Fallback noted.'); }
+      else if(alt==='later'){ r.segs.splice(r.segs.indexOf(s),1); rotLog(`${nm(t)}: ${c.exam} result in. Plan to ${s.c} removed, to be decided later.`); toast('Plan removed. Decide later.'); }
+      else { const dest = alt==='stay' ? r.home : document.getElementById('rrDest').value; const was = s.c; s.c = dest; s.cond = null; s.st = 'planned'; s.focus = alt==='stay' ? '' : s.focus; rotLog(`${nm(t)}: ${c.exam} result in. Plan changed from ${was} to ${alt==='stay'?'staying at '+dest:dest} (private).`); toast(`Plan changed to ${alt==='stay'?'stay at '+dest:dest}. Confirm when ready.`); }
       renderAll(); }});
 }
+function rrToggle(){ const v = (document.querySelector('input[name=rres]:checked')||{}).value; const sub = document.getElementById('rrSub'); if(sub) sub.style.display = v==='alt' ? 'block' : 'none'; }
+function rrValid(){ const v = (document.querySelector('input[name=rres]:checked')||{}).value; if(!v) return false; if(v==='pass') return true; const a = (document.querySelector('input[name=ralt]:checked')||{}).value; if(!a) return false; return a!=='else' || !!document.getElementById('rrDest').value; }
 function rotHistory(id){ const t = ROSTER.find(x=>x.id===id), r = rp(t);
   const done = r.hist.concat(r.segs.filter(s=>s.st===null)).sort((a,b)=>b.s.localeCompare(a.s));
   const toDate = s => { const e = D(s.e)>TODAY ? isoOf(TODAY) : s.e; return monthsOf(s.s,e); };
@@ -2586,21 +2611,23 @@ function rotEdit(tid,idx){ const t = ROSTER.find(x=>x.id===tid), r = rp(t), ex =
   lbModalOpen({ey:`${t.stage} \u00b7 only you can see this plan`,title:`${ex?'Edit':'Plan'} rotation: ${nm(t)}`,ok:'Save plan',check:rfValid,body:'<div id="rfMain"></div>',onOk:rfSave});
   rfRender(); }
 function rfValid(){ if(!rf) return false; if(!rf.c||!rf.s||!rf.e||rf.e<=rf.s) return false; if(rf.cond && (!rf.cond.decideBy||!rf.cond.fallback.trim())) return false; return rf.reqs.every(q=>q.title.trim()); }
-function rfDur(){ const el = document.getElementById('rfDur'); if(el) el.textContent = rf.e>rf.s ? `${monthsOf(rf.s,rf.e)} months \u00b7 ${fmtRange(rf.s,rf.e)}` : 'End date must be after the start date'; }
+function rfDur(){ const el = document.getElementById('rfDur'); if(el) el.textContent = rf.e>rf.s ? `${monthsOf(rf.s,rf.e)} months \u00b7 ${fmtRange(rf.s,rf.e)}` : 'End date must be after the start date';
+  const ac = document.getElementById('rfAcc'); if(ac){ const w = accWarn(rp(ROSTER.find(x=>x.id===rf.tid)),{c:rf.c,type:rf.type,s:rf.s,e:rf.e}); ac.textContent = w ? `\u26a0 This would exceed ${w.lim} months of clinical anaesthesia at ${rf.c} (${w.have} + ${w.add} = ${w.have+w.add}). You can still save. The Board admin is warned.` : ''; } }
 function rfRender(){
   const m = document.getElementById('rfMain'); if(!m) return;
   const opt = (v,l,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${l}</option>`, esc = s=>String(s).replace(/"/g,'&quot;');
   m.innerHTML = `
-    <div class="rf-2"><div class="field"><div class="lbl">Destination</div><select class="ctl" style="width:100%" onchange="rf.c=this.value;rfRender()">${Object.keys(HOSP).map(k=>opt(k,HOSP[k]+(k==='PWH'?' (within PWH)':''),rf.c)).join('')}</select></div>
+    <div class="rf-2"><div class="field"><div class="lbl">Destination</div><select class="ctl" style="width:100%" onchange="rf.c=this.value;rfRender()">${hospOpts(rf.c,rp(ROSTER.find(x=>x.id===rf.tid)).home)}</select></div>
     <div class="field"><div class="lbl">Training type</div><select class="ctl" style="width:100%" onchange="rf.type=this.value;rfRender()">${TRAIN_TYPES.map(x=>opt(x,x,rf.type)).join('')}</select></div></div>
     <div class="field"><div class="lbl">Focus or subspecialty (optional)</div><input class="ctl" style="width:100%" value="${esc(rf.focus)}" oninput="rf.focus=this.value" placeholder="For example: Cardiac, Paediatrics, ICU"></div>
     <div class="rf-2"><div class="field"><div class="lbl">Start</div><input type="date" class="ctl" style="width:100%" value="${rf.s}" oninput="rf.s=this.value;rfDur()"></div>
     <div class="field"><div class="lbl">End</div><input type="date" class="ctl" style="width:100%" value="${rf.e}" oninput="rf.e=this.value;rfDur()"></div></div>
-    <p class="note" id="rfDur" style="margin-top:-4px"></p>
+    <p class="note" id="rfDur" style="margin-top:-4px"></p><p class="note" id="rfAcc" style="color:var(--wn-f)"></p>
     <div class="rf-sec"><div class="lbl">Special requirements</div>
       ${rf.reqs.map((q,i)=>`<div style="border:1px solid var(--border-sub);border-radius:10px;padding:10px;margin-bottom:8px"><div class="rf-2"><select class="ctl" onchange="rf.reqs[${i}].type=this.value">${REQ_TYPES.map(x=>opt(x,x,q.type)).join('')}</select><input class="ctl" value="${esc(q.title)}" oninput="rf.reqs[${i}].title=this.value" placeholder="For example: Peter Kam Course"></div>
         <div class="rf-2" style="margin-top:8px"><input class="ctl" value="${esc(q.dur||'')}" oninput="rf.reqs[${i}].dur=this.value" placeholder="Dates or length, e.g. 3 days"><select class="ctl" onchange="rf.reqs[${i}].fund=this.value">${FUND.map(x=>opt(x,x,q.fund)).join('')}</select></div>
-        <label class="chk" style="margin-top:8px;display:inline-flex;gap:6px"><input type="checkbox" ${q.backfill?'checked':''} onchange="rf.reqs[${i}].backfill=this.checked"> Needs backfill</label> <button class="btn sec sm" style="float:right" onclick="rf.reqs.splice(${i},1);rfRender();document.getElementById('lbmBody').dispatchEvent(new Event('change'))">Remove</button></div>`).join('')}
+        <label class="chk" style="margin-top:8px;display:inline-flex;gap:6px"><input type="checkbox" ${q.backfill?'checked':''} onchange="rf.reqs[${i}].backfill=this.checked"> The department needs cover while they are away</label> <button class="btn sec sm" style="float:right" onclick="rf.reqs.splice(${i},1);rfRender();document.getElementById('lbmBody').dispatchEvent(new Event('change'))">Remove</button></div>`).join('')}
+      <p class="note" style="margin:0 0 8px">Cover means another doctor takes over their clinical sessions during the course or leave. Tick it so the receiving department can plan for it.</p>
       <button class="btn sec sm" onclick="rf.reqs.push({type:'Course',title:'',dur:'',fund:'Self-funded',backfill:false});rfRender();document.getElementById('lbmBody').dispatchEvent(new Event('change'))">+ Add requirement</button></div>
     <div class="rf-sec"><label class="chk" style="display:inline-flex;gap:6px"><input type="checkbox" ${rf.cond?'checked':''} onchange="rf.cond=this.checked?{exam:'${EXAMS[0]}',decideBy:'',fallback:''}:null;rfRender();document.getElementById('lbmBody').dispatchEvent(new Event('change'))"> Subject to an exam result (optional)</label>
       ${rf.cond?`<div class="rf-2" style="margin-top:8px"><select class="ctl" onchange="rf.cond.exam=this.value">${EXAMS.map(x=>opt(x,x,rf.cond.exam)).join('')}</select><input type="date" class="ctl" value="${rf.cond.decideBy}" oninput="rf.cond.decideBy=this.value" aria-label="Decide by"></div>
