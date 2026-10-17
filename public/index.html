@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HKCA ePortfolio — Testing Portal</title>
+  <style>
+    :root {
+      --bg: #0c0e14;
+      --card-bg: #141824;
+      --border: #23293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --pri: #3b82f6;
+      --pri-hover: #60a5fa;
+      --tag-bg: #1e293b;
+      --tag-border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      padding: 40px 20px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    p.lead {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s ease;
+    }
+    .card:hover {
+      border-color: var(--pri);
+      transform: translateY(-1px);
+      background: #181d2c;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .tag {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: #cbd5e1;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .card:hover .tag {
+      background: var(--pri);
+      border-color: var(--pri);
+      color: #fff;
+    }
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>HKCA ePortfolio — Testing Portal</h1>
+      <p class="lead">Hong Kong College of Anaesthesiologists Training Portfolio replacement. Select a prototype below to test workflows, rubrics, and layouts.</p>
+    </header>
+
+    <div class="section-title">Standalone Interactive Prototypes</div>
+    <div class="grid">
+      <a class="card" href="/prototypes/HKCA_SOT_Console_Prototype.html">
+        <div>
+          <div class="card-title">1. SOT Console (Direction B: Clinical Dense)</div>
+          <div class="card-desc">Triage roster, risk indicators, logbook verification queue, rotation handshake, ITA escalation ladder.</div>
+        </div>
+        <span class="tag">Open ↗</span>
+      </a>
+
+      <a class="card" href="/prototypes/HKCA_Trainee_Dashboard_DirectionA.html">
+        <div>
+          <div class="card-title">2. Trainee Dashboard (Direction A: Stripe Executive)</div>
+          <div class="card-desc">Curriculum progression dial, milestone gates, peer distribution bell curve, self-reflection modal flow.</div>
+        </div>
+        <span class="tag">Open ↗</span>
+      </a>
+
+      <a class="card" href="/prototypes/HKCA_ITA_Trainer_Form.html">
+        <div>
+          <div class="card-title">3. Trainer 15-Item ITA Form (Mobile-First)</div>
+          <div class="card-desc">Official 15-item College form, College anchors, grade 4 mandatory rationale, autosaved draft.</div>
+        </div>
+        <span class="tag">Open ↗</span>
+      </a>
+
+      <a class="card" href="/prototypes/HKCA_ITA_Trainee_List.html">
+        <div>
+          <div class="card-title">4. Trainer Batch Entry Grid (Desktop Rapid Entry)</div>
+          <div class="card-desc">Keyboard-first 15-item grid (1–4/X rate & advance) for evaluating multiple trainees in batch.</div>
+        </div>
+        <span class="tag">Open ↗</span>
+      </a>
+
+      <a class="card" href="/prototypes/HKCA_ITA_Synthesis_Flow.html">
+        <div>
+          <div class="card-title">5. SOT ITA Synthesis & Counter-signature Flow</div>
+          <div class="card-desc">Multi-trainer divergence synthesis, SOT sign-off, face-to-face counter-signature, contested BOE flow.</div>
+        </div>
+        <span class="tag">Open ↗</span>
+      </a>
+    </div>
+
+    <footer>
+      <span>Hong Kong College of Anaesthesiologists (HKCA)</span>
+      <span>Synthetic test data only</span>
+    </footer>
+  </div>
+</body>
+</html>
