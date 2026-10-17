@@ -772,7 +772,7 @@
       <div class="lb-filters">
         <input type="text" class="ctl" id="lbQ" placeholder="Search case or trainee" style="width:210px" oninput="lb.q=this.value.toLowerCase();lb.page=1;renderLogbook()">
         <select class="ctl" id="lbTrainee" onchange="lb.trainee=this.value;lb.page=1;renderLogbook()" aria-label="Trainee"></select>
-        <select class="ctl" id="lbSite" onchange="lb.site=this.value;lb.page=1;renderLogbook()" aria-label="Site"></select>
+        <select class="ctl" id="lbSite" onchange="lb.site=this.value;lb.page=1;renderLogbook()" aria-label="Hospital"></select>
         <select class="ctl" id="lbSize" onchange="lb.size=+this.value;lb.page=1;renderLogbook()" aria-label="Rows per page">
           <option value="10">10 per page</option><option value="25" selected>25 per page</option><option value="50">50 per page</option></select>
       </div>
@@ -2552,30 +2552,30 @@ function E(id,tid,title,date,site,urg,asa,tab,cat,pct,x){
   return e;
 }
 const LB = [
-  E('r1','2022-019','Ultrasound-guided supraclavicular brachial plexus block','28 Sep','PWH Theatre 4','Elective','II','ready','2.2',96),
-  E('r2','2022-019','Spinal anaesthesia for TURP','27 Sep','PWH Theatre 6','Elective','III','ready','2.2',94),
-  E('r3','2022-019','GA with rapid sequence induction, emergency laparotomy','25 Sep','PWH Theatre 1','Emergency','III','ready','2.1',97),
-  E('r4','2023-022','GA for laparoscopic cholecystectomy','27 Sep','PWH Theatre 3','Elective','II','ready','2.1',95),
-  E('r5','2023-022','Ultrasound-guided radial arterial line','26 Sep','PWH Theatre 3','Elective','II','ready','2.5',93),
-  E('r6','2024-019','Interscalene block for shoulder arthroscopy','28 Sep','PWH Theatre 5','Elective','I','ready','2.2',92),
-  E('r7','2024-019','LMA general anaesthesia, day surgery','24 Sep','PWH Day Surgery','Elective','I','ready','2.1',98),
-  E('r8','2025-012','Labour epidural analgesia','29 Sep','PWH Labour Ward','Elective','II','ready','3.5',95),
-  E('r9','2024-025','Videolaryngoscope-assisted intubation','29 Sep','PWH Theatre 2','Emergency','III','ready','2.3',94),
-  E('r10','2022-031','Induction and line placement for on-pump CABG','30 Sep','PWH Cardiac Theatre','Elective','IV','ready','3.1',96),
-  E('r11','2023-009','Postoperative PCA set-up and review','30 Sep','PWH ICU','Elective','III','ready','2.4',91),
-  E('d1','2023-022','Combined spinal-epidural for elective caesarean section','26 Sep','PWH Labour Ward','Elective','I','decide','2.2',52,{alts:[['2.2',52],['3.5',48]]}),
-  E('d2','2023-015','Spinal with adductor canal block for total knee replacement','29 Sep','PWH Theatre 5','Elective','II','decide','3.3',55,{alts:[['3.3',55],['2.2',45]]}),
-  E('d3','2025-003','Epidural for postoperative analgesia after laparotomy','28 Sep','PWH Theatre 1','Elective','III','decide','2.2',51,{alts:[['2.2',51],['2.4',49]]}),
-  E('d4','2023-018','Sedation for awake craniotomy','27 Sep','PWH Neuro Theatre','Elective','III','decide','3.2',50,{alts:[['3.2',50],['2.1',50]]}),
-  E('d5','2024-011','Caudal block for paediatric hernia repair','26 Sep','PWH Theatre 7','Elective','I','decide','3.4',54,{alts:[['3.4',54],['2.2',46]]}),
-  E('u1','2022-019','Fibreoptic intubation, anticipated difficult airway','24 Sep','PWH Theatre 2','Emergency','III','dup','2.3',90,{dup:{have:3,min:1}}),
-  E('u2','2024-008','Ultrasound-guided radial arterial line','23 Sep','PWH Theatre 4','Elective','II','dup','2.5',92,{dup:{have:6,min:2}}),
-  E('v1','2024-025','GA for inguinal hernia repair','12 Oct','PWH Day Surgery','Elective','I','ready','2.1',97,{state:'verified',credited:true,by:'Dr. Winnie Ho',at:'14 Oct',vseq:6}),
-  E('v2','2024-019','Ultrasound-guided femoral nerve block','8 Oct','PWH Theatre 5','Elective','II','ready','2.2',95,{state:'verified',credited:true,by:'Dr. Raymond Ng',at:'9 Oct',vseq:5}),
-  E('v3','2023-015','Spinal for hip hemiarthroplasty','30 Sep','PWH Theatre 5','Emergency','III','ready','2.2',93,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'2 Oct',vseq:4}),
-  E('v4','2023-009','Arterial line and CVC insertion in ICU','1 Oct','PWH ICU','Emergency','IV','ready','2.5',94,{state:'verified',credited:true,by:'Dr. Raymond Ng',at:'3 Oct',vseq:3}),
-  E('v5','2022-031','Thoracic epidural for lobectomy','14 Jan','PWH Cardiac Theatre','Elective','III','ready','3.1',92,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'20 Jan',vseq:2,locked:true,lockWhy:'Jan\u2013Jun 2026 ITA signed'}),
-  E('v6','2021-004','Rapid sequence induction, obstetric emergency','3 Feb','PWH Labour Ward','Emergency','III','ready','3.5',96,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'9 Feb',vseq:1,locked:true,lockWhy:'Jan\u2013Jun 2026 ITA signed'})
+  E('r1','2022-019','Ultrasound-guided supraclavicular brachial plexus block','28 Sep','PWH','Elective','II','ready','2.2',96),
+  E('r2','2022-019','Spinal anaesthesia for TURP','27 Sep','PWH','Elective','III','ready','2.2',94),
+  E('r3','2022-019','GA with rapid sequence induction, emergency laparotomy','25 Sep','PWH','Emergency','III','ready','2.1',97),
+  E('r4','2023-022','GA for laparoscopic cholecystectomy','27 Sep','PWH','Elective','II','ready','2.1',95),
+  E('r5','2023-022','Ultrasound-guided radial arterial line','26 Sep','PWH','Elective','II','ready','2.5',93),
+  E('r6','2024-019','Interscalene block for shoulder arthroscopy','28 Sep','PWH','Elective','I','ready','2.2',92),
+  E('r7','2024-019','LMA general anaesthesia, day surgery','24 Sep','PWH','Elective','I','ready','2.1',98),
+  E('r8','2025-012','Labour epidural analgesia','29 Sep','PWH','Elective','II','ready','3.5',95),
+  E('r9','2024-025','Videolaryngoscope-assisted intubation','29 Sep','PWH','Emergency','III','ready','2.3',94),
+  E('r10','2022-031','Induction and line placement for on-pump CABG','30 Sep','PWH','Elective','IV','ready','3.1',96),
+  E('r11','2023-009','Postoperative PCA set-up and review','30 Sep','PWH','Elective','III','ready','2.4',91),
+  E('d1','2023-022','Combined spinal-epidural for elective caesarean section','26 Sep','PWH','Elective','I','decide','2.2',52,{alts:[['2.2',52],['3.5',48]]}),
+  E('d2','2023-015','Spinal with adductor canal block for total knee replacement','29 Sep','PWH','Elective','II','decide','3.3',55,{alts:[['3.3',55],['2.2',45]]}),
+  E('d3','2025-003','Epidural for postoperative analgesia after laparotomy','28 Sep','PWH','Elective','III','decide','2.2',51,{alts:[['2.2',51],['2.4',49]]}),
+  E('d4','2023-018','Sedation for awake craniotomy','27 Sep','PWH','Elective','III','decide','3.2',50,{alts:[['3.2',50],['2.1',50]]}),
+  E('d5','2024-011','Caudal block for paediatric hernia repair','26 Sep','PWH','Elective','I','decide','3.4',54,{alts:[['3.4',54],['2.2',46]]}),
+  E('u1','2022-019','Fibreoptic intubation, anticipated difficult airway','24 Sep','PWH','Emergency','III','dup','2.3',90,{dup:{have:3,min:1}}),
+  E('u2','2024-008','Ultrasound-guided radial arterial line','23 Sep','PWH','Elective','II','dup','2.5',92,{dup:{have:6,min:2}}),
+  E('v1','2024-025','GA for inguinal hernia repair','12 Oct','PWH','Elective','I','ready','2.1',97,{state:'verified',credited:true,by:'Dr. Winnie Ho',at:'14 Oct',vseq:6}),
+  E('v2','2024-019','Ultrasound-guided femoral nerve block','8 Oct','PWH','Elective','II','ready','2.2',95,{state:'verified',credited:true,by:'Dr. Raymond Ng',at:'9 Oct',vseq:5}),
+  E('v3','2023-015','Spinal for hip hemiarthroplasty','30 Sep','PWH','Emergency','III','ready','2.2',93,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'2 Oct',vseq:4}),
+  E('v4','2023-009','Arterial line and CVC insertion in ICU','1 Oct','PWH','Emergency','IV','ready','2.5',94,{state:'verified',credited:true,by:'Dr. Raymond Ng',at:'3 Oct',vseq:3}),
+  E('v5','2022-031','Thoracic epidural for lobectomy','14 Jan','PWH','Elective','III','ready','3.1',92,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'20 Jan',vseq:2,locked:true,lockWhy:'Jan\u2013Jun 2026 ITA signed'}),
+  E('v6','2021-004','Rapid sequence induction, obstetric emergency','3 Feb','PWH','Emergency','III','ready','3.5',96,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'9 Feb',vseq:1,locked:true,lockWhy:'Jan\u2013Jun 2026 ITA signed'})
 ];
 LB.forEach(e=>{ if(e.state==='verified'){ e.hist.push({t:e.at+' 2026',a:e.by,x:'Approved and credited '+catLabel(e.cat)}); } });
 let vseqN = 6;
@@ -2671,7 +2671,8 @@ function renderLogbook(){
   const trs = Array.from(new Set(sc.map(e=>e.tid))).map(id=>ROSTER.find(t=>t.id===id)).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
   tsel.innerHTML = '<option value="">All trainees</option>' + trs.map(t=>`<option value="${t.id}" ${lb.trainee===t.id?'selected':''}>${lastFirst(t.name)}</option>`).join('');
   const sites = Array.from(new Set(sc.map(e=>e.site))).sort();
-  ssel.innerHTML = '<option value="">All sites</option>' + sites.map(s=>`<option ${lb.site===s?'selected':''}>${s}</option>`).join('');
+  ssel.style.display = sites.length>1 ? '' : 'none';   // hospital filter only matters when cases come from more than one hospital
+  ssel.innerHTML = '<option value="">All hospitals</option>' + sites.map(s=>`<option ${lb.site===s?'selected':''}>${s}</option>`).join('');
 
   // rows + paging
   const rows = lbRows(lb.tab);
@@ -2862,7 +2863,7 @@ function lbPanelRender(){
   const alts = e.alts ? e.alts.map(([c,p])=>`<dt>${catLabel(c)}</dt><dd>${p}%</dd>`).join('') : `<dt>${catLabel(e.sug)}</dt><dd>${e.pct}%</dd>`;
   const pending = e.state==='ready'||e.state==='decide'||e.state==='dup';
   document.getElementById('lbPanelBody').innerHTML = `
-    <div class="dr-sec"><div class="eyebrow">Case</div><dl class="kv"><dt>Date</dt><dd>${e.date} 2026</dd><dt>Site</dt><dd>${e.site}</dd><dt>Urgency</dt><dd>${e.urg}</dd><dt>ASA</dt><dd>${e.asa}</dd></dl></div>
+    <div class="dr-sec"><div class="eyebrow">Case</div><dl class="kv"><dt>Date</dt><dd>${e.date} 2026</dd><dt>Hospital</dt><dd>${e.site}</dd><dt>Urgency</dt><dd>${e.urg}</dd><dt>ASA</dt><dd>${e.asa}</dd></dl></div>
     <div class="dr-sec"><div class="eyebrow">Classifier suggestion</div><dl class="kv">${alts}</dl>
       ${e.dup?`<p class="note">Trainee already has ${e.dup.have} credited against this descriptor (minimum ${e.dup.min}).</p>`:''}</div>
     <div class="dr-sec"><div class="eyebrow">${pending?'If you approve':'Result'}</div><p style="font-size:13px">${e.state==='verified'?'Verified as '+catLabel(e.cat):outcome(e)}</p></div>
