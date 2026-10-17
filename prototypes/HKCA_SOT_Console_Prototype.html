@@ -2439,7 +2439,7 @@ function icuInfo(c,t,sd,ed){   // {text, warn} shown under the destination when 
     if(ed && ed>u.exp){ bits.push('This rotation ends after the unit\'s approval expires'); w = true; }
     if(sd && ed && ed>sd && monthsOf(sd,ed)!==u.m){ bits.push(`Planned ${monthsOf(sd,ed)} months; a full post here is ${u.m}`); }
     return {text:bits.join('. ')+'.',warn:w}; }
-  const u = ICU_JOINT[c]; return {text:`Category ${u.cat} unit, joint ICM curriculum`,warn:false};
+  return {text:'',warn:false};
 }   // months of clinical anaesthesia training an accredited centre may give one trainee (varies by centre)
 const TRAIN_TYPES = ['Clinical Anaesthesia','Intensive Care','Subspecialty module','Provisional Fellowship','Exit assessment','Other'];
 const REQ_TYPES = ['Course','Exam leave','Study leave','Other'];
