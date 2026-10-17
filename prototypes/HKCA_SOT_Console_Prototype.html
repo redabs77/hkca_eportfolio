@@ -529,7 +529,14 @@
     --t4b:rgba(245,197,122,.15); --t4f:#f5c57a; --t5b:rgba(127,208,198,.15); --t5f:#86d8cf; --t6b:rgba(242,160,174,.15); --t6f:#f5a9b6;
     --c0:rgba(255,255,255,.1);
   }
+  .dark{
+    --bg:#14132a; --bg2:#10102a; --bg3:#232248; --surface:#191836; --raised:#1b1a3a;
+    --border:rgba(255,255,255,.1); --border-sub:rgba(255,255,255,.055);
+    --ink:#ecebfa; --ink2:#b0aed0; --ink3:#8280a8;
+    --shadow:0 2px 10px rgba(0,0,0,.35); --shadow-md:0 8px 24px rgba(0,0,0,.5);
+  }
   .card{border-radius:16px}
+  #themeBtn{color:var(--ink2)}
   .mark{background:linear-gradient(135deg,#8f82f0,#6d5fd9)} .av{background:var(--acc)}
   .tab.on,.lb-tab.on{color:var(--acc-t);border-bottom-color:var(--acc)} .dark .tab.on,.dark .lb-tab.on{color:var(--acc-t)}
   .tab::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;background:var(--tf,var(--border));vertical-align:1px}
@@ -617,7 +624,7 @@
       <button class="tab" data-tab="roster">Trainee List</button>
       <button class="tab" data-tab="logbook">Logbook Verification <span class="cnt hot">18</span></button>
       <button class="tab" data-tab="rotations">Rotations <span class="cnt hot">3</span></button>
-      <button class="tab" data-tab="itas">ITAs <span class="cnt hot">4</span></button>
+      <button class="tab" data-tab="itas">ITAs <span class="cnt hot" id="itaBadge">4</span></button>
       <button class="tab" data-tab="goals">Learning goals <span class="cnt hot" id="goalsCnt">0</span></button>
       <button class="tab" data-tab="review">Progression Risk <span class="cnt crit">5</span></button>
     </nav>
@@ -2358,6 +2365,12 @@ function sendInvite(){
 
 /* ---------------- home dashboard ---------------- */
 /* trainer ITA input: voluntary. Trainers who did WBAs with the trainee are the recommended responders; everyone else is a hoped-for minimum. */
+/* ITA sign-off: signed = the SOT/ASOT and the trainee have met and signed. Illustrative: the five ITAs in the "awaiting your action" table are in progress. */
+const ITA_IN_PROGRESS = new Set(['2022-019','2021-004','2023-015','2024-008','2024-011']);
+function itaSigned(t){ const i = INV[t.id]; return !!(i && i.got>=i.total && !ITA_IN_PROGRESS.has(t.id) && t.itaStatus==='ok'); }
+function myItaHeld(){ const me = mineId(); return ptrainees().filter(t=>t.asot===me); }
+function myItaToSign(){ return myItaHeld().filter(t=>!itaSigned(t)).length; }
+function updateItaBadge(){ const b = document.getElementById('itaBadge'); if(b){ b.textContent = myItaToSign(); } }
 function itain(t){
   const i = INV[t.id]; if(!i) return null;
   const idx = ROSTER.indexOf(t), wba = Math.min(i.total, 2 + (idx%2));
@@ -2434,14 +2447,15 @@ function renderHome(){
   /* KPI cards: one per task type, fixed colour */
   const invited = ppl.filter(t=>INV[t.id]), meetsN = invited.filter(t=>INV[t.id].got>=RULES.minForms).length, thin = thinInput().length;
   const kp = [
-    {k:'ita', tab:'itas', label:'ITAs to sign off', n:4, sub:`of ${n} this cycle`},
+    {k:'ita', tab:'itas', label:'ITAs for you to sign off', n:myItaToSign(), sub:`${myItaHeld().filter(itaSigned).length} of ${myItaHeld().length} assigned to you signed so far`},
     {k:'logbook', tab:'logbook', label:'Logbook to verify', n:lbPending(), sub:`oldest waiting ${logbookOldest()} days`},
     asst ? null : {k:'goals', tab:'goals', label:'Learning goals to sign off', n:goalsAction(), sub:`${ppl.filter(t=>['NOT_SET','DRAFT','CHANGES_REQUESTED'].includes(gset(t).status)).length} not yet submitted`},
     {k:'rot', tab:'rotations', label:'Rotation handshakes', n:3, sub:'waiting for a reply'},
-    {k:'forms', tab:'itas', label:'Trainer ITA forms received', n:`${meetsN}<small> of ${invited.length}</small>`, sub:`trainees have ${RULES.minForms}+ forms` + (thin ? ` &middot; ${thin} need more input` : '')},
+    {k:'forms', tab:'itas', label:'Trainer ITA forms received', n:`${meetsN}<small> of ${n}</small>`, sub:`trainees have ${RULES.minForms}+ trainer forms` + (n-invited.length ? ` &middot; ${n-invited.length} not invited yet` : '')},
     {k:'risk', tab:'review', label:'Trainees flagged', n:FLAGGED, sub:'on progression risk'}
   ].filter(Boolean);
   document.getElementById('kpis').innerHTML = kp.map(c=>`<button class="kpi t-${c.k}" onclick="go('${c.tab}')"><span class="ico">${svg(c.k)}</span><span class="kl">${c.label}</span><span class="kn">${c.n}</span><span class="ks">${c.sub}</span></button>`).join('');
+  updateItaBadge();
   document.getElementById('homeSub').innerHTML = `<b>${kp.filter(c=>['ita','logbook','goals','rot'].includes(c.k)).reduce((a,c)=>a+c.n,0)} items</b> waiting for you &middot; ${FLAGGED} trainees flagged`;
 
   /* sign-off ownership donut */
@@ -2450,7 +2464,7 @@ function renderHome(){
   const pal = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)'];
   const R = 40, C = 2*Math.PI*R; let off = 0;
   const arcs = holders.map((h,i)=>{ const len = h.v/n*C, s = `<circle r="${R}" cx="60" cy="60" fill="none" stroke="${h.un?'var(--c0)':pal[i%pal.length]}" stroke-width="16" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 60 60)"/>`; off += len; h.col = h.un?'var(--c0)':pal[i%pal.length]; return s; }).join('');
-  document.getElementById('ownCard').innerHTML = `<div class="eyebrow">ITA sign-off owners</div><div class="hm-donut"><svg viewBox="0 0 120 120" width="132" height="132" role="img" aria-label="Sign-off owners">${arcs}<text x="60" y="58" text-anchor="middle" class="dn">${n}</text><text x="60" y="73" text-anchor="middle" class="dl">trainees</text></svg>
+  document.getElementById('ownCard').innerHTML = `<div class="eyebrow">ITAs assigned to the SOT team</div><div class="hm-donut"><svg viewBox="0 0 120 120" width="132" height="132" role="img" aria-label="ITAs assigned to the SOT team">${arcs}<text x="60" y="58" text-anchor="middle" class="dn">${n}</text><text x="60" y="73" text-anchor="middle" class="dl">trainees</text></svg>
     <ul class="hm-leg">${holders.map(h=>`<li><i style="background:${h.col}"></i><span>${h.l}</span><b>${h.v}</b></li>`).join('')}</ul></div>`;
 
   /* learning goals status */
@@ -2468,11 +2482,11 @@ function renderHome(){
       <td style="text-align:right"><button class="btn sec sm" onclick="go('${r.tab}')">Open</button></td></tr>`).join('') || '<tr><td colspan="5" class="q-empty">Nothing needs attention.</td></tr>'}</tbody></table>`;
 
   /* right rail: this cycle */
-  const asg = ppl.filter(t=>t.asot).length, lbv = LB.filter(e=>e.state==='verified').length;
+  const lbv = LB.filter(e=>e.state==='verified').length;
   const gs = ppl.filter(t=>gset(t).status==='SIGNED').length;
   const row = (tab,l,a,b,c,note)=>`<button class="pg-row" onclick="go('${tab}')"><div class="pg-l"><span>${l}</span><b>${a} of ${b}</b></div><div class="pg"><i class="${c||''}" style="width:${b?Math.round(a/b*100):0}%"></i></div>${note?`<div class="pg-n">${note}</div>`:''}</button>`;
   document.getElementById('cycleRows').innerHTML =
-    row('itas','ITA sign-off ASOT assigned',asg,n,'b') + row('goals','Learning goals signed',gs,n,'p') + row('logbook','Logbook entries verified',lbv,LB.length);
+    row('itas','ITAs signed off',ppl.filter(itaSigned).length,n,'b') + row('goals','Learning goals signed',gs,n,'p') + row('logbook','Logbook entries verified',lbv,LB.length);
   const left = Math.round((new Date(2026,11,31)-TODAY)/DAY);
   document.getElementById('cycleFoot').textContent = `Cycle ends 31 Dec, in ${left} days.`;
   const by = {BAT:0,HAT:0,PFY:0}; ROSTER.forEach(t=>{ const k = String(t.stage).slice(0,3); if(by[k]!==undefined) by[k]++; });
@@ -2968,7 +2982,7 @@ function goalReminders(){
 }
 
 function renderAll(){
-  refreshAsotOptions(); renderRoster(); renderItaRound(); refreshItaSignoff(); renderLog(); renderGoals(); renderLogbook();
+  updateItaBadge(); refreshAsotOptions(); renderRoster(); renderItaRound(); refreshItaSignoff(); renderLog(); renderGoals(); renderLogbook();
 }
 
 /* ---------------- tabs ---------------- */
