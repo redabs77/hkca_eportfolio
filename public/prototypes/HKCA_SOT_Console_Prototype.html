@@ -250,6 +250,150 @@
   @media(max-width:1180px){.lb-grid{grid-template-columns:1fr}}
   @media(max-width:1080px){.seg.hide-md{display:none}.who .nm,.who .rl{display:none}}
   @media(max-width:640px){.wrap{padding:0 14px}.who{display:none}}
+
+  /* ================= v2: dashboard, sorting, stage colours, ASOT ================= */
+  .ctl{font-family:inherit;font-size:12.5px;padding:7px 10px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);color:var(--ink)}
+  .ctl:focus-visible,.btn:focus-visible,.thb:focus-visible{outline:2px solid var(--em600);outline-offset:1px}
+  label.ctl{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:550}
+  input[type=checkbox]{accent-color:var(--em600);width:14px;height:14px;cursor:pointer}
+
+  /* stage colours: solid fills so they never read as status pills */
+  .pill.stg{color:#fff;font-weight:700;letter-spacing:.02em}
+  .pill.stg.bat{background:var(--bl600)}
+  .pill.stg.hat{background:#0d9488}
+  .pill.stg.pfy{background:var(--pu600)}
+  tr[data-stage=BAT] td:first-child{box-shadow:inset 3px 0 0 var(--bl600)}
+  tr[data-stage=HAT] td:first-child{box-shadow:inset 3px 0 0 #0d9488}
+  tr[data-stage=PFY] td:first-child{box-shadow:inset 3px 0 0 var(--pu600)}
+  .stage-key{display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* sortable headers */
+  .thb{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font:inherit;text-transform:inherit;
+    letter-spacing:inherit;color:inherit;white-space:nowrap}
+  .thb:hover{color:var(--ink)}
+  .thb:focus-visible{outline:2px solid var(--em600);outline-offset:2px}
+  .thb .arr{font-size:9px;opacity:.35}
+  th.sorted{color:var(--ink)}
+  th.sorted .arr{opacity:1;color:var(--em600)}
+  .empty-row td{text-align:center;color:var(--ink3);padding:28px 0}
+
+  /* column menu */
+  .colmenu{position:relative}
+  .colmenu summary{list-style:none}
+  .colmenu summary::-webkit-details-marker{display:none}
+  .colmenu .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:40;background:var(--raised);border:1px solid var(--border);
+    border-radius:9px;box-shadow:var(--shadow-md);padding:8px 10px;min-width:210px}
+  .colmenu .menu label{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 2px;cursor:pointer}
+
+  /* bulk bar */
+  .bulk{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:110;
+    background:var(--g900);color:#fff;border-radius:11px;padding:9px 12px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    box-shadow:0 10px 30px rgba(0,0,0,.28);transition:all .18s;max-width:94vw}
+  .dark .bulk{background:var(--g800);border:1px solid var(--border)}
+  .bulk.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  .bulk .bn{font-size:12.5px;font-weight:650;padding-right:4px}
+  .bulk .btn{background:rgba(255,255,255,.12);color:#fff}
+  .bulk .btn:hover{background:rgba(255,255,255,.2)}
+  .bulk .ctl{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2);padding:5px 8px;font-size:12px}
+  .bulk .ctl option{color:#111}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:78px;transform:translate(-50%,10px);background:var(--em700);color:#fff;font-size:12.5px;
+    font-weight:600;padding:9px 16px;border-radius:9px;opacity:0;pointer-events:none;z-index:200;transition:all .2s;box-shadow:var(--shadow-md)}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* modal */
+  .mscrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:150;display:none;align-items:center;justify-content:center;padding:16px}
+  .mscrim.on{display:flex}
+  .modal{background:var(--bg);border:1px solid var(--border);border-radius:14px;width:min(740px,100%);max-height:88vh;display:flex;
+    flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+  .modal-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .modal-b{padding:16px 20px;overflow-y:auto}
+  .modal-f{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .field{margin-bottom:14px}
+  .field > .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:6px}
+  .radio{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;margin-bottom:7px;cursor:pointer;font-size:12.5px}
+  .radio:has(input:checked){border-color:var(--em600);background:rgba(16,185,129,.05)}
+  .radio input{margin-top:2px}
+  .radio .s{color:var(--ink2);font-size:11.5px;margin-top:1px}
+  textarea.ctl{width:100%;min-height:92px;resize:vertical;line-height:1.5}
+  .prev{border:1px solid var(--border);border-radius:9px;max-height:210px;overflow-y:auto}
+  .prev-row{display:flex;gap:12px;justify-content:space-between;padding:8px 11px;border-bottom:1px solid var(--border-sub);font-size:12px;align-items:flex-start}
+  .prev-row:last-child{border-bottom:0}
+  .tchips{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+  .tchips span{background:var(--bg3);border-radius:5px;padding:2px 7px;font-size:11px;color:var(--ink2)}
+  .tchips span.out{background:rgba(245,158,11,.14);color:var(--am700)}
+
+  /* ITA round / ASOT */
+  .load{display:flex;gap:9px;flex-wrap:wrap;margin:2px 0 14px}
+  .load > div{border:1px solid var(--border);border-radius:9px;padding:8px 12px;min-width:150px;background:var(--surface)}
+  .load .n{font-size:18px;font-weight:750;letter-spacing:-.02em;line-height:1.1}
+  .load .l{font-size:11px;color:var(--ink2)}
+  .load .me{border-color:var(--em600)}
+  .assign-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:9px}
+  .assign-bar .sp{flex:1}
+  tr.mine td{background:rgba(16,185,129,.045)}
+  select.ctl.sm{padding:4px 8px;font-size:12px}
+  .log{list-style:none}
+  .log li{display:grid;grid-template-columns:132px 190px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-sub);font-size:12.5px}
+  .log li:last-child{border-bottom:0}
+  .log .t{color:var(--ink3);font-family:'JetBrains Mono',monospace;font-size:11px;padding-top:1px}
+  .log .a{font-weight:650}
+  .log li.new{animation:flash 1.6s ease}
+  @keyframes flash{0%{background:rgba(16,185,129,.18)}100%{background:transparent}}
+
+  /* home dashboard */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:11px;margin-bottom:22px}
+  .tile{all:unset;box-sizing:border-box;cursor:pointer;background:var(--raised);border:1px solid var(--border);border-radius:11px;padding:14px 16px;
+    display:block;transition:border-color .14s,box-shadow .14s;position:relative}
+  .tile:hover{border-color:var(--g400);box-shadow:var(--shadow-md)}
+  .tile:focus-visible{outline:2px solid var(--em600);outline-offset:2px}
+  .tile .n{font-size:30px;font-weight:750;letter-spacing:-.03em;line-height:1}
+  .tile .l{font-size:12.5px;color:var(--ink2);margin-top:6px;font-weight:550}
+  .tile .go{font-size:11.5px;color:var(--ink3);margin-top:8px;font-weight:600}
+  .tile.am .n{color:var(--am700)} .dark .tile.am .n{color:var(--am500)}
+  .tile.rd .n{color:var(--rd700)} .dark .tile.rd .n{color:var(--rd500)}
+  .tile.bl .n{color:var(--bl700)} .dark .tile.bl .n{color:var(--bl500)}
+  .tile.am::before,.tile.rd::before,.tile.bl::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0}
+  .tile.am::before{background:var(--am500)} .tile.rd::before{background:var(--rd500)} .tile.bl::before{background:var(--bl500)}
+  .home-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:16px;margin-bottom:22px;align-items:start}
+  .rem{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--border-sub)}
+  .rem:last-child{border-bottom:0}
+  .rem .t{font-size:13px;font-weight:650;line-height:1.3}
+  .rem .d{font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.4}
+  .rem.later .t{color:var(--ink2);font-weight:600}
+  .rem .btn-row{flex-wrap:nowrap}
+  .rule{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-sub);font-size:12.5px;color:var(--ink2)}
+  .rule:last-of-type{border-bottom:0}
+  .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:11px}
+  .lnk{all:unset;box-sizing:border-box;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--raised);
+    border:1px solid var(--border);border-radius:10px;padding:13px 15px;transition:border-color .14s}
+  .lnk:hover{border-color:var(--g400)}
+  .lnk:focus-visible{outline:2px solid var(--em600);outline-offset:2px}
+  .lnk b{font-size:13.5px;font-weight:650;display:block}
+  .lnk span.s{font-size:11.5px;color:var(--ink2)}
+  .lnk .chev{color:var(--ink3);font-size:18px}
+
+  /* rotation timeline */
+  .tl-wrap{overflow-x:auto;padding-top:18px}
+  .tl{min-width:760px}
+  .tl-row{display:grid;grid-template-columns:190px 1fr;align-items:stretch;border-bottom:1px solid var(--border-sub)}
+  .tl-row:last-child{border-bottom:0}
+  .tl-name{padding:9px 10px 9px 0;font-size:12.5px;font-weight:650;line-height:1.25}
+  .tl-name small{display:block;font-weight:500;color:var(--ink3);font-size:10.5px}
+  .tl-track{position:relative;min-height:46px;background-image:linear-gradient(to right,var(--border-sub) 1px,transparent 1px);background-size:calc(100%/6) 100%}
+  .tl-months{display:grid;grid-template-columns:repeat(6,1fr)}
+  .tl-months span{font-size:10.5px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);padding:0 0 7px 6px}
+  .tl-seg{position:absolute;top:8px;bottom:8px;border-radius:6px;padding:0 8px;font-size:11px;font-weight:650;display:flex;align-items:center;
+    overflow:hidden;white-space:nowrap;border:1px solid transparent}
+  .tl-seg.here{background:rgba(16,185,129,.13);color:var(--em700);border-color:rgba(16,185,129,.35)}
+  .tl-seg.in{background:rgba(59,130,246,.12);color:var(--bl700);border-color:rgba(59,130,246,.35)}
+  .tl-seg.out{background:rgba(139,92,246,.12);color:var(--pu600);border-color:rgba(139,92,246,.35)}
+  .dark .tl-seg.here{color:var(--em500)} .dark .tl-seg.in{color:var(--bl500)}
+  .tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--rd500);z-index:2}
+  .tl-today::after{content:'Today';position:absolute;top:-17px;left:-14px;font-size:9.5px;font-weight:750;color:var(--rd600)}
+  @media(max-width:980px){.home-grid{grid-template-columns:1fr}.log li{grid-template-columns:1fr}.rem{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -295,7 +439,8 @@
 <div class="sub">
   <div class="wrap">
     <nav class="tabs">
-      <button class="tab on" data-tab="roster">Trainee List</button>
+      <button class="tab on" data-tab="home">Home</button>
+      <button class="tab" data-tab="roster">Trainee List</button>
       <button class="tab" data-tab="logbook">Logbook Verification <span class="cnt hot">18</span></button>
       <button class="tab" data-tab="rotations">Rotations <span class="cnt hot">3</span></button>
       <button class="tab" data-tab="itas">ITAs <span class="cnt hot">4</span></button>
@@ -307,30 +452,46 @@
 <main>
 <div class="wrap">
 
-  <!-- ============ ALERT STRIP ============ -->
-  <div class="alerts" id="sotAlerts">
-    <div class="alert" onclick="go('itas')">
-      <div class="ic am">&#9203;</div>
-      <div><div class="n">4</div><div class="l">ITAs awaiting your sign-off</div></div>
+  <!-- ==================================================== -->
+  <!-- TAB 0 — HOME DASHBOARD (default landing)              -->
+  <!-- ==================================================== -->
+  <section id="tab-home">
+    <div class="card-h" style="margin-bottom:14px">
+      <div>
+        <div class="eyebrow" id="homeEyebrow">Supervisor of Training &middot; Prince of Wales Hospital</div>
+        <div class="h2" id="homeTitle">Today at a glance</div>
+        <div class="meta" id="homeDate" style="margin-top:2px"></div>
+      </div>
     </div>
-    <div class="alert" onclick="go('logbook')">
-      <div class="ic bl">&#128203;</div>
-      <div><div class="n">18</div><div class="l">Logbook entries to verify</div></div>
+
+    <div class="eyebrow" style="margin-bottom:8px">Actions pending</div>
+    <div class="tiles" id="sotAlerts"></div>
+
+    <div class="home-grid">
+      <div class="card card-pad">
+        <div class="eyebrow">Reminders</div>
+        <div class="h3" style="margin:3px 0 4px">Needs a nudge</div>
+        <div id="remNow"></div>
+        <div class="eyebrow" style="margin:18px 0 2px" id="remLaterHead">Coming up</div>
+        <div id="remLater"></div>
+      </div>
+
+      <div class="card card-pad">
+        <div class="eyebrow">Reminder rules</div>
+        <div class="h3" style="margin:3px 0 8px">When should I be reminded?</div>
+        <div id="ruleList"></div>
+        <p class="note">Change a rule and the lists on the left update. In the live system these become automatic emails and in-app notices.</p>
+      </div>
     </div>
-    <div class="alert" onclick="go('rotations')">
-      <div class="ic am">&#8646;</div>
-      <div><div class="n">3</div><div class="l">Rotation handshakes pending</div></div>
-    </div>
-    <div class="alert" onclick="go('review')">
-      <div class="ic rd">&#9888;</div>
-      <div><div class="n">3</div><div class="l">Trainees falling behind</div></div>
-    </div>
-  </div>
+
+    <div class="eyebrow" style="margin-bottom:8px">Go to</div>
+    <div class="links" id="homeLinks"></div>
+  </section>
 
   <!-- ==================================================== -->
   <!-- TAB 1 — ROSTER (default landing)                     -->
   <!-- ==================================================== -->
-  <section id="tab-roster">
+  <section id="tab-roster" class="hidden">
 
     <div class="card card-pad mb">
       <div class="card-h" style="margin-bottom:12px">
@@ -338,55 +499,45 @@
           <div class="eyebrow" id="scopeEyebrow">Prince of Wales Hospital &middot; Anaesthesia</div>
           <div class="h2">Trainee List</div>
           <div class="meta" style="margin-top:2px">
-            <span id="rosterCount">14 active trainees</span> &middot;
-            <span class="pill ok" style="margin-left:2px">9 on track</span>
-            <span class="pill warn">2 need attention</span>
-            <span class="pill bad">3 falling behind</span>
+            <span id="rosterCount"></span> &middot; <span id="rosterPills"></span>
           </div>
         </div>
         <div class="btn-row">
-          <select id="stageFilter" onchange="filterRoster()" style="font-family:inherit;font-size:12.5px;padding:7px 10px;
-            border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--ink)">
+          <select id="stageFilter" class="ctl" onchange="setView('stage',this.value)" aria-label="Stage">
             <option value="">All stages</option>
             <option value="BAT">BAT &mdash; Basic Training</option>
             <option value="HAT">HAT &mdash; Higher Training</option>
             <option value="PFY">PFY &mdash; Provisional Fellowship</option>
           </select>
-          <select id="sortBy" onchange="filterRoster()" style="font-family:inherit;font-size:12.5px;padding:7px 10px;
-            border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--ink)">
-            <option value="">Sort: name</option>
-            <option value="stage">Sort: training year</option>
+          <select id="presenceFilter" class="ctl" onchange="setView('presence',this.value)" aria-label="Location">
+            <option value="">All trainees</option>
+            <option value="present">In hospital now</option>
+            <option value="in">Rotated in</option>
+            <option value="out">Rotated out</option>
           </select>
-          <input type="text" id="rosterFilter" placeholder="Filter by name or HKCA no."
-            oninput="filterRoster()" style="font-family:inherit;font-size:12.5px;padding:7px 12px;border-radius:7px;
-            border:1px solid var(--border);background:var(--surface);color:var(--ink);width:200px">
-          <button class="btn sec">Export list</button>
+          <select id="statusFilter" class="ctl" onchange="setView('status',this.value)" aria-label="Status">
+            <option value="">Any status</option>
+            <option value="ok">On track</option>
+            <option value="warn">Needs attention</option>
+            <option value="bad">Falling behind</option>
+          </select>
+          <label class="ctl"><input type="checkbox" id="mineFilter" onchange="setView('mine',this.checked)"> My trainees</label>
+          <input type="text" id="rosterFilter" class="ctl" placeholder="Search name or HKCA no." style="width:190px"
+            oninput="q=this.value.toLowerCase();renderRoster()">
+          <details class="colmenu" id="colMenu"><summary class="btn sec">Columns</summary><div class="menu" id="colMenuBody"></div></details>
+          <button class="btn sec" onclick="resetView()">Reset view</button>
+          <button class="btn sec" onclick="exportRoster(false)">Export list</button>
         </div>
       </div>
 
       <p class="note" style="margin:0 0 14px">
-        Rows include trainees rotating into PWH <em>and</em> PWH parent trainees currently rotated out.
+        <span class="stage-key"><span class="pill stg bat">BAT</span> Basic <span class="pill stg hat">HAT</span> Higher <span class="pill stg pfy">PFY</span> Provisional Fellowship</span> &nbsp;&middot;&nbsp; Click a column heading to sort. Rows include trainees rotating into PWH <em>and</em> PWH parent trainees currently rotated out.
         Sensitive records (warning letters, remedial notices) are visible only to the parent-hospital SOT.
       </p>
 
       <div class="tbl-scroll">
         <table>
-          <thead>
-            <tr>
-              <th style="min-width:200px">Trainee</th>
-              <th>Stage</th>
-              <th style="min-width:132px">Rotation status</th>
-              <th style="min-width:150px">Accredited time</th>
-              <th style="min-width:150px">Clinical Fundamentals WBA</th>
-              <th style="min-width:140px">Specialty WBA</th>
-              <th style="min-width:150px">VOP (to next gate)</th>
-              <th>MSF</th>
-              <th style="min-width:118px">Courses</th>
-              <th style="min-width:140px">Formal Project</th>
-              <th>Last ITA</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+          <thead id="rosterHead"></thead>
           <tbody id="rosterBody"></tbody>
         </table>
       </div>
@@ -554,6 +705,24 @@
       <b>Two-way handshake.</b> A rotation requires approval from both the sending (parent) SOT and the receiving
       (destination) SOT. Training type and learning goals are declared at this stage and carried into the ITA.
       <span id="asstNote">Assistant SOTs can prepare the handshake but cannot approve it.</span>
+    </div>
+
+
+    <div class="card card-pad mb">
+      <div class="card-h" style="margin-bottom:6px">
+        <div>
+          <div class="eyebrow">Next 6 months</div>
+          <div class="h3" style="margin-top:3px">Who is in and who is out</div>
+          <div class="meta" id="tlSummary" style="margin-top:2px"></div>
+        </div>
+        <div class="stage-key">
+          <span class="pill ok"><span class="dot g"></span>At PWH</span>
+          <span class="pill info"><span class="dot b"></span>Rotating in</span>
+          <span class="pill purple"><span class="dot p"></span>Rotated out</span>
+        </div>
+      </div>
+      <div class="tl-wrap"><div class="tl" id="tlBody"></div></div>
+      <p class="note">Illustrative plan. Rotation changes take effect when both SOTs approve the handshake below.</p>
     </div>
 
     <!-- handshake 1 -->
@@ -737,6 +906,48 @@
   <!-- ==================================================== -->
   <section id="tab-itas" class="hidden">
 
+    <!-- ===== ITA round: invitations + ASOT assignment ===== -->
+    <div class="card card-pad mb">
+      <div class="card-h" style="margin-bottom:10px">
+        <div>
+          <div class="eyebrow">ITA round &middot; Jul &ndash; Dec 2026</div>
+          <div class="h2">Trainer invitations &amp; sign-off assignment</div>
+          <div class="meta" style="margin-top:2px" id="invSummary"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn pri" onclick="openInvite()" data-need-sot>Invite all trainers</button>
+          <button class="btn sec" onclick="autoBalance()" data-need-sot title="Flagged trainees stay with the SOT; the rest are spread evenly">Auto-balance</button>
+        </div>
+      </div>
+
+      <div class="load" id="loadChips"></div>
+
+      <div class="assign-bar">
+        <label class="ctl" style="border:0;background:transparent;padding:0"><input type="checkbox" id="itaSelAll" onchange="itaToggleAll(this.checked)"> Select all</label>
+        <span class="meta" id="itaSelN">0 selected</span>
+        <span class="sp"></span>
+        <label class="ctl" style="border:0;background:transparent;padding:0"><input type="checkbox" id="itaMineCb" onchange="itaMine=this.checked;renderItaRound()"> Mine only</label>
+        <select class="ctl sm" id="itaAssignTo" data-need-sot></select>
+        <button class="btn sec sm" onclick="itaAssignSelected()" data-need-sot>Assign selected</button>
+      </div>
+
+      <div class="tbl-scroll">
+        <table>
+          <thead>
+            <tr><th style="width:34px"></th><th style="min-width:190px">Trainee</th><th>Stage</th><th style="min-width:210px">Trainers</th>
+                <th style="min-width:170px">Invitation</th><th style="min-width:190px">Sign-off by</th></tr>
+          </thead>
+          <tbody id="itaRoundBody"></tbody>
+        </table>
+      </div>
+      <p class="note">
+        Each trainee has one named sign-off owner &mdash; the SOT or an ASOT &mdash; who holds the face-to-face discussion. The ASOT's sign-off is final;
+        it does not need SOT countersignature. Trainees rotated out are excluded (their exit assessment is run by the host hospital).
+        Only the SOT can invite trainers or change assignments.
+      </p>
+    </div>
+
+
     <div class="card card-pad mb">
       <div class="card-h">
         <div>
@@ -747,7 +958,7 @@
       </div>
 
       <div class="tbl-scroll">
-        <table>
+        <table id="itaAwaitTable">
           <thead>
             <tr>
               <th style="min-width:190px">Trainee</th><th>Period</th><th>Training type</th>
@@ -827,6 +1038,17 @@
         <span class="mono">ItaAppeal</span> for BOE review. A second consecutive unsatisfactory result escalates
         automatically to the Board of Education (SOT &rarr; Assistant SOT &rarr; Cluster SOT &rarr; BOE).
       </p>
+    </div>
+  
+    <div class="card card-pad" style="margin-top:18px">
+      <div class="card-h" style="margin-bottom:8px">
+        <div>
+          <div class="eyebrow">Audit trail</div>
+          <div class="h3" style="margin-top:3px">Sign-off &amp; activity log</div>
+        </div>
+      </div>
+      <ul class="log" id="actLog"></ul>
+      <p class="note">Every invitation, assignment and sign-off is recorded with who did it and when. Earlier entries are illustrative.</p>
     </div>
   </section>
 
@@ -1136,6 +1358,61 @@
   </div>
 </aside>
 
+
+<!-- ============ v2: invite modal, bulk bar, toast ============ -->
+<div class="mscrim" id="invModal" onclick="if(event.target===this)closeInvite()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="invTitle">
+    <div class="modal-h">
+      <div>
+        <div class="eyebrow">ITA round &middot; Jul &ndash; Dec 2026</div>
+        <div class="h2" id="invTitle">Invite trainers to submit ITA feedback</div>
+      </div>
+      <button class="btn sec sm" onclick="closeInvite()" aria-label="Close">Close</button>
+    </div>
+    <div class="modal-b">
+      <div class="field">
+        <div class="lbl">Send to</div>
+        <label class="radio"><input type="radio" name="invScope" value="new" onchange="renderInvitePreview()"><div><div id="invOptNew"></div><div class="s">First invitation for trainees whose trainers have not been asked yet.</div></div></label>
+        <label class="radio"><input type="radio" name="invScope" value="outstanding" onchange="renderInvitePreview()"><div><div id="invOptOut"></div><div class="s">Reminder to trainers who were invited but have not submitted.</div></div></label>
+        <label class="radio"><input type="radio" name="invScope" value="all" onchange="renderInvitePreview()"><div><div id="invOptAll"></div><div class="s">Re-issue the invitation for every trainee in the round.</div></div></label>
+      </div>
+      <div class="field">
+        <div class="lbl">Trainer deadline</div>
+        <input type="date" class="ctl" id="invDue" value="2026-11-30">
+      </div>
+      <div class="field">
+        <div class="lbl">Message</div>
+        <textarea class="ctl" id="invMsg">Dear colleague,
+
+The Jul&ndash;Dec 2026 In-Training Assessment round is open. Please complete your private trainer form for each trainee listed below by the deadline shown. Your form is seen only by the SOT and the College.
+
+Thank you.</textarea>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="lbl">Who will receive it</div>
+        <div class="prev" id="invPreview"></div>
+      </div>
+    </div>
+    <div class="modal-f">
+      <span class="meta" id="invCount"></span>
+      <div class="btn-row">
+        <button class="btn sec" onclick="closeInvite()">Cancel</button>
+        <button class="btn pri" id="invSend" onclick="sendInvite()">Send invitations</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bulk" id="bulkBar" role="region" aria-label="Bulk actions">
+  <span class="bn" id="bulkN"></span>
+  <button class="btn sm" onclick="bulkRemind()">Send reminder</button>
+  <button class="btn sm" onclick="exportRoster(true)">Export selected</button>
+  <select class="ctl" id="bulkAsot" data-need-sot></select>
+  <button class="btn sm" onclick="bulkAssign()" data-need-sot>Assign ASOT</button>
+  <button class="btn sm" onclick="clearSel()">Clear</button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script>
 /* ---------------- roster data ---------------- */
 const ROSTER = [
@@ -1283,6 +1560,71 @@ const CLUSTER_EXTRA = [
    itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok'}
 ];
 
+
+/* ---------------- v2 data: rotated-in trainee, ASOT assignment, trainers ---------------- */
+ROSTER.push({
+  id:'2024-033', name:'Dr. Priya Raman', stage:'HAT-1', admitted:'2024', parent:'Queen Elizabeth Hospital',
+  rot:{label:'QEH &rarr; PWH &middot; Clinical Anaesthesia', kind:'in', since:'Oct 2026'},
+  months:{cur:28, tot:72, ca:{n:25,t:48}, icu:{n:6,t:6}, el:{n:0,t:18}},
+  cf:{n:14, t:29}, sm:{n:8, t:31}, vop:{n:455, t:615},
+  msf:{n:1, t:3}, itaStatus:'ok', ita:{txt:'Satisfactory', cls:'ok'}, health:'ok',
+  courses:{done:3, total:5, easeOverdue:false}, project:'PROTOCOL_SUBMITTED'
+});
+
+const ASOTS = [
+  {id:'sot',     name:'Dr. Albert Chan', tag:'SOT'},
+  {id:'winnie',  name:'Dr. Winnie Ho',   tag:'ASOT'},
+  {id:'raymond', name:'Dr. Raymond Ng',  tag:'ASOT'},
+  {id:'tina',    name:'Dr. Tina Leung',  tag:'ASOT'}
+];
+const asotById = id => ASOTS.find(a=>a.id===id);
+const ASSIGN_SEED = {
+  '2024-011':'sot','2024-008':'sot','2021-015':'sot','2022-019':'sot',
+  '2023-015':'winnie','2021-004':'winnie','2024-025':'winnie','2024-033':'winnie',
+  '2023-022':'raymond','2025-003':'raymond','2023-009':'raymond','2023-018':'raymond',
+  '2024-019':'tina','2022-031':'tina','2025-012':'tina'
+};
+ROSTER.forEach(t=>{ t.asot = ASSIGN_SEED[t.id] || 'winnie'; });
+
+const TRAINERS = ['Dr. C.K. Leung','Dr. M. Fong','Dr. S. Wan','Dr. H. Yuen','Dr. T. Poon','Dr. J. Cheng','Dr. R. Lai','Dr. P. Ngai'];
+function ptrainees(){ return ROSTER.filter(t=>t.rot.kind!=='out'); }   // in the ITA round at PWH
+function trainersFor(t){
+  const idx = ROSTER.indexOf(t), n = t.stage==='PFY' ? 5 : 4;
+  return Array.from({length:n}, (_,i)=>TRAINERS[(idx*3+i)%TRAINERS.length]);
+}
+const NOT_INVITED = new Set(['2024-033','2023-018','2023-009','2024-025']);
+const INV = {};
+ptrainees().forEach(t=>{
+  if(NOT_INVITED.has(t.id)){ INV[t.id]=null; return; }
+  const m = ((t.ita2 && t.ita2.tier1) || '').match(/(\d+) \/ (\d+)/);
+  INV[t.id] = m ? {at:'1 Oct', due:'30 Nov', got:+m[1], total:+m[2]} : null;
+});
+
+const TODAY = new Date(2026,9,17);
+const DAY = 864e5;
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const RULES = {ita:30, logbook:7, handshake:5, signature:14};
+const RULE_DEF = {
+  ita:       {label:'Chase trainers for ITA input', suffix:'before the rotation ends', opts:[[14,'2 weeks'],[30,'1 month'],[60,'2 months'],[90,'3 months']]},
+  logbook:   {label:'Logbook entry unverified for', suffix:'', opts:[[3,'3 days'],[7,'7 days'],[14,'14 days']]},
+  handshake: {label:'Rotation handshake unanswered for', suffix:'', opts:[[3,'3 days'],[5,'5 days'],[10,'10 days']]},
+  signature: {label:'Trainee ITA signature pending for', suffix:'', opts:[[7,'7 days'],[14,'14 days'],[21,'21 days']]}
+};
+const ACTIVITY = [
+  {t:'14 Oct 2026 16:40', a:'Dr. Raymond Ng (ASOT)', x:'Signed off ITA &mdash; Lam, David &middot; Jan&ndash;Jun 2026 &middot; final'},
+  {t:'09 Oct 2026 11:05', a:'Dr. Winnie Ho (ASOT)',  x:'Signed off ITA &mdash; Chow, Ian &middot; Jan&ndash;Jun 2026 &middot; final'},
+  {t:'01 Oct 2026 09:00', a:'Dr. Albert Chan (SOT)', x:'Opened ITA round Jul&ndash;Dec 2026'}
+];
+const TL = [
+  {n:'Raman, Priya',  s:'HAT-1', seg:[[0,3,'Rotated in from QEH','in'],[3,6,'Returns to QEH','out']]},
+  {n:'Cheng, Wai Lun',s:'BAT-2', seg:[[3,6,'Rotating in from NDH','in']]},
+  {n:'Wong, Kelvin',  s:'HAT-2', seg:[[0,3,'PWH &middot; Clinical','here'],[3,6,'QMH &middot; Cardiac','out']]},
+  {n:'Tam, Felix',    s:'BAT-3', seg:[[0,3,'PWH &middot; Clinical','here'],[3,6,'TMH','out']]},
+  {n:'Tsang, Elena',  s:'HAT-2', seg:[[0,3,'PWH &middot; Cardiac','here'],[3,6,'QEH &middot; Neuro','out']]},
+  {n:'Lau, Sarah',    s:'HAT-1', seg:[[0,3,'PWH &middot; Clinical','here'],[3,6,'PWH &middot; ICU','here']]},
+  {n:'Fung, Leo',     s:'PFY',   seg:[[0,3,'QMH &middot; exit assessment','out'],[3,6,'Returns to PWH','here']]}
+];
+
 /* ---------------- state ---------------- */
 let role = 'sot';
 let scope = 'hospital';
@@ -1349,62 +1691,485 @@ function healthPill(h){
   return '<span class="pill ok"><span class="dot g"></span>On track</span>';
 }
 
-function renderRoster(){
-  const data = scope==='cluster' ? ROSTER.concat(CLUSTER_EXTRA) : ROSTER;
-  const tb = document.getElementById('rosterBody');
-  tb.innerHTML = data.map((t,i)=>{
-    const warnRow = t.health==='bad' ? ' class="flag"' : '';
-    const hosp = t.hospital ? `<div class="id-cell">${t.hospital}</div>` : '';
-    const parentNote = (t.kind==='in'||t.rot.kind==='in') && t.parent
-      ? `<div class="id-cell" style="color:var(--bl700)">Parent: ${t.parent}</div>` : '';
-    return `<tr${warnRow} data-stage="${stagePrefix(t.stage)}">
-      <td>
-        <div class="nm-cell">${t.name}</div>
-        <div class="id-cell mono">HKCA ${t.id} &middot; ${t.stage}</div>
-        ${hosp}${parentNote}
-      </td>
-      <td><span class="pill">${t.stage}</span></td>
-      <td>${rotBadge(t.rot)}</td>
-      <td>${accreditedSegBar(t.months)}</td>
-      <td>${meter(t.cf.n,t.cf.t, t.cf.n>=t.cf.t?'':'a')}</td>
-      <td>${meter(t.sm.n,t.sm.t, t.sm.n/t.sm.t<0.5?'n':'b')}</td>
-      <td>${meter(Math.min(t.vop.n,t.vop.t),t.vop.t, t.vop.n>=t.vop.t?'':'a')}</td>
-      <td>${meter(t.msf.n,t.msf.t, t.msf.n>=t.msf.t?'':'a')}</td>
-      <td>${coursesPill(t.courses)}</td>
-      <td>${projectPill(t.project)}</td>
-      <td>${itaListPill(t.itaStatus, t.ita)}</td>
-      <td><button class="btn sec sm" onclick="openDrawer('${t.name}','${t.id}','${t.stage}','${t.parent||'Prince of Wales Hospital'}')">View</button></td>
-    </tr>`;
-  }).join('');
-  document.getElementById('rosterCount').textContent = data.length + ' active trainees';
-  filterRoster();
+/* ---------------- roster: columns, view state, sort, filter ---------------- */
+const COLS = [
+  {k:'sel',fixed:true},
+  {k:'name',label:'Trainee',min:200,fixed:true},
+  {k:'stage',label:'Stage'},
+  {k:'rot',label:'Rotation status',min:132},
+  {k:'asot',label:'ASOT',min:120},
+  {k:'acc',label:'Accredited time',min:150},
+  {k:'cf',label:'Clinical Fundamentals WBA',min:150},
+  {k:'sm',label:'Specialty WBA',min:140},
+  {k:'vop',label:'VOP (to next gate)',min:140},
+  {k:'msf',label:'MSF'},
+  {k:'courses',label:'Courses',min:118},
+  {k:'project',label:'Formal Project',min:140},
+  {k:'ita',label:'Last ITA'},
+  {k:'act',label:'Action',fixed:true,nosort:true}
+];
+const VIEW_KEY = 'sot-roster-view-v2';
+const VIEW_DEFAULT = {stage:'',presence:'',status:'',mine:false,sortKey:'name',sortDir:1,hidden:[]};
+let view = Object.assign({}, VIEW_DEFAULT);
+try{ Object.assign(view, JSON.parse(localStorage.getItem(VIEW_KEY)||'{}')); }catch(e){}
+let q = '';
+const selected = new Set();
+
+function saveView(){ try{ localStorage.setItem(VIEW_KEY, JSON.stringify(view)); }catch(e){} }
+function mineId(){ return role==='asst' ? 'winnie' : 'sot'; }
+function lastFirst(n){
+  const p = n.replace(/^Dr\.?\s+/,'').trim().split(/\s+/);
+  if(p.length<2) return p.join(' ');
+  const last = p.pop();
+  return last + ', ' + p.join(' ');
+}
+function stagePill(stage){
+  return `<span class="pill stg ${stagePrefix(stage).toLowerCase()}">${stage}</span>`;
+}
+function rosterData(){ return scope==='cluster' ? ROSTER.concat(CLUSTER_EXTRA) : ROSTER; }
+
+function sortVal(t,k){
+  switch(k){
+    case 'name':    return lastFirst(t.name).toLowerCase();
+    case 'stage':   return (STAGE_ORDER[stagePrefix(t.stage)]??9)*10 + (parseInt(t.stage.split('-')[1])||0);
+    case 'rot':     return ({in:0,own:1,out:2})[t.rot.kind] ?? 1;
+    case 'asot':    return t.asot ? asotById(t.asot).name : 'zzz';
+    case 'acc':     return t.months.cur;
+    case 'cf': case 'sm': case 'vop': case 'msf': return t[k].n / t[k].t;
+    case 'courses': return t.courses.done / t.courses.total;
+    case 'project': return Object.keys(PROJECT_STAGE).indexOf(t.project);
+    case 'ita':     return ({bad:0,warn:1,ok:2})[t.itaStatus] ?? 3;
+  }
+  return 0;
+}
+function visibleRows(){
+  const rows = rosterData().filter(t=>{
+    if(q){
+      const hay = (t.name+' '+lastFirst(t.name)+' '+t.id+' hkca').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    if(view.stage && stagePrefix(t.stage)!==view.stage) return false;
+    const k = t.rot.kind;
+    if(view.presence==='present' && k==='out') return false;
+    if(view.presence==='in' && k!=='in') return false;
+    if(view.presence==='out' && k!=='out') return false;
+    if(view.status && t.health!==view.status) return false;
+    if(view.mine && t.asot!==mineId()) return false;
+    return true;
+  });
+  const key = view.sortKey, dir = view.sortDir;
+  rows.sort((a,b)=>{
+    const va = sortVal(a,key), vb = sortVal(b,key);
+    const c = va<vb ? -1 : va>vb ? 1 : 0;
+    return c*dir || lastFirst(a.name).localeCompare(lastFirst(b.name));
+  });
+  return rows;
 }
 
-/* ---------------- filter + sort ---------------- */
-function filterRoster(){
-  const q = (document.getElementById('rosterFilter')?.value || '').toLowerCase();
-  const stage = document.getElementById('stageFilter')?.value || '';
-  const sortBy = document.getElementById('sortBy')?.value || '';
-  const tb = document.getElementById('rosterBody');
-  const rows = Array.from(tb.querySelectorAll('tr'));
-
-  rows.forEach(tr=>{
-    const matchesText = tr.textContent.toLowerCase().includes(q);
-    const matchesStage = !stage || tr.dataset.stage===stage;
-    tr.style.display = (matchesText && matchesStage) ? '' : 'none';
-  });
-
-  if(sortBy==='stage'){
-    rows.sort((a,b)=> (STAGE_ORDER[a.dataset.stage]??9) - (STAGE_ORDER[b.dataset.stage]??9)
-      || a.querySelector('.nm-cell').textContent.localeCompare(b.querySelector('.nm-cell').textContent));
-    rows.forEach(r=>tb.appendChild(r));
+function cellFor(k,t){
+  switch(k){
+    case 'sel':  return `<td><input type="checkbox" aria-label="Select ${lastFirst(t.name)}" ${selected.has(t.id)?'checked':''} onchange="toggleSel('${t.id}',this.checked)"></td>`;
+    case 'name': {
+      const hosp = t.hospital ? `<div class="id-cell">${t.hospital}</div>` : '';
+      const parentNote = t.rot.kind==='in' && t.parent ? `<div class="id-cell" style="color:var(--bl700)">Parent: ${t.parent}</div>` : '';
+      return `<td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div>${hosp}${parentNote}</td>`;
+    }
+    case 'stage':   return `<td>${stagePill(t.stage)}</td>`;
+    case 'rot':     return `<td>${rotBadge(t.rot)}</td>`;
+    case 'asot':    return `<td>${t.asot ? `<span class="meta">${asotById(t.asot).name.replace('Dr. ','')}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '<span class="meta">&mdash;</span>'}</td>`;
+    case 'acc':     return `<td>${accreditedSegBar(t.months)}</td>`;
+    case 'cf':      return `<td>${meter(t.cf.n,t.cf.t, t.cf.n>=t.cf.t?'':'a')}</td>`;
+    case 'sm':      return `<td>${meter(t.sm.n,t.sm.t, t.sm.n/t.sm.t<0.5?'n':'b')}</td>`;
+    case 'vop':     return `<td>${meter(Math.min(t.vop.n,t.vop.t),t.vop.t, t.vop.n>=t.vop.t?'':'a')}</td>`;
+    case 'msf':     return `<td>${meter(t.msf.n,t.msf.t, t.msf.n>=t.msf.t?'':'a')}</td>`;
+    case 'courses': return `<td>${coursesPill(t.courses)}</td>`;
+    case 'project': return `<td>${projectPill(t.project)}</td>`;
+    case 'ita':     return `<td>${itaListPill(t.itaStatus, t.ita)}</td>`;
+    case 'act':     return `<td><button class="btn sec sm" onclick="openDrawer('${t.name}','${t.id}','${t.stage}','${t.parent||'Prince of Wales Hospital'}')">View</button></td>`;
   }
+  return '<td></td>';
+}
+
+function renderRoster(){
+  const data = rosterData();
+  const cols = COLS.filter(c=>c.fixed || !view.hidden.includes(c.k));
+  const rows = visibleRows();
+
+  // header (click to sort)
+  document.getElementById('rosterHead').innerHTML = '<tr>' + cols.map(c=>{
+    if(c.k==='sel') return `<th style="width:34px"><input type="checkbox" id="selAll" aria-label="Select all shown" onchange="toggleAll(this.checked)"></th>`;
+    const mw = c.min ? `min-width:${c.min}px` : '';
+    if(c.nosort) return `<th style="${mw}">${c.label}</th>`;
+    const on = view.sortKey===c.k;
+    const arrow = on ? (view.sortDir===1 ? '&#9650;' : '&#9660;') : '&#8597;';
+    return `<th style="${mw}" class="${on?'sorted':''}" aria-sort="${on?(view.sortDir===1?'ascending':'descending'):'none'}">
+      <button class="thb" onclick="sortBy('${c.k}')" title="Sort by ${c.label}">${c.label}<span class="arr">${arrow}</span></button></th>`;
+  }).join('') + '</tr>';
+
+  // body
+  const tb = document.getElementById('rosterBody');
+  tb.innerHTML = rows.length ? rows.map(t=>
+    `<tr${t.health==='bad'?' class="flag"':''} data-stage="${stagePrefix(t.stage)}">${cols.map(c=>cellFor(c.k,t)).join('')}</tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="${cols.length}">No trainees match these filters. <button class="btn sec sm" onclick="resetView()">Reset view</button></td></tr>`;
+
+  // counts (quick filters)
+  const n = {ok:0,warn:0,bad:0}; data.forEach(t=>{ n[t.health||'ok']++; });
+  document.getElementById('rosterCount').textContent = rows.length===data.length
+    ? data.length + ' active trainees' : rows.length + ' of ' + data.length + ' trainees';
+  document.getElementById('rosterPills').innerHTML =
+    `<button class="pill ok" style="border:0;cursor:pointer" onclick="setView('status','ok')">${n.ok} on track</button> `+
+    `<button class="pill warn" style="border:0;cursor:pointer" onclick="setView('status','warn')">${n.warn} need attention</button> `+
+    `<button class="pill bad" style="border:0;cursor:pointer" onclick="setView('status','bad')">${n.bad} falling behind</button>`;
+  updateBulk();
+}
+function sortBy(k){
+  if(view.sortKey===k) view.sortDir *= -1; else { view.sortKey = k; view.sortDir = 1; }
+  saveView(); renderRoster();
+}
+function setView(k,v){ view[k]=v; saveView(); syncControls(); renderRoster(); }
+function resetView(){
+  view = Object.assign({}, VIEW_DEFAULT, {hidden:[]}); q = '';
+  const f = document.getElementById('rosterFilter'); if(f) f.value='';
+  saveView(); syncControls(); buildColMenu(); renderRoster();
+}
+function syncControls(){
+  document.getElementById('stageFilter').value = view.stage;
+  document.getElementById('presenceFilter').value = view.presence;
+  document.getElementById('statusFilter').value = view.status;
+  document.getElementById('mineFilter').checked = !!view.mine;
+}
+function buildColMenu(){
+  document.getElementById('colMenuBody').innerHTML = COLS.filter(c=>!c.fixed).map(c=>
+    `<label><input type="checkbox" ${view.hidden.includes(c.k)?'':'checked'} onchange="toggleCol('${c.k}',this.checked)"> ${c.label}</label>`).join('');
+}
+function toggleCol(k,show){
+  view.hidden = view.hidden.filter(x=>x!==k); if(!show) view.hidden.push(k);
+  saveView(); renderRoster();
+}
+document.addEventListener('click', e=>{
+  const m = document.getElementById('colMenu');
+  if(m && m.open && !m.contains(e.target)) m.open = false;
+});
+
+/* ---------------- selection + bulk actions ---------------- */
+function toggleSel(id,on){ on ? selected.add(id) : selected.delete(id); updateBulk(); }
+function toggleAll(on){ visibleRows().forEach(t=> on ? selected.add(t.id) : selected.delete(t.id)); renderRoster(); }
+function clearSel(){ selected.clear(); renderRoster(); }
+function updateBulk(){
+  const bar = document.getElementById('bulkBar'); if(!bar) return;
+  document.getElementById('bulkN').textContent = selected.size + ' selected';
+  bar.classList.toggle('on', selected.size>0);
+  const all = document.getElementById('selAll');
+  if(all){
+    const vis = visibleRows();
+    all.checked = vis.length>0 && vis.every(t=>selected.has(t.id));
+    all.indeterminate = !all.checked && vis.some(t=>selected.has(t.id));
+  }
+}
+function bulkRemind(){
+  const n = selected.size; if(!n) return;
+  logEvent(`Sent reminder to ${n} trainee${n>1?'s':''} (logbook / WBA progress)`);
+  toast(`Reminder sent to ${n} trainee${n>1?'s':''}`);
+}
+function bulkAssign(){
+  if(role==='asst') return;
+  const ids = Array.from(selected).filter(id=>ROSTER.some(t=>t.id===id));
+  if(!ids.length) return;
+  setAsot(ids, document.getElementById('bulkAsot').value);
+}
+function plain(s){ return String(s).replace(/&middot;/g,'·').replace(/&rarr;/g,'→').replace(/&amp;/g,'&').replace(/&mdash;/g,'—').replace(/&ndash;/g,'–'); }
+function exportRoster(onlySel){
+  const rows = onlySel ? rosterData().filter(t=>selected.has(t.id)) : visibleRows();
+  const head = ['Trainee','HKCA no.','Stage','Rotation','ASOT','Accredited months','CF WBA','Specialty WBA','VOP','MSF','Courses','Project'];
+  const lines = [head].concat(rows.map(t=>[
+    lastFirst(t.name), t.id, t.stage, plain(t.rot.label), t.asot?asotById(t.asot).name:'', t.months.cur+'/'+t.months.tot,
+    t.cf.n+'/'+t.cf.t, t.sm.n+'/'+t.sm.t, t.vop.n+'/'+t.vop.t, t.msf.n+'/'+t.msf.t, t.courses.done+'/'+t.courses.total,
+    (PROJECT_STAGE[t.project]||{label:t.project}).label
+  ]));
+  const csv = lines.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'trainee-list.csv'; document.body.appendChild(a); a.click(); a.remove();
+  toast(`Exported ${rows.length} trainee${rows.length===1?'':'s'}`);
+}
+
+/* ---------------- toast ---------------- */
+let toastT;
+function toast(msg){
+  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('on'), 2600);
+}
+
+/* ---------------- activity log ---------------- */
+function actor(){ return role==='asst' ? 'Dr. Winnie Ho (ASOT)' : 'Dr. Albert Chan (SOT)'; }
+function logEvent(x){
+  const d = new Date(), p = n=>String(n).padStart(2,'0');
+  ACTIVITY.unshift({t:`${p(TODAY.getDate())} ${MON[TODAY.getMonth()]} ${TODAY.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`, a:actor(), x, fresh:true});
+  renderLog();
+}
+function renderLog(){
+  const ul = document.getElementById('actLog'); if(!ul) return;
+  ul.innerHTML = ACTIVITY.slice(0,14).map(e=>`<li class="${e.fresh?'new':''}"><span class="t">${e.t}</span><span class="a">${e.a}</span><span>${e.x}</span></li>`).join('');
+  ACTIVITY.forEach(e=>{ e.fresh=false; });
+}
+
+/* ---------------- ASOT assignment ---------------- */
+function setAsot(ids, asotId){
+  const a = asotById(asotId), changed = [];
+  ids.forEach(id=>{ const t = ROSTER.find(x=>x.id===id); if(t && t.asot!==asotId){ t.asot = asotId; changed.push(t); } });
+  if(!changed.length){ toast('Already assigned'); return; }
+  const who = changed.length<=2 ? changed.map(t=>lastFirst(t.name)).join(' and ') : changed.length+' trainees';
+  logEvent(`Assigned ${who} to ${a.name} for ITA sign-off`);
+  renderAll();
+  toast(`${who} assigned to ${a.name.replace('Dr. ','')}`);
+}
+function autoBalance(){
+  if(role==='asst') return;
+  const counts = {}; ASOTS.forEach(a=>counts[a.id]=0);
+  const pool = ptrainees().slice().sort((a,b)=>sortVal(a,'stage')-sortVal(b,'stage') || lastFirst(a.name).localeCompare(lastFirst(b.name)));
+  const plan = {};
+  pool.filter(t=>t.health==='bad').forEach(t=>{ plan[t.id]='sot'; counts.sot++; });
+  pool.filter(t=>t.health!=='bad').forEach(t=>{
+    const pick = ASOTS.slice().sort((a,b)=>counts[a.id]-counts[b.id] || ASOTS.indexOf(a)-ASOTS.indexOf(b))[0];
+    plan[t.id] = pick.id; counts[pick.id]++;
+  });
+  pool.forEach(t=>{ t.asot = plan[t.id]; });
+  logEvent('Auto-balanced ITA sign-off across ' + ASOTS.length + ' assessors (flagged trainees kept with SOT)');
+  renderAll();
+  toast('Sign-off balanced: ' + ASOTS.map(a=>counts[a.id]).join(' / '));
+}
+
+/* ---------------- ITA round table ---------------- */
+let itaMine = false;
+const itaSel = new Set();
+function invitePill(i){
+  if(!i) return '<span class="pill">Not invited</span>';
+  if(i.got>=i.total) return `<span class="pill ok"><span class="dot g"></span>All ${i.total} forms in</span>`;
+  return `<span class="pill warn"><span class="dot a"></span>${i.got} of ${i.total} in</span><div class="id-cell">Invited ${i.at} &middot; due ${i.due}</div>`;
+}
+function renderItaRound(){
+  const body = document.getElementById('itaRoundBody'); if(!body) return;
+  const all = ptrainees();
+  const rows = all.filter(t=>!itaMine || t.asot===mineId())
+    .sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+  const dis = role==='asst' ? 'disabled' : '';
+  body.innerHTML = rows.map(t=>{
+    const ts = trainersFor(t);
+    return `<tr class="${t.asot===mineId()?'mine':''}">
+      <td><input type="checkbox" aria-label="Select ${lastFirst(t.name)}" ${itaSel.has(t.id)?'checked':''} onchange="itaToggle('${t.id}',this.checked)"></td>
+      <td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td>
+      <td>${stagePill(t.stage)}</td>
+      <td><span class="meta" title="${ts.join(', ')}">${ts.length} trainers</span><div class="id-cell">${ts.slice(0,2).join(', ')} +${ts.length-2}</div></td>
+      <td>${invitePill(INV[t.id])}</td>
+      <td><select class="ctl sm" data-need-sot ${dis} aria-label="Sign-off by for ${lastFirst(t.name)}" onchange="setAsot(['${t.id}'],this.value)">
+        ${ASOTS.map(a=>`<option value="${a.id}" ${a.id===t.asot?'selected':''}>${a.name} (${a.tag})</option>`).join('')}</select></td>
+    </tr>`;
+  }).join('') || '<tr class="empty-row"><td colspan="6">No trainees assigned to you yet.</td></tr>';
+
+  document.getElementById('loadChips').innerHTML = ASOTS.map(a=>{
+    const n = all.filter(t=>t.asot===a.id).length;
+    return `<div class="${a.id===mineId()?'me':''}"><div class="n">${n}</div><div class="l">${a.name} &middot; ${a.tag}${a.id===mineId()?' (you)':''}</div></div>`;
+  }).join('');
+
+  const invited = all.filter(t=>INV[t.id]).length, done = all.filter(t=>INV[t.id] && INV[t.id].got>=INV[t.id].total).length;
+  document.getElementById('invSummary').textContent =
+    `${invited} of ${all.length} trainees have trainer invitations out \u00b7 ${done} complete \u00b7 ${all.length-invited} not yet invited`;
+  document.getElementById('itaSelN').textContent = itaSel.size + ' selected';
+  const sa = document.getElementById('itaSelAll');
+  sa.checked = rows.length>0 && rows.every(t=>itaSel.has(t.id));
+  document.getElementById('itaMineCb').checked = itaMine;
+}
+function itaToggle(id,on){ on ? itaSel.add(id) : itaSel.delete(id); document.getElementById('itaSelN').textContent = itaSel.size+' selected'; }
+function itaToggleAll(on){
+  ptrainees().filter(t=>!itaMine || t.asot===mineId()).forEach(t=> on ? itaSel.add(t.id) : itaSel.delete(t.id));
+  renderItaRound();
+}
+function itaAssignSelected(){
+  if(role==='asst') return;
+  if(!itaSel.size){ toast('Tick one or more trainees first'); return; }
+  const ids = Array.from(itaSel); itaSel.clear();
+  setAsot(ids, document.getElementById('itaAssignTo').value);
+}
+/* existing "awaiting your action" table: add a Sign-off by column */
+function enhanceItaTable(){
+  const tbl = document.getElementById('itaAwaitTable'); if(!tbl) return;
+  const trh = tbl.querySelector('thead tr');
+  const th = document.createElement('th'); th.textContent = 'Sign-off by'; th.style.minWidth = '130px';
+  trh.insertBefore(th, trh.lastElementChild);
+  tbl.querySelectorAll('tbody tr').forEach(tr=>{
+    const td = document.createElement('td'); td.className = 'signcell';
+    tr.insertBefore(td, tr.lastElementChild);
+  });
+}
+function refreshItaSignoff(){
+  const tbl = document.getElementById('itaAwaitTable'); if(!tbl) return;
+  tbl.querySelectorAll('tbody tr').forEach(tr=>{
+    const cell = tr.querySelector('.nm-cell'); const orig = cell.dataset.orig || cell.textContent;
+    const t = ROSTER.find(x=>x.name===orig); const td = tr.querySelector('.signcell');
+    td.innerHTML = t ? `<span class="meta">${asotById(t.asot).name.replace('Dr. ','')}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '';
+  });
+}
+function formatStaticNames(){
+  document.querySelectorAll('#tab-itas .nm-cell, #tab-rotations .nm-cell').forEach(el=>{
+    const s = el.textContent.trim();
+    if(/^Dr\.?\s/.test(s)){ el.dataset.orig = s; el.textContent = lastFirst(s); }
+  });
+}
+
+/* ---------------- invite all trainers ---------------- */
+function inviteTargets(scope){
+  return ptrainees().map(t=>{
+    const i = INV[t.id], all = trainersFor(t); let ts = [];
+    if(scope==='new'){ if(!i) ts = all; }
+    else if(scope==='outstanding'){ if(i && i.got<i.total) ts = all.slice(i.got); }
+    else ts = all;
+    return ts.length ? {t, ts} : null;
+  }).filter(Boolean);
+}
+function invScope(){ return (document.querySelector('input[name=invScope]:checked')||{}).value || 'new'; }
+function openInvite(){
+  if(role==='asst') return;
+  const nNew = inviteTargets('new').length;
+  const out = inviteTargets('outstanding'), nOut = out.reduce((s,x)=>s+x.ts.length,0);
+  const nAll = ptrainees().length;
+  document.getElementById('invOptNew').innerHTML = `<b>Trainees not yet invited</b> &middot; ${nNew} trainee${nNew===1?'':'s'}`;
+  document.getElementById('invOptOut').innerHTML = `<b>Chase outstanding forms</b> &middot; ${nOut} form${nOut===1?'':'s'} across ${out.length} trainee${out.length===1?'':'s'}`;
+  document.getElementById('invOptAll').innerHTML = `<b>All trainees in the round</b> &middot; ${nAll} trainees`;
+  const radios = document.querySelectorAll('input[name=invScope]');
+  radios[0].disabled = !nNew; radios[1].disabled = !nOut;
+  (nNew ? radios[0] : nOut ? radios[1] : radios[2]).checked = true;
+  renderInvitePreview();
+  document.getElementById('invModal').classList.add('on');
+  document.getElementById('invSend').focus();
+}
+function closeInvite(){ document.getElementById('invModal').classList.remove('on'); }
+function renderInvitePreview(){
+  const scope = invScope(), tg = inviteTargets(scope);
+  const uniq = new Set(); let pairs = 0;
+  tg.forEach(x=>x.ts.forEach(n=>{ uniq.add(n); pairs++; }));
+  document.getElementById('invPreview').innerHTML = tg.map(x=>
+    `<div class="prev-row"><div><b>${lastFirst(x.t.name)}</b> <span class="meta">${x.t.stage}</span></div>
+      <div class="tchips">${x.ts.map(n=>`<span class="${scope==='outstanding'?'out':''}">${n}</span>`).join('')}</div></div>`
+  ).join('') || '<div class="prev-row">Nobody to send to.</div>';
+  document.getElementById('invCount').textContent = `${pairs} form request${pairs===1?'':'s'} to ${uniq.size} trainer${uniq.size===1?'':'s'}`;
+  document.getElementById('invSend').disabled = !pairs;
+}
+function sendInvite(){
+  const scope = invScope(), tg = inviteTargets(scope);
+  if(!tg.length) return;
+  const v = document.getElementById('invDue').value.split('-').map(Number);
+  const dueTxt = v.length===3 ? `${v[2]} ${MON[v[1]-1]}` : '30 Nov';
+  const todayTxt = `${TODAY.getDate()} ${MON[TODAY.getMonth()]}`;
+  const uniq = new Set(); let pairs = 0;
+  tg.forEach(({t,ts})=>{
+    const i = INV[t.id], total = trainersFor(t).length;
+    if(scope==='outstanding') i.due = dueTxt;
+    else if(scope==='all' && i) INV[t.id] = {at:todayTxt, due:dueTxt, got:i.got, total};
+    else INV[t.id] = {at:todayTxt, due:dueTxt, got:0, total};
+    ts.forEach(n=>{ uniq.add(n); pairs++; });
+  });
+  logEvent(`${scope==='outstanding'?'Reminded':'Invited'} ${uniq.size} trainers (${pairs} forms) for ${tg.length} trainee${tg.length===1?'':'s'} &middot; deadline ${dueTxt}`);
+  closeInvite(); renderAll();
+  toast(`${scope==='outstanding'?'Reminder':'Invitation'} sent to ${uniq.size} trainers`);
+}
+
+/* ---------------- home dashboard ---------------- */
+function outstandingForms(){
+  let forms = 0, tr = 0;
+  ptrainees().forEach(t=>{ const i = INV[t.id]; if(i && i.got<i.total){ forms += i.total-i.got; tr++; } });
+  return {forms, tr};
+}
+const sentRem = new Set();
+function reminders(){
+  const o = outstandingForms();
+  return [
+    {id:'ita-input', title:'Chase trainers for ITA input', detail:`${o.forms} trainer forms outstanding across ${o.tr} trainees &middot; Jul&ndash;Dec rotation ends 31 Dec`,
+      due:new Date(2026,11,31-RULES.ita), tab:'itas', btn:'Remind trainers'},
+    {id:'ita-late', title:'Overdue ITA submission &mdash; Yip, Marcus', detail:'1 trainer form still missing &middot; Jan&ndash;Jun 2026 period ended 30 Jun',
+      due:new Date(2026,5,30), tab:'itas', btn:'Remind trainer'},
+    {id:'logbook', title:`Logbook entries unverified for over ${RULES.logbook} days`, detail:'Oldest submitted 8 Oct &middot; 6 entries affected',
+      due:new Date(2026,9,8+RULES.logbook), tab:'logbook', btn:'Send reminder'},
+    {id:'handshake', title:'Handshake awaiting receiving SOT &mdash; Raman, Priya', detail:'QEH &rarr; PWH &middot; request sent 11 Oct',
+      due:new Date(2026,9,11+RULES.handshake), tab:'rotations', btn:'Nudge SOT'},
+    {id:'signature', title:'Trainee signature pending &mdash; Ho, Jasmine', detail:'ITA ready for trainee counter-signature since 9 Oct',
+      due:new Date(2026,9,9+RULES.signature), tab:'itas', btn:'Remind trainee'},
+    {id:'pip', title:'Remedial plan reassessment &mdash; Nair, Priya', detail:'PIP reassessment date 15 Nov (fixed date)',
+      due:new Date(2026,10,15), tab:'review', btn:'Send reminder'}
+  ].map(r=>Object.assign(r,{diff:Math.round((r.due-TODAY)/DAY)})).sort((a,b)=>a.due-b.due);
+}
+function remRow(r,later){
+  const lab = r.diff<0 ? `<span class="pill bad">Overdue ${-r.diff}d</span>` : r.diff===0 ? '<span class="pill warn">Due today</span>' : `<span class="pill">In ${r.diff}d</span>`;
+  const sent = sentRem.has(r.id);
+  return `<div class="rem ${later?'later':''}">
+    <div>${lab}<div class="id-cell" style="margin-top:4px">${r.due.getDate()} ${MON[r.due.getMonth()]}</div></div>
+    <div><div class="t">${r.title}</div><div class="d">${r.detail}</div></div>
+    <div class="btn-row"><button class="btn sec sm" ${sent?'disabled':''} onclick="sendRem('${r.id}')">${sent?'Sent':r.btn}</button>
+      <button class="btn sec sm" onclick="go('${r.tab}')">Open</button></div></div>`;
+}
+function sendRem(id){
+  const r = reminders().find(x=>x.id===id); sentRem.add(id);
+  logEvent('Reminder sent: ' + r.title);
+  toast('Reminder sent'); renderHome();
+}
+function setRule(k,v){ RULES[k] = +v; renderHome(); }
+function renderHome(){
+  const o = outstandingForms();
+  const tiles = [
+    {n:4, l:'ITAs awaiting your sign-off', tab:'itas', c:'am'},
+    {n:18, l:'Logbook entries to verify', tab:'logbook', c:'bl'},
+    {n:3, l:'Rotation handshakes pending', tab:'rotations', c:'am'},
+    {n:o.forms, l:`Trainer ITA forms outstanding &middot; ${o.tr} trainees`, tab:'itas', c:'am'},
+    {n:3, l:'Trainees falling behind', tab:'review', c:'rd'}
+  ];
+  document.getElementById('sotAlerts').innerHTML = tiles.map(t=>
+    `<button class="tile ${t.c}" onclick="go('${t.tab}')"><div class="n">${t.n}</div><div class="l">${t.l}</div><div class="go">Open &rsaquo;</div></button>`).join('');
+
+  const list = reminders(), now = list.filter(r=>r.diff<=0), later = list.filter(r=>r.diff>0);
+  document.getElementById('remNow').innerHTML = now.length ? now.map(r=>remRow(r,false)).join('') : '<p class="note">Nothing needs a nudge today.</p>';
+  document.getElementById('remLater').innerHTML = later.map(r=>remRow(r,true)).join('');
+  document.getElementById('remLaterHead').style.display = later.length ? '' : 'none';
+
+  document.getElementById('ruleList').innerHTML = Object.keys(RULE_DEF).map(k=>{
+    const d = RULE_DEF[k];
+    return `<div class="rule"><span>${d.label}</span><span><select class="ctl sm" aria-label="${d.label}" onchange="setRule('${k}',this.value)">
+      ${d.opts.map(([v,l])=>`<option value="${v}" ${RULES[k]===v?'selected':''}>${l}</option>`).join('')}</select>${d.suffix?` <span class="id-cell" style="display:inline">${d.suffix}</span>`:''}</span></div>`;
+  }).join('');
+
+  const outN = ROSTER.filter(t=>t.rot.kind==='out').length;
+  const links = [
+    {t:'itas', b:'In-Training Assessments', s:'4 awaiting sign-off \u00b7 invitations & ASOT assignment'},
+    {t:'roster', b:'Trainee List', s:`${ROSTER.length} trainees \u00b7 ${outN} rotated out`},
+    {t:'logbook', b:'Logbook Verification', s:'18 entries to verify'},
+    {t:'rotations', b:'Rotations', s:'3 handshakes pending \u00b7 6-month timeline'},
+    {t:'review', b:'Progression Risk', s:'5 trainees flagged'}
+  ];
+  document.getElementById('homeLinks').innerHTML = links.map(l=>
+    `<button class="lnk" onclick="go('${l.t}')"><span><b>${l.b}</b><span class="s">${l.s}</span></span><span class="chev">&rsaquo;</span></button>`).join('');
+  document.getElementById('homeDate').textContent = 'Saturday 17 October 2026 \u00b7 illustrative data';
+  document.getElementById('homeTitle').textContent = role==='asst' ? 'Good day, Dr Ho' : 'Good day, Dr Chan';
+}
+
+/* ---------------- rotation timeline ---------------- */
+function renderTimeline(){
+  const el = document.getElementById('tlBody'); if(!el) return;
+  const months = ['Oct 2026','Nov','Dec','Jan 2027','Feb','Mar'];
+  const todayPct = ((16/31)/6*100).toFixed(2);
+  el.innerHTML = `<div class="tl-row"><div></div><div class="tl-months">${months.map(m=>`<span>${m}</span>`).join('')}</div></div>` +
+    TL.map(r=>`<div class="tl-row"><div class="tl-name">${r.n}<small>${r.s}</small></div><div class="tl-track"><span class="tl-today" style="left:${todayPct}%"></span>
+      ${r.seg.map(([a,b,l,k])=>`<span class="tl-seg ${k}" style="left:calc(${(a/6*100).toFixed(2)}% + 2px);width:calc(${((b-a)/6*100).toFixed(2)}% - 4px)" title="${plain(l)}">${l}</span>`).join('')}</div></div>`).join('');
+  let outN=0,inN=0,back=0;
+  TL.forEach(r=>r.seg.forEach(([a,b,l,k],i)=>{ if(a===3){ if(k==='out')outN++; else if(k==='in')inN++; else if(i>0 && r.seg[i-1][3]==='out')back++; } }));
+  document.getElementById('tlSummary').textContent = `1 Jan 2027: ${outN} rotate out, ${inN} rotate in, ${back} return to PWH`;
+}
+
+function renderAll(){
+  renderRoster(); renderItaRound(); refreshItaSignoff(); renderHome(); renderLog();
 }
 
 /* ---------------- tabs ---------------- */
 function go(id){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on', b.dataset.tab===id));
-  ['roster','logbook','rotations','itas','review'].forEach(t=>{
+  ['home','roster','logbook','rotations','itas','review'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden', t!==id);
   });
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1448,11 +2213,13 @@ function applyRole(){
     : '';
   document.getElementById('asstLockNote').textContent = lock;
   document.getElementById('drAsstNote').textContent = asst
-    ? 'You can draft the ITA and verify logbook entries; final sign-off is by the SOT.'
+    ? 'You can verify logbook entries and prepare ITAs. For trainees assigned to you, your ITA sign-off is final.'
     : '';
   document.getElementById('asstNote').textContent = asst
     ? 'Assistant SOTs can prepare the handshake but cannot approve it.'
     : 'Both SOTs must approve before the rotation is confirmed.';
+  itaMine = asst;
+  renderAll();
 }
 
 /* ---------------- logbook accordion ---------------- */
@@ -1489,7 +2256,7 @@ function closeDrawer(){
   const d = document.getElementById('drawer');
   d.classList.remove('on'); d.setAttribute('aria-hidden','true');
 }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDrawer(); closeInvite(); } });
 
 /* ---------------- theme ---------------- */
 function toggleTheme(){
@@ -1506,7 +2273,10 @@ function toggleTheme(){
 })();
 
 /* ---------------- init ---------------- */
-renderRoster();
+const asotOpts = ASOTS.map(a=>`<option value="${a.id}">${a.name} (${a.tag})</option>`).join('');
+document.getElementById('itaAssignTo').innerHTML = asotOpts;
+document.getElementById('bulkAsot').innerHTML = asotOpts;
+formatStaticNames(); enhanceItaTable(); buildColMenu(); syncControls(); renderTimeline();
 applyRole();
 </script>
 </body>
