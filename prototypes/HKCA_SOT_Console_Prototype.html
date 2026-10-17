@@ -834,7 +834,7 @@
         </div>
       </div>
 
-      <div class="vop-mode"><div class="seg" id="lbModeSeg" role="group" aria-label="Logbook view"><button class="on" data-m="verify" onclick="lbSetMode('verify')">To verify</button><button data-m="browse" onclick="lbSetMode('browse')">Browse &amp; progress</button></div></div>
+      <div class="vop-mode"><div class="seg" id="lbModeSeg" role="group" aria-label="Logbook view"><button class="on" data-m="verify" onclick="lbSetMode('verify')">To verify</button><button data-m="browse" onclick="lbSetMode('browse')">Browse trainee progress</button></div></div>
       <div id="lbVerifyWrap">
       <div class="lb-tabs" id="lbTabs" role="tablist"></div>
       <div class="lb-filters">
@@ -2755,7 +2755,7 @@ let vseqN = 6;
 const lb = {tab:'ready', scope:'all', q:'', trainee:'', site:'', page:1, size:25};
 const lbSel = new Set();
 /* ================= VOP: browse all cases + progress by domain ================= */
-const vopUI = {mode:'verify',view:'cases',tid:'',q:'',dom:'',item:'',status:'',site:'',from:'',to:'',changed:false,sort:'dateDesc',page:1,size:25,open:{},cSort:'year',cStage:''};
+const vopUI = {mode:'verify',view:'cohort',sub:'overview',tid:'',q:'',dom:'',item:'',status:'',site:'',from:'',to:'',changed:false,sort:'dateDesc',page:1,size:25,open:{},cSort:'year',cStage:''};
 /* Requirements: HKCA Curriculum Competency Mapping Table. bt = Basic Training minimum, cum = cumulative by Higher Training exit. SM = minimum by Exit Assessment. */
 const VOP_DOMS = [
  {dom:'CF-2.1',kind:'CF',name:'General Anaesthesia and Sedation',short:'2.1 GA & sedation',items:[{id:'tiva',name:'TIVA',bt:10,cum:50},{id:'mac',name:'MAC / Sedation',bt:10,cum:50},{id:'cvc',name:'Central venous cannulation',bt:10,cum:50},{id:'art',name:'Arterial cannulation',bt:10,cum:50}]},
@@ -2836,18 +2836,22 @@ function lbApplyMode(){
   document.getElementById('lbScopeAll').disabled = asst;
 }
 function vopSet(k,v){ vopUI[k] = v; if(k!=='page') vopUI.page = 1; if(k==='dom') vopUI.item = ''; renderVop(); }
-function vopGo(view,tid,dom,item){ vopUI.mode='browse'; vopUI.view = view; if(tid!==undefined) vopUI.tid = tid; vopUI.dom = dom||''; vopUI.item = item||''; vopUI.status=''; vopUI.page = 1; if(!vopTrainees().some(t=>t.id===vopUI.tid) && vopUI.tid && view!=='cases'){ lb.scope = role==='asst'?'mine':'all'; } renderLogbook(); }
+function vopGo(view,tid,dom,item){ vopUI.mode='browse'; if(view==='cases'){ vopUI.view='trainee'; vopUI.sub='cases'; } else if(view==='progress'){ vopUI.view='trainee'; vopUI.sub='overview'; } else vopUI.view = view; if(tid!==undefined) vopUI.tid = tid; vopUI.dom = dom||''; vopUI.item = item||''; vopUI.status=''; vopUI.page = 1; if(!vopTrainees().some(t=>t.id===vopUI.tid) && vopUI.tid){ lb.scope = role==='asst'?'mine':'all'; } renderLogbook(); }
 function vopFromDrawer(){ closeDrawer(); go('logbook'); vopGo('progress',window.drawerTid||''); }
 function vopTraineeOpts(allowAll){ const trs = vopTrainees(); return (allowAll?`<option value="">All trainees (${trs.length})</option>`:'')+trs.map(t=>`<option value="${t.id}" ${vopUI.tid===t.id?'selected':''}>${lastFirst(t.name)} \u00b7 ${t.stage}</option>`).join(''); }
 function renderVop(){
   lbApplyMode();
   const trs = vopTrainees();
   if(vopUI.tid && !trs.some(t=>t.id===vopUI.tid)) vopUI.tid = '';
-  if(vopUI.view==='progress' && !vopUI.tid && trs.length) vopUI.tid = trs[0].id;
-  document.getElementById('lbSub').textContent = vopUI.view==='cohort' ? `Cohort progress \u00b7 ${trs.length} trainees` : vopUI.view==='progress' ? 'Progress against the curriculum minimums' : 'Every logged case, not just those waiting for you';
+  if(vopUI.view==='trainee' && !vopUI.tid && trs.length) vopUI.tid = trs[0].id;
+  const tr = ROSTER.find(x=>x.id===vopUI.tid);
+  document.getElementById('lbSub').textContent = vopUI.view==='cohort' ? `Where every trainee stands \u00b7 ${trs.length} trainees` : (vopUI.sub==='cases' ? 'Every logged case for this trainee' : 'Progress against the curriculum minimums');
   const seg = (k,l)=>`<button class="${vopUI.view===k?'on':''}" onclick="vopSet('view','${k}')">${l}</button>`;
-  document.getElementById('vopWrap').innerHTML = `<div class="vop-mode"><div class="seg" role="group" aria-label="VOP view">${seg('cases','Cases')}${seg('progress','Progress by trainee')}${seg('cohort','Cohort')}</div></div><div id="vopBody"></div>`;
-  ({cases:vopCasesView,progress:vopProgressView,cohort:vopCohortView})[vopUI.view](document.getElementById('vopBody'),trs);
+  const sub = (k,l)=>`<button class="${vopUI.sub===k?'on':''}" onclick="vopSet('sub','${k}')">${l}</button>`;
+  document.getElementById('vopWrap').innerHTML = `<div class="vop-mode"><div class="seg" role="group" aria-label="VOP view">${seg('cohort','Cohort')}${seg('trainee','Progress by trainee')}</div></div>` +
+    (vopUI.view==='trainee' ? `<div class="vop-bar" style="margin-top:2px"><select class="ctl" aria-label="Trainee" onchange="vopSet('tid',this.value)">${vopTraineeOpts(false)}</select>${tr?stagePill(String(tr.stage)):''}<div class="seg" role="group" aria-label="Trainee VOP view" style="margin-left:6px">${sub('overview','Overview')}${sub('cases','All cases')}</div></div>` : '') + '<div id="vopBody"></div>';
+  const body = document.getElementById('vopBody');
+  if(vopUI.view==='cohort') vopCohortView(body,trs); else if(vopUI.sub==='cases') vopCasesView(body,trs); else vopProgressView(body,trs);
 }
 /* ---- cases ---- */
 function vopFiltered(trs){
@@ -2868,14 +2872,13 @@ function vopCasesView(el,trs){
   const stPill = s=>({verified:'<span class="pill ok">Verified</span>',pending:'<span class="pill warn">Pending</span>',returned:'<span class="pill">Sent back</span>',rejected:'<span class="pill bad">Rejected</span>'})[s];
   const th = (k,l,asc,desc)=>`<th class="vop-th" onclick="vopSet('sort','${vopUI.sort===desc?asc:desc}')" aria-sort="${vopUI.sort===desc?'descending':vopUI.sort===asc?'ascending':'none'}">${l}${vopUI.sort===desc?' \u2193':vopUI.sort===asc?' \u2191':''}</th>`;
   el.innerHTML = `<div class="vop-bar">
-      <select class="ctl" aria-label="Trainee" onchange="vopSet('tid',this.value)">${vopTraineeOpts(true)}</select>
       <select class="ctl" aria-label="Module" onchange="vopSet('dom',this.value)"><option value="">All modules</option><optgroup label="Clinical Fundamentals">${VOP_DOMS.filter(x=>x.kind==='CF').map(x=>opt(x.dom,x.dom.replace('CF-','')+' '+x.name,vopUI.dom)).join('')}</optgroup><optgroup label="Specialty modules">${VOP_DOMS.filter(x=>x.kind==='SM').map(x=>opt(x.dom,x.dom.replace('SM-','')+' '+x.name,vopUI.dom)).join('')}</optgroup></select>
       <select class="ctl" aria-label="Procedure" onchange="vopSet('item',this.value)" ${d?'':'disabled'}><option value="">${d?'All procedures':'Procedure (pick a module)'}</option>${d?d.items.map(i=>opt(i.id,i.name,vopUI.item)).join(''):''}</select>
       <select class="ctl" aria-label="Status" onchange="vopSet('status',this.value)">${opt('','Any status',vopUI.status)}${opt('verified','Verified',vopUI.status)}${opt('pending','Pending',vopUI.status)}${opt('rejected','Rejected',vopUI.status)}</select>
       ${sites.length>1||vopUI.site?`<select class="ctl" aria-label="Hospital" onchange="vopSet('site',this.value)"><option value="">All hospitals</option>${sites.map(s=>opt(s,s,vopUI.site)).join('')}</select>`:''}
     </div>
     <div class="vop-bar">
-      <input type="text" class="ctl" placeholder="Search operation or trainee" style="width:230px" value="${vopUI.q.replace(/"/g,'&quot;')}" oninput="vopUI.q=this.value;vopUI.page=1;vopDebounce()" aria-label="Search">
+      <input type="text" class="ctl" placeholder="Search operation or procedure" style="width:230px" value="${vopUI.q.replace(/"/g,'&quot;')}" oninput="vopUI.q=this.value;vopUI.page=1;vopDebounce()" aria-label="Search">
       <label class="meta" style="display:flex;align-items:center;gap:6px">From <input type="date" class="ctl" value="${vopUI.from}" onchange="vopSet('from',this.value)"></label>
       <label class="meta" style="display:flex;align-items:center;gap:6px">To <input type="date" class="ctl" value="${vopUI.to}" onchange="vopSet('to',this.value)"></label>
       <button class="chip ${vopUI.from===isoOf(new Date(TODAY.getTime()-90*DAY))&&!vopUI.to?'on':''}" onclick="vopUI.from='${isoOf(new Date(TODAY.getTime()-90*DAY))}';vopSet('to','')">Last 3 months</button>
@@ -2885,7 +2888,7 @@ function vopCasesView(el,trs){
       <button class="btn sec sm" onclick="vopReset()">Reset filters</button>
       <button class="btn sec sm" onclick="vopCsv()">Export CSV</button>
     </div>
-    <div class="vop-sum"><span><b>${rows.length}</b> case${rows.length===1?'':'s'}</span><span><b>${cnt('verified')}</b> verified</span><span><b>${cnt('pending')}</b> pending</span><span><b>${cnt('rejected')}</b> rejected</span>${vopUI.tid?`<a class="lb-title" style="cursor:pointer" onclick="vopSet('view','progress')">See progress for ${lastFirst(ROSTER.find(x=>x.id===vopUI.tid).name)} \u2192</a>`:''}</div>
+    <div class="vop-sum"><span><b>${rows.length}</b> case${rows.length===1?'':'s'}</span><span><b>${cnt('verified')}</b> verified</span><span><b>${cnt('pending')}</b> pending</span><span><b>${cnt('rejected')}</b> rejected</span></div>
     <div class="tbl-scroll"><table class="vop-tbl"><thead><tr>${th('d','Date','dateAsc','dateDesc')}${vopUI.tid?'':th('t','Trainee','trainee','trainee')}<th>Hospital</th>${th('m','Module claimed','module','module')}<th>Procedure</th><th>Operation</th><th>ASA</th><th>Supervision</th><th>Status</th></tr></thead><tbody>${
       slice.map(c=>{ const t = ROSTER.find(x=>x.id===c.tid); return `<tr><td class="mono">${fmtD(D(c.date))}</td>${vopUI.tid?'':`<td><button class="lb-title" style="border:0;background:none;padding:0;font:inherit;cursor:pointer" onclick="vopGo('cases','${t.id}')">${lastFirst(t.name)}</button> <span class="meta">${t.stage}</span></td>`}<td>${c.hosp}</td><td>${c.dom.replace(/^(CF|SM)-/,'')} ${vopDom(c.dom).name.replace(/ and .*/,'').replace(/ \/ .*/,'')}${c.changed?' <span class="pill info" title="You or the system changed the suggested category">changed</span>':''}</td><td>${c.itemName}</td><td class="op">${c.op}</td><td>${c.asa}</td><td>${c.sup}</td><td>${stPill(c.status)}</td></tr>`; }).join('') || `<tr><td colspan="9" class="q-empty">No cases match these filters.</td></tr>`}</tbody></table></div>
     <div class="lb-pager"><span>${rows.length?((vopUI.page-1)*vopUI.size+1)+'\u2013'+Math.min(rows.length,vopUI.page*vopUI.size)+' of '+rows.length:'0 cases'}</span><span style="display:flex;gap:8px;align-items:center"><select class="ctl" onchange="vopUI.size=+this.value;vopSet('page',1)" aria-label="Rows per page">${[25,50,100].map(n=>opt(String(n),n+' per page',String(vopUI.size))).join('')}</select><button class="btn sec sm" ${vopUI.page<=1?'disabled':''} onclick="vopSet('page',vopUI.page-1)">Previous</button><span>Page ${vopUI.page} of ${pages}</span><button class="btn sec sm" ${vopUI.page>=pages?'disabled':''} onclick="vopSet('page',vopUI.page+1)">Next</button></span></div>
@@ -2908,7 +2911,7 @@ function vopProgressView(el,trs){
     return `<div class="vop-dom"><button onclick="vopUI.open['${d.dom}']=!vopUI.open['${d.dom}'];renderVop()" aria-expanded="${open}"><span aria-hidden="true">${open?'\u25be':'\u25b8'}</span><span class="code">${d.dom.replace(/^(CF|SM)-/,'')}</span><span class="nm">${d.name}</span>${bar(p,d.kind==='CF'?'cfb':'')}<span class="meta">${Math.round(p.pctV*100)}%${pp?` <span title="${pp} pending, not counted yet">(+${pp} pending)</span>`:''}</span><span class="meta">${p.of?`${p.met} of ${p.of} item${p.of===1?'':'s'} met`:'No minimum yet'}</span></button>
       ${open?`<div class="vop-items"><table><thead><tr><th>Procedure</th><th>Verified</th><th>Pending</th>${d.kind==='CF'?`<th>BT minimum</th><th>Cumulative minimum</th>`:'<th>Minimum</th>'}<th>Status</th><th></th></tr></thead><tbody>${p.items.map(i=>`<tr><td>${i.name}</td><td><b>${i.v}</b></td><td>${i.p||'\u2014'}</td>${d.kind==='CF'?`<td>${i.bt!=null?i.bt:'\u2014'}</td><td>${i.cum!=null?i.cum:'<span class="meta" title="No separate cumulative minimum">\u2014</span>'}</td>`:`<td>${i.cum}</td>`}<td>${i.target==null?'<span class="meta">No BT minimum</span>':i.v>=i.target?'<span class="pill ok">Met</span>':`<span class="pill warn">${i.target-i.v} to go</span>`}</td><td><a class="lb-title" style="cursor:pointer" onclick="vopGo('cases','${t.id}','${d.dom}','${i.id}')">Cases</a></td></tr>`).join('')}</tbody></table>
         <p style="margin:8px 0 0"><a class="lb-title" style="cursor:pointer" onclick="vopGo('cases','${t.id}','${d.dom}')">View all ${pv+pp} ${d.dom} cases \u2192</a></p></div>`:''}</div>`; };
-  el.innerHTML = `<div class="vop-bar"><select class="ctl" aria-label="Trainee" onchange="vopSet('tid',this.value)">${vopTraineeOpts(false)}</select><span class="meta">${stagePill(stage)} &nbsp; Minimums shown for ${bat?'Basic Training (BT)':'Higher Training (cumulative by HT exit)'}</span></div>
+  el.innerHTML = `<div class="vop-bar"><span class="meta">Minimums shown for ${bat?'Basic Training (BT)':'Higher Training (cumulative by HT exit)'}</span></div>
     <div class="vop-sum"><span><b>${cfN.length}</b> Clinical Fundamentals cases logged, <b>${ver}</b> verified</span><span>Solid bar = verified. Lighter = pending, not yet counted.</span></div>
     <div class="eyebrow" style="margin:12px 0 8px">Clinical Fundamentals</div>${pr.filter(p=>p.d.kind==='CF').map(row).join('')}
     <p class="note" style="margin:2px 0 14px">2.5 Perioperative Medicine, 2.6 Trauma and Crisis, and 2.7 Safety and Quality have no VOP minimum.</p>
