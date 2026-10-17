@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HKCA e-Portfolio — In-Training Assessment · Trainee List View (trainer batch view)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+  Surface: OPERATE. Extension U1 — the trainer's "Trainee List View": every trainee they supervise this round, rated in one grid.
+  Same 15 College items, same scale, same rules as HKCA_ITA_Trainer_Form.html (decision I1). This view is faster, not looser:
+    - no defaults, no fill-down, no "set all"; nothing carried over from earlier cycles (U1)
+    - an example is required for a 4 only; X never counts toward anything
+    - each trainee is reviewed and sealed on their own (one sealed response per trainer per trainee, unique constraint)
+    - the trainer sees no overall result and never another trainer's ratings
+  Illustrative data only: synthetic trainees and trainer.
+-->
+<style>
+  :root{
+    --g50:#fafafa; --g100:#f5f5f5; --g200:#e5e5e5; --g300:#d4d4d4; --g400:#a3a3a3;
+    --g500:#737373; --g600:#525252; --g700:#404040; --g800:#262626; --g900:#171717; --g950:#0a0a0a;
+    --em500:#10b981; --em600:#059669; --em700:#047857;
+    --rd500:#ef4444; --rd600:#dc2626; --rd700:#b91c1c;
+    --bg:#ffffff; --bg2:var(--g50); --bg3:var(--g100);
+    --surface:#ffffff; --border:var(--g200); --border-sub:var(--g100);
+    --ink:var(--g900); --ink2:var(--g600); --ink3:var(--g500);
+    --focus:var(--em600);
+    --c1:var(--em700); --c1t:rgba(5,150,105,.16);
+    --c2:var(--em700); --c2t:rgba(5,150,105,.08);
+    --c3:var(--g700);  --c3t:rgba(64,64,64,.08);
+    --c4:var(--rd700); --c4t:rgba(220,38,38,.12);
+    --cx:var(--g600);  --cxt:var(--g100);
+  }
+  .dark{
+    --bg:var(--g950); --bg2:var(--g900); --bg3:var(--g800);
+    --surface:#111113; --border:rgba(255,255,255,.10); --border-sub:rgba(255,255,255,.05);
+    --ink:var(--g50); --ink2:var(--g400); --ink3:var(--g500); --focus:var(--em500);
+    --c1:#34d399; --c1t:rgba(52,211,153,.18); --c2:#6ee7b7; --c2t:rgba(52,211,153,.09);
+    --c3:#d4d4d4; --c3t:rgba(255,255,255,.07); --c4:#f87171; --c4t:rgba(248,113,113,.16);
+    --cx:var(--g400); --cxt:var(--g800);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg2);color:var(--ink);
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'JetBrains Mono',Menlo,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1320px;margin:0 auto;padding:0 20px}
+  .hidden{display:none !important}
+  button{font-family:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+
+  /* top bar */
+  .top{position:sticky;top:0;z-index:60;background:var(--bg);border-bottom:1px solid var(--border)}
+  .top-row{display:flex;align-items:center;justify-content:space-between;gap:16px;height:56px}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .mark{width:30px;height:30px;border-radius:8px;background:var(--em700);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+  .brand b{font-size:14px;font-weight:650;letter-spacing:-.01em;display:block;line-height:1.2;white-space:nowrap}
+  .brand span{font-size:11.5px;color:var(--ink3);display:block;line-height:1.2}
+  .top-right{display:flex;align-items:center;gap:12px}
+  .who{text-align:right;line-height:1.25}
+  .who b{font-size:12.5px;font-weight:650;display:block}
+  .who span{font-size:11px;color:var(--ink3)}
+  .icon-btn{width:34px;height:34px;border:1px solid var(--border);background:var(--surface);border-radius:8px;cursor:pointer;display:grid;place-items:center;font-size:15px}
+  .icon-btn:hover{background:var(--bg3)}
+
+  main{padding:24px 0 40px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+  h1.title{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  .lede{font-size:13px;color:var(--ink2);margin-top:5px;max-width:66ch}
+  .round{display:flex;gap:26px}
+  .round div{min-width:0}
+  .round dt{font-size:10.5px;font-weight:650;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+  .round dd{font-size:13px;font-weight:600;margin-top:1px}
+
+  .rules{margin-top:16px;display:flex;gap:6px 22px;flex-wrap:wrap;align-items:center;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+    font-size:12px;color:var(--ink2)}
+  .rules span{display:inline-flex;align-items:center;gap:7px}
+  .chip{font-style:normal;display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:5px;
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700}
+  .chip.k1{background:var(--c1t);color:var(--c1)} .chip.k2{background:var(--c2t);color:var(--c2)}
+  .chip.k3{background:var(--c3t);color:var(--c3)} .chip.k4{background:var(--c4t);color:var(--c4)}
+  .chip.kx{background:var(--cxt);color:var(--cx)}
+  .rules .note{margin-left:auto;color:var(--ink3)}
+  .rules .note b{color:var(--ink2);font-weight:600}
+
+  /* toolbar */
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:18px}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:9px;background:var(--surface);padding:2px}
+  .seg button{border:0;background:none;font-size:12.5px;font-weight:600;color:var(--ink2);padding:0 13px;min-height:32px;border-radius:7px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  .seg button .n{font-family:'JetBrains Mono',monospace;font-size:11px;margin-left:5px;opacity:.7}
+  .bar-r{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--ink2);flex-wrap:wrap}
+  .bar-r label{display:flex;align-items:center;gap:8px;font-weight:600}
+  .saved{font-size:11.5px;color:var(--ink3);min-width:150px;text-align:right}
+  .linkbtn{background:none;border:0;padding:3px 0;font-size:12px;font-weight:600;color:var(--em700);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .dark .linkbtn{color:var(--em500)}
+
+  /* matrix */
+  .matrix-wrap{margin-top:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:auto;max-height:calc(100vh - 360px);min-height:300px}
+  table.mx{border-collapse:separate;border-spacing:0;width:100%;min-width:1010px}
+  .mx th,.mx td{padding:0;border-bottom:1px solid var(--border-sub);background:var(--surface)}
+  .mx thead th{position:sticky;z-index:5;background:var(--bg2);border-bottom:1px solid var(--border)}
+  .mx thead tr.grp th{top:0;height:30px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);text-align:left;padding:0 12px;white-space:nowrap}
+  .mx thead tr.grp th.g2{border-left:1px solid var(--border)}
+  .mx thead tr.cols th{top:30px;height:58px;vertical-align:bottom}
+  .colh{width:100%;height:100%;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;padding:6px 2px 7px;font-size:10.5px;line-height:1.2;color:var(--ink2);font-weight:600}
+  .colh b{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink)}
+  .colh span{display:block;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .colh:hover,.colh.cur{background:var(--bg3)}
+  th.g2first,td.g2first{border-left:1px solid var(--border)}
+  .mx .sticky{position:sticky;left:0;z-index:4;background:var(--surface);box-shadow:1px 0 0 var(--border)}
+  .mx thead .sticky{z-index:7;background:var(--bg2)}
+  .mx .stickyR{position:sticky;right:0;z-index:4;background:var(--surface);box-shadow:-1px 0 0 var(--border)}
+  .mx thead .stickyR{z-index:7;background:var(--bg2)}
+  .mx tr.row.curRow td.sticky{background:var(--bg3)}
+  th.who-c{width:232px;min-width:232px;padding:8px 14px;text-align:left;font-weight:inherit}
+  .tn{font-size:13.5px;font-weight:650;letter-spacing:-.01em;line-height:1.25}
+  .tl{font-size:11.5px;color:var(--ink3);line-height:1.3;margin-top:1px}
+  .tp{display:flex;align-items:center;gap:8px;margin-top:5px}
+  .tp .pbar{flex:1;height:4px;border-radius:2px;background:var(--border);overflow:hidden}
+  .tp .pbar i{display:block;height:100%;background:var(--em600);width:0;transition:width .15s}
+  .tp .pn{font-size:11px;color:var(--ink3);min-width:34px;text-align:right}
+  td.cell-c{width:62px;min-width:62px;text-align:center;padding:3px}
+  .cell{width:100%;height:42px;border:1px solid transparent;border-radius:8px;background:none;cursor:pointer;position:relative;
+    font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--ink3);transition:background .1s}
+  .cell:hover{background:var(--bg3)}
+  .cell:not([data-g])::after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:var(--g300)}
+  .dark .cell:not([data-g])::after{background:rgba(255,255,255,.18)}
+  .cell[data-g="1"]{background:var(--c1t);color:var(--c1)} .cell[data-g="2"]{background:var(--c2t);color:var(--c2)}
+  .cell[data-g="3"]{background:var(--c3t);color:var(--c3)} .cell[data-g="4"]{background:var(--c4t);color:var(--c4);border-color:var(--c4)}
+  .cell[data-g="X"]{background:var(--cxt);color:var(--cx);border:1px dashed var(--cx)}
+  .cell.need::before{content:'';position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:var(--rd600);box-shadow:0 0 0 2px var(--surface)}
+  .cell.hasex::before{content:'';position:absolute;right:4px;top:4px;width:5px;height:5px;border-radius:1px;background:var(--ink3)}
+  .cell:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;border-radius:8px}
+  .cell.flag{outline:2px solid var(--rd600);outline-offset:-2px}
+  .cell[disabled]{cursor:default;opacity:.62}
+  .cell[disabled]:hover{background:inherit}
+  td.act-c{width:128px;min-width:128px;padding:8px 12px;text-align:right}
+  .btn{border:0;font-size:13px;font-weight:650;padding:0 16px;min-height:36px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+  .btn.pri{background:var(--em700);color:#fff} .btn.pri:hover{background:#065f46}
+  .btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--border)} .btn.sec:hover{background:var(--bg3)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .stat{font-size:11.5px;font-weight:600;color:var(--ink3);display:block;margin-bottom:5px;line-height:1.3}
+  .stat.seal{color:var(--em700)} .dark .stat.seal{color:var(--em500)}
+  tr.row.sealed td.who-c .tn::after{content:'  Sealed';font-size:10.5px;font-weight:650;color:var(--em700);margin-left:6px;text-transform:uppercase;letter-spacing:.05em}
+  .dark tr.row.sealed td.who-c .tn::after{color:var(--em500)}
+
+  /* focus panel */
+  .panel{margin-top:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:14px 16px;min-height:132px}
+  .panel .empty{font-size:13px;color:var(--ink3);padding:26px 0;text-align:center}
+  .p-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .p-ttl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3)}
+  .p-item{font-size:15.5px;font-weight:700;letter-spacing:-.015em;margin-top:2px}
+  .p-item .mono{color:var(--ink3);font-size:12px;margin-right:8px;font-weight:500}
+  .p-who{font-size:12.5px;color:var(--ink2);margin-top:2px}
+  .p-who b{color:var(--ink);font-weight:650}
+  .p-grades{display:grid;grid-template-columns:repeat(5,minmax(0,92px));gap:6px}
+  .g{border:1px solid var(--border);background:var(--surface);border-radius:9px;min-height:50px;padding:6px 4px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center;transition:background .12s,border-color .12s}
+  .g b{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;line-height:1.1;color:var(--ink2)}
+  .g span{font-size:10.5px;line-height:1.2;color:var(--ink3);font-weight:500}
+  .g:hover{border-color:var(--g400)}
+  .g[aria-checked="true"]{border-width:1.5px}
+  .g[data-g="1"][aria-checked="true"]{background:var(--c1t);border-color:var(--c1)} .g[data-g="1"][aria-checked="true"] b,.g[data-g="1"][aria-checked="true"] span{color:var(--c1)}
+  .g[data-g="2"][aria-checked="true"]{background:var(--c2t);border-color:var(--c2)} .g[data-g="2"][aria-checked="true"] b,.g[data-g="2"][aria-checked="true"] span{color:var(--c2)}
+  .g[data-g="3"][aria-checked="true"]{background:var(--c3t);border-color:var(--c3)} .g[data-g="3"][aria-checked="true"] b,.g[data-g="3"][aria-checked="true"] span{color:var(--c3)}
+  .g[data-g="4"][aria-checked="true"]{background:var(--c4t);border-color:var(--c4)} .g[data-g="4"][aria-checked="true"] b,.g[data-g="4"][aria-checked="true"] span{color:var(--c4)}
+  .g[data-g="X"][aria-checked="true"]{background:var(--cxt);border-color:var(--cx);border-style:dashed} .g[data-g="X"][aria-checked="true"] b,.g[data-g="X"][aria-checked="true"] span{color:var(--cx)}
+  .g[disabled]{cursor:default;opacity:.65}
+  .p-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-top:12px}
+  .anchor{font-size:12.5px;color:var(--ink2);line-height:1.6}
+  .anchor .lbl,.ex label{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;font-weight:650;color:var(--ink2);margin-bottom:5px}
+  .anchor .lbl{display:block}
+  .ex label em{font-style:normal;font-weight:600} .ex label em.req{color:var(--rd700)} .dark .ex label em.req{color:var(--rd500)} .ex label em.rec{color:var(--ink3)}
+  .ex textarea{width:100%;min-height:68px;resize:vertical;border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:9px 11px;font:inherit;font-size:13px;line-height:1.5;color:var(--ink)}
+  .ex textarea::placeholder{color:var(--ink3)}
+  .ex.bad textarea{border-color:var(--rd600)}
+  .ex .err{display:none;font-size:11.5px;color:var(--rd700);margin-top:4px;font-weight:600} .dark .ex .err{color:var(--rd500)}
+  .ex.bad .err{display:block}
+  .ex .hint{font-size:11px;color:var(--ink3);margin-top:4px}
+
+  .keys{margin-top:12px;font-size:11.5px;color:var(--ink3);line-height:1.9;display:flex;gap:4px 18px;flex-wrap:wrap}
+  kbd{font-family:'JetBrains Mono',monospace;font-size:10.5px;border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface);color:var(--ink2)}
+
+  /* by-item view */
+  .byitem{margin-top:12px}
+  .bi-nav{display:flex;align-items:center;gap:10px;justify-content:space-between}
+  .bi-nav .btn{min-height:44px;padding:0 14px}
+  .bi-ttl{flex:1;min-width:0;text-align:center}
+  .bi-ttl .p-ttl{display:block}
+  .bi-ttl h2{font-size:16px;font-weight:700;letter-spacing:-.015em;line-height:1.25;margin-top:2px}
+  .bi-ticks{display:flex;gap:3px;margin:12px 0 0}
+  .bi-ticks .gap{width:8px;flex:none}
+  .bi-ticks button{flex:1;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;padding:0;min-width:0;position:relative}
+  .bi-ticks button.done{background:var(--c1);border-color:var(--c1);opacity:.55}
+  .bi-ticks button.cur{box-shadow:0 0 0 2px var(--bg2),0 0 0 3.5px var(--ink)}
+  .bi-anchor{margin-top:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:12px 14px;font-size:12.5px;color:var(--ink2);line-height:1.6}
+  .bi-list{margin-top:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+  .bi-row{padding:13px 14px 14px;border-bottom:1px solid var(--border-sub)}
+  .bi-row:last-child{border-bottom:0}
+  .bi-row .tn{font-size:14px}
+  .bi-row .grades{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:9px}
+  .bi-row .g{min-height:54px}
+  .bi-row .ex{margin-top:9px}
+  .bi-row .addex{margin-top:5px}
+  .bi-row.sealed{opacity:.7}
+  .bi-row .sel{font-size:12px;color:var(--ink2);margin-top:7px;min-height:18px;font-weight:600}
+  .bi-row .sel.s4{color:var(--c4)}
+  @media (max-width:520px){.bi-row .g span{display:none}.bi-row .g{min-height:52px}.bi-row .g b{font-size:17px}}
+  .bi-foot{margin-top:14px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
+
+  /* review sheet */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90;display:flex;align-items:flex-end;justify-content:center}
+  .sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border:1px solid var(--border);border-radius:16px 16px 0 0;padding:22px 22px 24px}
+  @media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:16px}}
+  .sheet h2{font-size:18px;font-weight:700;letter-spacing:-.015em}
+  .sheet .meta{font-size:12.5px;color:var(--ink2);margin-top:4px}
+  .rev{margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .rev-row{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:start;padding:8px 12px;border-bottom:1px solid var(--border-sub);font-size:12.5px}
+  .rev-row:last-child{border-bottom:0}
+  .rev-row .nm{font-weight:600}
+  .rev-row .exq{grid-column:2/4;color:var(--ink2);font-size:12px;line-height:1.5}
+  .sheet .cm{margin-top:16px}
+  .sheet .cm label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}
+  .sheet .cm textarea{width:100%;min-height:84px;resize:vertical;border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:10px 12px;font:inherit;font-size:13px;line-height:1.55;color:var(--ink)}
+  .sheet .cm p{font-size:11.5px;color:var(--ink3);margin-top:5px}
+  .nudge{margin-top:14px;padding:10px 12px;border:1px solid var(--border);border-left:3px solid var(--ink3);border-radius:8px;font-size:12.5px;color:var(--ink2);line-height:1.5}
+  .sheet .acts{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .sheet .acts .btn{flex:1 1 180px;min-height:44px}
+  .sheet .fine{font-size:11.5px;color:var(--ink3);margin-top:12px;line-height:1.5}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;padding:10px 16px;border-radius:9px;z-index:99}
+
+  @media (max-width:900px){
+    .round{display:none}
+    .rules .note{margin-left:0}
+    .tab-matrix,#matrixView,#panel,.keys,.bar-r .adv,.bar-r .seg[aria-label="Layout"]{display:none !important}
+    .wrap{padding:0 14px}
+    h1.title{font-size:19px}
+    .who{display:none}
+    .saved{text-align:left}
+  }
+  @media (min-width:901px){ .tab-item.mobile-only{display:none} }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand">
+        <div class="mark">H</div>
+        <div><b>HKCA e-Portfolio</b><span>In-Training Assessment &middot; Trainee List View</span></div>
+      </div>
+      <div class="top-right">
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode">&#9788;</button>
+        <div class="who"><b>Dr. Lisa Kwok</b><span>Consultant &middot; Prince of Wales Hospital</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1 class="title">Trainee List View</h1>
+      <p class="lede">Every trainee the SOTs have asked you to assess this round, in one grid. Each is rated on the same 15 College items,
+        against the expectation for <em>their</em> level and year, and sealed separately.</p>
+    </div>
+    <dl class="round">
+      <div><dt>Round</dt><dd class="mono" style="font-size:12.5px">01 Jul &ndash; 31 Dec 2026</dd></div>
+      <div><dt>Return by</dt><dd class="mono" style="font-size:12.5px">15 Jan 2027</dd></div>
+      <div><dt>Date of assessment</dt><dd class="mono" style="font-size:12.5px" id="today">&mdash;</dd></div>
+    </dl>
+  </div>
+
+  <div class="rules" aria-label="Rating scale and rules">
+    <span><i class="chip k1">1</i>Consistently exceeds</span>
+    <span><i class="chip k2">2</i>Occasionally exceeds</span>
+    <span><i class="chip k3">3</i>Usually meets</span>
+    <span><i class="chip k4">4</i>Unsatisfactory</span>
+    <span><i class="chip kx">X</i>Unable to assess</span>
+    <span class="note"><b>4 needs an example.</b> Rate only trainees you have worked with; use X for an item you did not see. Nothing is pre-filled.</span>
+  </div>
+
+  <div class="bar">
+    <div class="seg" role="group" aria-label="Show trainees">
+      <button data-f="all" aria-pressed="true">All<span class="n" id="n-all"></span></button>
+      <button data-f="todo" aria-pressed="false">To do<span class="n" id="n-todo"></span></button>
+      <button data-f="ready" aria-pressed="false">Ready to submit<span class="n" id="n-ready"></span></button>
+      <button data-f="sealed" aria-pressed="false">Sealed<span class="n" id="n-sealed"></span></button>
+    </div>
+    <div class="bar-r">
+      <div class="seg" role="group" aria-label="Layout">
+        <button class="tab-matrix" data-v="matrix" aria-pressed="true">Matrix</button>
+        <button data-v="item" aria-pressed="false">By item</button>
+      </div>
+      <label class="adv">After rating, move
+        <span class="seg" role="group" aria-label="Advance direction">
+          <button data-adv="across" aria-pressed="true">&rarr; next item</button>
+          <button data-adv="down" aria-pressed="false">&darr; next trainee</button>
+        </span>
+      </label>
+      <div class="saved" id="saved" role="status"></div>
+    </div>
+  </div>
+
+  <div id="matrixView" class="matrix-wrap"><table class="mx" id="mx" role="grid" aria-label="Trainee list: trainees by the 15 ITA items"></table></div>
+
+  <section class="panel" id="panel" aria-label="Selected rating"></section>
+  <div class="keys">
+    <span><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd> move</span>
+    <span><kbd>1</kbd>&ndash;<kbd>4</kbd> <kbd>X</kbd> rate and move on</span>
+    <span><kbd>Backspace</kbd> clear</span>
+    <span><kbd>E</kbd> add or edit example</span>
+    <span><kbd>Esc</kbd> back to grid</span>
+    <span><kbd>Enter</kbd> on a name: review &amp; submit</span>
+  </div>
+
+  <div id="itemView" class="byitem hidden"></div>
+  <p class="lede" style="margin-top:22px;font-size:12px;color:var(--ink3)">
+    <button class="linkbtn" id="resetBtn">Reset this prototype</button> &nbsp;&middot;&nbsp; Private to the SOT and the College. Your ratings are never shown to the trainee or to other trainers;
+    the overall result is decided by the SOT.</p>
+</div>
+</main>
+
+<div id="live" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
+
+<script>
+/* The 15 official items — mirrors domain/ita/itaDomains.ts. Anchors identical to HKCA_ITA_Trainer_Form.html. */
+const DOMAINS = [
+ {c:'PATIENT_ASSESSMENT',g:1,l:'Patient assessment',s:'Patient assess.',a:'Able to gather clinical information from the patient (history taking, examination +/- investigations) or significant others, colleagues, medical records, etc., considering the nature and urgency of the intervention. Able to suggest appropriate investigation or means of further assessment if needed.'},
+ {c:'CLINICAL_MANAGEMENT',g:1,l:'Clinical management',s:'Clinical mgmt',a:'Able to formulate and execute management plans, including anticipation of potential problems; resource planning (equipment and manpower), workplace organization, post-operative management.'},
+ {c:'TECHNICAL_SKILLS',g:1,l:'Technical skills',s:'Technical',a:'Able to perform clinical procedures efficiently, with working knowledge on equipment and anatomy, attention to patient safety and risk, procedural and situational awareness throughout the procedure.'},
+ {c:'KNOWLEDGE_LEARNING',g:1,l:'Knowledge, ability to apply knowledge, and initiative to learn',s:'Knowledge',a:'Adequate understanding of basic and clinical sciences appropriate to the level of training. Ability to apply the knowledge in clinical practice. Able to develop learning strategy for oneself, and takes an active interest in self-learning.'},
+ {c:'TIME_MANAGEMENT',g:1,l:'Time management and prioritization',s:'Time mgmt',a:'Attend patients timely, efficiently runs theatre lists, allocates and prioritizes cases effectively, prioritizes tasks to match the workload and patient needs, multi-task when necessary.'},
+ {c:'CRISIS_MANAGEMENT',g:1,l:'Crisis management',s:'Crisis',a:'Able to keep calm and function effectively in adverse and complex situations, effective utilization of internal (attention) and external resources.'},
+ {c:'LEADERSHIP',g:1,l:'Leadership',s:'Leadership',a:'Able to form a team, align values and priorities, and provide directions when necessary.'},
+ {c:'VIGILANCE',g:1,l:'Vigilance',s:'Vigilance',a:"Situational awareness, being attentive to both patient's and the workplace condition, and be prepared for potential or un-expected changes and risks."},
+ {c:'INSIGHTFULNESS',g:1,l:'Insightfulness',s:'Insight',a:'Recognizes his / her limits in expertise and experience, seeks advice from appropriate staff when required.'},
+ {c:'COMM_PATIENTS',g:2,l:'Communication with patients +/- relatives',s:'Comm: patients',a:'Present patients +/- relatives of the nature, risks and benefits of the peri-operative care in a language they can understand. Provides written information to facilitate understanding if needed. Active listening, encourages discussion and questions.'},
+ {c:'COMM_COLLEAGUES',g:2,l:'Communication with colleagues',s:'Comm: colleagues',a:'Synthesizes and communicates relevant information, conveys management plan to colleagues in all formats. Keeps clear, accurate, legible written or electronic records. Active listening. Demonstrates a respectful attitude to colleagues.'},
+ {c:'INTEGRITY',g:2,l:'Integrity',s:'Integrity',a:"Honest, answerable to one's decisions."},
+ {c:'TEAMWORK',g:2,l:'Teamwork',s:'Teamwork',a:'Participates in team approach for patient care, safely hands over patient care to others, works with others to prevent and resolve conflicts.'},
+ {c:'RESPECTS_PATIENT_RIGHTS',g:2,l:'Respects patient\u2019s right',s:'Pt rights',a:"Respect patient confidentiality and privacy, ensure patient's right for access to information, fair treatment and autonomy over medical decisions."},
+ {c:'PROFESSIONAL_BEHAVIOUR',g:2,l:'Professional behaviour',s:'Professional',a:'Be fair and non-discriminative to patients and colleagues. Polite. Punctual. Maintains contact and be readily available at work.'}
+];
+const GROUP = {1:'Clinical Performance',2:'Communication, Teamwork and Interpersonal skills'};
+const GR = [['1','Consistently exceeds'],['2','Occasionally exceeds'],['3','Usually meets'],['4','Unsatisfactory'],['X','Unable to assess']];
+const GFULL = {'1':'Consistently exceeds expectation','2':'Occasionally exceeds expectation','3':'Usually meets expectation','4':'Unsatisfactory','X':'Unable to assess'};
+DOMAINS.forEach((d,i)=>d.i=i);
+
+/* Synthetic trainees. Level and year are system-supplied by the SOT's assignment. Sorted by unit, then level. */
+const TRAINEES = [
+ {id:'t1',n:'Dr. Kelvin Wong',lv:'Higher Trainee',yr:'Year 2',u:'PWH \u00b7 Clinical Anaesthesia'},
+ {id:'t2',n:'Dr. Mandy Leung',lv:'Higher Trainee',yr:'Year 3',u:'PWH \u00b7 Cardiac Anaesthesia'},
+ {id:'t3',n:'Dr. Jason Tsang',lv:'Higher Trainee',yr:'Year 1',u:'PWH \u00b7 Clinical Anaesthesia'},
+ {id:'t4',n:'Dr. Sharon Ho',lv:'Basic Trainee',yr:'Year 2',u:'PWH \u00b7 Obstetric Anaesthesia'},
+ {id:'t5',n:'Dr. Peter Lam',lv:'Basic Trainee',yr:'Year 1',u:'PWH \u00b7 Clinical Anaesthesia'},
+ {id:'t6',n:'Dr. Amy Chiu',lv:'Provisional Fellowship Year',yr:'Year 1',u:'PWH \u00b7 Pain Medicine'},
+ {id:'t7',n:'Dr. Ivan Yau',lv:'Basic Trainee',yr:'Year 3',u:'PWH \u00b7 Clinical Anaesthesia'}
+];
+const levelOf = t=>`${t.lv} \u00b7 ${t.yr}`;
+
+const KEY = 'ita-trainee-list-draft-v1';
+let S = {r:{}, cm:{}, sealed:{}, adv:'across', view:null};
+try{ const d = JSON.parse(localStorage.getItem(KEY)||'null'); if(d) S = Object.assign(S,d); }catch(e){}
+let FILTER = 'all', FOC = {t:0,c:0}, BI = 0, ANCHOR_OPEN = {panel:false,item:true};
+
+const $ = (s,el=document)=>el.querySelector(s), $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const say = m=>{ $('#live').textContent = m; };
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* ---------- state helpers ---------- */
+const isSealed = tid => !!S.sealed[tid];
+const cellOf = (tid,c) => (S.r[tid]||{})[c] || {};
+const grade = (tid,c) => cellOf(tid,c).g || null;
+const example = (tid,c) => cellOf(tid,c).ex || '';
+const needsEx = (tid,c) => grade(tid,c)==='4' && example(tid,c).trim().length < 10;
+const ratedN = tid => DOMAINS.filter(d=>grade(tid,d.c)).length;
+const needN = tid => DOMAINS.filter(d=>needsEx(tid,d.c)).length;
+const isReady = tid => !isSealed(tid) && ratedN(tid)===15 && needN(tid)===0;
+const statusOf = tid => isSealed(tid)?'sealed' : isReady(tid)?'ready' : 'todo';
+const T = i => TRAINEES[i];
+
+function setGrade(tid,c,g){
+  if(isSealed(tid)) return;
+  S.r[tid] = S.r[tid]||{};
+  const prev = S.r[tid][c]||{};
+  S.r[tid][c] = Object.assign({}, prev, {g});
+  save(); refreshCell(tid,c); refreshRow(tid); refreshCounts();
+  const t = TRAINEES.find(x=>x.id===tid), d = DOMAINS.find(x=>x.c===c);
+  say(`${t.n}, ${d.l}: ${GFULL[g]}. ${ratedN(tid)} of 15 rated.`);
+}
+function clearGrade(tid,c){
+  if(isSealed(tid) || !grade(tid,c)) return;
+  delete S.r[tid][c]; save(); refreshCell(tid,c); refreshRow(tid); refreshCounts();
+  const t = TRAINEES.find(x=>x.id===tid), d = DOMAINS.find(x=>x.c===c);
+  say(`${t.n}, ${d.l}: cleared.`);
+}
+function setExample(tid,c,ex){
+  S.r[tid] = S.r[tid]||{}; S.r[tid][c] = Object.assign({}, S.r[tid][c]||{}, {ex});
+  save(); refreshCell(tid,c); refreshRow(tid); refreshCounts();
+}
+function save(){
+  try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){}
+  const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  $('#saved').textContent = 'Drafts saved on this device \u00b7 '+t;
+}
+
+/* ---------- matrix ---------- */
+function buildMatrix(){
+  const g1 = DOMAINS.filter(d=>d.g===1).length, g2 = 15-g1;
+  let h = `<thead><tr class="grp"><th class="sticky" rowspan="2" style="text-align:left;vertical-align:bottom;padding:0 14px 9px"><span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)">Trainee</span></th>
+    <th colspan="${g1}">${GROUP[1]} <span class="mono" style="color:var(--ink3);font-weight:500">1&ndash;9</span></th>
+    <th colspan="${g2}" class="g2">${GROUP[2]} <span class="mono" style="color:var(--ink3);font-weight:500">10&ndash;15</span></th>
+    <th class="stickyR" rowspan="2"></th></tr><tr class="cols">`;
+  h += DOMAINS.map(d=>`<th class="${d.i===9?'g2first':''}" scope="col"><button class="colh" data-col="${d.i}" title="${esc(d.l)}" aria-label="Item ${d.i+1}: ${esc(d.l)}. Show what this covers"><b>${String(d.i+1).padStart(2,'0')}</b><span>${esc(d.s)}</span></button></th>`).join('');
+  h += `</tr></thead><tbody>`;
+  TRAINEES.forEach((t,ti)=>{
+    h += `<tr class="row" data-t="${ti}" data-id="${t.id}"><th class="sticky who-c" scope="row">
+      <div class="tn">${esc(t.n)}</div><div class="tl">${esc(levelOf(t))}</div><div class="tl">${esc(t.u)}</div>
+      <div class="tp"><div class="pbar"><i></i></div><span class="pn mono"></span></div></th>`;
+    h += DOMAINS.map(d=>`<td class="cell-c ${d.i===9?'g2first':''}" role="gridcell"><button class="cell" tabindex="-1" data-t="${ti}" data-c="${d.i}"></button></td>`).join('');
+    h += `<td class="stickyR act-c"><span class="stat"></span><button class="btn sec rv">Review</button></td></tr>`;
+  });
+  h += `</tbody>`;
+  $('#mx').innerHTML = h;
+  TRAINEES.forEach(t=>{ DOMAINS.forEach(d=>refreshCell(t.id,d.c)); refreshRow(t.id); });
+  refreshCounts(); applyFilter();
+}
+function cellEl(tid,c){ const ti=TRAINEES.findIndex(x=>x.id===tid), ci=DOMAINS.findIndex(x=>x.c===c); return $(`.cell[data-t="${ti}"][data-c="${ci}"]`); }
+function refreshCell(tid,c){
+  const el = cellEl(tid,c); if(!el) return;
+  const g = grade(tid,c), d = DOMAINS.find(x=>x.c===c), t = TRAINEES.find(x=>x.id===tid);
+  if(g) el.dataset.g = g; else delete el.dataset.g;
+  el.textContent = g||'';
+  el.classList.toggle('need', needsEx(tid,c));
+  el.classList.toggle('hasex', !!g && g!=='4' && example(tid,c).trim().length>0);
+  el.disabled = isSealed(tid);
+  el.setAttribute('aria-label', `${t.n}, item ${d.i+1} ${d.l}: ${g?GFULL[g]:'not rated'}${needsEx(tid,c)?', example needed':''}`);
+  if(FOC.t===TRAINEES.indexOf(t) && FOC.c===d.i) paintPanel();
+}
+function refreshRow(tid){
+  const row = $(`tr.row[data-id="${tid}"]`); if(!row) return;
+  const n = ratedN(tid), nn = needN(tid), st = statusOf(tid);
+  $('.pbar i',row).style.width = (n/15*100)+'%';
+  $('.pn',row).textContent = n+'/15';
+  row.classList.toggle('sealed', st==='sealed');
+  const stat = $('.stat',row), btn = $('.rv',row);
+  if(st==='sealed'){ stat.textContent='Sealed '+new Date(S.sealed[tid].at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}); stat.className='stat seal'; btn.textContent='View'; btn.className='btn sec rv'; btn.disabled=false; }
+  else if(st==='ready'){ stat.textContent='Ready'; stat.className='stat'; btn.textContent='Review & submit'; btn.className='btn pri rv'; btn.disabled=false; }
+  else { stat.textContent = nn ? `${nn} example${nn>1?'s':''} needed` : (n? `${15-n} to rate`:'Not started'); stat.className='stat'; btn.textContent='Review'; btn.className='btn sec rv'; btn.disabled=true; }
+  btn.onclick = ()=>openReview(tid);
+}
+function refreshCounts(){
+  const c = {all:TRAINEES.length, todo:0, ready:0, sealed:0};
+  TRAINEES.forEach(t=>c[statusOf(t.id)]++);
+  Object.keys(c).forEach(k=>{ $('#n-'+k).textContent = c[k]; });
+}
+function applyFilter(){
+  $$('#mx tr.row').forEach(r=>r.classList.toggle('hidden', FILTER!=='all' && statusOf(r.dataset.id)!==FILTER));
+  if(!$('#itemView').classList.contains('hidden')) renderItemView();
+}
+$$('.bar .seg[aria-label="Show trainees"] button').forEach(b=>b.onclick=()=>{
+  FILTER=b.dataset.f; $$('.bar .seg[aria-label="Show trainees"] button').forEach(x=>x.setAttribute('aria-pressed',x===b)); applyFilter();
+});
+
+/* grid roving focus + keyboard */
+function visibleRows(){ return $$('#mx tr.row').filter(r=>!r.classList.contains('hidden')).map(r=>+r.dataset.t); }
+function focusCell(ti,ci,{scroll=true}={}){
+  const el = $(`.cell[data-t="${ti}"][data-c="${ci}"]`); if(!el) return;
+  $$('.cell[tabindex="0"]').forEach(x=>x.tabIndex=-1); el.tabIndex=0;
+  el.focus({preventScroll:true});
+  if(scroll) el.scrollIntoView({block:'nearest',inline:'nearest',behavior:reduce?'auto':'smooth'});
+}
+function advance(ti,ci){
+  if(S.adv==='across'){ if(ci<14) focusCell(ti,ci+1); else say(`${T(ti).n}: last item reached.`); }
+  else { const vis = visibleRows(); let k = vis.indexOf(ti)+1;
+    while(k<vis.length && isSealed(T(vis[k]).id)) k++;
+    if(k<vis.length) focusCell(vis[k],ci); else say('Last trainee in this item.'); }
+}
+$('#mx').addEventListener('keydown',e=>{
+  const el = e.target.closest('.cell');
+  if(!el){ if(e.key==='Enter' && e.target.closest('th.who-c')){ const ti=+e.target.closest('tr').dataset.t; if(isReady(T(ti).id)||isSealed(T(ti).id)) openReview(T(ti).id); } return; }
+  const ti=+el.dataset.t, ci=+el.dataset.c, k=e.key, tid=T(ti).id, c=DOMAINS[ci].c;
+  const vis = visibleRows(), vi = vis.indexOf(ti);
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  if(k==='ArrowRight'){ e.preventDefault(); if(ci<14) focusCell(ti,ci+1); }
+  else if(k==='ArrowLeft'){ e.preventDefault(); if(ci>0) focusCell(ti,ci-1); }
+  else if(k==='ArrowDown'){ e.preventDefault(); if(vi<vis.length-1) focusCell(vis[vi+1],ci); }
+  else if(k==='ArrowUp'){ e.preventDefault(); if(vi>0) focusCell(vis[vi-1],ci); }
+  else if(k==='Home'){ e.preventDefault(); focusCell(ti,0); }
+  else if(k==='End'){ e.preventDefault(); focusCell(ti,14); }
+  else if(k==='Backspace'||k==='Delete'){ e.preventDefault(); clearGrade(tid,c); }
+  else if(k==='?'){ e.preventDefault(); ANCHOR_OPEN.panel=!ANCHOR_OPEN.panel; paintPanel(); }
+  else if(k.toLowerCase()==='e'){ e.preventDefault(); if(isSealed(tid)||!grade(tid,c)){ say('Rate this item first.'); return; } openExample(tid,c); }
+  else if('1234'.includes(k) && k.length===1 || k.toLowerCase()==='x'){
+    e.preventDefault(); if(isSealed(tid)) return;
+    const g = k.toUpperCase(); setGrade(tid,c,g);
+    if(g==='4') openExample(tid,c); else advance(ti,ci);
+  }
+});
+$('#mx').addEventListener('focusin',e=>{
+  const el = e.target.closest('.cell'); if(!el) return;
+  FOC = {t:+el.dataset.t, c:+el.dataset.c};
+  $$('#mx tr.row').forEach(r=>r.classList.toggle('curRow', +r.dataset.t===FOC.t));
+  $$('.colh').forEach(h=>h.classList.toggle('cur', +h.dataset.col===FOC.c));
+  paintPanel();
+});
+$('#mx').addEventListener('click',e=>{
+  const h = e.target.closest('.colh');
+  if(h){ ANCHOR_OPEN.panel=true; const v=visibleRows(); focusCell(v.includes(FOC.t)?FOC.t:v[0], +h.dataset.col); return; }
+  const el = e.target.closest('.cell'); if(el) focusCell(+el.dataset.t,+el.dataset.c,{scroll:false});
+});
+
+/* ---------- focus panel ---------- */
+function exLabel(g){
+  return g==='4' ? ['Example of unsatisfactory performance','req','Required'] :
+         g==='X' ? ['Why could this not be assessed?','rec','Optional'] :
+         (g==='1'||g==='2') ? ['Example of better-than-expected performance','rec','Optional'] : ['Example of performance','rec','Optional'];
+}
+let EXOPEN = {};   // "tid|c" -> true when user chose to add an example on 1/2/3/X
+function paintPanel(){
+  const p = $('#panel'), t = T(FOC.t), d = DOMAINS[FOC.c];
+  if(!t){ p.innerHTML=''; return; }
+  const tid=t.id, c=d.c, g=grade(tid,c), lock=isSealed(tid);
+  const wantEx = g==='4' || example(tid,c) || EXOPEN[tid+'|'+c];
+  const L = g?exLabel(g):null;
+  const had = $('#pex'), hadVal = had && had.dataset.k===tid+'|'+c ? had.value : null;
+  p.innerHTML = `
+   <div class="p-top">
+     <div>
+       <div class="p-ttl">${esc(GROUP[d.g])}</div>
+       <div class="p-item"><span class="mono">${String(d.i+1).padStart(2,'0')}</span>${esc(d.l)}</div>
+       <div class="p-who"><b>${esc(t.n)}</b> &middot; rate against the expectation for a ${esc(t.lv)}, ${esc(t.yr.toLowerCase())}</div>
+     </div>
+     <div class="p-grades" role="radiogroup" aria-label="Rating">
+       ${GR.map(([k,l])=>`<button type="button" class="g" role="radio" aria-checked="${g===k}" data-g="${k}" ${lock?'disabled':''} tabindex="-1"><b>${k}</b><span>${l}</span></button>`).join('')}
+     </div>
+   </div>
+   <div class="p-body">
+     <div class="anchor">
+       <button class="linkbtn" id="ancBtn" aria-expanded="${ANCHOR_OPEN.panel}" style="margin-bottom:5px">${ANCHOR_OPEN.panel?'Hide':'Show'} what this covers</button>
+       <p class="${ANCHOR_OPEN.panel?'':'hidden'}">${esc(d.a)}</p>
+     </div>
+     <div class="ex ${g==='4'&&example(tid,c).trim().length<10&&EXT[tid+'|'+c]?'bad':''}" id="exbox">
+       ${!g ? `<p class="hint" style="margin-top:0">${lock?'Sealed.':'Rate this item to continue. Press 1&ndash;4 or X.'}</p>` :
+         wantEx ? `<label for="pex"><span>${L[0]}</span><em class="${L[1]}">${L[2]}</em></label>
+           <textarea id="pex" data-k="${tid}|${c}" ${lock?'disabled':''} placeholder="${g==='4'?'What was observed, where and when \u2014 specific enough to stand up if the assessment is contested.':'Optional \u2014 a specific case or behaviour.'}">${esc(hadVal!==null?hadVal:example(tid,c))}</textarea>
+           <div class="err">A specific example is required for an unsatisfactory (4) rating.</div>` :
+         `<button class="linkbtn" id="addEx" ${lock?'disabled':''}>+ Add an example</button>`}
+     </div>
+   </div>`;
+  $$('.g',p).forEach(b=>b.onclick=()=>{ const k=b.dataset.g; setGrade(tid,c,k); if(k==='4') openExample(tid,c); else focusCell(FOC.t,FOC.c,{scroll:false}); });
+  $('#ancBtn',p).onclick = ()=>{ ANCHOR_OPEN.panel=!ANCHOR_OPEN.panel; paintPanel(); $('#ancBtn').focus(); };
+  const add = $('#addEx',p); if(add) add.onclick = ()=>openExample(tid,c);
+  const ta = $('#pex',p);
+  if(ta){
+    ta.addEventListener('input',e=>{ setExampleQuiet(tid,c,e.target.value); $('#exbox').classList.toggle('bad', needsEx(tid,c) && EXT[tid+'|'+c]); });
+    ta.addEventListener('blur',()=>{ EXT[tid+'|'+c]=true; $('#exbox')&&$('#exbox').classList.toggle('bad',needsEx(tid,c)); });
+    ta.addEventListener('keydown',e=>{
+      if(e.key==='Escape' || (e.key==='Enter' && (e.metaKey||e.ctrlKey))){ e.preventDefault(); backToGrid(true); }
+    });
+  }
+}
+const EXT = {};  // touched-state for example boxes
+function setExampleQuiet(tid,c,ex){   // update without repainting the panel (keeps caret)
+  S.r[tid] = S.r[tid]||{}; S.r[tid][c] = Object.assign({}, S.r[tid][c]||{}, {ex});
+  save();
+  const el = cellEl(tid,c); const g = grade(tid,c);
+  el.classList.toggle('need', needsEx(tid,c)); el.classList.toggle('hasex', g!=='4' && ex.trim().length>0);
+  refreshRow(tid); refreshCounts();
+}
+function openExample(tid,c){
+  EXOPEN[tid+'|'+c]=true; paintPanel();
+  const ta = $('#pex'); if(ta){ ta.focus(); ta.scrollIntoView({block:'nearest'}); }
+}
+function backToGrid(adv){
+  const ti=FOC.t, ci=FOC.c, tid=T(ti).id;
+  if(grade(tid,DOMAINS[ci].c)==='4' && needsEx(tid,DOMAINS[ci].c)){ EXT[tid+'|'+DOMAINS[ci].c]=true; paintPanel(); say('A 4 needs a specific example before you can submit.'); }
+  focusCell(ti,ci,{scroll:false}); if(adv) advance(ti,ci);
+}
+
+/* ---------- review & seal (per trainee) ---------- */
+function openReview(tid){
+  const t = TRAINEES.find(x=>x.id===tid), lock = isSealed(tid);
+  if(!lock && !isReady(tid)) return;
+  const chip = g=>`<i class="chip k${g.toLowerCase()}">${g}</i>`;
+  const rows = DOMAINS.map(d=>{ const g=grade(tid,d.c), ex=example(tid,d.c).trim();
+    return `<div class="rev-row">${chip(g)}<span class="nm">${esc(d.l)}</span><span class="mono" style="color:var(--ink3);font-size:11px">${String(d.i+1).padStart(2,'0')}</span>${ex?`<div class="exq">${esc(ex)}</div>`:''}</div>`; }).join('');
+  const gs = DOMAINS.map(d=>grade(tid,d.c));
+  const allSame = gs.every(x=>x===gs[0]);
+  const scrim = document.createElement('div'); scrim.className='scrim';
+  scrim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-h">
+    <h2 id="sh-h">${lock?'Sealed submission':'Review before you submit'}</h2>
+    <p class="meta">${esc(t.n)} &middot; ${esc(levelOf(t))} &middot; 01 Jul &ndash; 31 Dec 2026</p>
+    ${!lock&&allSame?`<div class="nudge">All 15 items carry the same rating (${gs[0]}). That is allowed &mdash; check it reflects this trainee and not the previous trainee in the list.</div>`:''}
+    <div class="rev">${rows}</div>
+    <div class="cm"><label for="sh-cm">Comments from Specialist Assessors</label>
+      <textarea id="sh-cm" ${lock?'disabled':''} placeholder="Anything the SOT should know that the items above do not capture (optional).">${esc(S.cm[tid]||'')}</textarea>
+      <p>Optional. Specific and factual &mdash; this may be read again if the assessment is contested.</p></div>
+    ${lock?`<p class="fine mono">Sealed ${new Date(S.sealed[tid].at).toLocaleString('en-GB')} &middot; SHA-256 ${S.sealed[tid].hash.slice(0,12)}&hellip;${S.sealed[tid].hash.slice(-6)}</p>`:''}
+    <div class="acts"><button class="btn sec" id="sh-back">${lock?'Close':'Keep editing'}</button>${lock?'':'<button class="btn pri" id="sh-go">Submit &amp; seal</button>'}</div>
+    ${lock?'':'<p class="fine">Sealing applies to this trainee only. Once submitted it cannot be edited; a later correction is recorded as a separate, dated annotation in the audit trail.</p>'}</div>`;
+  document.body.appendChild(scrim);
+  const opener = document.activeElement;
+  const close = ()=>{ scrim.remove(); (opener&&document.contains(opener)?opener:document.body).focus?.(); };
+  $('#sh-back',scrim).onclick = close;
+  scrim.addEventListener('click',e=>{ if(e.target===scrim) close(); });
+  scrim.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+  $('#sh-cm',scrim).addEventListener('input',e=>{ S.cm[tid]=e.target.value; save(); });
+  if(!lock) $('#sh-go',scrim).onclick = async ()=>{
+    const hash = await digest(JSON.stringify({trainee:tid,r:S.r[tid],comments:S.cm[tid]||''}));
+    S.sealed[tid] = {at:new Date().toISOString(), hash}; save();
+    DOMAINS.forEach(d=>refreshCell(tid,d.c)); refreshRow(tid); refreshCounts(); applyFilter(); paintPanel();
+    scrim.remove(); toast(`${t.n} sealed. ${TRAINEES.filter(x=>isSealed(x.id)).length} of ${TRAINEES.length} done.`);
+    say(`${t.n} submitted and sealed.`);
+    const nxt = TRAINEES.find(x=>isReady(x.id)); if(nxt) say(`Next ready: ${nxt.n}.`);
+  };
+  ($('#sh-go',scrim)||$('#sh-back',scrim)).focus();
+}
+async function digest(txt){
+  try{ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+       return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+  catch(e){ let h=2166136261; for(const ch of txt){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619)>>>0; } return 'fnv1a-'+h.toString(16); }
+}
+function toast(m){ const el=document.createElement('div'); el.className='toast'; el.textContent=m; document.body.appendChild(el); setTimeout(()=>el.remove(),2600); }
+
+/* ---------- by-item view (phone-first; also a second way to work on desktop) ---------- */
+function renderItemView(){
+  const d = DOMAINS[BI], box = $('#itemView');
+  const tickHTML = DOMAINS.map((x,i)=>{
+    const done = TRAINEES.every(t=>isSealed(t.id)||grade(t.id,x.c));
+    return `${i===9?'<span class="gap"></span>':''}<button class="${done?'done':''} ${i===BI?'cur':''}" data-i="${i}" aria-label="Item ${i+1}: ${esc(x.l)}${done?', all rated':''}"></button>`; }).join('');
+  const ts = TRAINEES.filter(t=>FILTER==='all'||statusOf(t.id)===FILTER);
+  box.innerHTML = `
+   <div class="bi-nav"><button class="btn sec" id="biPrev" ${BI===0?'disabled':''} aria-label="Previous item">&larr;</button>
+     <div class="bi-ttl"><span class="p-ttl">${esc(GROUP[d.g])} &middot; <span class="mono">${BI+1}/15</span></span><h2>${esc(d.l)}</h2></div>
+     <button class="btn sec" id="biNext" ${BI===14?'disabled':''} aria-label="Next item">&rarr;</button></div>
+   <div class="bi-ticks" id="biTicks">${tickHTML}</div>
+   <div class="bi-anchor"><button class="linkbtn" id="biAnc" aria-expanded="${ANCHOR_OPEN.item}">${ANCHOR_OPEN.item?'Hide':'Show'} what this covers</button>
+     <p class="${ANCHOR_OPEN.item?'':'hidden'}" style="margin-top:5px">${esc(d.a)}</p></div>
+   <div class="bi-list">${ts.length? ts.map(t=>{
+      const tid=t.id, g=grade(tid,d.c), lock=isSealed(tid), L=g?exLabel(g):null;
+      const wantEx = g==='4'||example(tid,d.c)||EXOPEN[tid+'|'+d.c];
+      return `<div class="bi-row ${lock?'sealed':''}" data-tid="${tid}">
+        <div class="tn">${esc(t.n)}</div><div class="tl">${esc(levelOf(t))}${lock?' &middot; sealed':''}</div>
+        <div class="grades" role="radiogroup" aria-label="${esc(t.n)}: ${esc(d.l)}">${GR.map(([k,l])=>`<button class="g" type="button" role="radio" aria-checked="${g===k}" data-g="${k}" ${lock?'disabled':''} aria-label="${k==='X'?'X, unable to assess':k+', '+GFULL[k]}"><b>${k}</b><span>${l}</span></button>`).join('')}</div>
+        <div class="sel ${g==='4'?'s4':''}" aria-hidden="true">${g?esc(GFULL[g]):'Not rated'}</div>
+        ${!g?'':wantEx?`<div class="ex ${g==='4'&&needsEx(tid,d.c)&&EXT[tid+'|'+d.c]?'bad':''}"><label for="bx-${tid}"><span>${L[0]}</span><em class="${L[1]}">${L[2]}</em></label>
+          <textarea id="bx-${tid}" data-tid="${tid}" ${lock?'disabled':''} placeholder="${g==='4'?'What was observed, where and when.':'Optional \u2014 a specific case or behaviour.'}">${esc(example(tid,d.c))}</textarea>
+          <div class="err">A specific example is required for an unsatisfactory (4) rating.</div></div>`:
+          lock?'':`<div class="addex"><button class="linkbtn" data-add="${tid}">+ Add an example</button></div>`}
+      </div>`; }).join('') : '<div class="bi-row" style="color:var(--ink3);font-size:13px">No trainees in this filter.</div>'}</div>
+   <div class="bi-foot"><span>${TRAINEES.filter(t=>isReady(t.id)).length} ready to submit &middot; ${TRAINEES.filter(t=>isSealed(t.id)).length} sealed</span>
+     <span id="biReady"></span></div>`;
+  $('#biPrev').onclick=()=>{ BI--; renderItemView(); window.scrollTo({top:$('#itemView').offsetTop-70}); };
+  $('#biNext').onclick=()=>{ BI++; renderItemView(); window.scrollTo({top:$('#itemView').offsetTop-70}); };
+  $('#biTicks').onclick=e=>{ const b=e.target.closest('button'); if(b){ BI=+b.dataset.i; renderItemView(); } };
+  $('#biAnc').onclick=()=>{ ANCHOR_OPEN.item=!ANCHOR_OPEN.item; renderItemView(); $('#biAnc').focus(); };
+  const ready = TRAINEES.filter(t=>isReady(t.id));
+  if(ready.length){ $('#biReady').innerHTML = ready.map(t=>`<button class="btn pri" style="min-height:40px;margin-left:6px" data-rv="${t.id}">Submit ${esc(t.n.replace('Dr. ',''))}</button>`).join(''); $$('[data-rv]',box).forEach(b=>b.onclick=()=>openReview(b.dataset.rv)); }
+  $$('.bi-row',box).forEach(row=>{
+    const tid=row.dataset.tid; if(!tid) return;
+    $$('.g',row).forEach(b=>b.onclick=()=>{ const k=b.dataset.g; setGrade(tid,d.c,k); if(k==='4') EXOPEN[tid+'|'+d.c]=true; renderItemView();
+      if(k==='4'){ const ta=$('#bx-'+tid); ta&&ta.focus(); } else { const nb=$(`.bi-row[data-tid="${tid}"] .g[data-g="${k}"]`); nb&&nb.focus({preventScroll:true}); } });
+    const add=$('[data-add]',row); if(add) add.onclick=()=>{ EXOPEN[tid+'|'+d.c]=true; renderItemView(); $('#bx-'+tid).focus(); };
+    const ta=$('textarea',row); if(ta){ ta.addEventListener('input',e=>{ setExampleQuiet(tid,d.c,e.target.value); ta.closest('.ex').classList.toggle('bad',needsEx(tid,d.c)&&EXT[tid+'|'+d.c]); });
+      ta.addEventListener('blur',()=>{ EXT[tid+'|'+d.c]=true; ta.closest('.ex').classList.toggle('bad',needsEx(tid,d.c)); }); }
+  });
+}
+
+/* ---------- view switching, advance direction ---------- */
+function setView(v){
+  S.view=v; $$('[data-v]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
+  const item = v==='item';
+  $('#matrixView').classList.toggle('hidden',item); $('#panel').classList.toggle('hidden',item); $('.keys').classList.toggle('hidden',item);
+  $('#itemView').classList.toggle('hidden',!item);
+  if(item) renderItemView();
+}
+$$('[data-v]').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+$$('[data-adv]').forEach(b=>b.onclick=()=>{ S.adv=b.dataset.adv; $$('[data-adv]').forEach(x=>x.setAttribute('aria-pressed',x===b)); save(); });
+
+/* ---------- theme / reset ---------- */
+$('#themeBtn').onclick = ()=>{ const d=document.documentElement.classList.toggle('dark'); $('#themeBtn').innerHTML=d?'&#9790;':'&#9788;'; localStorage.setItem('ita-theme',d?'dark':'light'); };
+(function(){ const s=localStorage.getItem('ita-theme'); if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme: dark)').matches)){ document.documentElement.classList.add('dark'); $('#themeBtn').innerHTML='&#9790;'; } })();
+$('#resetBtn').onclick = ()=>{ localStorage.removeItem(KEY); location.reload(); };
+
+/* ---------- init ---------- */
+$('#today').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+buildMatrix();
+$$('[data-adv]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.adv===S.adv));
+focusCell(0,0,{scroll:false}); document.activeElement.blur(); paintPanel();
+setView(S.view || (matchMedia('(max-width:900px)').matches ? 'item' : 'matrix'));
+</script>
+</body>
+</html>
