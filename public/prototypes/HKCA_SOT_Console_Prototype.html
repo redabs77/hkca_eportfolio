@@ -575,6 +575,41 @@
   #rosterTable thead th:nth-child(2),#rosterTable tbody td:nth-child(2){position:sticky;left:42px;z-index:3;background:var(--raised);box-shadow:1px 0 0 var(--border-sub)}
   #rosterTable thead th:nth-child(-n+2){background:var(--bg3);z-index:4}
   #rosterTable tbody tr:hover td:nth-child(-n+2){background:var(--bg2)}
+  /* ---- rotations ---- */
+  .rot-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+  .rot-ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .rot-key{display:flex;gap:8px 16px;flex-wrap:wrap;margin:12px 0 6px}
+  .rot-key .k{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2);font-weight:550}
+  .rot-key .k i{width:22px;height:11px;border-radius:4px;border:1px solid;display:inline-block}
+  .tl-body{position:relative;padding-top:28px}
+  .tl-hd{display:grid;grid-template-columns:190px 1fr}
+  .tl-months{display:grid}
+  .tl-months span{font-size:10.5px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);padding:0 0 7px 6px;white-space:nowrap}
+  .tl-row{display:grid;grid-template-columns:190px 1fr;align-items:stretch;border-bottom:1px solid var(--border-sub)}
+  .tl-track{position:relative;min-height:52px}
+  .tl-today-layer{position:absolute;top:0;bottom:0;left:190px;right:0;pointer-events:none;z-index:3}
+  .tl-today-layer b{position:absolute;top:22px;bottom:0;width:2px;margin-left:-1px;background:var(--rd500);opacity:.75}
+  .tl-today-layer span{position:absolute;top:0;transform:translateX(-50%);font-size:9.5px;font-weight:800;color:#fff;background:var(--rd500);padding:1px 6px;border-radius:99px}
+  .tl-seg{position:absolute;top:7px;bottom:7px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;line-height:1.18;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 9px;border-radius:8px;border:1px solid;font-size:11px;font-weight:700}
+  .tl-seg small{font-size:10px;font-weight:550;opacity:.8}
+  .tl-seg.here,.rot-key i.here{background:var(--ok-bg);color:var(--ok-f);border-color:rgba(60,160,110,.4)}
+  .tl-seg.in,.rot-key i.in{background:var(--in-bg);color:var(--in-f);border-color:rgba(70,110,200,.4)}
+  .tl-seg.out,.rot-key i.out{background:var(--pp-bg);color:var(--pp-f);border-color:rgba(110,80,200,.4)}
+  .tl-seg.away,.rot-key i.away{background:var(--bg3);color:var(--ink3);border-color:var(--border)}
+  .tl-seg.pl,.rot-key i.pl{border-style:dashed;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.55) 0 5px,transparent 5px 10px)}
+  .dark .tl-seg.pl,.dark .rot-key i.pl{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.1) 0 5px,transparent 5px 10px)}
+  .tl-seg.sent,.rot-key i.sent{box-shadow:inset 0 0 0 2px var(--wn-f)}
+  .rq{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--bg3);color:var(--ink2);margin:0 4px 3px 0;white-space:nowrap}
+  .rp-tbl td{vertical-align:top}
+  .rp-st{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+  .rp-st .meta{font-size:11.5px}
+  .rf-row{display:grid;grid-template-columns:150px 1fr 120px 150px auto auto;gap:8px;align-items:center;margin-bottom:8px}
+  .rf-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .rf-sec{border-top:1px solid var(--border-sub);margin-top:14px;padding-top:12px}
+  .tl-name .lb-title,.rp-tbl .lb-title{border:0;background:none;padding:0;font:inherit;text-align:left;cursor:pointer;color:var(--ink);box-shadow:none}
+  .tl-name .lb-title{font-weight:650;font-size:12.5px}
+  .tl-name .lb-title:hover,.rp-tbl .lb-title:hover{color:var(--acc-t);text-decoration:underline}
+  .tl-today-layer b{width:1.5px;opacity:.55}
 </style>
 </head>
 <body>
@@ -623,7 +658,7 @@
       <button class="tab on" data-tab="home">Home</button>
       <button class="tab" data-tab="roster">Trainee List</button>
       <button class="tab" data-tab="logbook">Logbook Verification <span class="cnt hot">18</span></button>
-      <button class="tab" data-tab="rotations">Rotations <span class="cnt hot">3</span></button>
+      <button class="tab" data-tab="rotations">Rotations <span class="cnt hot" id="rotBadge">2</span></button>
       <button class="tab" data-tab="itas">ITAs <span class="cnt hot" id="itaBadge">4</span></button>
       <button class="tab" data-tab="goals">Learning goals <span class="cnt hot" id="goalsCnt">0</span></button>
       <button class="tab" data-tab="review">Progression Risk <span class="cnt crit">5</span></button>
@@ -797,210 +832,44 @@
   <!-- TAB 3 — ROTATIONS (two-way handshake)                 -->
   <!-- ==================================================== -->
   <section id="tab-rotations" class="hidden">
-
-    <div class="banner">
-      <b>Two-way handshake.</b> A rotation requires approval from both the sending (parent) SOT and the receiving
-      (destination) SOT. Training type and learning goals are declared at this stage and carried into the ITA.
-      <span id="asstNote">Assistant SOTs can prepare the handshake but cannot approve it.</span>
-    </div>
-
+    <span id="asstNote" hidden></span><p id="asstLockNote" hidden></p>
 
     <div class="card card-pad mb">
-      <div class="card-h" style="margin-bottom:6px">
+      <div class="rot-top">
         <div>
-          <div class="eyebrow">Next 6 months</div>
-          <div class="h3" style="margin-top:3px">Who is in and who is out</div>
-          <div class="meta" id="tlSummary" style="margin-top:2px"></div>
+          <div class="eyebrow">Rotations</div>
+          <div class="h2" style="margin-top:3px;display:flex;align-items:center;gap:8px">Who is where
+            <span class="tipwrap"><button class="info" aria-describedby="rotTip" aria-label="How rotations work">i</button>
+              <span class="tip" id="rotTip" role="tooltip">Plan rotations privately in the table below. Nobody is notified until you confirm. Confirming sends the handshake to the receiving SOT, and each SOT confirms once. Training type and special requirements travel with the rotation. Learning goals are set later, at the start of the ITA cycle.</span></span>
+          </div>
+          <div class="meta" id="tlRange" style="margin-top:3px"></div>
         </div>
-        <div class="stage-key">
-          <span class="pill ok"><span class="dot g"></span>At PWH</span>
-          <span class="pill info"><span class="dot b"></span>Rotating in</span>
-          <span class="pill purple"><span class="dot p"></span>Rotated out</span>
+        <div class="rot-ctl">
+          <div class="seg" id="rotWin" role="group" aria-label="Window"><button data-m="6" onclick="rotSet('months',6)">6 months</button><button data-m="12" onclick="rotSet('months',12)">12 months</button></div>
+          <select class="ctl" id="rotSort" onchange="rotSet('sort',this.value)" aria-label="Sort trainees">
+            <option value="year">Sort: Training year (BAT &rarr; PFY)</option>
+            <option value="yearDesc">Sort: Training year (PFY &rarr; BAT)</option>
+            <option value="name">Sort: Last name</option>
+            <option value="next">Sort: Next rotation date</option>
+          </select>
+          <div class="seg" id="rotShow" role="group" aria-label="Rows"><button data-s="moving" onclick="rotSet('show','moving')">Moving</button><button data-s="all" onclick="rotSet('show','all')">Everyone</button></div>
         </div>
       </div>
-      <div class="tl-wrap"><div class="tl" id="tlBody"></div></div>
-      <p class="note">Illustrative plan. Rotation changes take effect when both SOTs approve the handshake below.</p>
+      <div class="rot-key">
+        <span class="k"><i class="here"></i>At PWH</span>
+        <span class="k"><i class="in"></i>Rotating in</span>
+        <span class="k"><i class="out"></i>Rotating out</span>
+        <span class="k"><i class="away"></i>At parent centre</span>
+        <span class="k"><i class="out pl"></i>Planned, only you can see</span>
+        <span class="k"><i class="out sent"></i>Awaiting other SOT</span>
+      </div>
+      <div class="tl-wrap"><div class="tl-body" id="tlBody"></div></div>
     </div>
 
-    <!-- handshake 1 -->
-    <div class="card card-pad mb">
-      <div class="hs" style="margin:0;border:0;padding:0">
-        <div class="hs-top">
-          <div>
-            <div class="h3">Dr. Kelvin Wong &mdash; HAT-2</div>
-            <div class="meta" style="margin-top:3px">
-              Proposed: <b>Clinical Anaesthesia &middot; Cardiac subspecialty</b> &middot; 6 months &middot; 01 Jan &ndash; 30 Jun 2027
-            </div>
-            <div class="meta" style="margin-top:3px;color:var(--ink3)">
-              Learning goals: advanced TOE, structural heart intervention lists, cardiac ICU handover
-            </div>
-            <div class="meta" style="margin-top:3px;color:var(--ink3)">
-              Special requirements: Peter Kam Course (self-funded, 3 days, no backfill needed)
-            </div>
-          </div>
-          <span class="pill warn"><span class="dot a pulse"></span>Awaiting destination SOT</span>
-        </div>
-
-        <div class="flow">
-          <div class="node done">
-            <div class="who2">Sending &middot; PWH SOT</div>
-            <div class="st">Approved</div>
-            <div class="sub2">You approved 12 Sep 2026</div>
-          </div>
-          <div class="arrow">&#8594;</div>
-          <div class="node wait">
-            <div class="who2">Receiving &middot; QMH SOT</div>
-            <div class="st">Pending review</div>
-            <div class="sub2">Sent 6 days ago &middot; reminder due</div>
-          </div>
-          <div class="arrow">&#8594;</div>
-          <div class="node">
-            <div class="who2">Accreditation check</div>
-            <div class="st" style="color:var(--em700)">&#10003; QMH accredited to 31 Dec 2029</div>
-            <div class="sub2">Max rotation 36 months &middot; capacity available</div>
-          </div>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn sec sm">View trainee progression</button>
-          <button class="btn sec sm">Send reminder</button>
-          <button class="btn sec sm">Withdraw request</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- handshake 2 — action required from you -->
-    <div class="card card-pad mb" style="border-color:rgba(245,158,11,.4)">
-      <div class="hs" style="margin:0;border:0;padding:0">
-        <div class="hs-top">
-          <div>
-            <div class="h3">Dr. Priya Raman &mdash; HAT-1 <span class="pill info" style="margin-left:6px">Rotating in</span></div>
-            <div class="meta" style="margin-top:3px">
-              Proposed: <b>Clinical Anaesthesia &middot; Paediatric subspecialty</b> &middot; 6 months &middot; 01 Jan &ndash; 30 Jun 2027
-            </div>
-            <div class="meta" style="margin-top:3px;color:var(--ink3)">
-              Parent centre: Tuen Mun Hospital &middot; Learning goals: paediatric airway, caudal blocks, neonatal emergencies
-            </div>
-            <div class="meta" style="margin-top:3px;color:var(--ink3)">
-              Special requirements: exam leave (Intermediate written, 2 weeks, Mar 2027), FRCA viva study leave
-            </div>
-          </div>
-          <span class="pill warn"><span class="dot a"></span>Your approval required</span>
-        </div>
-
-        <div class="flow">
-          <div class="node done">
-            <div class="who2">Sending &middot; TMH SOT</div>
-            <div class="st">Approved</div>
-            <div class="sub2">Dr. M. Ip &middot; 20 Sep 2026</div>
-          </div>
-          <div class="arrow">&#8594;</div>
-          <div class="node wait">
-            <div class="who2">Receiving &middot; PWH SOT</div>
-            <div class="st">Awaiting you</div>
-            <div class="sub2">Review learning goals &amp; capacity</div>
-          </div>
-          <div class="arrow">&#8594;</div>
-          <div class="node">
-            <div class="who2">Accreditation check</div>
-            <div class="st" style="color:var(--em700)">&#10003; PWH accredited to 31 Dec 2029</div>
-            <div class="sub2">Trainee capacity: 2 of 3 paediatric slots free</div>
-          </div>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn pri sm" data-need-sot>Approve rotation</button>
-          <button class="btn sec sm" data-need-sot>Approve with amended goals</button>
-          <button class="btn sec sm" data-need-sot>Decline</button>
-        </div>
-        <p class="note" id="asstLockNote" style="margin-top:9px"></p>
-      </div>
-    </div>
-
-    <!-- current rotations -->
-    <div class="card card-pad mb">
-      <div class="card-h" style="margin-bottom:11px">
-        <div>
-          <div class="eyebrow">Snapshot</div>
-          <div class="h3">Current Rotations &mdash; Your Trainees</div>
-        </div>
-      </div>
-      <div class="tbl-scroll">
-        <table>
-          <thead>
-            <tr><th>Trainee</th><th>Stage</th><th>Current centre</th><th>Training type</th><th>Period</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="nm-cell">Dr. Kelvin Wong</td>
-              <td>HAT-2</td>
-              <td>Prince of Wales Hospital</td>
-              <td>Clinical Anaesthesia</td>
-              <td class="mono">01 Jul &ndash; 31 Dec 2026</td>
-            </tr>
-            <tr>
-              <td class="nm-cell">Dr. Sarah Lau</td>
-              <td>HAT-1</td>
-              <td>Queen Mary Hospital</td>
-              <td>Clinical Anaesthesia</td>
-              <td class="mono">01 Jul &ndash; 31 Dec 2026</td>
-            </tr>
-            <tr>
-              <td class="nm-cell">Dr. Felix Tam</td>
-              <td>BAT-3</td>
-              <td>Prince of Wales Hospital</td>
-              <td>Clinical Anaesthesia</td>
-              <td class="mono">01 Jul &ndash; 31 Dec 2026</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- rotation history -->
-    <div class="card card-pad">
-      <div class="card-h" style="margin-bottom:11px">
-        <div>
-          <div class="eyebrow">History</div>
-          <div class="h3">Previous Rotation Arrangements &mdash; Your Trainees</div>
-        </div>
-      </div>
-      <p class="note" style="margin:0 0 12px">
-        Also visible per-trainee in their individual drawer under Rotation history.
-      </p>
-      <div class="tbl-scroll">
-        <table>
-          <thead>
-            <tr><th>Trainee</th><th>Centre</th><th>Training type</th><th>Period</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="nm-cell">Dr. Kelvin Wong</td>
-              <td>Queen Mary Hospital</td>
-              <td>Clinical Anaesthesia &middot; Cardiac subspecialty</td>
-              <td class="mono">01 Jan &ndash; 30 Jun 2026</td>
-            </tr>
-            <tr>
-              <td class="nm-cell">Dr. Sarah Lau</td>
-              <td>Prince of Wales Hospital</td>
-              <td>Clinical Anaesthesia</td>
-              <td class="mono">01 Jan &ndash; 30 Jun 2026</td>
-            </tr>
-            <tr>
-              <td class="nm-cell">Dr. Felix Tam</td>
-              <td>Tuen Mun Hospital</td>
-              <td>Clinical Anaesthesia</td>
-              <td class="mono">01 Jul &ndash; 31 Dec 2025</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <div class="card card-pad mb" id="planCard"></div>
+    <div class="card card-pad mb" id="rlogCard"></div>
   </section>
 
-  <!-- ==================================================== -->
-  <!-- TAB 4 — ITAs                                          -->
-  <!-- ==================================================== -->
   <section id="tab-itas" class="hidden">
 
     <!-- ===== ITA round: invitations + ASOT assignment ===== -->
@@ -2460,7 +2329,7 @@ function renderHome(){
     {k:'ita', tab:'itas', label:'ITAs for you to sign off', n:myItaToSign(), sub:`${myItaHeld().filter(itaSigned).length} of ${myItaHeld().length} assigned to you signed so far`},
     {k:'logbook', tab:'logbook', label:'Logbook to verify', n:lbPending(), sub:`oldest waiting ${logbookOldest()} days`},
     asst ? null : {k:'goals', tab:'goals', label:'Learning goals to sign off', n:goalsAction(), sub:`${ppl.filter(t=>['NOT_SET','DRAFT','CHANGES_REQUESTED'].includes(gset(t).status)).length} not yet submitted`},
-    {k:'rot', tab:'rotations', label:'Rotation handshakes', n:3, sub:'waiting for a reply'},
+    {k:'rot', tab:'rotations', label:'Rotations to confirm', n:rotToConfirm(), sub:`${rotWaiting()} waiting on other SOTs`},
     {k:'forms', tab:'itas', label:'Trainer ITA forms received', n:`${meetsN}<small> of ${n}</small>`, sub:`trainees have ${RULES.minForms}+ trainer forms` + (n-invited.length ? ` &middot; ${n-invited.length} not invited yet` : '')},
     {k:'risk', tab:'review', label:'Trainees flagged', n:FLAGGED, sub:'on progression risk'}
   ].filter(Boolean);
@@ -2524,7 +2393,7 @@ function renderHome(){
 }
 
 /* ---------------- rotation timeline ---------------- */
-function renderTimeline(){
+function _oldTimeline(){
   const el = document.getElementById('tlBody'); if(!el) return;
   const months = ['Oct 2026','Nov','Dec','Jan 2027','Feb','Mar'];
   const todayPct = ((16/31)/6*100).toFixed(2);
@@ -2535,6 +2404,217 @@ function renderTimeline(){
   TL.forEach(r=>r.seg.forEach(([a,b,l,k],i)=>{ if(a===3){ if(k==='out')outN++; else if(k==='in')inN++; else if(i>0 && r.seg[i-1][3]==='out')back++; } }));
   document.getElementById('tlSummary').textContent = `1 Jan 2027: ${outN} rotate out, ${inN} rotate in, ${back} return to PWH`;
 }
+
+/* ================= rotations: plan privately, confirm, handshake ================= */
+const HOSP = {PWH:'Prince of Wales Hospital',QMH:'Queen Mary Hospital',QEH:'Queen Elizabeth Hospital',TMH:'Tuen Mun Hospital',NDH:'North District Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital',HKCH:"Hong Kong Children's Hospital",PYNEH:'Pamela Youde Nethersole Eastern Hospital',UCH:'United Christian Hospital'};
+const TRAIN_TYPES = ['Clinical Anaesthesia','Subspecialty module','Provisional Fellowship','Exit assessment','Other'];
+const REQ_TYPES = ['Course','Exam leave','Study leave','Other'];
+const FUND = ['Self-funded','Department','Hospital Authority','Not applicable'];
+const EXAMS = ['Intermediate exam','Final exam','Other exam'];
+const W0 = new Date(2026,9,1);
+const rotUI = {months:12, sort:'year', show:'moving', filter:'round'};
+const D = s => { const p = s.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); };
+const isoOf = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmtD = d => d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear();
+function fmtRange(s,e){ const a=D(s), b=D(e); return a.getFullYear()===b.getFullYear() ? `${a.getDate()} ${MON[a.getMonth()]} \u2013 ${b.getDate()} ${MON[b.getMonth()]} ${b.getFullYear()}` : `${fmtD(a)} \u2013 ${fmtD(b)}`; }
+function monthsOf(s,e){ const days = (D(e)-D(s))/DAY + 1; return Math.round(days/30.4375*2)/2; }
+const RLOG = [
+  {at:'2026-10-05',who:'Dr. Albert Chan',msg:'Confirmed Lau, Sarah: PWH ICU, 1 Jan \u2013 30 Jun 2027'},
+  {at:'2026-10-03',who:'Dr. Albert Chan',msg:'Confirmed return of Fung, Leo from QMH to PWH (1 Jan 2027)'},
+  {at:'2026-09-20',who:'Dr. M. Ip (TMH)',msg:'Confirmed Raman, Priya to PWH Paediatrics. Waiting for PWH SOT.'},
+  {at:'2026-09-12',who:'Dr. Albert Chan',msg:'Sent Wong, Kelvin to QMH Cardiac. Waiting for QMH SOT.'}
+];
+const ROTP = {};
+const CUR = (c,type,focus)=>({c:c||'PWH',type:type||'Clinical Anaesthesia',focus:focus||'',s:'2026-07-01',e:'2026-12-31',st:null});
+(function seedRot(){
+  const put = (n,o)=>{ const t = ROSTER.find(x=>lastFirst(x.name)===n); if(t) ROTP[t.id] = Object.assign({home:'PWH',hist:[]},o); };
+  put('Raman, Priya',{home:'TMH',segs:[CUR('TMH'),{c:'PWH',type:'Clinical Anaesthesia',focus:'Paediatric subspecialty',s:'2027-01-01',e:'2027-06-30',st:'sent',conf:{send:{by:'Dr. M. Ip (TMH)',at:'2026-09-20'},recv:null},chk:'PWH accredited to 31 Dec 2029 \u00b7 2 of 3 paediatric slots free',reqs:[{type:'Exam leave',title:'Intermediate written',dur:'2 weeks, Mar 2027',fund:'Not applicable',backfill:true},{type:'Study leave',title:'FRCA viva study leave',dur:'',fund:'Not applicable',backfill:false}]}],hist:[{c:'TMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
+  put('Cheng, Wai Lun',{home:'NDH',segs:[CUR('NDH'),{c:'PWH',type:'Clinical Anaesthesia',focus:'',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'NDH SOT',at:'2026-09-28'},recv:{by:'Dr. Albert Chan',at:'2026-10-02'}},reqs:[]}],hist:[{c:'NDH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
+  put('Wong, Kelvin',{segs:[CUR(),{c:'QMH',type:'Clinical Anaesthesia',focus:'Cardiac subspecialty',s:'2027-01-01',e:'2027-06-30',st:'sent',conf:{send:{by:'Dr. Albert Chan',at:'2026-09-12'},recv:null},chk:'QMH accredited to 31 Dec 2029 \u00b7 max rotation 36 months \u00b7 capacity available',reqs:[{type:'Course',title:'Peter Kam Course',dur:'3 days',fund:'Self-funded',backfill:false}]}],hist:[{c:'PWH',type:'Clinical Anaesthesia \u00b7 ICU',s:'2026-01-01',e:'2026-06-30'},{c:'PWH',type:'Clinical Anaesthesia',s:'2025-07-01',e:'2025-12-31'},{c:'TMH',type:'Clinical Anaesthesia',s:'2025-01-01',e:'2025-06-30'}]});
+  put('Tam, Felix',{segs:[CUR(),{c:'TMH',type:'Clinical Anaesthesia',focus:'',s:'2027-01-01',e:'2027-06-30',st:'planned',reqs:[],cond:{exam:'Intermediate exam',decideBy:'2026-12-01',fallback:'Stay at PWH \u00b7 Clinical Anaesthesia',res:null}}],hist:[{c:'TMH',type:'Clinical Anaesthesia',s:'2025-07-01',e:'2025-12-31'},{c:'PWH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
+  put('Tsang, Elena',{segs:[CUR('PWH','Clinical Anaesthesia','Cardiac'),{c:'HKCH',type:'Subspecialty module',focus:'Paediatric anaesthesia',s:'2027-01-01',e:'2027-03-31',st:'planned',reqs:[],cond:null}],hist:[{c:'QMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
+  put('Lau, Sarah',{segs:[CUR(),{c:'PWH',type:'Clinical Anaesthesia',focus:'ICU',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'Dr. Albert Chan',at:'2026-10-05'},recv:{by:'Dr. Albert Chan',at:'2026-10-05'}},reqs:[]}],hist:[{c:'QMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
+  put('Fung, Leo',{segs:[CUR('QMH','Exit assessment'),{c:'PWH',type:'Provisional Fellowship',focus:'',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'QMH SOT',at:'2026-10-01'},recv:{by:'Dr. Albert Chan',at:'2026-10-03'}},reqs:[]}],hist:[]});
+})();
+function rp(t){ return ROTP[t.id] || (ROTP[t.id] = {home:'PWH',segs:[CUR()],hist:[]}); }
+function segKind(r,s){ return s.c==='PWH' ? (r.home==='PWH'?'here':'in') : (r.home==='PWH'?'out':'away'); }
+function rotRows(){ return ROSTER.filter(t=>ROTP[t.id] || ptrainees().includes(t)); }
+const stRank = s => { const m = String(s).match(/^(BAT|HAT|PFY)-?(\d)?/); return m ? ['BAT','HAT','PFY'].indexOf(m[1])*10 + (+m[2]||0) : 99; };
+function nextStart(t){ const f = rp(t).segs.find(s=>s.st!==null); return f ? f.s : '9999-12-31'; }
+function rotSorter(){
+  const lf = (a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name));
+  return ({year:(a,b)=>stRank(a.stage)-stRank(b.stage)||lf(a,b), yearDesc:(a,b)=>stRank(b.stage)-stRank(a.stage)||lf(a,b), name:lf, next:(a,b)=>nextStart(a).localeCompare(nextStart(b))||lf(a,b)})[rotUI.sort];
+}
+function rotSet(k,v){ rotUI[k]=v; renderRotations(); }
+/* handshake parties: sending = SOT of the centre being left, receiving = SOT of the destination. PWH is "me". */
+function segParty(r,i){ const s = r.segs[i], from = i>0 ? r.segs[i-1].c : r.home; return {from, to:s.c, mineSend:from==='PWH', mineRecv:s.c==='PWH'}; }
+function myMissing(r,i){ const s = r.segs[i], p = segParty(r,i), c = s.conf||{}; return (p.mineSend && !c.send) || (p.mineRecv && !c.recv); }
+function futureSegs(){ const out=[]; rotRows().forEach(t=>{ const r = rp(t); r.segs.forEach((s,i)=>{ if(s.st!==null){ const p = segParty(r,i); if(p.mineSend||p.mineRecv) out.push({t,r,s,i,key:t.id+':'+i}); } }); }); return out; }
+function plannedReady(x){ return x.s.st==='planned' && (!x.s.cond || x.s.cond.res==='pass'); }
+function rotToConfirm(){ return futureSegs().filter(x=> (x.s.st==='sent' && myMissing(x.r,x.i)) || plannedReady(x)).length; }
+function rotWaiting(){ return futureSegs().filter(x=> x.s.st==='sent' && !myMissing(x.r,x.i)).length; }
+function updateRotBadge(){ const b = document.getElementById('rotBadge'); if(b) b.textContent = rotToConfirm(); }
+function rotFind(key){ const [id,i] = key.split(':'); const t = ROSTER.find(x=>x.id===id), r = rp(t); return {t,r,i:+i,s:r.segs[+i]}; }
+function rotLog(msg){ RLOG.unshift({at:TODAY_ISO,who:role==='asst'?'Dr. Winnie Ho':'Dr. Albert Chan',msg}); }
+function nm(t){ return lastFirst(t.name); }
+
+/* ---- timeline ---- */
+function renderTimeline(){ renderRotations(); }
+function renderRotations(){
+  if(!document.getElementById('tlBody')) return;
+  updateRotBadge();
+  const N = rotUI.months, W1 = new Date(2026,9+N,1), span = W1-W0;
+  const pct = d => (d-W0)/span*100;
+  document.querySelectorAll('#rotWin button').forEach(b=>b.classList.toggle('on',+b.dataset.m===N));
+  document.querySelectorAll('#rotShow button').forEach(b=>b.classList.toggle('on',b.dataset.s===rotUI.show));
+  document.getElementById('rotSort').value = rotUI.sort;
+  const last = new Date(2026,9+N-1,1);
+  document.getElementById('tlRange').textContent = `${MON[9]} 2026 \u2013 ${MON[last.getMonth()]} ${last.getFullYear()} \u00b7 ${N} months`;
+  let rows = rotRows().sort(rotSorter());
+  const moving = t => { const r = rp(t); return r.segs.some(s=>s.st!==null && D(s.s)<W1) || r.segs.filter(s=>D(s.e)>=W0 && D(s.s)<W1).length>1; };
+  const total = rows.length; if(rotUI.show==='moving') rows = rows.filter(moving);
+  const months = Array.from({length:N},(_,i)=>{ const d = new Date(2026,9+i,1); return `<span>${MON[d.getMonth()]}${(i===0||d.getMonth()===0)?' '+d.getFullYear():''}</span>`; }).join('');
+  const track = `background-image:linear-gradient(to right,var(--border-sub) 1px,transparent 1px);background-size:calc(100%/${N}) 100%`;
+  const seg = (t,r,s)=>{
+    const a = Math.max(0,pct(D(s.s))), b = Math.min(100,pct(new Date(D(s.e).getTime()+DAY)));
+    if(b<=a) return '';
+    const k = segKind(r,s), mo = monthsOf(s.s,s.e), lab = s.c+(s.focus?' \u00b7 '+s.focus:(s.type!=='Clinical Anaesthesia'?' \u00b7 '+s.type:''));
+    const cls = k+(s.st==='planned'?' pl':'')+(s.st==='sent'?' sent':'');
+    const tip = `${s.c} \u00b7 ${s.type}${s.focus?' \u00b7 '+s.focus:''}\n${fmtRange(s.s,s.e)} (${mo} months)${s.st==='planned'?'\nPlanned, only you can see this':''}${s.st==='sent'?'\nAwaiting confirmation':''}${s.cond&&s.cond.res!=='pass'?'\nSubject to '+s.cond.exam+' result':''}`;
+    return `<span class="tl-seg ${cls}" style="left:calc(${a.toFixed(2)}% + 2px);width:calc(${(b-a).toFixed(2)}% - 4px)" title="${tip}">${lab}${s.cond&&s.cond.res!=='pass'?' (if pass)':''}<small>${fmtRange(s.s,s.e).replace(/ 20\d\d$/,'')} \u00b7 ${mo} mo</small></span>`;
+  };
+  const tp = pct(TODAY);
+  document.getElementById('tlBody').innerHTML = `<div class="tl-hd"><div></div><div class="tl-months" style="grid-template-columns:repeat(${N},1fr)">${months}</div></div>` +
+    rows.map(t=>{ const r = rp(t); return `<div class="tl-row"><div class="tl-name"><button class="lb-title" onclick="rotHistory('${t.id}')">${nm(t)}</button><small>${t.stage}${r.home!=='PWH'?' \u00b7 parent '+r.home:''}</small></div><div class="tl-track" style="${track}">${r.segs.map(s=>seg(t,r,s)).join('')}</div></div>`; }).join('') +
+    (rows.length ? '' : '<p class="note" style="padding:22px 0;text-align:center">Nobody is moving in this window.</p>') +
+    `<div class="tl-today-layer"><b style="left:${tp.toFixed(2)}%"></b><span style="left:${tp.toFixed(2)}%">Today</span></div>` +
+    (rotUI.show==='moving' && total>rows.length ? `<p class="note" style="margin-top:8px">${total-rows.length} more trainee${total-rows.length===1?' is':'s are'} staying put. <a class="lb-title" onclick="rotSet('show','all')">Show everyone</a></p>` : '');
+  renderPlan(); renderRlog();
+}
+
+/* ---- plan table ---- */
+function rqChips(s){ const q = s.reqs||[]; if(!q.length) return '<span class="meta">\u2014</span>'; return q.slice(0,2).map(x=>`<span class="rq" title="${x.type}: ${x.title}${x.dur?' \u00b7 '+x.dur:''}${x.fund&&x.fund!=='Not applicable'?' \u00b7 '+x.fund:''}${x.backfill?' \u00b7 backfill needed':''}">${x.title}${x.dur?' \u00b7 '+x.dur:''}</span>`).join('')+(q.length>2?`<span class="rq">+${q.length-2}</span>`:''); }
+function condCell(s){ const c = s.cond; if(!c) return '<span class="meta">\u2014</span>';
+  return c.res==='pass' ? `<span class="pill ok">${c.exam}: passed</span>` : `<span class="pill warn">After ${c.exam}</span><div class="id-cell">Decide by ${fmtD(D(c.decideBy))}</div><div class="id-cell" title="If not passed">Fallback: ${c.fallback}</div>`; }
+function stCell(x){
+  const {r,s,i} = x, p = segParty(r,i), c = s.conf||{}, other = p.mineSend ? p.to : p.from;
+  const ago = a => { const n = Math.round((TODAY-D(a))/DAY); return n<=0?'today':n+' day'+(n===1?'':'s')+' ago'; };
+  if(s.st==='planned') return `<div class="rp-st"><span class="pill info">Planned</span><span class="meta">Only you can see this</span></div>`;
+  if(s.st==='returned') return `<div class="rp-st"><span class="pill">Returned with note</span><span class="meta">${s.retNote||''}</span></div>`;
+  if(s.st==='confirmed') return `<div class="rp-st"><span class="pill ok">Confirmed</span><span class="meta">Both SOTs confirmed${c.recv&&c.send?' \u00b7 '+fmtD(D(c.recv.at>c.send.at?c.recv.at:c.send.at)).replace(/ 20\d\d$/,''):''}</span></div>`;
+  if(myMissing(r,i)) return `<div class="rp-st"><span class="pill warn">Needs your confirmation</span><span class="meta">${c.send?'Sending: '+c.send.by+' \u2713 '+ago(c.send.at):''}</span></div>`;
+  return `<div class="rp-st"><span class="pill warn">Awaiting ${other} SOT</span><span class="meta">You confirmed ${ago((p.mineSend?c.send:c.recv).at)}</span></div>`;
+}
+function actCell(x){
+  const {s,i,key,t,r} = x, p = segParty(r,i), K = `'${key}'`;
+  if(s.st==='planned'){
+    const open = s.cond && s.cond.res!=='pass';
+    return (open ? `<button class="btn pri sm" data-need-sot onclick="rotResolve(${K})">Results are out</button>` : `<button class="btn pri sm" data-need-sot onclick="rotSend(${K})">Confirm &amp; send</button>`) + ` <button class="btn sec sm" onclick="rotEdit('${t.id}',${i})">Edit</button>`;
+  }
+  if(s.st==='sent' && myMissing(r,i)) return `<button class="btn pri sm" data-need-sot onclick="rotConfirm(${K})">Confirm</button> <button class="btn sec sm" data-need-sot onclick="rotReturn(${K})">Return with note</button>`;
+  if(s.st==='sent') return `<button class="btn sec sm" onclick="rotRemind(${K})">Remind</button>` + (p.mineSend?` <button class="btn sec sm" data-need-sot onclick="rotWithdraw(${K})">Withdraw</button>`:'');
+  return `<button class="btn sec sm" onclick="rotHistory('${t.id}')">View</button>`;
+}
+function renderPlan(){
+  const fut = futureSegs(), sorter = rotSorter();
+  const planned = new Set(fut.map(x=>x.t.id));
+  const none = rotRows().filter(t=>rp(t).home==='PWH' && !planned.has(t.id) && ptrainees().includes(t) && segKind(rp(t),rp(t).segs[rp(t).segs.length-1])!=='out');
+  const f = rotUI.filter;
+  const items = [];
+  if(f!=='none') fut.forEach(x=>items.push({t:x.t,x}));
+  if(f!=='round') none.forEach(t=>items.push({t,none:true}));
+  items.sort((a,b)=>sorter(a.t,b.t)||0);
+  const chip = (k,l,n)=>`<button class="chip ${f===k?'on':''}" onclick="rotSet('filter','${k}')">${l} <span class="cnt">${n}</span></button>`;
+  const asst = role==='asst';
+  document.getElementById('planCard').innerHTML = `
+    <div class="card-h" style="margin-bottom:10px"><div><div class="eyebrow">Rotation plan</div><div class="h2" style="margin-top:3px">Next rotations</div>
+      <div class="meta" style="margin-top:3px">${asst ? 'You can prepare plans. Only the SOT can confirm.' : 'Plans are private until you confirm. Confirming sends the handshake to the receiving SOT.'}</div></div></div>
+    <div class="chips" style="margin:0 0 10px">${chip('round','This round',fut.length)}${chip('none','Not planned yet',none.length)}${chip('all','All',fut.length+none.length)}</div>
+    <div class="tbl-scroll"><table class="rp-tbl"><thead><tr><th style="min-width:170px">Trainee</th><th style="min-width:230px">Rotation</th><th style="min-width:160px">Special requirements</th><th style="min-width:190px">Exam condition</th><th style="min-width:170px">Status</th><th style="min-width:210px">Action</th></tr></thead><tbody>${
+    items.map(it=>{ const t = it.t;
+      const head = `<td><button class="lb-title" onclick="rotHistory('${t.id}')"><b>${nm(t)}</b></button><div style="margin-top:3px">${stagePill(t.stage)}</div></td>`;
+      if(it.none) return `<tr>${head}<td><span class="meta">No next rotation planned yet</span></td><td></td><td></td><td><span class="pill">Not planned</span></td><td><button class="btn sec sm" onclick="rotEdit('${t.id}',-1)">Plan rotation</button></td></tr>`;
+      const {s,i,r} = it.x, p = segParty(r,i), mo = monthsOf(s.s,s.e);
+      return `<tr>${head}<td><b>${s.c} \u00b7 ${s.focus||s.type}</b><div class="id-cell">${fmtRange(s.s,s.e)} \u00b7 ${mo} month${mo===1?'':'s'}${p.from!==p.to?' \u00b7 '+p.from+' \u2192 '+p.to:' \u00b7 within PWH'}</div>${s.chk?`<div class="id-cell" style="color:var(--ok-f)">\u2713 ${s.chk}</div>`:''}</td><td>${rqChips(s)}</td><td>${condCell(s)}</td><td>${stCell(it.x)}</td><td>${actCell(it.x)}</td></tr>`; }).join('')
+    || '<tr><td colspan="6" class="q-empty">Nothing here.</td></tr>'}</tbody></table></div>`;
+  if(asst) document.querySelectorAll('#planCard [data-need-sot]').forEach(b=>b.disabled=true);
+}
+function renderRlog(){
+  document.getElementById('rlogCard').innerHTML = `<details><summary style="cursor:pointer;font-weight:650;font-size:13px">Recent changes <span class="cnt">${RLOG.length}</span></summary>
+    <div style="margin-top:10px">${RLOG.slice(0,12).map(l=>`<div class="kd" style="cursor:default"><span class="kd-d">${fmtD(D(l.at)).replace(/ 20\d\d$/,'')}</span><span class="kd-t"><b>${l.who}</b> \u00b7 ${l.msg}</span></div>`).join('')}</div></details>`;
+}
+
+/* ---- actions ---- */
+function rotSend(key){ const {t,r,i,s} = rotFind(key), p = segParty(r,i); if(role==='asst') return;
+  s.conf = s.conf||{}; s.conf.send = {by:'Dr. Albert Chan',at:TODAY_ISO};
+  if(p.from===p.to){ s.conf.recv = {by:'Dr. Albert Chan',at:TODAY_ISO}; s.st='confirmed'; rotLog(`Confirmed ${nm(t)}: ${s.c} ${s.focus||s.type}, ${fmtRange(s.s,s.e)}`); toast('Confirmed. Within PWH, so no other SOT is needed.'); }
+  else { s.st='sent'; rotLog(`Sent ${nm(t)} to ${s.c} ${s.focus||s.type}. Waiting for ${s.c} SOT.`); toast(`Handshake sent to the ${s.c} SOT`); }
+  renderAll(); }
+function rotConfirm(key){ const {t,r,i,s} = rotFind(key), p = segParty(r,i); if(role==='asst') return;
+  s.conf = s.conf||{}; if(p.mineSend) s.conf.send = {by:'Dr. Albert Chan',at:TODAY_ISO}; if(p.mineRecv) s.conf.recv = {by:'Dr. Albert Chan',at:TODAY_ISO};
+  if(s.conf.send && s.conf.recv){ s.st='confirmed'; rotLog(`Confirmed ${nm(t)}: ${s.c} ${s.focus||s.type}, ${fmtRange(s.s,s.e)}. Both SOTs have now confirmed.`); toast('Confirmed by both SOTs'); } else toast('Confirmed');
+  renderAll(); }
+function rotRemind(key){ const {t,s} = rotFind(key); rotLog(`Reminder sent for ${nm(t)} (${s.c})`); toast('Reminder sent'); renderRotations(); }
+function rotWithdraw(key){ const {t,s} = rotFind(key); s.st='planned'; s.conf=null; rotLog(`Withdrew ${nm(t)} from ${s.c}. Back to a private plan.`); toast('Withdrawn. It is a private plan again.'); renderAll(); }
+function rotReturn(key){ const {t,s} = rotFind(key);
+  lbModalOpen({ey:'Rotation',title:`Return ${nm(t)} with a note`,ok:'Return',check:()=>document.getElementById('rrNote').value.trim().length>2,
+    body:`<div class="field"><div class="lbl">Note for the sending SOT</div><textarea id="rrNote" class="ctl" rows="3" style="width:100%" placeholder="For example: no paediatric slot in January, could start in April"></textarea></div><p class="note">The rotation goes back to the sending SOT. Most of this conversation happens by message first, so use this only to record the outcome.</p>`,
+    onOk:()=>{ s.st='returned'; s.retNote = document.getElementById('rrNote').value.trim(); rotLog(`Returned ${nm(t)} (${s.c}): ${s.retNote}`); lbModalClose(); renderAll(); toast('Returned with your note'); }});
+}
+function rotResolve(key){ const {t,s} = rotFind(key), c = s.cond;
+  lbModalOpen({ey:'Exam result',title:`${nm(t)}: ${c.exam} result`,ok:'Save',check:()=>!!document.querySelector('input[name=rres]:checked'),
+    body:`<label class="chk" style="display:block;margin-bottom:8px"><input type="radio" name="rres" value="pass"> Passed. Go ahead with the plan to ${s.c}.</label><label class="chk" style="display:block"><input type="radio" name="rres" value="fail"> Not passed. Use the fallback: <b>${c.fallback}</b></label><p class="note">If the plan goes ahead you can confirm and send it to the receiving SOT. The fallback removes this plan.</p>`,
+    onOk:()=>{ const v = document.querySelector('input[name=rres]:checked').value; lbModalClose();
+      if(v==='pass'){ c.res='pass'; rotLog(`${nm(t)} passed the ${c.exam}. Plan to ${s.c} can be confirmed.`); toast('Saved. You can confirm and send the plan now.'); }
+      else { const r = rp(t); r.segs.splice(r.segs.indexOf(s),1); rotLog(`${nm(t)} did not pass the ${c.exam}. Plan to ${s.c} cancelled. Fallback: ${c.fallback}`); toast('Plan removed. Fallback noted.'); }
+      renderAll(); }});
+}
+function rotHistory(id){ const t = ROSTER.find(x=>x.id===id), r = rp(t);
+  const done = r.hist.concat(r.segs.filter(s=>s.st===null)).sort((a,b)=>b.s.localeCompare(a.s));
+  const toDate = s => { const e = D(s.e)>TODAY ? isoOf(TODAY) : s.e; return monthsOf(s.s,e); };
+  const total = done.reduce((a,s)=>a+toDate(s),0), logs = RLOG.filter(l=>l.msg.indexOf(nm(t))>=0);
+  lbModalOpen({ey:`${t.stage} \u00b7 HKCA ${t.id}`,title:`${nm(t)}: posting history`,ok:'Close',onOk:lbModalClose,
+    body:`<table><thead><tr><th>Centre</th><th>Posting</th><th>Period</th><th>Months</th></tr></thead><tbody>${done.map(s=>`<tr><td>${s.c}</td><td>${s.focus||s.type}${s.st===null&&D(s.e)>=TODAY?' <span class="pill ok">Current</span>':''}</td><td class="mono">${fmtRange(s.s,s.e).replace(/ 20(\d\d)$/,' 20$1')}</td><td>${toDate(s)}</td></tr>`).join('')||'<tr><td colspan="4" class="q-empty">No earlier postings recorded.</td></tr>'}</tbody></table>
+    <p class="note">Posted time recorded here: <b>${total} months</b> to date. The accredited-time ledger remains the official record.</p>
+    ${logs.length?`<div class="lbl" style="margin-top:12px">Changes</div>`+logs.map(l=>`<div class="kd" style="cursor:default"><span class="kd-d">${fmtD(D(l.at)).replace(/ 20\d\d$/,'')}</span><span class="kd-t">${l.msg}</span></div>`).join(''):''}`});
+}
+
+/* ---- plan editor ---- */
+let rf = null;
+function rotEdit(tid,idx){ const t = ROSTER.find(x=>x.id===tid), r = rp(t), ex = idx>=0 ? r.segs[idx] : null;
+  rf = {tid,idx,c:ex?ex.c:'QMH',type:ex?ex.type:TRAIN_TYPES[0],focus:ex?ex.focus:'',s:ex?ex.s:'2027-01-01',e:ex?ex.e:'2027-06-30',reqs:ex?JSON.parse(JSON.stringify(ex.reqs||[])):[],cond:ex&&ex.cond?{exam:ex.cond.exam,decideBy:ex.cond.decideBy,fallback:ex.cond.fallback}:null};
+  lbModalOpen({ey:`${t.stage} \u00b7 only you can see this plan`,title:`${ex?'Edit':'Plan'} rotation: ${nm(t)}`,ok:'Save plan',check:rfValid,body:'<div id="rfMain"></div>',onOk:rfSave});
+  rfRender(); }
+function rfValid(){ if(!rf) return false; if(!rf.c||!rf.s||!rf.e||rf.e<=rf.s) return false; if(rf.cond && (!rf.cond.decideBy||!rf.cond.fallback.trim())) return false; return rf.reqs.every(q=>q.title.trim()); }
+function rfDur(){ const el = document.getElementById('rfDur'); if(el) el.textContent = rf.e>rf.s ? `${monthsOf(rf.s,rf.e)} months \u00b7 ${fmtRange(rf.s,rf.e)}` : 'End date must be after the start date'; }
+function rfRender(){
+  const m = document.getElementById('rfMain'); if(!m) return;
+  const opt = (v,l,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${l}</option>`, esc = s=>String(s).replace(/"/g,'&quot;');
+  m.innerHTML = `
+    <div class="rf-2"><div class="field"><div class="lbl">Destination</div><select class="ctl" style="width:100%" onchange="rf.c=this.value;rfRender()">${Object.keys(HOSP).map(k=>opt(k,HOSP[k]+(k==='PWH'?' (within PWH)':''),rf.c)).join('')}</select></div>
+    <div class="field"><div class="lbl">Training type</div><select class="ctl" style="width:100%" onchange="rf.type=this.value;rfRender()">${TRAIN_TYPES.map(x=>opt(x,x,rf.type)).join('')}</select></div></div>
+    <div class="field"><div class="lbl">Focus or subspecialty (optional)</div><input class="ctl" style="width:100%" value="${esc(rf.focus)}" oninput="rf.focus=this.value" placeholder="For example: Cardiac, Paediatrics, ICU"></div>
+    <div class="rf-2"><div class="field"><div class="lbl">Start</div><input type="date" class="ctl" style="width:100%" value="${rf.s}" oninput="rf.s=this.value;rfDur()"></div>
+    <div class="field"><div class="lbl">End</div><input type="date" class="ctl" style="width:100%" value="${rf.e}" oninput="rf.e=this.value;rfDur()"></div></div>
+    <p class="note" id="rfDur" style="margin-top:-4px"></p>
+    <div class="rf-sec"><div class="lbl">Special requirements</div>
+      ${rf.reqs.map((q,i)=>`<div style="border:1px solid var(--border-sub);border-radius:10px;padding:10px;margin-bottom:8px"><div class="rf-2"><select class="ctl" onchange="rf.reqs[${i}].type=this.value">${REQ_TYPES.map(x=>opt(x,x,q.type)).join('')}</select><input class="ctl" value="${esc(q.title)}" oninput="rf.reqs[${i}].title=this.value" placeholder="For example: Peter Kam Course"></div>
+        <div class="rf-2" style="margin-top:8px"><input class="ctl" value="${esc(q.dur||'')}" oninput="rf.reqs[${i}].dur=this.value" placeholder="Dates or length, e.g. 3 days"><select class="ctl" onchange="rf.reqs[${i}].fund=this.value">${FUND.map(x=>opt(x,x,q.fund)).join('')}</select></div>
+        <label class="chk" style="margin-top:8px;display:inline-flex;gap:6px"><input type="checkbox" ${q.backfill?'checked':''} onchange="rf.reqs[${i}].backfill=this.checked"> Needs backfill</label> <button class="btn sec sm" style="float:right" onclick="rf.reqs.splice(${i},1);rfRender();document.getElementById('lbmBody').dispatchEvent(new Event('change'))">Remove</button></div>`).join('')}
+      <button class="btn sec sm" onclick="rf.reqs.push({type:'Course',title:'',dur:'',fund:'Self-funded',backfill:false});rfRender();document.getElementById('lbmBody').dispatchEvent(new Event('change'))">+ Add requirement</button></div>
+    <div class="rf-sec"><label class="chk" style="display:inline-flex;gap:6px"><input type="checkbox" ${rf.cond?'checked':''} onchange="rf.cond=this.checked?{exam:'${EXAMS[0]}',decideBy:'',fallback:''}:null;rfRender();document.getElementById('lbmBody').dispatchEvent(new Event('change'))"> Subject to an exam result (optional)</label>
+      ${rf.cond?`<div class="rf-2" style="margin-top:8px"><select class="ctl" onchange="rf.cond.exam=this.value">${EXAMS.map(x=>opt(x,x,rf.cond.exam)).join('')}</select><input type="date" class="ctl" value="${rf.cond.decideBy}" oninput="rf.cond.decideBy=this.value" aria-label="Decide by"></div>
+      <input class="ctl" style="width:100%;margin-top:8px" value="${esc(rf.cond.fallback)}" oninput="rf.cond.fallback=this.value" placeholder="If not passed: for example, stay at PWH, Clinical Anaesthesia">`:'<p class="note">Use this when the decision to rotate depends on a pass. The plan stays private until the result is in.</p>'}</div>
+    ${rf.idx>=0?`<div class="rf-sec"><button class="btn sec sm" onclick="rotRemove()">Remove this plan</button></div>`:''}`;
+  rfDur(); }
+function rotRemove(){ const t = ROSTER.find(x=>x.id===rf.tid), r = rp(t), s = r.segs[rf.idx]; r.segs.splice(rf.idx,1); rotLog(`Removed the plan for ${nm(t)} to ${s.c}`); lbModalClose(); renderAll(); toast('Plan removed'); }
+function rfSave(){ const t = ROSTER.find(x=>x.id===rf.tid), r = rp(t); if(!rfValid()) return;
+  const keep = rf.idx>=0 ? r.segs[rf.idx] : null;
+  const seg = {c:rf.c,type:rf.type,focus:rf.focus.trim(),s:rf.s,e:rf.e,st:'planned',reqs:rf.reqs,cond:rf.cond?{exam:rf.cond.exam,decideBy:rf.cond.decideBy,fallback:rf.cond.fallback.trim(),res:keep&&keep.cond?keep.cond.res:null}:null};
+  if(keep) r.segs[rf.idx] = seg; else r.segs.push(seg);
+  r.segs.sort((a,b)=>a.s.localeCompare(b.s));
+  rotLog(`${keep?'Updated':'Planned'} ${nm(t)}: ${seg.c} ${seg.focus||seg.type}, ${fmtRange(seg.s,seg.e)} (private)`);
+  lbModalClose(); renderAll(); toast('Plan saved. Only you can see it.'); }
 
 /* ================= logbook verification ================= */
 const CATS = [
@@ -2993,7 +3073,7 @@ function goalReminders(){
 }
 
 function renderAll(){
-  updateItaBadge(); refreshAsotOptions(); renderRoster(); renderItaRound(); refreshItaSignoff(); renderLog(); renderGoals(); renderLogbook();
+  updateItaBadge(); refreshAsotOptions(); renderRoster(); renderItaRound(); refreshItaSignoff(); renderLog(); renderGoals(); renderLogbook(); renderRotations();
 }
 
 /* ---------------- tabs ---------------- */
