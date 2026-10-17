@@ -2408,11 +2408,40 @@ function _oldTimeline(){
 }
 
 /* ================= rotations: plan privately, confirm, handshake ================= */
-const HOSP = {PWH:'Prince of Wales Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital',NDH:'North District Hospital',PYNEH:'Pamela Youde Nethersole Eastern Hospital',QMH:'Queen Mary Hospital',QEH:'Queen Elizabeth Hospital',KWH:'Kwong Wah Hospital',UCH:'United Christian Hospital',TKOH:'Tseung Kwan O Hospital',PMH:'Princess Margaret Hospital',CMC:'Caritas Medical Centre',YCH:'Yan Chai Hospital',TMH:'Tuen Mun Hospital',HKCH:"Hong Kong Children's Hospital",OTHER:'Other (say which in Focus)'};
-const HOSP_GROUPS = [['NTEC, your cluster',['PWH','AHNH','NDH']],['Hong Kong East',['PYNEH']],['Hong Kong West',['QMH']],['Kowloon Central',['QEH','KWH']],['Kowloon East',['UCH','TKOH']],['Kowloon West',['PMH','CMC','YCH']],['New Territories West',['TMH']],['Other centres',['HKCH','OTHER']]];
+const HOSP = {PWH:'Prince of Wales Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital',NDH:'North District Hospital',PYNEH:'Pamela Youde Nethersole Eastern Hospital',QMH:'Queen Mary Hospital',QEH:'Queen Elizabeth Hospital',POH:'Pok Oi Hospital',KWH:'Kwong Wah Hospital',UCH:'United Christian Hospital',TKOH:'Tseung Kwan O Hospital',PMH:'Princess Margaret Hospital',CMC:'Caritas Medical Centre',YCH:'Yan Chai Hospital',TMH:'Tuen Mun Hospital',HKCH:"Hong Kong Children's Hospital",OTHER:'Other (say which in Focus)'};
+const HOSP_GROUPS = [['NTEC, your cluster',['PWH','AHNH','NDH']],['Hong Kong East',['PYNEH']],['Hong Kong West',['QMH']],['Kowloon Central',['QEH','KWH']],['Kowloon East',['UCH','TKOH']],['Kowloon West',['PMH','CMC','YCH']],['New Territories West',['TMH','POH']],['Other centres',['HKCH','OTHER']]];
 function hospOpts(cur, home){ return HOSP_GROUPS.map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}" ${k===cur?'selected':''}>${k===home?'Stay at '+k+' (parent hospital)':k+' \u00b7 '+HOSP[k]}</option>`).join('')}</optgroup>`).join(''); }
-const ACC_LIMIT = {def:36};   // months of clinical anaesthesia training an accredited centre may give one trainee (varies by centre)
-const TRAIN_TYPES = ['Clinical Anaesthesia','Subspecialty module','Provisional Fellowship','Exit assessment','Other'];
+const ACC_LIMIT = {def:36};
+/* HKCA Intensive Care approved training units (hkca.edu.hk/intensive_care/training_centres). Checked 17 Oct 2026: re-check against the College page before relying on it. */
+const ICU_JOINT = {   // Joint curriculum (Higher Training from July 2023): category and supervisors
+  PMH:{cat:'A',sup:'Dr Lau, Yue Ho Vincent (SOT)'}, PWH:{cat:'A',sup:'Dr Yip, Yu Yeung Sunny (NTEC Cluster SOT and PWH SOT); Dr Siu, Ming Kit Benjamin (Assistant SOT)'},
+  PYNEH:{cat:'A',sup:'Dr Tsang, Ka Wai Karen (SOT)'}, QEH:{cat:'A',sup:'Dr Chan, Ka Lee (SOT); Dr Hung, Chui Yee (Assistant SOT)'},
+  TMH:{cat:'A',sup:'Dr Chan, Kai Wing Henry (NTWC Cluster SOT and TMH SOT); Dr Chan, Ka Ho (Assistant SOT)'}, UCH:{cat:'A',sup:'Dr Chan, Cheuk Ya Carol (SOT)'},
+  AHNH:{cat:'B',sup:'Dr Yip, Yu Yeung Sunny (NTEC Cluster SOT); Dr Lam, Ka Hing Duncan (SOT); Dr Ho, Samantha Sze Man (Assistant SOT)'},
+  KWH:{cat:'B',sup:'Dr King, Hoi Shun Bobby (SOT)'}, NDH:{cat:'B',sup:'Dr Yip, Yu Yeung Sunny (NTEC Cluster SOT); Dr Ng, Wai Tsan David (SOT)'},
+  POH:{cat:'B',sup:'Dr Chan, Kai Wing Henry (NTWC Cluster SOT); Dr Tong, Man Chun Terence (SOT)'}, YCH:{cat:'B',sup:'Dr Kandamby, Darshana Hewa (KWC Cluster SOT and YCH SOT)'}
+};
+const ICU_OLD = {     // Earlier curriculum (Higher Training before July 2023): post length and approval expiry
+  AHNH:{m:12,exp:'2029-03-24'}, NDH:{m:12,exp:'2029-12-31'}, PWH:{m:24,exp:'2027-07-31'}, PMH:{m:24,exp:'2027-07-31'}, YCH:{m:12,exp:'2027-07-31'}, PYNEH:{m:24,exp:'2030-11-14'},
+  KWH:{m:12,exp:'2026-12-31'}, QEH:{m:24,exp:'2027-07-31'}, TMH:{m:24,exp:'2027-07-31'}, POH:{m:12,exp:'2027-07-31'}, UCH:{m:24,exp:'2030-02-10'}
+};
+const ICU_TYPE = 'Intensive Care';
+function segName(s){ return s.type===ICU_TYPE ? 'Intensive Care'+(s.focus?' \u00b7 '+s.focus:'') : (s.focus||s.type); }
+function icuCurr(t){ return /^PFY/.test(String(t.stage)) ? 'old' : 'joint'; }   // assumption: anyone still in BAT/HAT entered Higher Training after July 2023
+function icuOpts(cur,t){
+  if(icuCurr(t)==='old') return `<optgroup label="Approved ICU units (earlier curriculum)">${Object.keys(ICU_OLD).map(k=>`<option value="${k}" ${k===cur?'selected':''}>${k} \u00b7 ${HOSP[k]} \u00b7 ${ICU_OLD[k].m}-month post</option>`).join('')}</optgroup>`;
+  return ['A','B'].map(c=>`<optgroup label="Category ${c} (joint ICM curriculum)">${Object.keys(ICU_JOINT).filter(k=>ICU_JOINT[k].cat===c).map(k=>`<option value="${k}" ${k===cur?'selected':''}>${k} \u00b7 ${HOSP[k]}</option>`).join('')}</optgroup>`).join('');
+}
+function icuApproved(c,t){ return icuCurr(t)==='old' ? !!ICU_OLD[c] : !!ICU_JOINT[c]; }
+function icuInfo(c,t,sd,ed){   // {text, warn} shown under the destination when the type is Intensive Care
+  if(!icuApproved(c,t)) return {text:'This hospital is not an approved ICU training unit.',warn:true};
+  if(icuCurr(t)==='old'){ const u = ICU_OLD[c], bits = [`Approved unit \u00b7 ${u.m}-month post \u00b7 approval expires ${fmtD(D(u.exp))}`]; let w = false;
+    if(ed && ed>u.exp){ bits.push('This rotation ends after the unit\'s approval expires'); w = true; }
+    if(sd && ed && ed>sd && monthsOf(sd,ed)!==u.m){ bits.push(`Planned ${monthsOf(sd,ed)} months; a full post here is ${u.m}`); }
+    return {text:bits.join('. ')+'.',warn:w}; }
+  const u = ICU_JOINT[c]; return {text:`Category ${u.cat} unit, joint ICM curriculum \u00b7 Supervisor of training: ${u.sup}`,warn:false};
+}   // months of clinical anaesthesia training an accredited centre may give one trainee (varies by centre)
+const TRAIN_TYPES = ['Clinical Anaesthesia','Intensive Care','Subspecialty module','Provisional Fellowship','Exit assessment','Other'];
 const REQ_TYPES = ['Course','Exam leave','Study leave','Other'];
 const FUND = ['Self-funded','Department','Hospital Authority','Not applicable'];
 const EXAMS = ['Intermediate exam','Final exam','Other exam'];
@@ -2438,7 +2467,7 @@ const CUR = (c,type,focus)=>({c:c||'PWH',type:type||'Clinical Anaesthesia',focus
   put('Wong, Kelvin',{segs:[CUR(),{c:'QMH',type:'Clinical Anaesthesia',focus:'Cardiac subspecialty',s:'2027-01-01',e:'2027-06-30',st:'sent',conf:{send:{by:'Dr. Albert Chan',at:'2026-09-12'},recv:null},reqs:[{type:'Course',title:'Peter Kam Course',dur:'3 days',fund:'Self-funded',backfill:false}]}],hist:[{c:'PWH',type:'Clinical Anaesthesia \u00b7 ICU',s:'2026-01-01',e:'2026-06-30'},{c:'PWH',type:'Clinical Anaesthesia',s:'2025-07-01',e:'2025-12-31'},{c:'TMH',type:'Clinical Anaesthesia',s:'2025-01-01',e:'2025-06-30'}]});
   put('Tam, Felix',{segs:[CUR(),{c:'TMH',type:'Clinical Anaesthesia',focus:'',s:'2027-01-01',e:'2027-06-30',st:'planned',reqs:[],cond:{exam:'Intermediate exam',decideBy:'2026-12-01',fallback:'Stay at PWH \u00b7 Clinical Anaesthesia',res:null}}],hist:[{c:'TMH',type:'Clinical Anaesthesia',s:'2023-04-01',e:'2025-12-31'},{c:'PWH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
   put('Tsang, Elena',{segs:[CUR('PWH','Clinical Anaesthesia','Cardiac'),{c:'HKCH',type:'Subspecialty module',focus:'Paediatric anaesthesia',s:'2027-01-01',e:'2027-03-31',st:'planned',reqs:[],cond:null}],hist:[{c:'QMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
-  put('Lau, Sarah',{segs:[CUR(),{c:'PWH',type:'Clinical Anaesthesia',focus:'ICU',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'Dr. Albert Chan',at:'2026-10-05'},recv:{by:'Dr. Albert Chan',at:'2026-10-05'}},reqs:[]}],hist:[{c:'QMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
+  put('Lau, Sarah',{segs:[CUR(),{c:'PWH',type:'Intensive Care',focus:'',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'Dr. Albert Chan',at:'2026-10-05'},recv:{by:'Dr. Albert Chan',at:'2026-10-05'}},reqs:[]}],hist:[{c:'QMH',type:'Clinical Anaesthesia',s:'2026-01-01',e:'2026-06-30'}]});
   put('Fung, Leo',{segs:[CUR('QMH','Exit assessment'),{c:'PWH',type:'Provisional Fellowship',focus:'',s:'2027-01-01',e:'2027-06-30',st:'confirmed',conf:{send:{by:'QMH SOT',at:'2026-10-01'},recv:{by:'Dr. Albert Chan',at:'2026-10-03'}},reqs:[]}],hist:[]});
 })();
 function rp(t){ return ROTP[t.id] || (ROTP[t.id] = {home:'PWH',segs:[CUR()],hist:[]}); }
@@ -2483,7 +2512,7 @@ function renderRotations(){
   const seg = (t,r,s)=>{
     const a = Math.max(0,pct(D(s.s))), b = Math.min(100,pct(new Date(D(s.e).getTime()+DAY)));
     if(b<=a) return '';
-    const k = segKind(r,s), mo = monthsOf(s.s,s.e), lab = s.c+(s.focus?' \u00b7 '+s.focus:(s.type!=='Clinical Anaesthesia'?' \u00b7 '+s.type:''));
+    const k = segKind(r,s), mo = monthsOf(s.s,s.e), lab = s.c+(s.type===ICU_TYPE?' \u00b7 Intensive Care'+(s.focus?' \u00b7 '+s.focus:''):(s.focus?' \u00b7 '+s.focus:(s.type!=='Clinical Anaesthesia'?' \u00b7 '+s.type:'')));
     const cls = k+(s.st==='planned'?' pl':'')+(s.st==='sent'?' sent':'');
     const tip = `${s.c} \u00b7 ${s.type}${s.focus?' \u00b7 '+s.focus:''}\n${fmtRange(s.s,s.e)} (${mo} months)${s.st==='planned'?'\nPlanned, only you can see this':''}${s.st==='sent'?'\nAwaiting confirmation':''}${s.cond&&s.cond.res!=='pass'?'\nSubject to '+s.cond.exam+' result':''}`;
     return `<span class="tl-seg ${cls}" style="left:calc(${a.toFixed(2)}% + 2px);width:calc(${(b-a).toFixed(2)}% - 4px)" title="${tip}">${lab}${s.cond&&s.cond.res!=='pass'?' (if pass)':''}<small>${fmtRange(s.s,s.e).replace(/ 20\d\d$/,'')} \u00b7 ${mo} mo</small></span>`;
@@ -2530,7 +2559,7 @@ function rotTable(items, incoming){
       if(it.none) return `<tr>${head}<td><span class="meta">No next rotation planned yet</span></td><td></td><td></td><td><span class="pill">Not planned</span></td><td><button class="btn sec sm" onclick="rotEdit('${t.id}',-1)">Plan rotation</button> <button class="btn sec sm" onclick="rotStay('${t.id}')">Stay at ${parent}</button></td></tr>`;
       const {s,i,r} = it.x, p = segParty(r,i), mo = monthsOf(s.s,s.e);
       const where = incoming ? `${p.from} \u2192 PWH` : (p.from===p.to ? `Stay at ${p.to}` : `${p.from} \u2192 ${p.to}`);
-      return `<tr>${head}<td><b>${s.c} \u00b7 ${s.focus||s.type}</b><div class="id-cell">${fmtRange(s.s,s.e)} \u00b7 ${mo} month${mo===1?'':'s'} \u00b7 ${where}</div>${incoming?'':(()=>{const w=accWarn(r,s);return w?`<div class="id-cell" style="color:var(--wn-f)">\u26a0 Would exceed ${w.lim} months of clinical anaesthesia at ${s.c} (${w.have} + ${w.add} = ${w.have+w.add}). The Board admin is warned.</div>`:''})()}</td><td>${rqChips(s)}</td>${incoming?'':`<td>${condCell(s)}</td>`}<td>${stCell(it.x)}</td><td>${actCell(it.x)}</td></tr>`; }).join('')
+      return `<tr>${head}<td><b>${s.c} \u00b7 ${segName(s)}</b><div class="id-cell">${fmtRange(s.s,s.e)} \u00b7 ${mo} month${mo===1?'':'s'} \u00b7 ${where}</div>${incoming||s.type!==ICU_TYPE?'':(()=>{const i=icuInfo(s.c,t,s.s,s.e);return i.warn?`<div class="id-cell" style="color:var(--wn-f)">\u26a0 ${i.text}</div>`:''})()}${incoming?'':(()=>{const w=accWarn(r,s);return w?`<div class="id-cell" style="color:var(--wn-f)">\u26a0 Would exceed ${w.lim} months of clinical anaesthesia at ${s.c} (${w.have} + ${w.add} = ${w.have+w.add}). The Board admin is warned.</div>`:''})()}</td><td>${rqChips(s)}</td>${incoming?'':`<td>${condCell(s)}</td>`}<td>${stCell(it.x)}</td><td>${actCell(it.x)}</td></tr>`; }).join('')
     || `<tr><td colspan="${incoming?5:6}" class="q-empty">Nothing here.</td></tr>`}</tbody></table></div>`;
 }
 function renderPlan(){
@@ -2561,13 +2590,13 @@ function renderRlog(){
 /* ---- actions ---- */
 function rotSend(key){ const {t,r,i,s} = rotFind(key), p = segParty(r,i); if(role==='asst') return;
   s.conf = s.conf||{}; s.conf.send = {by:'Dr. Albert Chan',at:TODAY_ISO};
-  if(p.from===p.to){ s.conf.recv = {by:'Dr. Albert Chan',at:TODAY_ISO}; s.st='confirmed'; rotLog(`Confirmed ${nm(t)}: ${s.c} ${s.focus||s.type}, ${fmtRange(s.s,s.e)}`); toast('Confirmed. Within PWH, so no other SOT is needed.'); }
-  else { s.st='sent'; rotLog(`Sent ${nm(t)} to ${s.c} ${s.focus||s.type}. Waiting for ${s.c} SOT.`); toast(`Handshake sent to the ${s.c} SOT`); }
+  if(p.from===p.to){ s.conf.recv = {by:'Dr. Albert Chan',at:TODAY_ISO}; s.st='confirmed'; rotLog(`Confirmed ${nm(t)}: ${s.c} ${segName(s)}, ${fmtRange(s.s,s.e)}`); toast('Confirmed. Within PWH, so no other SOT is needed.'); }
+  else { s.st='sent'; rotLog(`Sent ${nm(t)} to ${s.c} ${segName(s)}. Waiting for ${s.c} SOT.`); toast(`Handshake sent to the ${s.c} SOT`); }
   { const w = accWarn(r,s); if(w){ rotLog(`Warning: ${nm(t)} would reach ${w.have+w.add} months of clinical anaesthesia at ${s.c} (limit ${w.lim}). Board admin notified.`); } }
   renderAll(); }
 function rotConfirm(key){ const {t,r,i,s} = rotFind(key), p = segParty(r,i); if(role==='asst') return;
   s.conf = s.conf||{}; if(p.mineSend) s.conf.send = {by:'Dr. Albert Chan',at:TODAY_ISO}; if(p.mineRecv) s.conf.recv = {by:'Dr. Albert Chan',at:TODAY_ISO};
-  if(s.conf.send && s.conf.recv){ s.st='confirmed'; rotLog(`Confirmed ${nm(t)}: ${s.c} ${s.focus||s.type}, ${fmtRange(s.s,s.e)}. Both SOTs have now confirmed.`); toast('Confirmed by both SOTs'); } else toast('Confirmed');
+  if(s.conf.send && s.conf.recv){ s.st='confirmed'; rotLog(`Confirmed ${nm(t)}: ${s.c} ${segName(s)}, ${fmtRange(s.s,s.e)}. Both SOTs have now confirmed.`); toast('Confirmed by both SOTs'); } else toast('Confirmed');
   renderAll(); }
 function rotRemind(key){ const {t,s} = rotFind(key); rotLog(`Reminder sent for ${nm(t)} (${s.c})`); toast('Reminder sent'); renderRotations(); }
 function rotWithdraw(key){ const {t,s} = rotFind(key); s.st='planned'; s.conf=null; rotLog(`Withdrew ${nm(t)} from ${s.c}. Back to a private plan.`); toast('Withdrawn. It is a private plan again.'); renderAll(); }
@@ -2583,7 +2612,7 @@ function rotResolve(key){ const {t,r,s} = rotFind(key), c = s.cond;
       <div id="rrSub" style="display:none;margin:10px 0 0 24px">
         ${c.fallback?`<p class="note" style="margin:0 0 8px">Your noted fallback: ${c.fallback}</p>`:''}
         <label class="chk" style="display:block;margin-bottom:8px"><input type="radio" name="ralt" value="stay" onchange="rrToggle()"> Stay at ${r.home} (parent hospital)</label>
-        <label class="chk" style="display:block;margin-bottom:8px"><input type="radio" name="ralt" value="else" onchange="rrToggle()"> Rotate somewhere else <select id="rrDest" class="ctl sm" style="margin-left:6px" onchange="rrToggle()"><option value="">Choose a hospital</option>${hospOpts('',r.home).replace(`<option value="${r.home}" `,`<option value="${r.home}" hidden `)}</select></label>
+        <label class="chk" style="display:block;margin-bottom:8px"><input type="radio" name="ralt" value="else" onchange="rrToggle()"> Rotate somewhere else <select id="rrDest" class="ctl sm" style="margin-left:6px" onchange="rrToggle()"><option value="">Choose a hospital</option>${s.type===ICU_TYPE?icuOpts('',t):hospOpts('',r.home).replace(`<option value="${r.home}" `,`<option value="${r.home}" hidden `)}</select></label>
         <label class="chk" style="display:block"><input type="radio" name="ralt" value="later" onchange="rrToggle()"> Decide later (remove this plan)</label>
       </div><p class="note">The new plan keeps the same dates and special requirements, and stays private until you confirm it. You can edit it first.</p>`,
     onOk:()=>{ const v = document.querySelector('input[name=rres]:checked').value, alt = (document.querySelector('input[name=ralt]:checked')||{}).value; lbModalClose();
@@ -2599,7 +2628,7 @@ function rotHistory(id){ const t = ROSTER.find(x=>x.id===id), r = rp(t);
   const toDate = s => { const e = D(s.e)>TODAY ? isoOf(TODAY) : s.e; return monthsOf(s.s,e); };
   const total = done.reduce((a,s)=>a+toDate(s),0), logs = RLOG.filter(l=>l.msg.indexOf(nm(t))>=0);
   lbModalOpen({ey:`${t.stage} \u00b7 HKCA ${t.id}`,title:`${nm(t)}: posting history`,ok:'Close',onOk:lbModalClose,
-    body:`<table><thead><tr><th>Centre</th><th>Posting</th><th>Period</th><th>Months</th></tr></thead><tbody>${done.map(s=>`<tr><td>${s.c}</td><td>${s.focus||s.type}${s.st===null&&D(s.e)>=TODAY?' <span class="pill ok">Current</span>':''}</td><td class="mono">${fmtRange(s.s,s.e).replace(/ 20(\d\d)$/,' 20$1')}</td><td>${toDate(s)}</td></tr>`).join('')||'<tr><td colspan="4" class="q-empty">No earlier postings recorded.</td></tr>'}</tbody></table>
+    body:`<table><thead><tr><th>Centre</th><th>Posting</th><th>Period</th><th>Months</th></tr></thead><tbody>${done.map(s=>`<tr><td>${s.c}</td><td>${segName(s)}${s.st===null&&D(s.e)>=TODAY?' <span class="pill ok">Current</span>':''}</td><td class="mono">${fmtRange(s.s,s.e).replace(/ 20(\d\d)$/,' 20$1')}</td><td>${toDate(s)}</td></tr>`).join('')||'<tr><td colspan="4" class="q-empty">No earlier postings recorded.</td></tr>'}</tbody></table>
     <p class="note">Posted time recorded here: <b>${total} months</b> to date. The accredited-time ledger remains the official record.</p>
     ${logs.length?`<div class="lbl" style="margin-top:12px">Changes</div>`+logs.map(l=>`<div class="kd" style="cursor:default"><span class="kd-d">${fmtD(D(l.at)).replace(/ 20\d\d$/,'')}</span><span class="kd-t">${l.msg}</span></div>`).join(''):''}`});
 }
@@ -2610,15 +2639,17 @@ function rotEdit(tid,idx){ const t = ROSTER.find(x=>x.id===tid), r = rp(t), ex =
   rf = {tid,idx,c:ex?ex.c:'QMH',type:ex?ex.type:TRAIN_TYPES[0],focus:ex?ex.focus:'',s:ex?ex.s:'2027-01-01',e:ex?ex.e:'2027-06-30',reqs:ex?JSON.parse(JSON.stringify(ex.reqs||[])):[],cond:ex&&ex.cond?{exam:ex.cond.exam,decideBy:ex.cond.decideBy,fallback:ex.cond.fallback}:null};
   lbModalOpen({ey:`${t.stage} \u00b7 only you can see this plan`,title:`${ex?'Edit':'Plan'} rotation: ${nm(t)}`,ok:'Save plan',check:rfValid,body:'<div id="rfMain"></div>',onOk:rfSave});
   rfRender(); }
-function rfValid(){ if(!rf) return false; if(!rf.c||!rf.s||!rf.e||rf.e<=rf.s) return false; if(rf.cond && (!rf.cond.decideBy||!rf.cond.fallback.trim())) return false; return rf.reqs.every(q=>q.title.trim()); }
+function rfSetType(v){ rf.type = v; const t = ROSTER.find(x=>x.id===rf.tid); if(v===ICU_TYPE && !icuApproved(rf.c,t)) rf.c = icuApproved('PWH',t)?'PWH':(icuCurr(t)==='old'?Object.keys(ICU_OLD)[0]:Object.keys(ICU_JOINT)[0]); rfRender(); document.getElementById('lbmBody').dispatchEvent(new Event('change')); }
+function rfValid(){ if(!rf) return false; if(!rf.c||!rf.s||!rf.e||rf.e<=rf.s) return false; if(rf.type===ICU_TYPE && !icuApproved(rf.c,ROSTER.find(x=>x.id===rf.tid))) return false; if(rf.cond && (!rf.cond.decideBy||!rf.cond.fallback.trim())) return false; return rf.reqs.every(q=>q.title.trim()); }
 function rfDur(){ const el = document.getElementById('rfDur'); if(el) el.textContent = rf.e>rf.s ? `${monthsOf(rf.s,rf.e)} months \u00b7 ${fmtRange(rf.s,rf.e)}` : 'End date must be after the start date';
+  const ic = document.getElementById('rfIcu'); if(ic){ const i = icuInfo(rf.c,ROSTER.find(x=>x.id===rf.tid),rf.s,rf.e); ic.textContent = (i.warn?'\u26a0 ':'')+i.text; ic.style.color = i.warn?'var(--wn-f)':''; }
   const ac = document.getElementById('rfAcc'); if(ac){ const w = accWarn(rp(ROSTER.find(x=>x.id===rf.tid)),{c:rf.c,type:rf.type,s:rf.s,e:rf.e}); ac.textContent = w ? `\u26a0 This would exceed ${w.lim} months of clinical anaesthesia at ${rf.c} (${w.have} + ${w.add} = ${w.have+w.add}). You can still save. The Board admin is warned.` : ''; } }
 function rfRender(){
   const m = document.getElementById('rfMain'); if(!m) return;
   const opt = (v,l,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${l}</option>`, esc = s=>String(s).replace(/"/g,'&quot;');
   m.innerHTML = `
-    <div class="rf-2"><div class="field"><div class="lbl">Destination</div><select class="ctl" style="width:100%" onchange="rf.c=this.value;rfRender()">${hospOpts(rf.c,rp(ROSTER.find(x=>x.id===rf.tid)).home)}</select></div>
-    <div class="field"><div class="lbl">Training type</div><select class="ctl" style="width:100%" onchange="rf.type=this.value;rfRender()">${TRAIN_TYPES.map(x=>opt(x,x,rf.type)).join('')}</select></div></div>
+    <div class="rf-2"><div class="field"><div class="lbl">Destination</div><select class="ctl" style="width:100%" onchange="rf.c=this.value;rfRender()">${rf.type===ICU_TYPE?icuOpts(rf.c,ROSTER.find(x=>x.id===rf.tid)):hospOpts(rf.c,rp(ROSTER.find(x=>x.id===rf.tid)).home)}</select>${rf.type===ICU_TYPE?'<p class="note" id="rfIcu" style="margin:6px 0 0"></p>':''}</div>
+    <div class="field"><div class="lbl">Training type</div><select class="ctl" style="width:100%" onchange="rfSetType(this.value)">${TRAIN_TYPES.map(x=>opt(x,x,rf.type)).join('')}</select></div></div>
     <div class="field"><div class="lbl">Focus or subspecialty (optional)</div><input class="ctl" style="width:100%" value="${esc(rf.focus)}" oninput="rf.focus=this.value" placeholder="For example: Cardiac, Paediatrics, ICU"></div>
     <div class="rf-2"><div class="field"><div class="lbl">Start</div><input type="date" class="ctl" style="width:100%" value="${rf.s}" oninput="rf.s=this.value;rfDur()"></div>
     <div class="field"><div class="lbl">End</div><input type="date" class="ctl" style="width:100%" value="${rf.e}" oninput="rf.e=this.value;rfDur()"></div></div>
@@ -2640,7 +2671,7 @@ function rfSave(){ const t = ROSTER.find(x=>x.id===rf.tid), r = rp(t); if(!rfVal
   const seg = {c:rf.c,type:rf.type,focus:rf.focus.trim(),s:rf.s,e:rf.e,st:'planned',reqs:rf.reqs,cond:rf.cond?{exam:rf.cond.exam,decideBy:rf.cond.decideBy,fallback:rf.cond.fallback.trim(),res:keep&&keep.cond?keep.cond.res:null}:null};
   if(keep) r.segs[rf.idx] = seg; else r.segs.push(seg);
   r.segs.sort((a,b)=>a.s.localeCompare(b.s));
-  rotLog(`${keep?'Updated':'Planned'} ${nm(t)}: ${seg.c} ${seg.focus||seg.type}, ${fmtRange(seg.s,seg.e)} (private)`);
+  rotLog(`${keep?'Updated':'Planned'} ${nm(t)}: ${seg.c} ${segName(seg)}, ${fmtRange(seg.s,seg.e)} (private)`);
   lbModalClose(); renderAll(); toast('Plan saved. Only you can see it.'); }
 
 /* ================= logbook verification ================= */
