@@ -394,6 +394,47 @@
   .tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--rd500);z-index:2}
   .tl-today::after{content:'Today';position:absolute;top:-17px;left:-14px;font-size:9.5px;font-weight:750;color:var(--rd600)}
   @media(max-width:980px){.home-grid{grid-template-columns:1fr}.log li{grid-template-columns:1fr}.rem{grid-template-columns:1fr}}
+
+  /* ================= v3: logbook verification ================= */
+  .info{width:18px;height:18px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--ink2);font:700 11px/1 'Inter',sans-serif;cursor:help}
+  .tipwrap{position:relative;display:inline-flex}
+  .tip{position:absolute;left:0;top:calc(100% + 8px);width:340px;max-width:80vw;background:var(--g900);color:#fff;font-size:12px;font-weight:450;
+    line-height:1.5;padding:10px 12px;border-radius:8px;z-index:60;opacity:0;pointer-events:none;transition:opacity .12s;letter-spacing:0;text-transform:none}
+  .tipwrap:hover .tip,.tipwrap:focus-within .tip{opacity:1}
+  .lb-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin:0 0 12px}
+  .lb-tab{all:unset;cursor:pointer;padding:9px 12px 10px;font-size:13px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;display:flex;gap:7px;align-items:center;margin-bottom:-1px}
+  .lb-tab:hover{color:var(--ink)}
+  .lb-tab:focus-visible{outline:2px solid var(--em600);outline-offset:-2px;border-radius:6px}
+  .lb-tab.on{color:var(--em700);border-bottom-color:var(--em600);font-weight:700}
+  .dark .lb-tab.on{color:var(--em500)}
+  .lb-tabs .sp{flex:1}
+  .lb-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .lb-group{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border-sub);font-size:12.5px}
+  .lb-group:first-child{border-top:0}
+  .lb-group .sp{flex:1}
+  .lbr{display:grid;grid-template-columns:24px minmax(0,1.5fr) minmax(210px,1fr) auto;gap:14px;align-items:center;padding:11px 12px;border-bottom:1px solid var(--border-sub)}
+  .lbr:hover{background:var(--bg2)}
+  .lbr.active{box-shadow:inset 3px 0 0 var(--em600);background:var(--bg2)}
+  .lb-title{font-size:13px;font-weight:650;line-height:1.3;color:var(--ink);text-decoration:none;cursor:pointer}
+  .lb-title:hover{text-decoration:underline}
+  .lb-s{font-size:11.5px;color:var(--ink2);margin-top:2px;line-height:1.4}
+  .lb-out{font-size:11.5px;color:var(--ink3);margin-top:3px}
+  .lb-cat{font-size:12px;font-weight:600;margin-top:4px}
+  .acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+  .btn.danger{color:var(--rd700)} .dark .btn.danger{color:var(--rd500)}
+  .btn.danger:hover{background:rgba(239,68,68,.08)}
+  .lb-pager{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;font-size:12.5px;color:var(--ink2)}
+  .cmenu{position:fixed;z-index:160;background:var(--raised);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);padding:6px;min-width:250px;max-height:340px;overflow-y:auto}
+  .cmenu .gh{font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:6px 8px 3px}
+  .cmenu button{all:unset;box-sizing:border-box;display:flex;width:100%;justify-content:space-between;gap:10px;padding:6px 8px;border-radius:6px;font-size:12.5px;cursor:pointer}
+  .cmenu button:hover,.cmenu button:focus-visible{background:var(--bg3)}
+  .toast .undo{all:unset;cursor:pointer;margin-left:14px;font-weight:750;text-decoration:underline}
+  .toast.act{pointer-events:auto}
+  .mlist{border:1px solid var(--border);border-radius:9px;max-height:260px;overflow-y:auto;margin-bottom:12px}
+  .mlist label{display:flex;gap:10px;align-items:flex-start;padding:8px 11px;border-bottom:1px solid var(--border-sub);font-size:12.5px;cursor:pointer}
+  .mlist label:last-child{border-bottom:0}
+  .attest{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font-size:12.5px;cursor:pointer;background:var(--bg2)}
+  @media(max-width:1100px){.lbr{grid-template-columns:24px 1fr}.lbr > :nth-child(3),.lbr > :nth-child(4){grid-column:2}.acts{justify-content:flex-start}}
 </style>
 </head>
 <body>
@@ -550,150 +591,45 @@
   <!-- ==================================================== -->
   <section id="tab-logbook" class="hidden">
 
-    <div class="banner">
-      <b>Verification queue.</b> The system pre-classifies each case against the VOP curriculum (clinical fundamentals
-      and specialty modules) and suggests a category. Confirm or correct the suggestion — corrections train the
-      classifier for that department. Bulk approval is available for high-confidence matches.
-    </div>
-
-    <div class="lb-grid">
-      <!-- queue -->
-      <div class="card card-pad">
-        <div class="card-h">
-          <div>
-            <div class="eyebrow">Pending verification</div>
-            <div class="h2">Logbook Entries</div>
+    <div class="card card-pad mb">
+      <div class="card-h" style="margin-bottom:12px">
+        <div>
+          <div class="eyebrow">Logbook</div>
+          <div class="h2" style="display:flex;align-items:center;gap:8px">Verification
+            <span class="tipwrap"><button class="info" aria-describedby="lbTip" aria-label="How verification works">i</button>
+              <span class="tip" id="lbTip" role="tooltip">The system suggests a curriculum category for each case. Approve to credit it, change the category, send it back to the trainee, or reject it. Your corrections help tune the classifier for PWH. Shortcuts: j / k move, a approves, Enter opens details.</span></span>
           </div>
-          <div class="btn-row">
-            <button class="btn sec sm" onclick="bulkApprove()">Approve all high-confidence (11)</button>
-          </div>
+          <div class="meta" id="lbSub" style="margin-top:2px"></div>
         </div>
-
-        <!-- entry 1 — high confidence, auto-classified -->
-        <div class="lb-item">
-          <div class="lb-head" onclick="toggleLb(this)">
-            <div>
-              <div class="lb-t">Ultrasound-guided supraclavicular brachial plexus block</div>
-              <div class="lb-s">28 Sep 2026 &middot; Dr. Kelvin Wong (HAT-2) &middot; PWH Theatre 4 &middot; Elective &middot; ASA II</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;flex:none">
-              <span class="pill ok"><span class="dot g"></span>High confidence</span>
-            </div>
-          </div>
-          <div class="lb-body hidden">
-            <div class="suggest">
-              <div class="lbl">Suggested VOP classification</div>
-              <div class="val">2.2 Regional Anaesthesia &rarr; Peripheral plexus / nerve block</div>
-              <div class="conf"><span class="dot b"></span> 96% match to curriculum descriptor &middot; counts toward Clinical Fundamentals</div>
-            </div>
-            <div style="font-size:11.5px;color:var(--ink2);margin-bottom:8px">Confirm or change category:</div>
-            <div class="chips" style="margin-bottom:12px">
-              <button class="chip on">2.2 Regional Anaesthesia</button>
-              <button class="chip">2.1 General Anaesthesia</button>
-              <button class="chip">2.4 Acute Pain</button>
-              <button class="chip">3.3 Orthopaedics (Specialty)</button>
-              <button class="chip no">Reject &mdash; not a valid log</button>
-            </div>
-            <div class="btn-row">
-              <button class="btn pri sm">Approve &amp; credit</button>
-              <button class="btn sec sm">Request trainee amendment</button>
-              <button class="btn sec sm">Flag for review</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- entry 2 — low confidence, needs decision -->
-        <div class="lb-item">
-          <div class="lb-head" onclick="toggleLb(this)">
-            <div>
-              <div class="lb-t">Combined spinal-epidural for elective caesarean section</div>
-              <div class="lb-s">26 Sep 2026 &middot; Dr. Felix Tam (BAT-3) &middot; PWH Labour Ward &middot; Elective &middot; ASA I</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;flex:none">
-              <span class="pill warn"><span class="dot a"></span>Ambiguous &mdash; 2 categories</span>
-            </div>
-          </div>
-          <div class="lb-body hidden">
-            <div class="suggest" style="background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.25)">
-              <div class="lbl" style="color:var(--am700)">Classification conflict</div>
-              <div class="val">This case matches both a Clinical Fundamental and a Specialty Module descriptor.</div>
-              <div class="conf"><span class="dot a"></span> 2.2 Regional Anaesthesia (52%) &nbsp;vs&nbsp; 3.5 Obstetric Anaesthesia (48%)</div>
-            </div>
-            <div style="font-size:11.5px;color:var(--ink2);margin-bottom:8px">
-              Choose the category this case should credit. Standard practice: credit the specialty module,
-              since the trainee's obstetric rotation requires it.
-            </div>
-            <div class="chips" style="margin-bottom:12px">
-              <button class="chip">2.2 Regional Anaesthesia (CF)</button>
-              <button class="chip on">3.5 Obstetric Anaesthesia (Specialty)</button>
-              <button class="chip no">Reject</button>
-            </div>
-            <div class="btn-row">
-              <button class="btn pri sm">Approve &amp; credit</button>
-              <button class="btn sec sm">Request trainee amendment</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- entry 3 — mismatch, flagged -->
-        <div class="lb-item" style="border-color:rgba(239,68,68,.35)">
-          <div class="lb-head" onclick="toggleLb(this)">
-            <div>
-              <div class="lb-t">Fibreoptic intubation &mdash; anticipated difficult airway</div>
-              <div class="lb-s">24 Sep 2026 &middot; Dr. Kelvin Wong (HAT-2) &middot; PWH Theatre 2 &middot; Emergency &middot; ASA III</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;flex:none">
-              <span class="pill bad"><span class="dot r"></span>Already credited 3&times;</span>
-            </div>
-          </div>
-          <div class="lb-body hidden">
-            <div class="suggest" style="background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.28)">
-              <div class="lbl" style="color:var(--rd700)">Duplicate risk</div>
-              <div class="val">2.3 Airway Management &rarr; Fibreoptic intubation (BT or HT years)</div>
-              <div class="conf"><span class="dot r"></span> Minimum for this descriptor is 1. Trainee already has 3 credited against it.</div>
-            </div>
-            <p class="note" style="margin:0 0 12px">
-              The case still counts toward overall volume of practice, but will not advance the curriculum minimum.
-              Approve to keep the case, or request the trainee amend the log entry.
-            </p>
-            <div class="btn-row">
-              <button class="btn pri sm">Approve (counts to VOP only)</button>
-              <button class="btn sec sm">Request trainee amendment</button>
-              <button class="btn sec sm">Reject</button>
-            </div>
-          </div>
-        </div>
-
-        <p class="note">Showing 3 of 18 pending. Cases older than 2 years cannot be newly added (curriculum rule).</p>
-      </div>
-
-      <!-- sidebar: department classifier stats -->
-      <div>
-        <div class="card card-pad mb">
-          <div class="eyebrow" style="margin-bottom:11px">Your verification load</div>
-          <dl class="kv">
-            <dt>Pending today</dt><dd>18</dd>
-            <dt>Auto-classified &ge;90%</dt><dd>11</dd>
-            <dt>Ambiguous</dt><dd>5</dd>
-            <dt>Duplicate flags</dt><dd>2</dd>
-            <dt>Median time per case</dt><dd>~11 sec</dd>
-          </dl>
-        </div>
-
-        <div class="card card-pad">
-          <div class="eyebrow" style="margin-bottom:9px">Categorisation corrections</div>
-          <p class="note" style="margin:0 0 11px">
-            Cases you recategorised in the last 30 days. These corrections tune the classifier for PWH.
-          </p>
-          <dl class="kv">
-            <dt>Obstetric &rarr; Specialty</dt><dd>14</dd>
-            <dt>Regional &rarr; CF</dt><dd>9</dd>
-            <dt>Cardiac &rarr; Specialty</dt><dd>6</dd>
-            <dt>Rejected entries</dt><dd>2</dd>
-          </dl>
+        <div class="seg" id="lbScopeSeg">
+          <button class="on" data-lbscope="mine">My trainees</button>
+          <button data-lbscope="all" id="lbScopeAll">All trainees</button>
         </div>
       </div>
+
+      <div class="lb-tabs" id="lbTabs" role="tablist"></div>
+      <div class="lb-filters">
+        <input type="text" class="ctl" id="lbQ" placeholder="Search case or trainee" style="width:210px" oninput="lb.q=this.value.toLowerCase();lb.page=1;renderLogbook()">
+        <select class="ctl" id="lbTrainee" onchange="lb.trainee=this.value;lb.page=1;renderLogbook()" aria-label="Trainee"></select>
+        <select class="ctl" id="lbSite" onchange="lb.site=this.value;lb.page=1;renderLogbook()" aria-label="Site"></select>
+        <select class="ctl" id="lbSize" onchange="lb.size=+this.value;lb.page=1;renderLogbook()" aria-label="Rows per page">
+          <option value="10">10 per page</option><option value="25" selected>25 per page</option><option value="50">50 per page</option></select>
+      </div>
+      <div id="lbList"></div>
+      <div class="lb-pager" id="lbPager"></div>
+      <p class="note">Cases logged more than 2 years after the case date cannot be accredited (curriculum rule). Approved entries stay open to correction until a milestone locks them.</p>
     </div>
+
+    <details class="card card-pad">
+      <summary style="cursor:pointer;font-size:13px;font-weight:650">Classifier corrections &middot; last 30 days</summary>
+      <p class="note" style="margin:8px 0 10px">Cases you recategorised. These tune the classifier for PWH.</p>
+      <dl class="kv" style="max-width:380px">
+        <dt>Obstetric &rarr; Specialty</dt><dd>14</dd>
+        <dt>Regional &rarr; CF</dt><dd>9</dd>
+        <dt>Cardiac &rarr; Specialty</dt><dd>6</dd>
+        <dt>Rejected entries</dt><dd>2</dd>
+      </dl>
+    </details>
   </section>
 
   <!-- ==================================================== -->
@@ -1358,6 +1294,35 @@
   </div>
 </aside>
 
+
+
+<!-- ============ v3: logbook modal, detail panel, bulk bar ============ -->
+<div class="mscrim" id="lbModal" onclick="if(event.target===this)lbModalClose()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="lbmTitle">
+    <div class="modal-h">
+      <div><div class="eyebrow" id="lbmEy"></div><div class="h2" id="lbmTitle"></div></div>
+      <button class="btn sec sm" onclick="lbModalClose()">Close</button>
+    </div>
+    <div class="modal-b" id="lbmBody"></div>
+    <div class="modal-f">
+      <span class="meta" id="lbmMeta"></span>
+      <div class="btn-row"><button class="btn sec" onclick="lbModalClose()">Cancel</button><button class="btn pri" id="lbmOk"></button></div>
+    </div>
+  </div>
+</div>
+<div class="scrim" id="lbScrim" onclick="lbPanelClose()"></div>
+<aside class="drawer" id="lbPanel" aria-hidden="true">
+  <div class="dr-head">
+    <div><div class="eyebrow" id="lbpEy"></div><div class="h2" id="lbpTitle" style="font-size:15px"></div></div>
+    <button class="btn sec sm" onclick="lbPanelClose()">Close</button>
+  </div>
+  <div class="dr-body" id="lbPanelBody"></div>
+</aside>
+<div class="bulk" id="lbBulk" role="region" aria-label="Logbook bulk actions">
+  <span class="bn" id="lbBulkN"></span>
+  <button class="btn sm" onclick="lbApproveReview(true)">Review &amp; approve selected</button>
+  <button class="btn sm" onclick="lbSel.clear();renderLogbook()">Clear</button>
+</div>
 
 <!-- ============ v2: invite modal, bulk bar, toast ============ -->
 <div class="mscrim" id="invModal" onclick="if(event.target===this)closeInvite()">
@@ -2115,7 +2080,7 @@ function renderHome(){
   const o = outstandingForms();
   const tiles = [
     {n:4, l:'ITAs awaiting your sign-off', tab:'itas', c:'am'},
-    {n:18, l:'Logbook entries to verify', tab:'logbook', c:'bl'},
+    {n:lbPending(), l:'Logbook entries to verify', tab:'logbook', c:'bl'},
     {n:3, l:'Rotation handshakes pending', tab:'rotations', c:'am'},
     {n:o.forms, l:`Trainer ITA forms outstanding &middot; ${o.tr} trainees`, tab:'itas', c:'am'},
     {n:3, l:'Trainees falling behind', tab:'review', c:'rd'}
@@ -2138,7 +2103,7 @@ function renderHome(){
   const links = [
     {t:'itas', b:'In-Training Assessments', s:'4 awaiting sign-off \u00b7 invitations & ASOT assignment'},
     {t:'roster', b:'Trainee List', s:`${ROSTER.length} trainees \u00b7 ${outN} rotated out`},
-    {t:'logbook', b:'Logbook Verification', s:'18 entries to verify'},
+    {t:'logbook', b:'Logbook Verification', s:lbPending()+' entries to verify'},
     {t:'rotations', b:'Rotations', s:'3 handshakes pending \u00b7 6-month timeline'},
     {t:'review', b:'Progression Risk', s:'5 trainees flagged'}
   ];
@@ -2161,8 +2126,345 @@ function renderTimeline(){
   document.getElementById('tlSummary').textContent = `1 Jan 2027: ${outN} rotate out, ${inN} rotate in, ${back} return to PWH`;
 }
 
+/* ================= logbook verification ================= */
+const CATS = [
+  {c:'2.1',n:'General Anaesthesia',k:'CF'},{c:'2.2',n:'Regional Anaesthesia',k:'CF'},{c:'2.3',n:'Airway Management',k:'CF'},
+  {c:'2.4',n:'Acute Pain',k:'CF'},{c:'2.5',n:'Monitoring &amp; Vascular Access',k:'CF'},
+  {c:'3.1',n:'Cardiothoracic',k:'SP'},{c:'3.2',n:'Neuroanaesthesia',k:'SP'},{c:'3.3',n:'Orthopaedics',k:'SP'},
+  {c:'3.4',n:'Paediatrics',k:'SP'},{c:'3.5',n:'Obstetric Anaesthesia',k:'SP'}
+];
+const catBy = c => CATS.find(x=>x.c===c);
+const catLabel = c => c ? catBy(c).c+' '+catBy(c).n : '';
+const catShort = c => catBy(c).c+' '+catBy(c).n.split(' ')[0];
+function E(id,tid,title,date,site,urg,asa,tab,cat,pct,x){
+  const e = Object.assign({id,tid,title,date,site,urg,asa,tab,state:tab,sug:cat,cat:tab==='decide'?null:cat,pct,credited:false,vseq:0}, x||{});
+  e.hist = [{t:date+' 2026',a:'Trainee',x:'Logged case'},{t:date+' 2026',a:'Classifier',x:'Suggested '+catLabel(cat)+' ('+pct+'%)'}];
+  return e;
+}
+const LB = [
+  E('r1','2022-019','Ultrasound-guided supraclavicular brachial plexus block','28 Sep','PWH Theatre 4','Elective','II','ready','2.2',96),
+  E('r2','2022-019','Spinal anaesthesia for TURP','27 Sep','PWH Theatre 6','Elective','III','ready','2.2',94),
+  E('r3','2022-019','GA with rapid sequence induction, emergency laparotomy','25 Sep','PWH Theatre 1','Emergency','III','ready','2.1',97),
+  E('r4','2023-022','GA for laparoscopic cholecystectomy','27 Sep','PWH Theatre 3','Elective','II','ready','2.1',95),
+  E('r5','2023-022','Ultrasound-guided radial arterial line','26 Sep','PWH Theatre 3','Elective','II','ready','2.5',93),
+  E('r6','2024-019','Interscalene block for shoulder arthroscopy','28 Sep','PWH Theatre 5','Elective','I','ready','2.2',92),
+  E('r7','2024-019','LMA general anaesthesia, day surgery','24 Sep','PWH Day Surgery','Elective','I','ready','2.1',98),
+  E('r8','2025-012','Labour epidural analgesia','29 Sep','PWH Labour Ward','Elective','II','ready','3.5',95),
+  E('r9','2024-025','Videolaryngoscope-assisted intubation','29 Sep','PWH Theatre 2','Emergency','III','ready','2.3',94),
+  E('r10','2022-031','Induction and line placement for on-pump CABG','30 Sep','PWH Cardiac Theatre','Elective','IV','ready','3.1',96),
+  E('r11','2023-009','Postoperative PCA set-up and review','30 Sep','PWH ICU','Elective','III','ready','2.4',91),
+  E('d1','2023-022','Combined spinal-epidural for elective caesarean section','26 Sep','PWH Labour Ward','Elective','I','decide','2.2',52,{alts:[['2.2',52],['3.5',48]]}),
+  E('d2','2023-015','Spinal with adductor canal block for total knee replacement','29 Sep','PWH Theatre 5','Elective','II','decide','3.3',55,{alts:[['3.3',55],['2.2',45]]}),
+  E('d3','2025-003','Epidural for postoperative analgesia after laparotomy','28 Sep','PWH Theatre 1','Elective','III','decide','2.2',51,{alts:[['2.2',51],['2.4',49]]}),
+  E('d4','2023-018','Sedation for awake craniotomy','27 Sep','PWH Neuro Theatre','Elective','III','decide','3.2',50,{alts:[['3.2',50],['2.1',50]]}),
+  E('d5','2024-011','Caudal block for paediatric hernia repair','26 Sep','PWH Theatre 7','Elective','I','decide','3.4',54,{alts:[['3.4',54],['2.2',46]]}),
+  E('u1','2022-019','Fibreoptic intubation, anticipated difficult airway','24 Sep','PWH Theatre 2','Emergency','III','dup','2.3',90,{dup:{have:3,min:1}}),
+  E('u2','2024-008','Ultrasound-guided radial arterial line','23 Sep','PWH Theatre 4','Elective','II','dup','2.5',92,{dup:{have:6,min:2}}),
+  E('v1','2024-025','GA for inguinal hernia repair','12 Oct','PWH Day Surgery','Elective','I','ready','2.1',97,{state:'verified',credited:true,by:'Dr. Winnie Ho',at:'14 Oct',vseq:6}),
+  E('v2','2024-019','Ultrasound-guided femoral nerve block','8 Oct','PWH Theatre 5','Elective','II','ready','2.2',95,{state:'verified',credited:true,by:'Dr. Raymond Ng',at:'9 Oct',vseq:5}),
+  E('v3','2023-015','Spinal for hip hemiarthroplasty','30 Sep','PWH Theatre 5','Emergency','III','ready','2.2',93,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'2 Oct',vseq:4}),
+  E('v4','2023-009','Arterial line and CVC insertion in ICU','1 Oct','PWH ICU','Emergency','IV','ready','2.5',94,{state:'verified',credited:true,by:'Dr. Raymond Ng',at:'3 Oct',vseq:3}),
+  E('v5','2022-031','Thoracic epidural for lobectomy','14 Jan','PWH Cardiac Theatre','Elective','III','ready','3.1',92,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'20 Jan',vseq:2,locked:true,lockWhy:'Jan\u2013Jun 2026 ITA signed'}),
+  E('v6','2021-004','Rapid sequence induction, obstetric emergency','3 Feb','PWH Labour Ward','Emergency','III','ready','3.5',96,{state:'verified',credited:true,by:'Dr. Albert Chan',at:'9 Feb',vseq:1,locked:true,lockWhy:'Jan\u2013Jun 2026 ITA signed'})
+];
+LB.forEach(e=>{ if(e.state==='verified'){ e.hist.push({t:e.at+' 2026',a:e.by,x:'Approved and credited '+catLabel(e.cat)}); } });
+let vseqN = 6;
+const lb = {tab:'ready', scope:'all', q:'', trainee:'', site:'', page:1, size:25};
+const lbSel = new Set();
+let lbActive = null, lbPanelId = null, lbModalCfg = null;
+const trOf = e => ROSTER.find(t=>t.id===e.tid);
+const lbById = id => LB.find(e=>e.id===id);
+function lbScoped(){
+  const mineOnly = role==='asst' || lb.scope==='mine';
+  return LB.filter(e=>!mineOnly || trOf(e).asot===mineId());
+}
+function lbPending(){ return lbScoped().filter(e=>e.state!=='verified').length; }
+function needsChoice(e){ return !e.cat; }
+function isDupNow(e){ return e.tab==='dup' && e.cat===e.sug; }
+function outcome(e){
+  if(!e.cat) return 'Choose a category to see the effect.';
+  const t = trOf(e), c = catBy(e.cat);
+  if(isDupNow(e)) return `Counts to volume of practice only &middot; ${e.cat} minimum (${e.dup.min}) already met`;
+  const cur = c.k==='CF' ? t.cf.n : t.sm.n;
+  return `Credits ${catShort(e.cat)} &middot; ${c.k==='CF'?'Clinical Fundamentals':'Specialty'} ${cur} &rarr; ${cur+1}`;
+}
+function credit(e,d){
+  if(isDupNow(e) || !e.cat) return;
+  const t = trOf(e), c = catBy(e.cat);
+  if(c.k==='CF') t.cf.n += d; else t.sm.n += d;
+}
+function sugHtml(e){
+  const changed = e.cat && e.cat!==e.sug && e.tab!=='decide' ? ' <span class="pill info">Changed</span>' : '';
+  if(e.tab==='ready') return `<span class="pill ok"><span class="dot g"></span>High confidence ${e.pct}%</span><div class="lb-cat">${catLabel(e.cat)}${changed}</div>`;
+  if(e.tab==='dup')   return `<span class="pill bad"><span class="dot r"></span>Already credited ${e.dup.have}&times;</span><div class="lb-cat">${catLabel(e.cat)}${changed}</div>`;
+  const chips = e.alts.map(([c,p])=>`<button class="chip ${e.cat===c?'on':''}" onclick="lbPick('${e.id}','${c}')">${catShort(c)} ${p}%</button>`).join('');
+  const other = e.cat && !e.alts.some(a=>a[0]===e.cat) ? `<div class="lb-cat">${catLabel(e.cat)} <span class="pill info">Changed</span></div>` : '';
+  return `<span class="pill warn"><span class="dot a"></span>Ambiguous</span><div class="chips" style="margin-top:5px">${chips}</div>${other}`;
+}
+function actsHtml(e){
+  return `<div class="acts">
+    <button class="btn pri sm" ${needsChoice(e)?'disabled title="Choose a category first"':''} onclick="lbApprove('${e.id}')">Approve</button>
+    <button class="btn sec sm" onclick="lbChangeMenu(event,'${e.id}')">Change &#9662;</button>
+    <button class="btn sec sm" onclick="lbAsk('${e.id}','back')">Send back</button>
+    <button class="btn sec sm danger" onclick="lbAsk('${e.id}','reject')">Reject</button></div>`;
+}
+function metaLine(e){ const t = trOf(e); return `${lastFirst(t.name)} &middot; ${t.stage} &middot; ${e.date} &middot; ${e.site} &middot; ${e.urg} &middot; ASA ${e.asa}`; }
+function rowHtml(e){
+  const sel = `<input type="checkbox" aria-label="Select case" ${lbSel.has(e.id)?'checked':''} onchange="lbToggle('${e.id}',this.checked)" ${e.tab==='ready'?'':'style="visibility:hidden"'}>`;
+  return `<div class="lbr ${lbActive===e.id?'active':''}" data-id="${e.id}">
+    ${sel}
+    <div><a class="lb-title" tabindex="0" onclick="lbPanelOpen('${e.id}')" onkeydown="if(event.key==='Enter')lbPanelOpen('${e.id}')">${e.title}</a>
+      <div class="lb-s">${metaLine(e)}</div><div class="lb-out">${outcome(e)}</div></div>
+    <div>${sugHtml(e)}</div>${actsHtml(e)}</div>`;
+}
+function verifiedRow(e){
+  const action = e.locked
+    ? (e.boe ? '<span class="pill info">BOE request sent</span>'
+             : `<div class="acts"><span class="meta" style="align-self:center">Locked &middot; ${e.lockWhy}</span><button class="btn sec sm" onclick="lbBoe('${e.id}')">Request BOE amendment</button></div>`)
+    : `<div class="acts"><button class="btn sec sm" onclick="lbReopen('${e.id}')">Reopen</button></div>`;
+  return `<div class="lbr" data-id="${e.id}"><span></span>
+    <div><a class="lb-title" tabindex="0" onclick="lbPanelOpen('${e.id}')" onkeydown="if(event.key==='Enter')lbPanelOpen('${e.id}')">${e.title}</a>
+      <div class="lb-s">${metaLine(e)}</div></div>
+    <div><span class="pill ok"><span class="dot g"></span>Verified</span><div class="lb-cat">${catLabel(e.cat)}</div><div class="lb-s">${e.by.replace('Dr. ','')} &middot; ${e.at}</div></div>
+    ${action}</div>`;
+}
+function lbRows(tab){
+  let rows = lbScoped().filter(e=>e.state===tab);
+  rows = rows.filter(e=>{
+    if(lb.trainee && e.tid!==lb.trainee) return false;
+    if(lb.site && e.site!==lb.site) return false;
+    if(lb.q && !(e.title+' '+trOf(e).name+' '+lastFirst(trOf(e).name)).toLowerCase().includes(lb.q)) return false;
+    return true;
+  });
+  if(tab==='verified') rows.sort((a,b)=>b.vseq-a.vseq);
+  else rows.sort((a,b)=>lastFirst(trOf(a).name).localeCompare(lastFirst(trOf(b).name)) || a.id.localeCompare(b.id,undefined,{numeric:true}));
+  return rows;
+}
+const LB_TABS = [['ready','Ready to approve'],['decide','Needs a decision'],['dup','Duplicates'],['verified','Verified']];
+function renderLogbook(){
+  const list = document.getElementById('lbList'); if(!list) return;
+  const sc = lbScoped();
+  const counts = {}; LB_TABS.forEach(([k])=>counts[k]=sc.filter(e=>e.state===k).length);
+  const tabsEl = document.getElementById('lbTabs');
+  tabsEl.innerHTML = LB_TABS.map(([k,l])=>`<button class="lb-tab ${lb.tab===k?'on':''}" role="tab" aria-selected="${lb.tab===k}" onclick="lbSetTab('${k}')">${l} <span class="cnt ${k==='decide'&&counts[k]?'hot':''}">${counts[k]}</span></button>`).join('') + '<span class="sp"></span>' +
+    (lb.tab==='ready' ? `<button class="btn pri sm" ${counts.ready?'':'disabled'} onclick="lbApproveReview(false)">Review &amp; approve all ${lbRows('ready').length}</button>` : '');
+  const pend = counts.ready+counts.decide+counts.dup;
+  document.getElementById('lbSub').textContent = `${pend} pending \u00b7 ${counts.ready} ready, ${counts.decide} need a decision, ${counts.dup} duplicate${counts.dup===1?'':'s'}`;
+
+  // filters
+  const tsel = document.getElementById('lbTrainee'), ssel = document.getElementById('lbSite');
+  const trs = Array.from(new Set(sc.map(e=>e.tid))).map(id=>ROSTER.find(t=>t.id===id)).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+  tsel.innerHTML = '<option value="">All trainees</option>' + trs.map(t=>`<option value="${t.id}" ${lb.trainee===t.id?'selected':''}>${lastFirst(t.name)}</option>`).join('');
+  const sites = Array.from(new Set(sc.map(e=>e.site))).sort();
+  ssel.innerHTML = '<option value="">All sites</option>' + sites.map(s=>`<option ${lb.site===s?'selected':''}>${s}</option>`).join('');
+
+  // rows + paging
+  const rows = lbRows(lb.tab);
+  const pages = Math.max(1, Math.ceil(rows.length/lb.size)); if(lb.page>pages) lb.page = pages;
+  const slice = rows.slice((lb.page-1)*lb.size, lb.page*lb.size);
+  let html = '';
+  if(lb.tab==='ready'){
+    let cur = null;
+    slice.forEach(e=>{
+      if(e.tid!==cur){
+        cur = e.tid; const t = trOf(e), n = rows.filter(x=>x.tid===cur).length;
+        html += `<div class="lb-group"><b>${lastFirst(t.name)}</b> ${stagePill(t.stage)}<span class="meta">${n} ready</span><span class="sp"></span>
+          <button class="btn sec sm" onclick="lbApproveTrainee('${cur}')">Review &amp; approve ${n}</button></div>`;
+      }
+      html += rowHtml(e);
+    });
+  } else if(lb.tab==='verified') html = slice.map(verifiedRow).join('');
+  else html = slice.map(rowHtml).join('');
+  const empty = {ready:'Nothing waiting. Nice.',decide:'No cases need a decision.',dup:'No duplicate flags.',verified:'No verified entries match.'}[lb.tab];
+  list.innerHTML = html || `<p class="note" style="padding:26px 0;text-align:center">${rows.length===0 && (lb.q||lb.trainee||lb.site) ? 'No cases match these filters.' : empty}</p>`;
+  document.getElementById('lbPager').innerHTML = rows.length<=lb.size ? `<span>${rows.length} case${rows.length===1?'':'s'}</span><span></span>` :
+    `<span>${(lb.page-1)*lb.size+1}\u2013${Math.min(rows.length,lb.page*lb.size)} of ${rows.length}</span>
+     <span class="btn-row"><button class="btn sec sm" ${lb.page<=1?'disabled':''} onclick="lb.page--;renderLogbook()">Previous</button>
+     <button class="btn sec sm" ${lb.page>=pages?'disabled':''} onclick="lb.page++;renderLogbook()">Next</button></span>`;
+
+  // scope control
+  const asst = role==='asst';
+  document.querySelectorAll('#lbScopeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.lbscope===(asst?'mine':lb.scope)));
+  document.getElementById('lbScopeAll').disabled = asst;
+
+  // bulk bar + badges
+  const n = Array.from(lbSel).filter(id=>lbById(id).state==='ready').length;
+  document.getElementById('lbBulkN').textContent = n + ' selected';
+  document.getElementById('lbBulk').classList.toggle('on', n>0 && lb.tab==='ready');
+  const badge = document.querySelector('.tab[data-tab="logbook"] .cnt'); if(badge) badge.textContent = pend;
+  if(lbPanelId) lbPanelRender();
+  renderHome();
+}
+function lbSetTab(k){ lb.tab = k; lb.page = 1; lbSel.clear(); renderLogbook(); }
+document.querySelectorAll('#lbScopeSeg button').forEach(b=>b.onclick = ()=>{ lb.scope = b.dataset.lbscope; lb.page = 1; lbSel.clear(); renderLogbook(); });
+function lbToggle(id,on){ on ? lbSel.add(id) : lbSel.delete(id); renderLogbook(); }
+
+/* ---- actions ---- */
+function snap(e){ return {state:e.state, cat:e.cat, credited:e.credited, by:e.by, at:e.at, vseq:e.vseq, hist:e.hist.slice(), boe:e.boe}; }
+function restore(e,s){ if(e.credited && !s.credited) credit(e,-1); if(!e.credited && s.credited) credit(e,1); Object.assign(e,s); }
+function lbHist(e,x){ e.hist.push({t:'17 Oct 2026',a:actor(),x}); }
+function toastUndo(msg, fn){
+  const el = document.getElementById('toast');
+  el.innerHTML = msg + ' <button class="undo">Undo</button>';
+  el.classList.add('on','act');
+  el.querySelector('.undo').onclick = ()=>{ fn(); el.classList.remove('on','act'); };
+  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('on','act'), 7000);
+}
+function doApprove(e){
+  if(e.state!=='ready' && e.state!=='decide' && e.state!=='dup') return;
+  e.state = 'verified'; e.by = actor().replace(/ \(.*\)/,''); e.at = '17 Oct'; e.vseq = ++vseqN;
+  credit(e,1); e.credited = !isDupNow(e);
+  lbHist(e, 'Approved' + (isDupNow(e) ? ' (volume only)' : ' and credited '+catLabel(e.cat)));
+  lbSel.delete(e.id);
+}
+function lbApprove(id){
+  const e = lbById(id); if(!e || needsChoice(e)) return;
+  const s = snap(e); doApprove(e);
+  logEvent(`Logbook: approved "${e.title}" &mdash; ${lastFirst(trOf(e).name)}`);
+  renderAll();
+  toastUndo('Approved', ()=>{ restore(e,s); renderAll(); });
+}
+function lbPick(id,c){ const e = lbById(id); e.cat = c; renderLogbook(); }
+function lbAsk(id,kind){
+  const e = lbById(id), back = kind==='back';
+  const reasons = back ? ['Case details incomplete','Wrong procedure or category entered','Supervisor not recorded','Other']
+                       : ['Not a valid log','Duplicate of another entry','Not performed by this trainee','Other'];
+  lbModalOpen({ey:lastFirst(trOf(e).name), title: back?'Send back to trainee':'Reject entry',
+    body:`<p class="meta" style="margin-bottom:12px"><b>${e.title}</b><br>${metaLine(e)}</p>
+      <div class="field"><div class="lbl">Reason</div><select class="ctl" id="lbReason" style="width:100%">${reasons.map(r=>`<option>${r}</option>`).join('')}</select></div>
+      <div class="field" style="margin-bottom:0"><div class="lbl">Note to trainee (optional)</div><textarea class="ctl" id="lbNote"></textarea></div>`,
+    ok: back?'Send back':'Reject entry', danger:!back,
+    onOk:()=>{
+      const s = snap(e), r = document.getElementById('lbReason').value;
+      e.state = back ? 'sent' : 'rejected'; lbSel.delete(e.id);
+      lbHist(e, (back?'Sent back: ':'Rejected: ')+r);
+      logEvent(`Logbook: ${back?'sent back':'rejected'} "${e.title}" &mdash; ${lastFirst(trOf(e).name)} (${r})`);
+      lbModalClose(); renderAll();
+      toastUndo(back?'Sent back to trainee':'Entry rejected', ()=>{ restore(e,s); renderAll(); });
+    }});
+}
+function lbChangeMenu(ev,id){
+  ev.stopPropagation();
+  const e = lbById(id), old = document.getElementById('cmenu'); if(old) old.remove();
+  const m = document.createElement('div'); m.className = 'cmenu'; m.id = 'cmenu';
+  let h = '<div class="gh">Clinical Fundamentals</div>';
+  CATS.forEach((c,i)=>{
+    if(c.k==='SP' && CATS[i-1].k==='CF') h += '<div class="gh">Specialty</div>';
+    h += `<button onclick="lbSetCat('${id}','${c.c}')"><span>${c.c} ${c.n}</span><span>${e.cat===c.c?'\u2713':''}</span></button>`;
+  });
+  m.innerHTML = h; document.body.appendChild(m);
+  const r = ev.currentTarget.getBoundingClientRect();
+  const left = Math.min(r.left, innerWidth - m.offsetWidth - 10);
+  const top = r.bottom + 6 + m.offsetHeight > innerHeight ? Math.max(10, r.top - m.offsetHeight - 6) : r.bottom + 6;
+  m.style.left = Math.max(10,left)+'px'; m.style.top = top+'px';
+}
+function lbSetCat(id,c){ const e = lbById(id); e.cat = c; const m = document.getElementById('cmenu'); if(m) m.remove(); renderLogbook(); }
+document.addEventListener('click', ()=>{ const m = document.getElementById('cmenu'); if(m) m.remove(); });
+
+/* ---- batch approval with attestation ---- */
+function lbApproveTrainee(tid){ lbSel.clear(); lbRows('ready').filter(e=>e.tid===tid).forEach(e=>lbSel.add(e.id)); lbApproveReview(true); }
+function lbApproveReview(useSel){
+  const rows = (useSel ? Array.from(lbSel).map(lbById).filter(e=>e.state==='ready') : lbRows('ready'));
+  if(!rows.length) return;
+  lbModalOpen({ey:'Batch approval', title:`Approve ${rows.length} high-confidence case${rows.length===1?'':'s'}`,
+    body:`<p class="meta" style="margin-bottom:10px">Untick any case you want to review on its own. Ambiguous and duplicate cases are never included.</p>
+      <div class="mlist" id="lbBatch">${rows.map(e=>`<label><input type="checkbox" checked value="${e.id}"><span><b>${e.title}</b><br><span class="meta">${lastFirst(trOf(e).name)} &middot; ${catLabel(e.cat)} &middot; ${e.pct}%</span></span></label>`).join('')}</div>
+      <label class="attest"><input type="checkbox" id="lbAttest"><span>I have reviewed these cases and confirm the suggested categories are correct. This is recorded in the audit trail.</span></label>`,
+    ok:'Approve', onOk:()=>{
+      const ids = Array.from(document.querySelectorAll('#lbBatch input:checked')).map(i=>i.value);
+      const es = ids.map(lbById), snaps = es.map(snap);
+      es.forEach(doApprove);
+      logEvent(`Logbook: batch-approved ${es.length} high-confidence cases (attested)`);
+      lbModalClose(); renderAll();
+      toastUndo(`${es.length} cases approved`, ()=>{ es.forEach((e,i)=>restore(e,snaps[i])); renderAll(); });
+    },
+    check:()=>{
+      const n = document.querySelectorAll('#lbBatch input:checked').length, a = document.getElementById('lbAttest').checked;
+      document.getElementById('lbmMeta').textContent = n+' of '+rows.length+' selected';
+      document.getElementById('lbmOk').textContent = 'Approve '+n;
+      return n>0 && a;
+    }});
+}
+
+/* ---- retrospective edit ---- */
+function lbReopen(id){
+  const e = lbById(id);
+  lbModalOpen({ey:lastFirst(trOf(e).name), title:'Reopen verified entry',
+    body:`<p class="meta" style="margin-bottom:12px"><b>${e.title}</b><br>Verified as ${catLabel(e.cat)} by ${e.by} on ${e.at}.<br>
+      Reopening removes its credit and returns it to the queue. The trainee is notified and the change is logged.</p>
+      <div class="field"><div class="lbl">Reason</div><select class="ctl" id="lbReason" style="width:100%"><option>Wrong category</option><option>Wrong trainee or case</option><option>Duplicate entry</option><option>Approved by mistake</option><option>Other</option></select></div>
+      <div class="field" style="margin-bottom:0"><div class="lbl">Note</div><textarea class="ctl" id="lbNote"></textarea></div>`,
+    ok:'Reopen entry', onOk:()=>{
+      const s = snap(e), r = document.getElementById('lbReason').value;
+      if(e.credited) credit(e,-1);
+      e.credited = false; e.state = e.tab; e.reopened = true;
+      lbHist(e, 'Reopened: '+r);
+      logEvent(`Logbook: reopened "${e.title}" &mdash; ${lastFirst(trOf(e).name)} (${r})`);
+      lbModalClose(); renderAll();
+      toastUndo('Entry reopened', ()=>{ restore(e,s); e.credited && credit(e,0); renderAll(); });
+    }});
+}
+function lbBoe(id){
+  const e = lbById(id);
+  lbModalOpen({ey:'Locked entry', title:'Request BOE amendment',
+    body:`<p class="meta" style="margin-bottom:12px"><b>${e.title}</b><br>Locked since: ${e.lockWhy}. Only the Board of Education can amend credit after a milestone.</p>
+      <div class="field"><div class="lbl">Reason</div><select class="ctl" id="lbReason" style="width:100%"><option>Incorrect category</option><option>Administrative error</option><option>Supersedes duplicate</option><option>Other (BOE directed)</option></select></div>
+      <div class="field" style="margin-bottom:0"><div class="lbl">Explanation (required)</div><textarea class="ctl" id="lbNote"></textarea></div>`,
+    ok:'Send request', check:()=>document.getElementById('lbNote').value.trim().length>3,
+    onOk:()=>{ e.boe = true; lbHist(e,'BOE amendment requested: '+document.getElementById('lbReason').value);
+      logEvent(`Logbook: requested BOE amendment for "${e.title}"`); lbModalClose(); renderAll(); toast('Request sent to BOE'); }});
+}
+
+/* ---- generic modal ---- */
+function lbModalOpen(cfg){
+  lbModalCfg = cfg;
+  document.getElementById('lbmEy').textContent = cfg.ey || '';
+  document.getElementById('lbmTitle').textContent = cfg.title;
+  document.getElementById('lbmBody').innerHTML = cfg.body;
+  const ok = document.getElementById('lbmOk');
+  ok.textContent = cfg.ok; ok.className = 'btn ' + (cfg.danger ? 'am' : 'pri'); ok.onclick = ()=>cfg.onOk();
+  document.getElementById('lbmMeta').textContent = '';
+  const upd = ()=>{ if(cfg.check) ok.disabled = !cfg.check(); else ok.disabled = false; };
+  document.getElementById('lbmBody').oninput = upd; document.getElementById('lbmBody').onchange = upd;
+  document.getElementById('lbModal').classList.add('on'); upd();
+  const f = document.querySelector('#lbmBody select, #lbmBody textarea, #lbmBody input'); if(f) f.focus();
+}
+function lbModalClose(){ document.getElementById('lbModal').classList.remove('on'); lbModalCfg = null; }
+
+/* ---- detail panel ---- */
+function lbPanelOpen(id){ lbPanelId = id; lbActive = id; lbPanelRender(); document.getElementById('lbScrim').classList.add('on'); const p = document.getElementById('lbPanel'); p.classList.add('on'); p.setAttribute('aria-hidden','false'); }
+function lbPanelClose(){ lbPanelId = null; document.getElementById('lbScrim').classList.remove('on'); const p = document.getElementById('lbPanel'); p.classList.remove('on'); p.setAttribute('aria-hidden','true'); }
+function lbPanelRender(){
+  const e = lbById(lbPanelId); if(!e) return; const t = trOf(e);
+  document.getElementById('lbpEy').textContent = lastFirst(t.name) + ' \u00b7 ' + t.stage;
+  document.getElementById('lbpTitle').textContent = e.title;
+  const alts = e.alts ? e.alts.map(([c,p])=>`<dt>${catLabel(c)}</dt><dd>${p}%</dd>`).join('') : `<dt>${catLabel(e.sug)}</dt><dd>${e.pct}%</dd>`;
+  const pending = e.state==='ready'||e.state==='decide'||e.state==='dup';
+  document.getElementById('lbPanelBody').innerHTML = `
+    <div class="dr-sec"><div class="eyebrow">Case</div><dl class="kv"><dt>Date</dt><dd>${e.date} 2026</dd><dt>Site</dt><dd>${e.site}</dd><dt>Urgency</dt><dd>${e.urg}</dd><dt>ASA</dt><dd>${e.asa}</dd></dl></div>
+    <div class="dr-sec"><div class="eyebrow">Classifier suggestion</div><dl class="kv">${alts}</dl>
+      ${e.dup?`<p class="note">Trainee already has ${e.dup.have} credited against this descriptor (minimum ${e.dup.min}).</p>`:''}</div>
+    <div class="dr-sec"><div class="eyebrow">${pending?'If you approve':'Result'}</div><p style="font-size:13px">${e.state==='verified'?'Verified as '+catLabel(e.cat):outcome(e)}</p></div>
+    ${pending ? `<div class="dr-sec"><div class="eyebrow">Actions</div>${actsHtml(e)}</div>` : ''}
+    <div class="dr-sec"><div class="eyebrow">History</div><ul class="log">${e.hist.slice().reverse().map(h=>`<li style="grid-template-columns:110px 1fr"><span class="t">${h.t}</span><span><b>${h.a}</b> &middot; ${h.x}</span></li>`).join('')}</ul></div>`;
+}
+
+/* ---- keyboard ---- */
+document.addEventListener('keydown', ev=>{
+  if(document.getElementById('tab-logbook').classList.contains('hidden')) return;
+  if(document.querySelector('.mscrim.on') || /INPUT|SELECT|TEXTAREA/.test((ev.target||{}).tagName||'') || ev.metaKey || ev.ctrlKey) return;
+  const ids = Array.from(document.querySelectorAll('#lbList .lbr')).map(r=>r.dataset.id);
+  const i = ids.indexOf(lbActive);
+  if(ev.key==='j' || ev.key==='k'){
+    lbActive = ids[Math.max(0, Math.min(ids.length-1, i + (ev.key==='j'?1:-1)))] || ids[0]; renderLogbook();
+    const el = document.querySelector('.lbr.active'); if(el) el.scrollIntoView({block:'nearest'});
+  } else if(ev.key==='a' && lbActive){ lbApprove(lbActive); }
+  else if(ev.key==='x' && lbActive && lbById(lbActive).tab==='ready'){ lbToggle(lbActive, !lbSel.has(lbActive)); }
+  else if(ev.key==='Enter' && lbActive && ev.target===document.body){ lbPanelOpen(lbActive); }
+});
+
 function renderAll(){
-  renderRoster(); renderItaRound(); refreshItaSignoff(); renderHome(); renderLog();
+  renderRoster(); renderItaRound(); refreshItaSignoff(); renderLog(); renderLogbook();
 }
 
 /* ---------------- tabs ---------------- */
@@ -2255,7 +2557,7 @@ function closeDrawer(){
   const d = document.getElementById('drawer');
   d.classList.remove('on'); d.setAttribute('aria-hidden','true');
 }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDrawer(); closeInvite(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDrawer(); closeInvite(); lbPanelClose(); lbModalClose(); } });
 
 /* ---------------- theme ---------------- */
 function toggleTheme(){
