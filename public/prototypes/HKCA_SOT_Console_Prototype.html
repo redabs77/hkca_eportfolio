@@ -437,6 +437,58 @@
   @media(max-width:1100px){.lbr{grid-template-columns:24px 1fr}.lbr > :nth-child(3),.lbr > :nth-child(4){grid-column:2}.acts{justify-content:flex-start}}
 
   .tab .cnt[style*="display: none"]{display:none}
+
+  /* ---- home v4 ---- */
+  .hm-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:2px 0 20px;flex-wrap:wrap}
+  .hm-title{font-size:26px;font-weight:750;letter-spacing:-.025em;line-height:1.15;margin-top:4px}
+  .hm-sub{font-size:13.5px;color:var(--ink2);margin-top:4px}
+  .hm-sub b{color:var(--ink);font-weight:650}
+  .hm-side{display:flex;align-items:center;gap:12px}
+  .hm-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+  .hm-rail{display:grid;gap:14px}
+  .hm-queue{padding:6px 0 4px}
+  .q-group{padding:14px 20px 4px}
+  .q-gh{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+  .q-gh::after{content:'';flex:1;height:1px;background:var(--border-sub)}
+  .q-gh .c{font-variant-numeric:tabular-nums}
+  .q-gh.od{color:var(--rd700)} .dark .q-gh.od{color:var(--rd500)}
+  .q-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-sub);position:relative}
+  .q-row:last-child{border-bottom:0}
+  .q-n{font-size:22px;font-weight:750;letter-spacing:-.03em;text-align:right;font-variant-numeric:tabular-nums;line-height:1}
+  .q-n.none{font-size:18px;color:var(--ink3);font-weight:500}
+  .q-od .q-n{color:var(--rd700)} .dark .q-od .q-n{color:var(--rd500)}
+  .q-now .q-n{color:var(--ink)}
+  .q-t{font-size:13.5px;font-weight:650;line-height:1.3}
+  .q-d{font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.4}
+  .q-due{font-size:11.5px;font-weight:650;white-space:nowrap}
+  .q-od .q-due{color:var(--rd700)} .dark .q-od .q-due{color:var(--rd500)}
+  .q-up .q-due{color:var(--ink3);font-weight:550}
+  .q-act{display:flex;gap:6px;align-items:center}
+  .q-snz{all:unset;cursor:pointer;font-size:11.5px;color:var(--ink3);padding:5px 7px;border-radius:6px}
+  .q-snz:hover{color:var(--ink);background:var(--border-sub)} .q-snz:focus-visible{outline:2px solid var(--em600)}
+  .q-empty{padding:34px 20px;text-align:center;color:var(--ink2);font-size:13.5px}
+  .q-foot{padding:10px 20px 12px;font-size:12px;color:var(--ink3);border-top:1px solid var(--border-sub);margin-top:6px}
+  .q-foot a{color:var(--ink2);font-weight:650;cursor:pointer;text-decoration:underline}
+  .q-snoozed{padding:8px 0;display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink2);border-bottom:1px solid var(--border-sub)}
+  .pg-row{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:9px 0;border-radius:6px}
+  .pg-row:hover .pg-l b{color:var(--em600)} .pg-row:focus-visible{outline:2px solid var(--em600);outline-offset:2px}
+  .pg-l{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);margin-bottom:5px}
+  .pg-l b{color:var(--ink);font-weight:650}
+  .pg{height:6px;border-radius:4px;background:var(--border-sub);overflow:hidden}
+  .pg i{display:block;height:100%;border-radius:4px;background:var(--em500)}
+  .pg i.b{background:var(--bl500)} .pg i.p{background:var(--pu500)}
+  .hm-foot{font-size:12px;color:var(--ink2);margin-top:12px;padding-top:12px;border-top:1px solid var(--border-sub);line-height:1.5}
+  .hm-trainees{all:unset;box-sizing:border-box;cursor:pointer;display:block;background:var(--raised);border:1px solid var(--border);border-radius:12px;padding:17px 18px}
+  .hm-trainees:hover{border-color:var(--g400)} .hm-trainees:focus-visible{outline:2px solid var(--em600);outline-offset:2px}
+  .hm-big{font-size:30px;font-weight:750;letter-spacing:-.03em;margin:4px 0 10px;line-height:1}
+  .hm-big small{font-size:13px;font-weight:550;color:var(--ink2);letter-spacing:0;margin-left:6px}
+  .hm-split{display:flex;height:8px;border-radius:5px;overflow:hidden;gap:2px}
+  .hm-split i{display:block;height:100%}
+  .hm-drawer-bg{position:fixed;inset:0;background:rgba(10,20,30,.4);opacity:0;pointer-events:none;transition:opacity .2s;z-index:80}
+  .hm-drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:var(--raised);border-left:1px solid var(--border);box-shadow:var(--shadow-md);padding:22px 22px 28px;transform:translateX(100%);transition:transform .22s ease;z-index:81;overflow:auto;visibility:hidden}
+  .hm-drawer.on{transform:none;visibility:visible} .hm-drawer-bg.on{opacity:1;pointer-events:auto}
+  @media (max-width:980px){ .hm-grid{grid-template-columns:1fr} .q-row{grid-template-columns:36px minmax(0,1fr);} .q-due,.q-act{grid-column:2} }
+  @media (prefers-reduced-motion:reduce){ .hm-drawer,.hm-drawer-bg{transition:none} }
 </style>
 </head>
 <body>
@@ -500,36 +552,42 @@
   <!-- TAB 0 — HOME DASHBOARD (default landing)              -->
   <!-- ==================================================== -->
   <section id="tab-home">
-    <div class="card-h" style="margin-bottom:14px">
+    <header class="hm-head">
       <div>
         <div class="eyebrow" id="homeEyebrow">Supervisor of Training &middot; Prince of Wales Hospital</div>
-        <div class="h2" id="homeTitle">Today at a glance</div>
-        <div class="meta" id="homeDate" style="margin-top:2px"></div>
+        <h1 class="hm-title" id="homeTitle">Good day</h1>
+        <p class="hm-sub" id="homeSub"></p>
       </div>
+      <div class="hm-side">
+        <span class="meta" id="homeDate"></span>
+        <button class="btn sec sm" id="rulesBtn" onclick="openRules()">Reminder rules</button>
+      </div>
+    </header>
+
+    <div class="hm-grid">
+      <div class="card hm-queue" id="queue" aria-label="Your queue"></div>
+      <aside class="hm-rail">
+        <div class="card card-pad">
+          <div class="eyebrow">This cycle &middot; Jul &ndash; Dec 2026</div>
+          <div id="cycleRows"></div>
+          <div class="hm-foot" id="cycleFoot"></div>
+        </div>
+        <button class="card card-pad hm-trainees" onclick="go('roster')" aria-label="Open trainee list">
+          <div class="eyebrow">Trainees</div>
+          <div class="hm-big" id="trN"></div>
+          <div class="hm-split" id="trSplit"></div>
+          <div class="hm-foot" id="trFoot"></div>
+        </button>
+      </aside>
     </div>
 
-    <div class="eyebrow" style="margin-bottom:8px">Actions pending</div>
-    <div class="tiles" id="sotAlerts"></div>
-
-    <div class="home-grid">
-      <div class="card card-pad">
-        <div class="eyebrow">Reminders</div>
-        <div class="h3" style="margin:3px 0 4px">Needs a nudge</div>
-        <div id="remNow"></div>
-        <div class="eyebrow" style="margin:18px 0 2px" id="remLaterHead">Coming up</div>
-        <div id="remLater"></div>
-      </div>
-
-      <div class="card card-pad">
-        <div class="eyebrow">Reminder rules</div>
-        <div class="h3" style="margin:3px 0 8px">When should I be reminded?</div>
-        <div id="ruleList"></div>
-        <p class="note">Change a rule and the lists on the left update. In the live system these become automatic emails and in-app notices.</p>
-      </div>
-    </div>
-
-    <div class="eyebrow" style="margin-bottom:8px">Go to</div>
-    <div class="links" id="homeLinks"></div>
+    <div class="hm-drawer-bg" id="rulesBg" onclick="closeRules()"></div>
+    <aside class="hm-drawer" id="rulesDrawer" role="dialog" aria-modal="true" aria-label="Reminder rules" tabindex="-1">
+      <div class="card-h" style="margin-bottom:6px"><div><div class="eyebrow">Reminder rules</div><div class="h3" style="margin-top:3px">When should I be reminded?</div></div>
+        <button class="btn sec sm" onclick="closeRules()">Done</button></div>
+      <div id="ruleList"></div>
+      <p class="note">Change a rule and your queue updates straight away. In the live system these become automatic emails and in-app notices.</p>
+    </aside>
   </section>
 
   <!-- ==================================================== -->
@@ -2208,56 +2266,79 @@ function reminders(){
       due:new Date(2026,10,15), tab:'review', btn:'Send reminder'}
   ].concat(goalReminders()).map(r=>Object.assign(r,{diff:Math.round((r.due-TODAY)/DAY)})).sort((a,b)=>a.due-b.due);
 }
-function remRow(r,later){
-  const lab = r.diff<0 ? `<span class="pill bad">Overdue ${-r.diff}d</span>` : r.diff===0 ? '<span class="pill warn">Due today</span>' : `<span class="pill">In ${r.diff}d</span>`;
-  const sent = sentRem.has(r.id);
-  return `<div class="rem ${later?'later':''}">
-    <div>${lab}<div class="id-cell" style="margin-top:4px">${r.due.getDate()} ${MON[r.due.getMonth()]}</div></div>
-    <div><div class="t">${r.title}</div><div class="d">${r.detail}</div></div>
-    <div class="btn-row"><button class="btn sec sm" ${sent?'disabled':''} onclick="sendRem('${r.id}')">${sent?'Sent':r.btn}</button>
-      <button class="btn sec sm" onclick="go('${r.tab}')">Open</button></div></div>`;
-}
+const snoozed = new Set();
 function sendRem(id){
   const r = reminders().find(x=>x.id===id); sentRem.add(id);
   logEvent('Reminder sent: ' + r.title);
   toast('Reminder sent'); renderHome();
 }
 function setRule(k,v){ RULES[k] = +v; renderHome(); }
-function renderHome(){
-  const o = outstandingForms();
-  const tiles = [
-    {n:4, l:'ITAs awaiting your sign-off', tab:'itas', c:'am'},
-    {n:lbPending(), l:'Logbook entries to verify', tab:'logbook', c:'bl'},
-    {n:3, l:'Rotation handshakes pending', tab:'rotations', c:'am'},
-    {n:o.forms, l:`Trainer ITA forms outstanding &middot; ${o.tr} trainees`, tab:'itas', c:'am'},
-    {n:goalsAction(), l:'Learning goals to sign off', tab:'goals', c:'am'},
-    {n:3, l:'Trainees falling behind', tab:'review', c:'rd'}
-  ];
-  document.getElementById('sotAlerts').innerHTML = tiles.map(t=>
-    `<button class="tile ${t.c}" onclick="go('${t.tab}')"><div class="n">${t.n}</div><div class="l">${t.l}</div><div class="go">Open &rsaquo;</div></button>`).join('');
+function openRules(){ document.getElementById('rulesBg').classList.add('on'); const d=document.getElementById('rulesDrawer'); d.classList.add('on'); d.focus(); }
+function closeRules(){ document.getElementById('rulesBg').classList.remove('on'); document.getElementById('rulesDrawer').classList.remove('on'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeRules(); });
+function snooze(id){ snoozed.add(id); logEvent('Snoozed: '+id); renderHome(); toast('Snoozed. It will not nag you until you unsnooze it.'); }
+function unsnooze(id){ snoozed.delete(id); renderHome(); }
 
-  const list = reminders(), now = list.filter(r=>r.diff<=0), later = list.filter(r=>r.diff>0);
-  document.getElementById('remNow').innerHTML = now.length ? now.map(r=>remRow(r,false)).join('') : '<p class="note">Nothing needs a nudge today.</p>';
-  document.getElementById('remLater').innerHTML = later.map(r=>remRow(r,true)).join('');
-  document.getElementById('remLaterHead').style.display = later.length ? '' : 'none';
+/* one prioritised queue: action counts merged with their time-based reminders */
+function queueItems(){
+  const asst = role==='asst', rem = {}; reminders().forEach(r=>rem[r.id]=r);
+  const o = outstandingForms(), used = new Set(), items = [];
+  const add = x=>{ const r = x.rem ? rem[x.rem] : null; if(x.rem) used.add(x.rem);
+    items.push(Object.assign({diff: r ? r.diff : null, remBtn: r ? r.btn : null, due: r ? r.due : null}, x)); };
+  add({id:'ita-sign', n:4, title:'ITAs awaiting your sign-off', detail:'Trainer forms complete. Ready for the face-to-face sign-off.', tab:'itas', btn:'Review', action:true});
+  if(!asst) add({id:'goals-sign', n:goalsAction(), title:'Learning goals to sign off', detail:rem['goals-sign']?rem['goals-sign'].detail:'', rem:'goals-sign', tab:'goals', btn:'Review', action:true});
+  add({id:'logbook', n:lbPending(), title:'Logbook entries to verify', detail:rem.logbook?rem.logbook.detail:'', rem:'logbook', tab:'logbook', btn:'Verify', action:true});
+  add({id:'handshake', n:3, title:'Rotation handshakes pending', detail:rem.handshake?plain(rem.handshake.title):'', rem:'handshake', tab:'rotations', btn:'Open', action:true});
+  add({id:'ita-input', n:o.forms, title:'Trainer ITA forms outstanding', detail:`${o.tr} trainees &middot; `+(rem['ita-input']?rem['ita-input'].detail.split('&middot;').pop().trim():''), rem:'ita-input', tab:'itas', btn:'Open', action:true});
+  add({id:'behind', n:5, title:'Trainees falling behind', detail:'Flagged on progression risk', tab:'review', btn:'Review', action:true});
+  Object.keys(rem).filter(k=>!used.has(k)).forEach(k=>{ const r = rem[k];
+    if(asst && (k==='goals-late'||k==='asot-unassigned'||k==='pip')) return;
+    items.push({id:k, n:null, title:r.title, detail:r.detail, tab:r.tab, btn:r.btn==='Assign now'||r.btn==='Review'?r.btn:'Open', diff:r.diff, due:r.due, remBtn:r.btn, action:false, remOnly:true}); });
+  items.forEach(x=>{ x.grp = (x.diff!==null && x.diff<0) ? 'od' : (x.action || (x.diff!==null && x.diff<=7)) ? 'now' : 'up'; });
+  return items.filter(x=>x.n===null || x.n>0);
+}
+function qRow(x){
+  const sent = sentRem.has(x.id), g = x.grp;
+  const due = x.diff===null ? '' : x.diff<0 ? `Overdue ${-x.diff}d` : x.diff===0 ? 'Due today' : `${x.due.getDate()} ${MON[x.due.getMonth()]}`;
+  const primary = `<button class="btn ${g==='up'?'sec':'pri'} sm" onclick="go('${x.tab}')">${x.btn}</button>`;
+  const remind = (x.remBtn && !/^(Assign now|Review|Open)$/.test(x.remBtn)) ? `<button class="btn sec sm" ${sent?'disabled':''} onclick="sendRem('${x.id}')">${sent?'Sent':x.remBtn}</button>` : '';
+  return `<div class="q-row q-${g}"><div class="q-n ${x.n===null?'none':''}">${x.n===null?'&bull;':x.n}</div>
+    <div><div class="q-t">${x.title}</div><div class="q-d">${x.detail||''}</div></div>
+    <div class="q-due">${due}</div>
+    <div class="q-act">${remind}${primary}<button class="q-snz" title="Hide until you unsnooze" onclick="snooze('${x.id}')">Snooze</button></div></div>`;
+}
+function renderHome(){
+  const all = queueItems(), items = all.filter(x=>!snoozed.has(x.id)), asleep = all.filter(x=>snoozed.has(x.id));
+  const G = [['od','Overdue'],['now','Needs you now'],['up','Coming up']];
+  const cnt = k=>items.filter(x=>x.grp===k).length;
+  let q = G.map(([k,l])=>{ const rows = items.filter(x=>x.grp===k).sort((a,b)=>(a.diff===null?0:a.diff)-(b.diff===null?0:b.diff)); if(!rows.length) return '';
+    return `<div class="q-group"><div class="q-gh ${k}"><span>${l}</span><span class="c">${rows.length}</span></div>${rows.map(qRow).join('')}</div>`; }).join('');
+  if(!items.length) q = '<div class="q-empty"><b>All clear.</b> Nothing needs you today.</div>';
+  if(asleep.length) q += `<div class="q-foot">${asleep.length} snoozed: ${asleep.map(x=>`${plain(x.title).split(' \u2014')[0]} <a onclick="unsnooze('${x.id}')">Unsnooze</a>`).join(' &middot; ')}</div>`;
+  document.getElementById('queue').innerHTML = q;
+  document.getElementById('homeSub').innerHTML = items.length ? `<b>${cnt('od')} overdue</b> &middot; ${cnt('now')} need you now &middot; ${cnt('up')} coming up` : 'Nothing needs you today.';
+
+  const ppl = ptrainees(), n = ppl.length;
+  const forms = ppl.reduce((a,t)=>{ const i=INV[t.id]; return i?[a[0]+i.got,a[1]+i.total]:a; },[0,0]);
+  const gs = ppl.filter(t=>(GoalsStore.get(t.id)||{}).status==='SIGNED').length;
+  const asg = ppl.filter(t=>t.asot).length, lbv = LB.filter(e=>e.state==='verified').length;
+  const row = (tab,l,a,b,c)=>`<button class="pg-row" onclick="go('${tab}')"><div class="pg-l"><span>${l}</span><b>${a} of ${b}</b></div><div class="pg"><i class="${c||''}" style="width:${b?Math.round(a/b*100):0}%"></i></div></button>`;
+  document.getElementById('cycleRows').innerHTML =
+    row('itas','Trainer forms in',forms[0],forms[1]) + row('itas','ITA sign-off ASOT assigned',asg,n,'b') + row('goals','Learning goals signed',gs,n,'p') + row('logbook','Logbook entries verified',lbv,LB.length);
+  const left = Math.round((new Date(2026,11,31)-TODAY)/DAY);
+  document.getElementById('cycleFoot').textContent = `Cycle ends 31 Dec, in ${left} days.`;
+  const by = {BAT:0,HAT:0,PFY:0}; ROSTER.forEach(t=>{ const k = String(t.stage).slice(0,3); if(by[k]!==undefined) by[k]++; });
+  const col = {BAT:'var(--bl500)',HAT:'#0d9488',PFY:'var(--pu500)'};
+  document.getElementById('trN').innerHTML = `${ROSTER.length}<small>${n} at PWH now</small>`;
+  document.getElementById('trSplit').innerHTML = Object.keys(by).map(k=>`<i title="${k} ${by[k]}" style="flex:${by[k]};background:${col[k]}"></i>`).join('');
+  document.getElementById('trFoot').innerHTML = `BAT ${by.BAT} &middot; HAT ${by.HAT} &middot; PFY ${by.PFY}<br>5 flagged on progression risk &middot; ${ROSTER.filter(t=>t.rot.kind==='out').length} rotated out`;
 
   document.getElementById('ruleList').innerHTML = Object.keys(RULE_DEF).map(k=>{
     const d = RULE_DEF[k];
     return `<div class="rule"><span>${d.label}</span><span><select class="ctl sm" aria-label="${d.label}" onchange="setRule('${k}',this.value)">
       ${d.opts.map(([v,l])=>`<option value="${v}" ${RULES[k]===v?'selected':''}>${l}</option>`).join('')}</select>${d.suffix?` <span class="id-cell" style="display:inline">${d.suffix}</span>`:''}</span></div>`;
   }).join('');
-
-  const outN = ROSTER.filter(t=>t.rot.kind==='out').length;
-  const links = [
-    {t:'itas', b:'In-Training Assessments', s:'4 awaiting sign-off \u00b7 invitations & ASOT assignment'},
-    {t:'goals', b:'Learning goals', s:goalsAction()+' to sign off \u00b7 locked once signed'},
-    {t:'roster', b:'Trainee List', s:`${ROSTER.length} trainees \u00b7 ${outN} rotated out`},
-    {t:'logbook', b:'Logbook Verification', s:lbPending()+' entries to verify'},
-    {t:'rotations', b:'Rotations', s:'3 handshakes pending \u00b7 6-month timeline'},
-    {t:'review', b:'Progression Risk', s:'5 trainees flagged'}
-  ];
-  document.getElementById('homeLinks').innerHTML = links.map(l=>
-    `<button class="lnk" onclick="go('${l.t}')"><span><b>${l.b}</b><span class="s">${l.s}</span></span><span class="chev">&rsaquo;</span></button>`).join('');
+  document.getElementById('rulesBtn').style.display = role==='asst' ? 'none' : '';
   document.getElementById('homeDate').textContent = 'Saturday 17 October 2026 \u00b7 illustrative data';
   document.getElementById('homeTitle').textContent = role==='asst' ? 'Good day, Dr Ho' : 'Good day, Dr Chan';
 }
