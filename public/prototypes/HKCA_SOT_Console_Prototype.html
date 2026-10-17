@@ -723,6 +723,7 @@
           <label class="ctl"><input type="checkbox" id="mineFilter" onchange="setView('mine',this.checked)"> My trainees</label>
           <input type="text" id="rosterFilter" class="ctl" placeholder="Search name or HKCA no." style="width:190px"
             oninput="q=this.value.toLowerCase();renderRoster()">
+          <div class="seg" id="presetSeg" role="group" aria-label="Column set"><button data-p="essential" onclick="setColPreset('essential')">Essential</button><button data-p="all" onclick="setColPreset('all')">All columns</button></div>
           <button class="btn sec" id="densBtn" onclick="toggleDensity()" title="Switch row density">Compact rows</button>
           <details class="colmenu" id="colMenu"><summary class="btn sec">Columns</summary><div class="menu" id="colMenuBody"></div></details>
           <button class="btn sec" onclick="resetView()">Reset view</button>
@@ -1929,6 +1930,14 @@ function visibleRows(){
   return rows;
 }
 
+const ESSENTIAL = ['name','stage','rot','acc','vop','act'];   // Trainee, Stage, Rotation status, Accredited time (progress in training), VOP, Action
+function essentialHidden(){ return COLS.filter(c=>!c.fixed && !ESSENTIAL.includes(c.k)).map(c=>c.k); }
+function setColPreset(p){ view.hidden = p==='essential' ? essentialHidden() : []; saveView(); buildColMenu(); renderRoster(); }
+function syncPreset(){
+  const h = view.hidden.slice().sort().join(), e = essentialHidden().sort().join();
+  const cur = view.hidden.length===0 ? 'all' : (h===e ? 'essential' : '');
+  document.querySelectorAll('#presetSeg button').forEach(b=>b.classList.toggle('on', b.dataset.p===cur));
+}
 let density = 'compact';
 function toggleDensity(){ density = density==='compact' ? 'comfortable' : 'compact'; renderRoster(); }
 function rotCompact(r){
@@ -1963,6 +1972,7 @@ function cellFor(k,t){
 
 function renderRoster(){
   document.getElementById('rosterTable').classList.toggle('compact', density==='compact');
+  syncPreset();
   document.getElementById('densBtn').textContent = density==='compact' ? 'Compact rows' : 'Comfortable rows';
   const data = rosterData();
   const cols = COLS.filter(c=>c.fixed || !view.hidden.includes(c.k));
