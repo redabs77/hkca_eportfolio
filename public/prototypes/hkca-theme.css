@@ -1,0 +1,94 @@
+/* ==========================================================================
+   HKCA ePortfolio — shared prototype theme
+   Linked LAST in <head> of every prototype so these tokens win over each
+   file's inline defaults. One source of truth for brand accent, surfaces,
+   status colours, task hues, typography floor and focus rings.
+   Dark mode = class "dark" on <html> (unchanged mechanism in every file).
+   ========================================================================== */
+
+/* ---------- surfaces, ink, accent, status, task hues ---------- */
+:root{
+  --bg:#ffffff; --bg2:#f4f3fb; --bg3:#eeecf8; --surface:#ffffff; --raised:#ffffff;
+  --border:#e7e5f3; --border-sub:#f0eef8;
+  --ink:#2b2945; --ink2:#5e5c7b; --ink3:#8a88a6;
+  --shadow:0 2px 10px rgba(96,86,160,.07); --shadow-md:0 8px 22px rgba(96,86,160,.13);
+  --acc:#6d5fd9; --acc-d:#5a4cc4; --acc-t:#5446c4; --acc-bg:#ece9fb; --focus:var(--acc);
+
+  --ok-bg:#dcf3e6; --ok-f:#1f7650;  --wn-bg:#fdeed2; --wn-f:#8f5d12;  --bd-bg:#fde3e6; --bd-f:#ac3f4c;
+  --in-bg:#e0eafc; --in-f:#3456a6;  --pp-bg:#ebe5fb; --pp-f:#5b40b3;
+
+  /* fixed hue per task type: ITA blue, logbook green, goals violet, rotations amber, trainer forms teal, risk rose */
+  --t1b:#e1ebfd; --t1f:#2f55a6;  --t2b:#dcf3e6; --t2f:#1f7650;  --t3b:#ebe5fb; --t3f:#5b40b3;
+  --t4b:#fdeed2; --t4f:#8f5d12;  --t5b:#d9f2f0; --t5f:#17756f;  --t6b:#fde3e6; --t6f:#ac3f4c;
+
+  /* training stage */
+  --s-bat:#8fb6f5; --s-hat:#7fd0c6; --s-pfy:#b6a6f2;
+
+  /* bridge: names used by the older Trainee Dashboard stylesheet */
+  --page:var(--bg2); --navy:var(--ink); --navy-l:var(--ink2); --slate:var(--ink2);
+  --teal:var(--acc); --green:var(--ok-f);
+}
+.dark{
+  --bg:#14132a; --bg2:#10102a; --bg3:#232248; --surface:#191836; --raised:#1b1a3a;
+  --border:rgba(255,255,255,.1); --border-sub:rgba(255,255,255,.055);
+  --ink:#ecebfa; --ink2:#b0aed0; --ink3:#8280a8;
+  --shadow:0 2px 10px rgba(0,0,0,.35); --shadow-md:0 8px 24px rgba(0,0,0,.5);
+  --acc:#8f82f0; --acc-d:#7b6de0; --acc-t:#b3a9ff; --acc-bg:rgba(143,130,240,.16);
+
+  --ok-bg:rgba(134,211,172,.15); --ok-f:#8fdcb4; --wn-bg:rgba(245,197,122,.15); --wn-f:#f5c57a;
+  --bd-bg:rgba(242,160,174,.15); --bd-f:#f5a9b6; --in-bg:rgba(143,182,245,.15); --in-f:#a9c6f8;
+  --pp-bg:rgba(169,156,240,.16); --pp-f:#c4b9f7;
+
+  --t1b:rgba(143,182,245,.16); --t1f:#a9c6f8; --t2b:rgba(134,211,172,.15); --t2f:#8fdcb4;
+  --t3b:rgba(169,156,240,.17); --t3f:#c4b9f7; --t4b:rgba(245,197,122,.15); --t4f:#f5c57a;
+  --t5b:rgba(127,208,198,.15); --t5f:#86d8cf; --t6b:rgba(242,160,174,.15); --t6f:#f5a9b6;
+}
+
+/* ---------- brand surfaces (same look in every prototype) ---------- */
+.mark,.mk,.dark .mk{background:linear-gradient(135deg,#8f82f0,#6d5fd9);color:#fff}
+.av,.av-lg,.dark .trainee-head .av-lg{background:var(--acc);color:#fff}
+.btn.pri,.dark .btn.pri{background:var(--acc);color:#fff}
+.btn.pri:hover{background:var(--acc-d);opacity:1}
+.btn.sec:hover,.dark .btn.sec:hover{background:var(--bg3)}
+input[type=checkbox],input[type=radio]{accent-color:var(--acc)}
+.card{border-radius:16px}
+
+/* wizard / step / selected-option accents in the ITA flow and trainer form (brand, not grade colour) */
+.step.on{color:var(--acc-t);border-bottom-color:var(--acc)}
+.dark .step.on{color:var(--acc-t)}
+.step.on .idx,.step.done .idx{border-color:var(--acc)}
+.step.on .idx{background:var(--acc);color:#fff}
+.step.done .idx{color:var(--acc-t);background:var(--acc-bg)}
+.sot-opt.on{border-color:var(--acc);background:var(--acc-bg);box-shadow:0 0 0 1px var(--acc) inset}
+.chk .box.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.sigpad.signed{border-color:var(--acc);background:var(--acc-bg)}
+.tl-item.done .knob{border-color:var(--acc);background:var(--acc)}
+.linkbtn,.dark .linkbtn{color:var(--acc-t)}
+
+/* Trainee Dashboard: tabs, pills and dark surfaces from the shared tokens */
+.tabs button.on{border-bottom-color:var(--acc)}
+.dark .pmark .pin{background:var(--acc);border-color:var(--surface)}
+.dark .nav{background:var(--surface)}
+.dark .pill,.dark .stg .tr,.dark .track{background:var(--bg3);color:var(--ink)}
+.dark .optbar{background:var(--bg3)}
+.dark .sm-table td{border-bottom-color:var(--border-sub)}
+.pill.ok,.dark .pill.ok{background:var(--ok-bg);color:var(--ok-f)}
+.pill.warn,.dark .pill.warn{background:var(--wn-bg);color:var(--wn-f)}
+.pill.bad,.dark .pill.bad{background:var(--bd-bg);color:var(--bd-f)}
+.pill.info,.dark .pill.info{background:var(--in-bg);color:var(--in-f)}
+.pill.purple,.pill.pur,.dark .pill.purple,.dark .pill.pur{background:var(--pp-bg);color:var(--pp-f)}
+.cstat.done{background:var(--ok-bg);color:var(--ok-f)}
+
+/* ---------- typography floor (clinical lighting, non-Retina monitors) ----------
+   12px minimum for labels, timestamps, subtitles; 11px minimum for tabular
+   badge counters and compact pills. Enforced in each file's CSS; these
+   utility classes keep new components inside the same floor. */
+.t-meta{font-size:12px}
+.t-badge{font-size:11px;font-variant-numeric:tabular-nums}
+
+/* ---------- keyboard focus: one visible ring everywhere ---------- */
+:where(a,button,summary,select,input,textarea,[tabindex]):focus-visible{
+  outline:2px solid var(--focus,var(--acc)); outline-offset:2px; border-radius:6px;
+}
+.dark :where(a,button,summary,select,input,textarea,[tabindex]):focus-visible{outline-color:var(--acc-t)}
+.tab:focus-visible{outline-offset:-3px}
