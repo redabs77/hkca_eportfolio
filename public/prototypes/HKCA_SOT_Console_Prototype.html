@@ -660,13 +660,21 @@
   .fn-grid .fn{display:flex !important;flex-direction:column;align-items:flex-start;text-align:left}
   .fn u{margin-top:auto;padding-top:8px;display:block;text-decoration:none;font-size:11.5px;font-weight:650;letter-spacing:.03em;text-transform:uppercase;opacity:.8}
   .ita-alert{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:12px;background:var(--acc-bg,var(--bg2));border:1px solid var(--border);margin-bottom:14px;font-size:13px}
-  .grpctl{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
+  .tb-br{flex-basis:100%;height:0}
+  .grpctl{display:inline-flex;align-items:center;gap:4px}
   .grpctl button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--raised);color:var(--ink2);cursor:pointer}
   .grpctl button.on{background:var(--ink);color:var(--raised);border-color:transparent}
   tr.grp-h td{padding:0 !important;background:var(--bg2);border-top:8px solid var(--raised)}
   tr.grp-h .gh{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px}
-  tr.grp-h .gh b{font-size:13.5px} tr.grp-h .gh small{margin-left:8px;font-size:12px;color:var(--ink3)}
+  tr.grp-h .gh b{font-size:13.5px} 
   tr.grp-h .gp{font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums} tr.grp-h .gp .rdy{color:var(--t1f)}
+  .gtog{display:inline-flex;align-items:baseline;gap:8px;font:inherit;color:inherit;background:none;border:0;padding:2px 4px;margin:-2px -4px;border-radius:6px;cursor:pointer;text-align:left}
+  .gtog:hover{background:var(--bg3)} .gtog:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .gtog .chev{flex:none;align-self:center;transition:transform .15s;transform:rotate(90deg);color:var(--ink3)}
+  .gtog[aria-expanded=false] .chev{transform:rotate(0)}
+  .gtog small{margin-left:8px;font-size:12px;color:var(--ink3);font-weight:400}
+  .grpctl .gall{margin-left:8px}.grpctl .gall:disabled{opacity:.45;cursor:default}
+  @media (prefers-reduced-motion:reduce){.gtog .chev{transition:none}}
   tr.grp-h.none td{background:transparent;border-top:8px solid transparent} tr.grp-h.none .gh{border:1px dashed var(--border);border-radius:10px}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
@@ -1982,7 +1990,7 @@ function itaState(t){
   return g>=RULES.minForms ? 'ready' : g>0 ? 'partial' : 'none';
 }
 const statePill = k => `<span class="pill" style="background:${ITA_TONE[k][0]};color:${ITA_TONE[k][1]}">${ITA_LABEL[k]}</span>`;
-let itaView = 'overview', itaScope = 'team', itaFilter = 'all', itaQ = '', itaGroup = 'none';
+let itaView = 'overview', itaScope = 'team', itaFilter = 'all', itaQ = '', itaGroup = 'none', itaCollapsed = new Set();
 let asWho = 'winnie', asSet = null, asFilter = 'all', asQ = '';
 const itaRows = () => ptrainees().filter(t=>itaScope==='team' || t.asot===mineId());
 const sotName = id => id ? nameOf(id).replace('Dr. ','') : 'No SOT assigned yet';
@@ -2063,8 +2071,8 @@ function itaOverviewHtml(){
 /* ---- All trainees: list with ITA return status ---- */
 function itaAllHtml(){
   return `<div class="ita-filters" style="margin-top:0"><span id="itaChips" style="display:contents"></span>
-      <span class="grpctl" role="group" aria-label="Group by"><span class="meta">Group by</span><button type="button" class="${itaGroup==='sot'?'on':''}" onclick="itaGroup='sot';renderItaRound()">Assigned SOT</button><button type="button" class="${itaGroup==='none'?'on':''}" onclick="itaGroup='none';renderItaRound()">None</button></span>
-      <input type="search" class="ctl sm" id="itaSearch" placeholder="Search trainee" aria-label="Search trainee" value="${itaQ}" oninput="itaQ=this.value.toLowerCase();itaListOnly()" style="width:170px"></div>
+      <span class="tb-br" aria-hidden="true"></span><span class="grpctl" role="group" aria-label="Group by"><span class="meta">Group by</span><button type="button" class="${itaGroup==='sot'?'on':''}" onclick="itaGroup='sot';renderItaRound()">Assigned SOT</button><button type="button" class="${itaGroup==='none'?'on':''}" onclick="itaGroup='none';renderItaRound()">None</button>${itaGroup==='sot'?`<button type="button" class="gall" id="itaCollapseAll" onclick="itaCollapseAll()"></button>`:''}</span>
+      <input type="search" class="ctl sm" id="itaSearch" placeholder="Search trainee" aria-label="Search trainee" value="${itaQ}" oninput="itaQ=this.value.toLowerCase();itaListOnly()" style="width:180px;margin-left:auto"></div>
     <div class="tbl-scroll tall">
       <table class="compact"><thead><tr><th style="min-width:200px">Trainee</th><th>Stage</th><th style="min-width:180px">Trainer forms returned</th><th style="min-width:190px">ITA status</th>${itaGroup==='sot'?'':'<th style="min-width:150px">Assigned SOT</th>'}<th style="min-width:140px">Action</th></tr></thead>
       <tbody id="itaRows"></tbody></table>
@@ -2098,6 +2106,8 @@ function itaRowHtml(t){
       ${sotCell===null ? '' : `<td>${sotCell}${cover}</td>`}
       <td>${itaActionBtn(t,k)}</td></tr>`;
 }
+function itaToggleGrp(k){ itaCollapsed.has(k) ? itaCollapsed.delete(k) : itaCollapsed.add(k); itaListOnly(); const b=document.querySelector('#grp-'+k+' .gtog'); if(b) b.focus(); }
+function itaCollapseAll(){ const ks = window._itaGrpKeys||[]; const allShut = ks.every(k=>itaCollapsed.has(k)); ks.forEach(k=> allShut ? itaCollapsed.delete(k) : itaCollapsed.add(k)); itaListOnly(); }
 function itaListOnly(){
   const body = document.getElementById('itaRows'); if(!body) return;
   const base = itaRows();
@@ -2110,14 +2120,20 @@ function itaListOnly(){
   const sot = role!=='asst';
   const groups = (itaScope==='mine' ? [asotById(mineId())] : ASOTS.filter(a=>a.active!==false || ptrainees().some(t=>t.asot===a.id))).map(a=>({a, id:a.id}));
   if(itaScope==='team') groups.push({a:null, id:null});
-  let html = '';
+  let html = '', keys = [], searching = !!itaQ;
   groups.forEach(g=>{
+    const key = g.id||'none'; keys.push(key);
     const mine = rows.filter(t=>(t.asot||null)===g.id); if(!mine.length) return;
     const all = ptrainees().filter(t=>(t.asot||null)===g.id), sg = all.filter(t=>itaState(t)==='signed').length, rd = all.filter(t=>itaState(t)==='ready').length;
-    const head = g.a ? `<span><b>${g.a.name}</b><small>${g.a.tag}${g.a.id===mineId()?' (you)':''}</small></span>` : `<span><b>No SOT assigned yet</b><small>${all.length} trainee${all.length===1?'':'s'}</small></span>`;
+    const open = searching || !itaCollapsed.has(key);
+    const label = g.a ? `<b>${g.a.name}</b><small>${g.a.tag}${g.a.id===mineId()?' (you)':''} &middot; ${all.length} ITA${all.length===1?'':'s'}</small>` : `<b>No SOT assigned yet</b><small>${all.length} trainee${all.length===1?'':'s'}</small>`;
+    const head = `<button type="button" class="gtog" aria-expanded="${open}" aria-controls="grp-${key}" onclick="itaToggleGrp('${key}')"><svg class="chev" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M4 2.5 8 6l-4 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${label}</span></button>`;
     const prog = g.a ? `${sg} of ${all.length} signed off${rd ? ` &middot; <b class="rdy">${rd} ready to meet</b>` : ''}` : (sot ? `<button type="button" class="btn sec sm" onclick="itaOpen('noasot')">Assign SOT</button>` : '');
-    html += `<tr class="grp-h ${g.a?'':'none'}"><td colspan="5"><div class="gh">${head}<span class="gp">${prog}</span></div></td></tr>` + mine.map(itaRowHtml).join('');
+    html += `<tr class="grp-h ${g.a?'':'none'} ${open?'':'shut'}" id="grp-${key}"><td colspan="5"><div class="gh">${head}<span class="gp">${prog}</span></div></td></tr>` + (open ? mine.map(itaRowHtml).join('') : '');
   });
+  window._itaGrpKeys = keys;
+  const btn = document.getElementById('itaCollapseAll');
+  if(btn){ const allShut = keys.every(k=>itaCollapsed.has(k)); btn.textContent = allShut ? 'Expand all' : 'Collapse all'; btn.disabled = searching; }
   body.innerHTML = html || '<tr class="empty-row"><td colspan="6">No trainees match.</td></tr>';
 }
 
