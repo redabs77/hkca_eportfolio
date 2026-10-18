@@ -1396,7 +1396,7 @@
         <div class="lbl">Message</div>
         <textarea class="ctl" id="invMsg">Dear colleague,
 
-The Jul&ndash;Dec 2026 In-Training Assessment round is open. Please complete your private trainer form for each trainee by the deadline shown. Your form is read by the SOT team without your name, and the College does not see individual forms. If you are happy to be contacted about your feedback, you can tick that on the form.
+The Jul&ndash;Dec 2026 In-Training Assessment round is open. Please complete your private trainer form for each trainee by the deadline shown. Your form is read by the SOT team without your name, and the College does not see individual forms. If you are happy to be contacted about your feedback, you can tick that on the form; your name is then shown with it.
 
 Thank you.</textarea>
       </div>
@@ -2300,7 +2300,7 @@ function openInvite(mode){
   if(!ROUND.open) document.getElementById('invDue').value = ROUND.cycle.includes('2027') ? '2027-05-31' : '2026-11-30';
   document.getElementById('invMsg').value = invModeV==='remind'
     ? 'Dear colleague,\n\nThank you to those who have already completed ITA trainer forms. Some trainees still have too few forms for their face-to-face meeting. If you have worked with any trainee in the round, please complete a form by the deadline shown. Your form is read by the SOT team without your name.\n\nThank you.'
-    : 'Dear colleague,\n\nThe '+ROUND.cycle+' In-Training Assessment is now open. Please complete a trainer form for each trainee you have worked with, by the deadline shown. Your form is read by the SOT team without your name, and the College does not see individual forms. If you are happy to be contacted about your feedback, you can tick that on the form.\n\nThank you.';
+    : 'Dear colleague,\n\nThe '+ROUND.cycle+' In-Training Assessment is now open. Please complete a trainer form for each trainee you have worked with, by the deadline shown. Your form is read by the SOT team without your name, and the College does not see individual forms. If you are happy to be contacted about your feedback, you can tick that on the form; your name is then shown with it.\n\nThank you.';
   document.getElementById('invRcptAll').innerHTML = `<b>All trainers in the department</b> &middot; ${DEPT_TRAINERS.length} trainers <span class="pill ok" style="margin-left:6px">Default</span>`;
   document.querySelector('input[name=invRcpt][value=all]').checked = true;
   document.getElementById('invPick').innerHTML = DEPT_TRAINERS.map(n=>`<label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer"><input type="checkbox" class="invT" value="${n}" checked onchange="renderInvitePreview()"><span>${n}</span></label>`).join('');

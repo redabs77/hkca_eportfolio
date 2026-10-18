@@ -450,7 +450,7 @@
         <span class="idx">1</span>
         <span>
           <span class="lbl">Trainer Input</span>
-          <span class="sub">Tier 1 &middot; anonymous</span>
+          <span class="sub">Tier 1 &middot; SOT team only</span>
         </span>
       </button>
       <span class="step-arrow">&rsaquo;</span>
@@ -489,12 +489,12 @@
     <section id="screen-s1">
       <div class="banner bl">
         <div style="flex:1">
-          <h3>Tier 1 &mdash; anonymous trainer forms</h3>
+          <h3>Tier 1 &mdash; trainer forms</h3>
           <p>
             Each supervising trainer completes the College&rsquo;s 15-item In-Training Assessment form on their own
             (<a href="HKCA_ITA_Trainer_Form.html" style="color:inherit;font-weight:650">open the trainer&rsquo;s form</a>).
-            Forms are read by the <strong>SOT and ASOT only, and without the trainer&rsquo;s name</strong>. They are never shown to the trainee or to the College:
-            the College sees only the final sign-off and your summary of comments. Nothing is pre-filled from earlier cycles. You are viewing one anonymous form at a time.
+            Forms are read by the <strong>SOT and ASOT only</strong>, without the trainer&rsquo;s name unless they agreed to be contacted. They are never shown to the trainee or to the College:
+            the College sees only the final sign-off and your summary of comments. Nothing is pre-filled from earlier cycles. You are viewing one form at a time; trainers are named only where they agreed to be contacted.
           </p>
         </div>
       </div>
@@ -512,7 +512,7 @@
             </div>
             <div id="asrList" role="group" aria-label="Choose a form to read"></div>
             <p class="note" style="margin-top:13px">
-              Forms are anonymous: you can see how many are in, not who sent them. Forms are sealed on receipt; a later correction is a separate, dated annotation. Where a trainer has ticked &ldquo;happy to be contacted&rdquo;, you can send them a question through the portal.
+              Forms are anonymous unless the trainer ticked &ldquo;happy to be contacted&rdquo;: then their name is shown with the form and you can send them a question through the portal. The count of forms in never reveals who has not yet sent one. Forms are sealed on receipt; a later correction is a separate, dated annotation.
             </p>
           </div>
 
@@ -1239,9 +1239,9 @@ const ASR = [
       INTEGRITY:'Openly acknowledged a missed antibiotic timing to the surgeon and arranged the repeat dose.'},
   comments:'Good attitude and keen to learn. Time management on lists is the issue.'}
 ];
-/* Anonymise: drop names and roles, shuffle so order says nothing, label Form 1..n. Two trainers opted in to being contacted. */
+/* Anonymise: shuffle so order says nothing, label Form 1..n. Trainers who ticked 'happy to be contacted' are shown by name; the rest stay anonymous. */
 ASR.forEach(a=>{ a.contact = (a.id==='LK' || a.id==='RC'); });
-(function(){ const ord=[2,0,3,1].map(i=>ASR[i]); ASR.length=0; ord.forEach((a,i)=>{ delete a.name; delete a.role; a.id='F'+(i+1); a.form='Form '+(i+1); ASR.push(a); }); })();
+(function(){ const ord=[2,0,3,1].map(i=>ASR[i]); ASR.length=0; ord.forEach((a,i)=>{ if(!a.contact){ delete a.name; delete a.role; } a.id='F'+(i+1); a.form = a.contact ? a.name : 'Form '+(i+1); ASR.push(a); }); })();
 const CONTACT = {};   // relay threads by form id (demo, in memory)
 const gradesFor = c=>ASR.map(a=>a.r[D.find(d=>d.c===c).i]);
 const spreadOf = c=>{ const n=gradesFor(c).filter(g=>g!=='X').map(Number); return n.length?Math.max(...n)-Math.min(...n):0; };
@@ -1266,25 +1266,25 @@ async function sha(txt){
 }
 function renderAsrList(){
   $('#asrList').innerHTML = ASR.map((a,i)=>`<button type="button" class="asr-pick" data-i="${i}" aria-pressed="${i===asrSel}">
-    <span class="left"><span class="ini">${i+1}</span><span><span class="nm" style="display:block">${a.form}</span><span class="rl" style="display:block">Author hidden \u00b7 ${a.r.length} items rated${a.contact?' \u00b7 happy to be contacted':''}</span></span></span>
+    <span class="left"><span class="ini">${i+1}</span><span><span class="nm" style="display:block">${a.form}</span><span class="rl" style="display:block">${a.contact ? esc(a.role)+' \u00b7 happy to be contacted' : 'Author hidden \u00b7 '+a.r.length+' items rated'}</span></span></span>
     <span class="pill ok"><span class="dot g"></span>Received</span></button>`).join('');
   $$('.asr-pick').forEach(b=>b.onclick=()=>{ asrSel=+b.dataset.i; renderAsrList(); renderAsr(); });
 }
 function renderContact(){
   const a = ASR[asrSel], t = CONTACT[a.id], box = $('#asrContact');
-  if(!a.contact){ box.innerHTML = `<div class="eyebrow">Questions about this form</div><p class="note" style="margin-top:8px">This trainer has not asked to be contacted.</p>`; return; }
+  if(!a.contact){ box.innerHTML = `<div class="eyebrow">Questions about this form</div><p class="note" style="margin-top:8px">This trainer is anonymous and has not asked to be contacted.</p>`; return; }
   box.innerHTML = `<div class="eyebrow">Questions about this form</div>
-    <p class="note" style="margin:8px 0 12px">This trainer is happy to be contacted. Your message goes through the portal and their name stays hidden unless they choose to reply with it.</p>
+    <p class="note" style="margin:8px 0 12px">${esc(a.name)} ticked &ldquo;happy to be contacted&rdquo; on this form. Your message goes to them through the portal.</p>
     ${t ? `<div class="readbox" style="margin-bottom:10px"><b>You wrote</b> <span class="meta">&middot; ${esc(t.at)}</span><br>${esc(t.msg)}</div><span class="pill warn"><span class="dot a"></span>Sent &middot; awaiting reply</span>` :
-    `<button type="button" class="btn sec" id="ctBtn" style="width:100%;justify-content:center">Contact trainer</button>`}`;
+    `<button type="button" class="btn sec" id="ctBtn" style="width:100%;justify-content:center">Contact ${esc(a.name)}</button>`}`;
   const b = $('#ctBtn'); if(b) b.onclick = openContact;
 }
 function openContact(){
   const a = ASR[asrSel];
   const bg = document.createElement('div'); bg.className = 'cm-bg'; bg.setAttribute('role','presentation');
   bg.innerHTML = `<div class="cm" role="dialog" aria-modal="true" aria-labelledby="cmT">
-    <div class="eyebrow">Anonymous relay &middot; ${a.form}</div><div class="h2" id="cmT" style="margin:4px 0 8px">Ask the trainer a question</div>
-    <p class="note" style="margin-bottom:10px">The trainer sees your question and the trainee&rsquo;s name and cycle, so they know which form it is about. They are not shown who is asking beyond &ldquo;the SOT team&rdquo;, and you are not shown who they are.</p>
+    <div class="eyebrow">Message through the portal</div><div class="h2" id="cmT" style="margin:4px 0 8px">Ask ${esc(a.name)} a question</div>
+    <p class="note" style="margin-bottom:10px">They see your name, your question and the trainee&rsquo;s name and cycle, so they know which form it is about.</p>
     <textarea id="cmMsg" style="width:100%;min-height:110px;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--ink);resize:vertical" aria-label="Your question" placeholder="e.g. Could you say more about the airway example under Crisis management?"></textarea>
     <div class="acts" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button type="button" class="btn sec" id="cmX">Cancel</button><button type="button" class="btn pri" id="cmGo" disabled>Send through portal</button></div></div>`;
   document.body.appendChild(bg);
@@ -1292,12 +1292,13 @@ function openContact(){
   const close = ()=>{ bg.remove(); };
   msg.addEventListener('input',()=>{ go.disabled = msg.value.trim().length<8; });
   $('#cmX',bg).onclick = close; bg.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
-  go.onclick = ()=>{ CONTACT[a.id] = {msg:msg.value.trim(), at:'Sent today'}; close(); renderContact(); announce('Question sent to the trainer through the portal.'); };
+  go.onclick = ()=>{ CONTACT[a.id] = {msg:msg.value.trim(), at:'Sent today'}; close(); renderContact(); announce('Question sent to '+a.name+' through the portal.'); };
 }
 async function renderAsr(){
   const a = ASR[asrSel];
-  $('#asrTitle').textContent = a.form+' \u2014 anonymous, sealed on receipt';
+  $('#asrTitle').textContent = a.form+(a.contact?' \u2014 sealed on receipt':' \u2014 anonymous, sealed on receipt');
   $('#asrWho').textContent = a.form;
+  $('#asrEyebrow').textContent = a.contact ? 'Named form' : 'Anonymous form';
   renderContact();
   $('#asrComments').textContent = a.comments;
   let html = '';
@@ -1308,7 +1309,7 @@ async function renderAsr(){
       return `<div class="ro-row"><span class="no mono">${d.no}</span><span class="nm">${esc(d.l)}</span>${chipg(gr)}${ex?`<div class="exq">${esc(ex)}</div>`:''}</div>`; }).join('');
   });
   $('#asrGrid').innerHTML = html;
-  $('#intWho').textContent = 'Hidden (anonymous)';
+  $('#intWho').textContent = a.contact ? a.name : 'Hidden (anonymous)';
   $('#intAt').textContent = 'Received Dec 2026';
   $('#intN').textContent = a.r.length+' / 15';
   const h = await sha(JSON.stringify({id:a.id,r:a.r,ex:a.ex,comments:a.comments}));
@@ -1464,7 +1465,7 @@ function renderTrainee(){
       <div class="lr"><span class="lk">Rotation period</span><span class="lv mono">01 Jul \u2013 31 Dec 2026</span></div>
       <div class="lr"><span class="lk">Training category</span><span class="lv">Clinical Anaesthesia</span></div>
       <div class="lr"><span class="lk">Credit on sign-off</span><span class="lv mono">${unsat?'withheld pending remedial plan':'6.0 months'}</span></div>
-      <div class="lr"><span class="lk">Trainers contributing</span><span class="lv mono">4 \u00b7 individually anonymous</span></div>
+      <div class="lr"><span class="lk">Trainers contributing</span><span class="lv mono">4 \u00b7 named only if they agreed to be contacted</span></div>
     </div>
     <div class="tv-grid">${items.replace(/<div class="tv-sec">/,'<div class="tv-sec" style="grid-column:1">').replace(/<div class="tv-sec">/,'<div class="tv-sec" style="grid-column:2">')}</div>
     <div class="tv-sec"><div class="eyebrow">Supervisor of Training\u2019s summary and suggestions</div><div class="readbox">${esc(SYN.sotComments||'\u2014')}</div></div>
