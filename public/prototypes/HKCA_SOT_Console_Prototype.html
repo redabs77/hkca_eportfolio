@@ -649,6 +649,14 @@
   body.vop-mode #lbBulk{display:none !important}
   body.vop-mode #tab-logbook > details.card{display:none}
   .fn em{display:block;font-style:normal;font-size:12px;line-height:1.35;opacity:.85;margin-top:4px;font-weight:500}
+  .tm{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  .tm th,.tm td{padding:10px 8px;border-bottom:1px solid var(--border-sub);text-align:center;vertical-align:middle}
+  .tm thead th{font-size:12px;font-weight:600;color:var(--ink2);line-height:1.3}
+  .tm .sw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .tm tbody th{text-align:left;font-weight:600;min-width:190px} .tm tbody th small{display:block;font-weight:500;color:var(--ink3);font-size:12px}
+  .tm .n b{font-size:15px} .tm .z{color:var(--ink3)} .tm .act{text-align:right;width:84px}
+  .tm .warnrow th,.tm .warnrow td{background:var(--bg2)} .tm tr:last-child th,.tm tr:last-child td{border-bottom:0}
+  .cyc-sel{font:inherit;text-transform:inherit;letter-spacing:inherit;color:inherit;background:transparent;border:0;border-bottom:1px dashed var(--ink3);cursor:pointer;padding:0 2px;margin-left:2px}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 </head>
@@ -925,7 +933,7 @@
     <div class="card card-pad mb">
       <div class="card-h" style="margin-bottom:12px">
         <div>
-          <div class="eyebrow">ITA cycle &middot; <span id="itaCycleTxt">Jul &ndash; Dec 2026</span></div>
+          <div class="eyebrow">ITA cycle &middot; <select class="cyc-sel" id="itaCycleSel" aria-label="ITA cycle" onchange="itaSwitchCycle(this.value)"><option value="Jul – Dec 2026">Jul &ndash; Dec 2026 (current)</option><option value="Jan – Jun 2027">Jan &ndash; Jun 2027 (next)</option></select></div>
           <div class="h2">In-Training Assessments</div>
           <div class="meta" style="margin-top:2px" id="invSummary"></div>
           <div class="note" id="hoAlert" style="color:var(--bd-f);display:none"></div>
@@ -939,10 +947,6 @@
               <button type="button" class="mi" onclick="document.getElementById('itaMore').open=false;openHandover()">
                 <b>Transfer responsibilities</b>
                 <span>Only needed when a SOT or ASOT is replaced or away. Moves their trainees to someone else.</span>
-              </button>
-              <button type="button" class="mi" style="border-top:1px dashed var(--border);margin-top:4px" onclick="document.getElementById('itaMore').open=false;itaResetRound()">
-                <b>Preview next cycle (prototype only)</b>
-                <span>Loads Jan&ndash;Jun 2027 as not yet initiated, so you can see the first-time flow. Every cycle starts this way. Not part of the product.</span>
               </button>
             </div>
           </details>
@@ -1999,7 +2003,7 @@ function renderItaRound(){
   document.getElementById('invSummary').textContent = (ROUND.open
     ? `ITA initiated ${ROUND.at} \u00b7 trainer deadline ${ROUND.due} \u00b7 ${haveMin} of ${all.length} trainees have ${RULES.minForms}+ forms`
     : 'ITA not initiated yet for this cycle') + ` \u00b7 ${signed} signed off \u00b7 ${un} with no SOT assigned yet`;
-  document.getElementById('itaCycleTxt').textContent = ROUND.cycle;
+  document.getElementById('itaCycleSel').value = ROUND.cycle;
   const bi = document.getElementById('itaInviteBtn'), br = document.getElementById('itaRemindBtn');
   if(bi && br && !asst){ bi.style.display = ROUND.open ? 'none' : ''; br.style.display = ROUND.open ? '' : 'none'; }
   const gone = ASOTS.filter(a=>a.active===false && ROSTER.some(t=>t.verifier===a.id||t.asot===a.id));
@@ -2018,23 +2022,18 @@ function itaOverviewHtml(){
   const c = k => rows.filter(t=>itaState(t)===k).length;
   const fu = rows.filter(t=>FOLLOW.includes(itaState(t))).length;
   const teamRows = itaScope==='mine' ? [asotById(mineId())] : ASOTS.filter(a=>a.active!==false || ptrainees().some(t=>t.asot===a.id));
-  const wait = ['none','partial'];
-  const ownRow = a => {
-    const mine = ptrainees().filter(t=>t.asot===a.id), tot = mine.length;
-    const sg = mine.filter(t=>itaState(t)==='signed').length, w = mine.filter(t=>wait.includes(itaState(t))||itaState(t)==='notopened').length, ip = tot - sg - w;
-    const seg = (v,col)=>`<i style="width:${tot?v/tot*100:0}%;background:${col}"></i>`;
-    return `<div class="ow-row"><div class="nm">${a.name}<small>${a.tag}${a.id===mineId()?' (you)':''}</small></div>
-      <div class="ita-split" role="img" aria-label="${a.name}: ${sg} signed off, ${ip} under way, ${w} waiting for forms">${seg(sg,ITA_FILL.signed)}${seg(ip,ITA_FILL.sign)}${seg(w,ITA_FILL.none)}</div>
-      <div class="ct">${tot ? `<b>${sg}</b> of ${tot} ITAs signed off` : '<span class="meta">No ITAs yet</span>'}</div></div>`;
-  };
-  const nNo = ptrainees().filter(t=>!t.asot).length;
-  const noRow = itaScope==='team' && nNo ? `<div class="ow-row" style="border-top:1px dashed var(--border);margin-top:6px;padding-top:12px"><div class="nm">No SOT assigned yet<small>${nNo} trainee${nNo===1?'':'s'} still to be assigned</small></div>
-      <div class="ita-split" role="img" aria-label="${nNo} trainees without an assigned SOT"></div>
-      <div class="ct">${sot ? `<button type="button" class="btn sec sm" onclick="itaOpen('noasot')">Assign</button>` : ''}</div></div>` : '';
+  const stageCols = [['none','No forms yet'],['partial','Below minimum'],['ready','Ready for face-to-face'],['sign','Awaiting signature'],['signed','Signed off'],['follow','Needs follow-up']];
+  const cnt = (list,k) => k==='follow' ? list.filter(t=>FOLLOW.includes(itaState(t))).length : list.filter(t=>itaState(t)===k).length;
+  const num = v => v ? `<b>${v}</b>` : '<span class="z">&ndash;</span>';
+  const trow = (label, sub, list, extra, cls) => `<tr class="${cls||''}"><th scope="row"><span class="nm">${label}</span><small>${sub}</small></th><td class="n">${num(list.length)}</td>${ROUND.open ? stageCols.map(([k])=>`<td class="n">${num(cnt(list,k))}</td>`).join('') : ''}<td class="act">${extra||''}</td></tr>`;
+  const everyone = ptrainees(), noSot = everyone.filter(t=>!t.asot);
+  const body = teamRows.map(a=>trow(a.name, a.tag+(a.id===mineId()?' (you)':''), everyone.filter(t=>t.asot===a.id))).join('')
+    + (itaScope==='team' && noSot.length ? trow('No SOT assigned yet', 'ITA not assigned to anyone', noSot, sot ? `<button type="button" class="btn sec sm" onclick="itaOpen('noasot')">Assign</button>` : '', 'warnrow') : '');
+  const head = `<tr><th scope="col" style="text-align:left">SOT / ASOT</th><th scope="col">ITAs assigned</th>${ROUND.open ? stageCols.map(([k,l])=>`<th scope="col"><span class="sw" style="background:${ITA_FILL[k==='follow'?'follow':k]}"></span>${l}</th>`).join('') : ''}<th></th></tr>`;
   const teamPanel = `<div class="ita-panel" style="margin-top:14px">
-      <div class="eyebrow">${ROUND.open?'2':'1'} &middot; SOT team</div>
-      <p class="note" style="margin:6px 0 4px">Each trainee's ITA is assigned to one SOT or ASOT, who reviews the forms, holds the face-to-face meeting and signs off. This shows how far each has got.</p>
-      <div>${teamRows.map(ownRow).join('')}${noRow}</div>
+      <div class="eyebrow">${ROUND.open?'2':'1'} &middot; ITAs by assigned SOT</div>
+      <p class="note" style="margin:6px 0 10px">Each trainee's ITA is assigned to one SOT or ASOT, who reviews the forms, holds the face-to-face meeting and signs off.${ROUND.open ? ' The columns match the stage tiles above; each number is a count of trainees, each counted once in the stage they are at now.' : ''}</p>
+      <div class="tbl-scroll"><table class="tm"><thead>${head}</thead><tbody>${body}</tbody></table></div>
       <p class="note" style="margin-top:12px">Trainer forms are anonymous to the SOT team: this tab shows how many forms are in, never who returned them.</p>
     </div>`;
   if(!ROUND.open) return `<div class="ita-panel">
@@ -2310,11 +2309,15 @@ function sendInvite(){
   logEvent(`Initiated ITA ${ROUND.cycle}: invited ${rc.length===DEPT_TRAINERS.length?'all '+rc.length+' trainers':rc.length+' selected trainers'} for all ${ptrainees().length} trainees &middot; deadline ${dueTxt}`);
   closeInvite(); renderAll(); toast(`ITA initiated; invitation sent to ${rc.length} trainers`);
 }
-function itaResetRound(){
-  ROUND.open = false; ROUND.fresh = true; ROUND.cycle = 'Jan \u2013 Jun 2027';
-  ptrainees().forEach(t=>{ INV[t.id] = {at:'', due:'', got:0, total:8}; });
-  logEvent('Prototype: next ITA cycle (Jan \u2013 Jun 2027) loaded, not yet initiated');
-  renderAll(); toast('Next cycle loaded (prototype only)');
+const CYC = {};   // prototype: remembers each cycle's state so you can switch back and forth
+function itaSwitchCycle(label){
+  if(label===ROUND.cycle) return;
+  CYC[ROUND.cycle] = {round:{...ROUND}, inv:JSON.parse(JSON.stringify(INV))};
+  Object.keys(INV).forEach(k=>delete INV[k]);
+  const sv = CYC[label];
+  if(sv){ Object.assign(ROUND, sv.round); Object.assign(INV, sv.inv); }
+  else { Object.assign(ROUND, {open:false, fresh:true, cycle:label, at:'', due:''}); ptrainees().forEach(t=>{ INV[t.id] = {at:'', due:'', got:0, total:8}; }); }
+  renderAll(); toast('Showing ITA cycle ' + label);
 }
 
 /* ---------------- home dashboard ---------------- */
