@@ -559,7 +559,21 @@
   .as-grid{display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px;align-items:start}
   .as-person{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:11px 13px;border:1px solid var(--border);border-radius:11px;margin-bottom:8px;background:var(--surface)}
   .as-person:hover{border-color:var(--acc)} .as-person:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-  .as-person.on{border-color:var(--acc);background:var(--acc-bg);box-shadow:0 0 0 1px var(--acc) inset}
+  .as-person{border-left:4px solid var(--pc,var(--border))}
+  .as-person.on{border-color:var(--pc,var(--acc));background:color-mix(in srgb,var(--pc,var(--acc)) 11%,var(--surface));box-shadow:0 0 0 1px var(--pc,var(--acc)) inset}
+  .as-person.none{border-style:dashed;border-left:4px solid #e08a00}
+  .as-person b{display:flex !important;align-items:center;gap:8px}
+  .sotwho{display:inline-flex;align-items:center;gap:8px} .sotwho b{font-weight:650;color:var(--ink)}
+  .as-person .sotav{display:inline-grid;margin:0;color:#fff;font-size:10.5px}
+  .sotav{flex:none;width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;font-size:10.5px;font-weight:750;letter-spacing:0;color:#fff;background:var(--c)}
+  .unas{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;background:color-mix(in srgb,#e08a00 18%,transparent);color:#8f5200;border:1px solid color-mix(in srgb,#e08a00 45%,transparent);white-space:nowrap}
+  .unas i{width:6px;height:6px;border-radius:50%;background:#e08a00}
+  .dark .unas{color:#f2b650}
+  .arr{margin:0 7px;color:var(--ink3)}
+  #asRows tr.mine td{background:color-mix(in srgb,var(--acc) 12%,transparent)}
+  #asRows tr.mine td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
+  .gtog .gl{display:inline-flex;align-items:center;gap:8px}
+  .ita-alert{background:color-mix(in srgb,#e08a00 13%,transparent) !important;border-color:color-mix(in srgb,#e08a00 40%,transparent) !important}
   .as-person b{display:block;font-size:13.5px;font-weight:650} .as-person span{display:block;font-size:12px;color:var(--ink2);margin-top:2px}
   .as-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:11px}
   .as-bar .sp{flex:1}
@@ -1624,6 +1638,11 @@ const ASOTS = [
   {id:'tina',    name:'Dr. Tina Leung',  tag:'ASOT'}
 ];
 const asotById = id => ASOTS.find(a=>a.id===id);
+const SOT_COL = {sot:'#3f62cf', winnie:'#6552d1', raymond:'#177070', tina:'#a8466d'};   // one fixed colour per person (white text >= 4.5:1)
+const sotCol = id => SOT_COL[id] || '#5b5f73';
+const sotInit = id => { const n = (asotById(id)||{name:'?'}).name.replace('Dr. ','').split(' '); return (n[0][0]+(n[1]?n[1][0]:'')).toUpperCase(); };
+const sotAv = id => `<span class="sotav" style="--c:${sotCol(id)}" aria-hidden="true">${sotInit(id)}</span>`;
+const sotChip = id => id ? `<span class="sotwho">${sotAv(id)}<b>${asotById(id).name.replace('Dr. ','')}</b></span>` : `<span class="unas"><i></i>Not assigned</span>`;
 const ASSIGN_SEED = {
   '2024-011':'sot','2024-008':'sot','2021-015':'sot','2022-019':'sot',
   '2023-015':'winnie','2021-004':'winnie','2024-025':'winnie','2024-033':'winnie',
@@ -2138,7 +2157,7 @@ function itaActionBtn(t,k){
 function itaRowHtml(t){
   const k = itaState(t);
   const cover = t.cover ? `<div class="id-cell">On cover until ${t.cover.until} &middot; <a class="lb-title" tabindex="0" onclick="endCover('${t.id}')">End cover</a></div>` : '';
-  const sotCell = itaGroup==='sot' ? null : (t.asot ? `<span class="meta">${sotName(t.asot)}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '<span class="pill">No SOT assigned yet</span>');
+  const sotCell = itaGroup==='sot' ? null : (t.asot ? `${sotChip(t.asot)}<div class="id-cell" style="margin-left:30px">${asotById(t.asot).tag}</div>` : '<span class="unas"><i></i>Not assigned</span>');
   return `<tr class="${t.asot===mineId()?'mine':''}">
       <td><div class="nm-cell">${lastFirst(t.name)}</div><span class="id-cell mono" style="display:inline;margin-left:6px">${t.id}</span></td>
       <td>${stagePill(t.stage)}</td>
@@ -2201,8 +2220,8 @@ function itaListOnly(){
     const mine = rows.filter(t=>(t.asot||null)===g.id); if(!mine.length) return;
     const all = ptrainees().filter(t=>(t.asot||null)===g.id), sg = all.filter(t=>itaState(t)==='signed').length, rd = all.filter(t=>itaState(t)==='ready').length;
     const open = searching || !itaCollapsed.has(key);
-    const label = g.a ? `<b>${g.a.name}</b><small>${g.a.tag}${g.a.id===mineId()?' (you)':''} &middot; ${all.length} ITA${all.length===1?'':'s'}</small>` : `<b>No SOT assigned yet</b><small>${all.length} trainee${all.length===1?'':'s'}</small>`;
-    const head = `<button type="button" class="gtog" aria-expanded="${open}" aria-controls="grp-${key}" onclick="itaToggleGrp('${key}')"><svg class="chev" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M4 2.5 8 6l-4 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${label}</span></button>`;
+    const label = g.a ? `${sotAv(g.id)}<b>${g.a.name}</b><small>${g.a.tag}${g.a.id===mineId()?' (you)':''} &middot; ${all.length} ITA${all.length===1?'':'s'}</small>` : `<b>No SOT assigned yet</b><small>${all.length} trainee${all.length===1?'':'s'}</small>`;
+    const head = `<button type="button" class="gtog" aria-expanded="${open}" aria-controls="grp-${key}" onclick="itaToggleGrp('${key}')"><svg class="chev" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M4 2.5 8 6l-4 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="gl">${label}</span></button>`;
     const prog = g.a ? `${sg} of ${all.length} signed off${rd ? ` &middot; <b class="rdy">${rd} ready to meet</b>` : ''}` : (sot ? `<button type="button" class="btn sec sm" onclick="itaOpen('noasot')">Assign SOT</button>` : '');
     html += `<tr class="grp-h ${g.a?'':'none'} ${open?'':'shut'}" id="grp-${key}"><td colspan="5"><div class="gh">${head}<span class="gp">${prog}</span></div></td></tr>` + (open ? mine.map(itaRowHtml).join('') : '');
   });
@@ -2229,7 +2248,7 @@ function itaAssignHtml(){
     <div><div id="asHead"></div>
       <div class="ita-filters" style="margin:10px 0"><span id="asChips" style="display:contents"></span>
         <input type="search" class="ctl sm" id="asSearch" placeholder="Search trainee" aria-label="Search trainee" value="${asQ}" oninput="asQ=this.value.toLowerCase();assignRender()" style="width:170px;margin-left:auto"></div>
-      <div class="tbl-scroll tall"><table class="compact"><thead><tr><th style="width:34px"></th><th style="min-width:200px">Trainee</th><th>Stage</th><th style="min-width:170px">Currently signed off by</th><th style="min-width:170px">ITA status</th></tr></thead><tbody id="asRows"></tbody></table></div>
+      <div class="tbl-scroll tall"><table class="compact"><thead><tr><th style="width:34px"></th><th style="min-width:200px">Trainee</th><th>Stage</th><th style="min-width:170px">Assigned SOT</th><th style="min-width:170px">ITA status</th></tr></thead><tbody id="asRows"></tbody></table></div>
       <div class="as-bar" id="asBar"></div></div></div>`;
 }
 function assignRender(){
@@ -2237,16 +2256,17 @@ function assignRender(){
   const all = ptrainees(), who = asotById(asWho);
   document.getElementById('asTeam').innerHTML = activeAsots().map(a=>{
     const mine = all.filter(t=>t.asot===a.id), sg = mine.filter(t=>itaState(t)==='signed').length;
-    return `<button type="button" role="radio" aria-checked="${a.id===asWho}" class="as-person ${a.id===asWho?'on':''}" onclick="asPick('${a.id}')"><b>${a.name}${a.id===mineId()?' (you)':''}</b><span>${a.tag} &middot; ${mine.length} ITA${mine.length===1?'':'s'} &middot; ${sg} signed</span></button>`;
-  }).join('') + `<div class="as-person" style="cursor:default;border-style:dashed"><b>No SOT assigned yet</b><span>${all.filter(t=>!t.asot).length} trainee${all.filter(t=>!t.asot).length===1?'':'s'} still to be assigned</span></div>`;
+    return `<button type="button" role="radio" aria-checked="${a.id===asWho}" class="as-person ${a.id===asWho?'on':''}" style="--pc:${sotCol(a.id)}" onclick="asPick('${a.id}')"><b>${sotAv(a.id)}${a.name}${a.id===mineId()?' (you)':''}</b><span>${a.tag} &middot; ${mine.length} ITA${mine.length===1?'':'s'} &middot; ${sg} signed</span></button>`;
+  }).join('') + `<div class="as-person none" style="cursor:default"><b><span class="unas"><i></i>Not assigned</span></b><span>${all.filter(t=>!t.asot).length} trainee${all.filter(t=>!t.asot).length===1?'':'s'} still to be assigned</span></div>`;
   document.getElementById('asHead').innerHTML = `<div class="h3">Trainees for ${who.name}</div><div class="meta" style="margin-top:2px">Ticked trainees will be signed off by ${sotName(asWho)}. Signed-off ITAs are locked.</div>`;
   document.getElementById('asChips').innerHTML = [['all','All'],['unassigned','No SOT assigned yet'],['this','Already with '+sotName(asWho).split(' ')[0]]].map(([k,l])=>
     `<button type="button" class="chip ${asFilter===k?'on':''}" onclick="asFilter='${k}';assignRender()">${l}</button>`).join('') +
     `<button type="button" class="chip" onclick="asTickShown()">Tick all shown</button>`;
   document.getElementById('asRows').innerHTML = asShown().map(t=>{
     const k = itaState(t), locked = k==='signed', on = asSet.has(t.id);
-    const cur = t.asot===asWho ? (on ? sotName(t.asot) : `<span class="meta">${sotName(t.asot)} &rarr; no SOT</span>`)
-      : on ? `<span class="meta">${sotName(t.asot)} &rarr; <b>${sotName(asWho)}</b></span>` : (t.asot ? sotName(t.asot) : '<span class="pill">No SOT assigned yet</span>');
+    const arrow = '<span class="arr" aria-hidden="true">&rarr;</span>';
+    const cur = t.asot===asWho ? (on ? sotChip(t.asot) : `${sotChip(t.asot)}${arrow}<span class="unas"><i></i>Not assigned</span>`)
+      : on ? `${t.asot ? sotChip(t.asot) : '<span class="unas"><i></i>Not assigned</span>'}${arrow}${sotChip(asWho)}` : sotChip(t.asot);
     return `<tr class="${on?'mine':''}"><td><input type="checkbox" ${on?'checked':''} ${locked?'disabled':''} aria-label="Assign ${lastFirst(t.name)} to ${who.name}" onchange="asToggle('${t.id}',this.checked)"></td>
       <td><div class="nm-cell">${lastFirst(t.name)}</div><span class="id-cell mono" style="display:inline;margin-left:6px">${t.id}</span></td>
       <td>${stagePill(t.stage)}</td><td>${cur}</td><td>${statePill(k)}${locked?' <span class="meta">locked</span>':''}</td></tr>`;
