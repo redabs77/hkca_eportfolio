@@ -2145,14 +2145,15 @@ function itaActionBtn(t,k){
   const own = t.asot===mineId(), can = role!=='asst' || own;
   if(k==='notopened') return '<span class="meta">&mdash;</span>';
   if(k==='none' || k==='partial'){
-    if(can && t.asot) return `<button type="button" class="btn sec sm" onclick="openEarly('${t.id}')" title="Fewer than ${RULES.minForms} forms are back. Start the ITA anyway, for example when the deadline is close.">Start anyway</button>`;
+    if(can && t.asot && formsGot(t)>0) return `<button type="button" class="btn sec sm" onclick="openEarly('${t.id}')" title="Fewer than ${RULES.minForms} forms are back. Start the ITA anyway, for example when the deadline is close.">Start anyway</button>`;
     return '<span class="meta">Waiting for forms</span>';
   }
   if(!can) return '<span class="meta">&mdash;</span>';
   const lab = {ready:'Start face-to-face', sign:'Open ITA', signed:'View', remedial:'Open remedial plan', boe:'Open BOE escalation', contested:'View appeal'}[k];
   const cls = FOLLOW.includes(k) ? 'am' : (k==='ready'||k==='sign') ? 'pri' : 'sec';
-  const ev = earlyOf(t) ? '?early='+formsGot(t) : '';
-  return `<a class="btn ${cls} sm" href="HKCA_ITA_Synthesis_Flow.html${ev}" style="text-decoration:none">${lab}</a>`;
+  const step = {ready:'s1', sign:'s3', signed:'s3', remedial:'s4', boe:'s4', contested:'s4'}[k] || 's1';
+  const href = `HKCA_ITA_Synthesis_Flow.html?t=${encodeURIComponent(t.id)}&name=${encodeURIComponent(t.name)}&stage=${encodeURIComponent(t.stage)}&got=${formsGot(t)}&step=${step}${earlyOf(t) ? '&early='+formsGot(t) : ''}`;
+  return `<a class="btn ${cls} sm" href="${href}" style="text-decoration:none">${lab}</a>`;
 }
 function itaRowHtml(t){
   const k = itaState(t);

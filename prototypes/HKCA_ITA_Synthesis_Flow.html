@@ -506,10 +506,10 @@
             <div class="card-h">
               <div>
                 <div class="eyebrow">Trainer forms received</div>
-                <div class="h2">Dr. Kelvin Wong &mdash; Jul &ndash; Dec 2026</div>
-                <div class="meta" style="margin-top:4px">PWH &middot; Clinical Anaesthesia &middot; Higher Trainee, year 2 &middot; 4 of 4 supervising trainers have returned a form</div>
+                <div class="h2"><span class="trn">Dr. Kelvin Wong</span> &mdash; Jul &ndash; Dec 2026</div>
+                <div class="meta" style="margin-top:4px">PWH &middot; Clinical Anaesthesia &middot; <span id="stgTxt">Higher Trainee, year 2</span> &middot; <span id="nFormsTxt">4 of 4 supervising trainers have returned a form</span></div>
               </div>
-              <span class="pill ok"><span class="dot g"></span>All submissions received</span>
+              <span class="pill ok" id="allRecvPill"><span class="dot g"></span>All submissions received</span>
             </div>
             <div id="asrList" role="group" aria-label="Choose a form to read"></div>
             <p class="note" style="margin-top:13px">
@@ -590,7 +590,7 @@
             <div class="card-h">
               <div>
                 <div class="eyebrow">Item-by-item synthesis</div>
-                <div class="h2">What four trainers said &rarr; what goes on the form</div>
+                <div class="h2">What <span id="nWord">four</span> trainers said &rarr; what goes on the form</div>
                 <div class="meta" style="margin-top:4px">Each segment is one trainer&rsquo;s grade. X (unable to assess) is excluded from the spread.</div>
               </div>
               <span class="pill warn" id="divPill"><span class="dot a"></span>&mdash;</span>
@@ -645,7 +645,7 @@
             </div>
 
             <div class="ledger-preview">
-              <div class="lr"><span class="lk">Trainee</span><span class="lv">Dr. Kelvin Wong</span></div>
+              <div class="lr"><span class="lk">Trainee</span><span class="lv trn">Dr. Kelvin Wong</span></div>
               <div class="lr"><span class="lk">Cycle</span><span class="lv mono">Jul &ndash; Dec 2026</span></div>
               <div class="lr"><span class="lk">sot_grade</span><span class="lv mono" id="lgSot">3</span></div>
               <div class="lr"><span class="lk">final_grade</span><span class="lv mono">pending appeal window</span></div>
@@ -739,7 +739,7 @@
             <div class="card-h" style="margin-bottom:12px">
               <div>
                 <div class="eyebrow">Trainee Counter-Signature</div>
-                <div class="h3" style="margin-top:3px">Dr. Kelvin Wong</div>
+                <div class="h3 trn" style="margin-top:3px">Dr. Kelvin Wong</div>
               </div>
             </div>
 
@@ -1105,7 +1105,7 @@ function signPad(){
     </svg>`;
   document.getElementById('sigStatus').innerHTML = '<span style="color:var(--em700);font-weight:650">Signed 18 Dec 2026, 15:04</span>';
   document.getElementById('auditSig').textContent = 'captured';
-  announce('Signature captured for Dr. Kelvin Wong on 18 December 2026.');
+  announce('Signature captured for '+TRN+' on 18 December 2026.');
 }
 function completeSignOff(){
   const pad = document.getElementById('sigpad');
@@ -1241,14 +1241,48 @@ const ASR = [
   comments:'Good attitude and keen to learn. Time management on lists is the issue.'}
 ];
 /* Anonymise: shuffle so order says nothing, label Form 1..n. Trainers who ticked 'happy to be contacted' are shown by name; the rest stay anonymous. */
-ASR.forEach(a=>{ a.contact = (a.id==='LK' || a.id==='RC'); });
-(function(){ const ord=[2,0,3,1].map(i=>ASR[i]); ASR.length=0; ord.forEach((a,i)=>{ if(!a.contact){ delete a.name; delete a.role; } a.id='F'+(i+1); a.form = a.contact ? a.name : 'Form '+(i+1); ASR.push(a); }); })();
+/* Per-trainee context from the console link: ?t=<id>&name=&stage=&got=<forms>&step=s1|s3|s4 . The worked example (Dr. Kelvin Wong, 4 forms) keeps its hand-written data; every other trainee gets a seeded set of `got` forms from different trainers. */
+const QP = new URLSearchParams(location.search);
+const CTX = {id:QP.get('t'), name:QP.get('name'), stage:QP.get('stage'), n:QP.get('got')===null?null:+QP.get('got'), step:QP.get('step'), early:QP.get('early')};
+const GENERATED = !!(CTX.id && CTX.id!=='2022-019' && CTX.n!==null);
+const TRN = CTX.name || 'Dr. Kelvin Wong';
+const POOL = [
+  {name:'Dr. Lisa Kwok', role:'Consultant \u00b7 Cardiac Anaesthesia', contact:true},
+  {name:'Dr. Michael Tang', role:'Associate Consultant \u00b7 General & Obstetric', contact:false},
+  {name:'Dr. Sandra Ng', role:'Consultant \u00b7 Regional & Acute Pain', contact:false},
+  {name:'Dr. Raymond Chu', role:'Consultant \u00b7 Neuro & Airway', contact:true},
+  {name:'Dr. Henry Cheung', role:'Consultant \u00b7 Paediatric & ENT', contact:false},
+  {name:'Dr. Grace Lo', role:'Associate Consultant \u00b7 Obstetric', contact:false},
+  {name:'Dr. Victor Ma', role:'Consultant \u00b7 ICU & Perioperative', contact:true},
+  {name:'Dr. Janet Fong', role:'Consultant \u00b7 Orthopaedic & Trauma', contact:false}
+];
+const COMMENTS = {
+  good:['Reliable, well prepared and good with the team. Ready for more independent lists.','Calm under pressure and communicates clearly with surgeons and nurses.','Keen to teach and to learn. Consistently safe practice on my lists.'],
+  mid:['Safe and improving. Would benefit from more structured exposure to the harder cases.','Good attitude. Needs to anticipate problems earlier and ask for help sooner.','Solid knowledge; confidence under supervision is the main gap.'],
+  weak:['Needs closer supervision on complex cases and clearer prioritisation on busy lists.','Willing to learn, but several lists needed hands-on direction to stay on schedule.']
+};
+function seeded(str){ let h=1779033703^str.length; for(let i=0;i<str.length;i++){ h=Math.imul(h^str.charCodeAt(i),3432918353); h=h<<13|h>>>19; } return function(){ h=Math.imul(h^h>>>16,2246822507); h=Math.imul(h^h>>>13,3266489909); h^=h>>>16; return (h>>>0)/4294967296; }; }
+function genForms(id, n){
+  const rnd = seeded(id), tr = POOL.slice(); for(let i=tr.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [tr[i],tr[j]]=[tr[j],tr[i]]; }
+  const lean = [-1,0,0,0,1][Math.floor(rnd()*5)];    // this trainee's overall tendency
+  return tr.slice(0,Math.min(n,tr.length)).map((t,i)=>{
+    const base = ASR[Math.floor(rnd()*4)].r;
+    const r = base.map(g=> g==='X' ? 'X' : String(Math.max(1,Math.min(4, +g + lean + (rnd()<.3 ? (rnd()<.5?-1:1) : 0)))));
+    const avg = r.filter(x=>x!=='X').reduce((a,x)=>a+ +x,0)/r.filter(x=>x!=='X').length;
+    const pool = avg<=2.3 ? COMMENTS.good : avg<=2.9 ? COMMENTS.mid : COMMENTS.weak;
+    return {id:'G'+i, name:t.name, role:t.role, contact:t.contact, at:'2026-12-'+String(10+i*2).padStart(2,'0')+'T10:00', r, ex:{}, comments:pool[Math.floor(rnd()*pool.length)]};
+  });
+}
+if(GENERATED){ const g = genForms(CTX.id, CTX.n); ASR.length = 0; g.forEach(a=>ASR.push(a)); }
+else ASR.forEach(a=>{ a.contact = (a.id==='LK' || a.id==='RC'); });
+(function(){ const ord = GENERATED ? ASR.slice() : [2,0,3,1].map(i=>ASR[i]); ASR.length=0; ord.forEach((a,i)=>{ if(!a.contact){ delete a.name; delete a.role; } a.id='F'+(i+1); a.form = a.contact ? a.name : 'Form '+(i+1); ASR.push(a); }); })();
 (function(){ const n = new URLSearchParams(location.search).get('early'); if(n===null) return; const e=document.getElementById('earlyBanner'); document.getElementById('earlyTxt').textContent = 'This ITA was started with '+n+' of 3 trainer forms (below the usual minimum). Your summary should say it rests on fewer forms. Later forms are still added here.'; e.style.display=''; })();
 const CONTACT = {};   // relay threads by form id (demo, in memory)
 const gradesFor = c=>ASR.map(a=>a.r[D.find(d=>d.c===c).i]);
 const spreadOf = c=>{ const n=gradesFor(c).filter(g=>g!=='X').map(Number); return n.length?Math.max(...n)-Math.min(...n):0; };
 const isDiv = c=>spreadOf(c)>=2;
 
+const SYNdef = ()=>{ const items={}; D.forEach(d=>{ const g=ASR.map(a=>a.r[d.i]).filter(x=>x!=='X').map(Number).sort((a,b)=>a-b); items[d.c]= g.length ? String(g[Math.floor((g.length-1)/2)+ (g.length%2===0 && g[g.length/2]-g[g.length/2-1]>0 ? 1:0)]) : '3'; }); const v=Object.values(items).map(Number); return {items, overall:String(Math.max(1,Math.min(4,Math.round(v.reduce((a,b)=>a+b,0)/v.length))))}; };
 const SYN = {
   items:Object.fromEntries('2 3 4 3 3 2 3 2 3 2 2 1 2 2 2'.split(' ').map((g,i)=>[D[i].c,g])),
   overall:'3',
@@ -1259,6 +1293,7 @@ const SYN = {
   courses:{'EASE':true,'ADAM-A':true,'EMAC':true,'ECHO-A':true,'USRA-E':false},
   proj:false, why4:'', traineeComments:''
 };
+if(GENERATED){ const d=SYNdef(); SYN.items=d.items; SYN.overall=d.overall; SYN.reason={}; }
 
 /* ---------- screen 1: sealed trainer submissions (SOT view) ---------- */
 let asrSel = 0;
@@ -1467,7 +1502,7 @@ function renderTrainee(){
       <div class="lr"><span class="lk">Rotation period</span><span class="lv mono">01 Jul \u2013 31 Dec 2026</span></div>
       <div class="lr"><span class="lk">Training category</span><span class="lv">Clinical Anaesthesia</span></div>
       <div class="lr"><span class="lk">Credit on sign-off</span><span class="lv mono">${unsat?'withheld pending remedial plan':'6.0 months'}</span></div>
-      <div class="lr"><span class="lk">Trainers contributing</span><span class="lv mono">4 \u00b7 named only if they agreed to be contacted</span></div>
+      <div class="lr"><span class="lk">Trainers contributing</span><span class="lv mono">${ASR.length} \u00b7 named only if they agreed to be contacted</span></div>
     </div>
     <div class="tv-grid">${items.replace(/<div class="tv-sec">/,'<div class="tv-sec" style="grid-column:1">').replace(/<div class="tv-sec">/,'<div class="tv-sec" style="grid-column:2">')}</div>
     <div class="tv-sec"><div class="eyebrow">Supervisor of Training\u2019s summary and suggestions</div><div class="readbox">${esc(SYN.sotComments||'\u2014')}</div></div>
@@ -1486,6 +1521,20 @@ go = function(screen){ if(screen==='s3') renderTrainee(); _go(screen); if(screen
 document.querySelectorAll('.step').forEach(b=>b.onclick=()=>go(b.dataset.screen));
 
 renderAsrList(); renderAsr(); buildSyn();
+(function ctxInit(){
+  document.querySelectorAll('.trn').forEach(e=>e.textContent=TRN);
+  const n = ASR.length, W=['no','one','two','three','four','five','six','seven','eight'];
+  $('#nWord').textContent = W[n]||n;
+  if(GENERATED){
+    $('#stgTxt').textContent = CTX.stage ? 'Training stage '+CTX.stage : 'Trainee';
+    const pill = $('#allRecvPill');
+    $('#nFormsTxt').textContent = n+' trainer form'+(n===1?'':'s')+' returned';
+    if(n<3){ pill.className='pill warn'; pill.innerHTML='<span class="dot a"></span>Below minimum of 3'; }
+    else pill.innerHTML = '<span class="dot g"></span>Minimum of 3 met';
+    if(CTX.id && !['s4'].includes(CTX.step)===false){ const b=document.createElement('div'); b.className='banner bl'; b.innerHTML='<div style="flex:1"><h3>Worked example</h3><p>The appeal and Board of Education screens show one illustrative case; they are not specific to this trainee.</p></div>'; document.querySelector('#screen-s4').prepend(b); }
+  }
+  if(CTX.step && /^s[1-4]$/.test(CTX.step)) go(CTX.step);
+})();
 </script>
 <script>
 /* ===== learning goals review (advisory; does not change the 15-item College grading) ===== */
