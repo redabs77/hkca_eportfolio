@@ -1970,7 +1970,7 @@ const statePill = k => `<span class="pill" style="background:${ITA_TONE[k][0]};c
 let itaView = 'overview', itaScope = 'team', itaFilter = 'all', itaQ = '';
 let asWho = 'winnie', asSet = null, asFilter = 'all', asQ = '';
 const itaRows = () => ptrainees().filter(t=>itaScope==='team' || t.asot===mineId());
-const ownerName = id => id ? nameOf(id).replace('Dr. ','') : 'No SOT assigned yet';
+const sotName = id => id ? nameOf(id).replace('Dr. ','') : 'No SOT assigned yet';
 function itaMatch(t,f){
   if(f==='noasot') return !t.asot;
   if(f==='below') return ROUND.open && formsGot(t)<RULES.minForms;
@@ -2017,7 +2017,7 @@ function itaOverviewHtml(){
   const rows = itaRows(), n = rows.length || 1, sot = role!=='asst', min = RULES.minForms;
   const c = k => rows.filter(t=>itaState(t)===k).length;
   const fu = rows.filter(t=>FOLLOW.includes(itaState(t))).length;
-  const owners = itaScope==='mine' ? [asotById(mineId())] : ASOTS.filter(a=>a.active!==false || ptrainees().some(t=>t.asot===a.id));
+  const teamRows = itaScope==='mine' ? [asotById(mineId())] : ASOTS.filter(a=>a.active!==false || ptrainees().some(t=>t.asot===a.id));
   const wait = ['none','partial'];
   const ownRow = a => {
     const mine = ptrainees().filter(t=>t.asot===a.id), tot = mine.length;
@@ -2031,10 +2031,10 @@ function itaOverviewHtml(){
   const noRow = itaScope==='team' && nNo ? `<div class="ow-row" style="border-top:1px dashed var(--border);margin-top:6px;padding-top:12px"><div class="nm">No SOT assigned yet<small>${nNo} trainee${nNo===1?'':'s'} still to be assigned</small></div>
       <div class="ita-split" role="img" aria-label="${nNo} trainees without an assigned SOT"></div>
       <div class="ct">${sot ? `<button type="button" class="btn sec sm" onclick="itaOpen('noasot')">Assign</button>` : ''}</div></div>` : '';
-  const ownersPanel = `<div class="ita-panel" style="margin-top:14px">
+  const teamPanel = `<div class="ita-panel" style="margin-top:14px">
       <div class="eyebrow">${ROUND.open?'2':'1'} &middot; SOT team</div>
-      <p class="note" style="margin:6px 0 4px">Every trainee has one responsible SOT (the SOT or an ASOT) who reviews the forms, holds the face-to-face meeting and signs off. This shows how far each has got.</p>
-      <div>${owners.map(ownRow).join('')}${noRow}</div>
+      <p class="note" style="margin:6px 0 4px">Each trainee's ITA is assigned to one SOT or ASOT, who reviews the forms, holds the face-to-face meeting and signs off. This shows how far each has got.</p>
+      <div>${teamRows.map(ownRow).join('')}${noRow}</div>
       <p class="note" style="margin-top:12px">Trainer forms are anonymous to the SOT team: this tab shows how many forms are in, never who returned them.</p>
     </div>`;
   if(!ROUND.open) return `<div class="ita-panel">
@@ -2042,18 +2042,18 @@ function itaOverviewHtml(){
       <div class="h2" style="margin:6px 0 4px">Not initiated yet</div>
       <p class="note" style="max-width:62ch">Initiating the ITA sends one request to every trainer in the department, covering all ${ptrainees().length} trainees. Trainers fill in forms for the trainees they know. Once a trainee has ${min} or more forms, their SOT can start the face-to-face. After that the same button becomes <b>Send reminder</b> for the rest of the cycle, and the next cycle starts fresh.</p>
       ${sot ? `<button type="button" class="btn pri" style="margin-top:12px" onclick="openInvite('invite')">Initiate ITA &amp; invite trainers</button>` : '<p class="note" style="margin-top:12px">The SOT initiates the ITA.</p>'}
-    </div>` + ownersPanel;
+    </div>` + teamPanel;
   const haveMin = rows.filter(t=>formsGot(t)>=min).length, below = rows.filter(t=>formsGot(t)<min), short = below.reduce((a,t)=>a+(min-formsGot(t)),0);
   const keys = ['none','partial','ready','sign','signed'];
   const desc = {none:'No trainer has returned a form yet', partial:`1 or 2 forms back; ${min}+ needed first`, ready:`${min}+ forms back; their SOT can hold the face-to-face`, sign:'Summary shared; trainee to sign', signed:'Face-to-face done and signed', follow:'Remedial plan, escalation or contested'};
   const split = keys.map(k=>`<i style="width:${c(k)/n*100}%;background:${ITA_FILL[k]}" title="${ITA_LABEL[k]}: ${c(k)}"></i>`).join('') + `<i style="width:${fu/n*100}%;background:${ITA_FILL.follow}" title="Needs follow-up: ${fu}"></i>`;
   const tile = (f,label,num,tone,d) => `<button type="button" class="fn" style="--tb:${tone[0]};--tf:${tone[1]}" onclick="itaOpen('${f}')"><b>${num}</b><span>${label}</span><em>${d}</em></button>`;
   return `<div class="ita-panel">
-      <div class="eyebrow">1 &middot; Where each trainee's ITA has got to &middot; ${rows.length} trainee${rows.length===1?'':'s'}${itaScope==='mine'?' you own':''}</div>
+      <div class="eyebrow">1 &middot; Where each trainee's ITA has got to &middot; ${rows.length} trainee${rows.length===1?'':'s'}${itaScope==='mine'?' assigned to you':''}</div>
       <p class="note" style="margin:6px 0 0"><b>${haveMin} of ${rows.length}</b> have the ${min}+ forms needed for the face-to-face.${below.length ? ` ${below.length} still short (${short} more form${short===1?'':'s'} in total): ${sot?'send a reminder and the trainers are pinged.':'the SOT can send a reminder.'}` : ' Everyone is covered.'}</p>
       <div class="ita-split" style="margin-top:10px" role="img" aria-label="ITA progress">${split}</div>
       <div class="fn-grid">${keys.map(k=>tile(k==='ready'?'ready':k,ITA_LABEL[k],c(k),ITA_TONE[k],desc[k])).join('')}${tile('followup','Needs follow-up',fu,ITA_TONE.remedial,desc.follow)}</div>
-    </div>` + ownersPanel;
+    </div>` + teamPanel;
 }
 
 /* ---- All trainees: list with ITA return status ---- */
@@ -2061,10 +2061,10 @@ function itaAllHtml(){
   return `<div class="ita-filters" style="margin-top:0"><span id="itaChips" style="display:contents"></span>
       <input type="search" class="ctl sm" id="itaSearch" placeholder="Search trainee" aria-label="Search trainee" value="${itaQ}" oninput="itaQ=this.value.toLowerCase();itaListOnly()" style="width:170px;margin-left:auto"></div>
     <div class="tbl-scroll tall">
-      <table class="compact"><thead><tr><th style="min-width:200px">Trainee</th><th>Stage</th><th style="min-width:180px">Trainer forms returned</th><th style="min-width:190px">ITA status</th><th style="min-width:150px">Responsible SOT</th><th style="min-width:140px">Action</th></tr></thead>
+      <table class="compact"><thead><tr><th style="min-width:200px">Trainee</th><th>Stage</th><th style="min-width:180px">Trainer forms returned</th><th style="min-width:190px">ITA status</th><th style="min-width:150px">Assigned SOT</th><th style="min-width:140px">Action</th></tr></thead>
       <tbody id="itaRows"></tbody></table>
     </div>
-    <p class="note">${itaScope==='mine'?'Showing the ITAs you own. Switch to <b>All ITAs</b> to track everyone. ':'Showing all ITAs. '}Trainer forms are anonymous: you see how many are back, not who sent them. An ASOT's sign-off is final and needs no SOT countersignature. Trainees rotated out are excluded (the host hospital runs their exit assessment).</p>`;
+    <p class="note">${itaScope==='mine'?'Showing the ITAs assigned to you. Switch to <b>All ITAs</b> to track everyone. ':'Showing all ITAs. '}Trainer forms are anonymous: you see how many are back, not who sent them. An ASOT's sign-off is final and needs no SOT countersignature. Trainees rotated out are excluded (the host hospital runs their exit assessment).</p>`;
 }
 function itaFormsCell(t){
   if(!ROUND.open) return '<span class="meta">&mdash;</span>';
@@ -2097,7 +2097,7 @@ function itaListOnly(){
       <td>${stagePill(t.stage)}</td>
       <td>${itaFormsCell(t)}</td>
       <td>${statePill(k)}</td>
-      <td>${t.asot ? `<span class="meta">${ownerName(t.asot)}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '<span class="pill">No SOT assigned yet</span>'}${cover}</td>
+      <td>${t.asot ? `<span class="meta">${sotName(t.asot)}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '<span class="pill">No SOT assigned yet</span>'}${cover}</td>
       <td>${itaActionBtn(t,k)}</td></tr>`;
   }).join('') || '<tr class="empty-row"><td colspan="6">No trainees match.</td></tr>';
 }
@@ -2115,7 +2115,7 @@ function asShown(){
 function itaAssignHtml(){
   return `<div class="as-grid">
     <div><div class="eyebrow" style="margin-bottom:8px">SOT team</div><div id="asTeam" role="radiogroup" aria-label="Choose a team member"></div>
-      <p class="note">Pick a team member, then tick the trainees they will be the responsible SOT for: they review the forms, meet the trainee and sign off.</p></div>
+      <p class="note">Pick a team member, then tick the trainees whose ITA is assigned to them: they review the forms, meet the trainee and sign off.</p></div>
     <div><div id="asHead"></div>
       <div class="ita-filters" style="margin:10px 0"><span id="asChips" style="display:contents"></span>
         <input type="search" class="ctl sm" id="asSearch" placeholder="Search trainee" aria-label="Search trainee" value="${asQ}" oninput="asQ=this.value.toLowerCase();assignRender()" style="width:170px;margin-left:auto"></div>
@@ -2129,21 +2129,21 @@ function assignRender(){
     const mine = all.filter(t=>t.asot===a.id), sg = mine.filter(t=>itaState(t)==='signed').length;
     return `<button type="button" role="radio" aria-checked="${a.id===asWho}" class="as-person ${a.id===asWho?'on':''}" onclick="asPick('${a.id}')"><b>${a.name}${a.id===mineId()?' (you)':''}</b><span>${a.tag} &middot; ${mine.length} ITA${mine.length===1?'':'s'} &middot; ${sg} signed</span></button>`;
   }).join('') + `<div class="as-person" style="cursor:default;border-style:dashed"><b>No SOT assigned yet</b><span>${all.filter(t=>!t.asot).length} trainee${all.filter(t=>!t.asot).length===1?'':'s'} still to be assigned</span></div>`;
-  document.getElementById('asHead').innerHTML = `<div class="h3">Trainees for ${who.name}</div><div class="meta" style="margin-top:2px">Ticked trainees will be signed off by ${ownerName(asWho)}. Signed-off ITAs are locked.</div>`;
-  document.getElementById('asChips').innerHTML = [['all','All'],['unassigned','No SOT assigned yet'],['this','Already with '+ownerName(asWho).split(' ')[0]]].map(([k,l])=>
+  document.getElementById('asHead').innerHTML = `<div class="h3">Trainees for ${who.name}</div><div class="meta" style="margin-top:2px">Ticked trainees will be signed off by ${sotName(asWho)}. Signed-off ITAs are locked.</div>`;
+  document.getElementById('asChips').innerHTML = [['all','All'],['unassigned','No SOT assigned yet'],['this','Already with '+sotName(asWho).split(' ')[0]]].map(([k,l])=>
     `<button type="button" class="chip ${asFilter===k?'on':''}" onclick="asFilter='${k}';assignRender()">${l}</button>`).join('') +
     `<button type="button" class="chip" onclick="asTickShown()">Tick all shown</button>`;
   document.getElementById('asRows').innerHTML = asShown().map(t=>{
     const k = itaState(t), locked = k==='signed', on = asSet.has(t.id);
-    const cur = t.asot===asWho ? (on ? ownerName(t.asot) : `<span class="meta">${ownerName(t.asot)} &rarr; no SOT</span>`)
-      : on ? `<span class="meta">${ownerName(t.asot)} &rarr; <b>${ownerName(asWho)}</b></span>` : (t.asot ? ownerName(t.asot) : '<span class="pill">No SOT assigned yet</span>');
+    const cur = t.asot===asWho ? (on ? sotName(t.asot) : `<span class="meta">${sotName(t.asot)} &rarr; no SOT</span>`)
+      : on ? `<span class="meta">${sotName(t.asot)} &rarr; <b>${sotName(asWho)}</b></span>` : (t.asot ? sotName(t.asot) : '<span class="pill">No SOT assigned yet</span>');
     return `<tr class="${on?'mine':''}"><td><input type="checkbox" ${on?'checked':''} ${locked?'disabled':''} aria-label="Assign ${lastFirst(t.name)} to ${who.name}" onchange="asToggle('${t.id}',this.checked)"></td>
       <td><div class="nm-cell">${lastFirst(t.name)}</div><span class="id-cell mono" style="display:inline;margin-left:6px">${t.id}</span></td>
       <td>${stagePill(t.stage)}</td><td>${cur}</td><td>${statePill(k)}${locked?' <span class="meta">locked</span>':''}</td></tr>`;
   }).join('') || '<tr class="empty-row"><td colspan="5">No trainees match.</td></tr>';
   const add = [...asSet].filter(id=>ROSTER.find(x=>x.id===id).asot!==asWho).length;
   const rem = all.filter(t=>t.asot===asWho && !asSet.has(t.id)).length, ch = add + rem;
-  document.getElementById('asBar').innerHTML = `<span class="meta" role="status"><b>${asSet.size}</b> ticked for ${ownerName(asWho)} &middot; ${ch} change${ch===1?'':'s'} to apply</span><span class="sp"></span>
+  document.getElementById('asBar').innerHTML = `<span class="meta" role="status"><b>${asSet.size}</b> ticked for ${sotName(asWho)} &middot; ${ch} change${ch===1?'':'s'} to apply</span><span class="sp"></span>
     <button class="btn sec sm" onclick="asInit();assignRender()" ${ch?'':'disabled'}>Reset</button>
     <button class="btn pri sm" onclick="asApply()" ${ch?'':'disabled'}>Apply ${ch||''} change${ch===1?'':'s'}</button>`;
 }
