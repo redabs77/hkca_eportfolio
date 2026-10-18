@@ -1365,6 +1365,36 @@
 </div>
 
 <!-- ============ v2: invite modal, bulk bar, toast ============ -->
+<div class="mscrim" id="earlyModal" onclick="if(event.target===this)closeEarly()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="earlyTitle">
+    <div class="modal-h">
+      <div>
+        <div class="eyebrow">Start ITA early</div>
+        <div class="h2" id="earlyTitle">Start before the minimum forms are back?</div>
+      </div>
+      <button class="btn sec sm" onclick="closeEarly()" aria-label="Close">Close</button>
+    </div>
+    <div class="modal-b">
+      <p class="note" id="earlyLead" style="margin:0 0 12px"></p>
+      <div class="field">
+        <div class="lbl">Reason</div>
+        <label class="radio"><input type="radio" name="earlyWhy" value="Trainer deadline is close" checked><div><b>Trainer deadline is close</b></div></label>
+        <label class="radio"><input type="radio" name="earlyWhy" value="Trainee is moving or leaving soon"><div><b>Trainee is moving or leaving soon</b></div></label>
+        <label class="radio"><input type="radio" name="earlyWhy" value="Few trainers have worked with this trainee"><div><b>Few trainers have worked with this trainee</b></div></label>
+        <label class="radio"><input type="radio" name="earlyWhy" value="Other"><div><b>Other</b></div></label>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="lbl">Note (optional)</div>
+        <textarea id="earlyNote" rows="2" style="width:100%;font:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--ink)" aria-label="Note"></textarea>
+      </div>
+      <p class="note" style="margin:12px 0 0">Forms that arrive later are still added. Your summary will say it rests on fewer forms, and this is recorded in the activity log.</p>
+    </div>
+    <div class="modal-f">
+      <button class="btn sec" onclick="closeEarly()">Cancel</button>
+      <button class="btn pri" id="earlyGo" onclick="confirmEarly()">Start with fewer forms</button>
+    </div>
+  </div>
+</div>
 <div class="mscrim" id="invModal" onclick="if(event.target===this)closeInvite()">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="invTitle">
     <div class="modal-h">
@@ -1982,6 +2012,8 @@ const ITA_TONE = {notopened:['var(--bg3)','var(--ink2)'], none:['var(--bg3)','va
                   signed:['var(--t2b)','var(--t2f)'], remedial:['var(--t6b)','var(--t6f)'], boe:['var(--t6b)','var(--t6f)'], contested:['var(--t6b)','var(--t6f)']};
 const ITA_FILL = {none:'var(--c0)', partial:'var(--c0)', ready:'var(--c2)', sign:'var(--c1)', signed:'var(--c3)', follow:'var(--c5)'};
 const formsGot = t => INV[t.id] ? INV[t.id].got : 0;
+const EARLY = {};   // 'cycle|traineeId' -> {got, reason, note, by}: SOT/ASOT chose to start below the minimum
+const earlyOf = t => EARLY[ROUND.cycle+'|'+t.id];
 function itaState(t){
   if(!ROUND.open) return 'notopened';
   const sd = ROUND.fresh ? null : ITA_SEED[t.id];
@@ -1990,6 +2022,7 @@ function itaState(t){
   if(sd==='synth') return 'ready';
   if(itaSigned(t)) return 'signed';
   const g = formsGot(t);
+  if(g<RULES.minForms && earlyOf(t)) return 'ready';
   return g>=RULES.minForms ? 'ready' : g>0 ? 'partial' : 'none';
 }
 const statePill = k => `<span class="pill" style="background:${ITA_TONE[k][0]};color:${ITA_TONE[k][1]}">${ITA_LABEL[k]}</span>`;
@@ -2085,17 +2118,22 @@ function itaAllHtml(){
 function itaFormsCell(t){
   if(!ROUND.open) return '<span class="meta">&mdash;</span>';
   const g = formsGot(t), m = RULES.minForms;
+  if(g<m && earlyOf(t)) return `<span class="pill warn"><span class="dot a"></span>${g} returned</span> <span class="meta">started early</span>`;
   return g>=m ? `<span class="pill ok"><span class="dot g"></span>${g} returned</span>`
               : `<span class="pill warn"><span class="dot a"></span>${g} returned</span> <span class="meta">needs ${m-g} more</span>`;
 }
 function itaActionBtn(t,k){
   const own = t.asot===mineId(), can = role!=='asst' || own;
   if(k==='notopened') return '<span class="meta">&mdash;</span>';
-  if(k==='none' || k==='partial') return '<span class="meta">Waiting for forms</span>';
+  if(k==='none' || k==='partial'){
+    if(can && t.asot) return `<button type="button" class="btn sec sm" onclick="openEarly('${t.id}')" title="Fewer than ${RULES.minForms} forms are back. Start the ITA anyway, for example when the deadline is close.">Start anyway</button>`;
+    return '<span class="meta">Waiting for forms</span>';
+  }
   if(!can) return '<span class="meta">&mdash;</span>';
   const lab = {ready:'Start face-to-face', sign:'Open ITA', signed:'View', remedial:'Open remedial plan', boe:'Open BOE escalation', contested:'View appeal'}[k];
   const cls = FOLLOW.includes(k) ? 'am' : (k==='ready'||k==='sign') ? 'pri' : 'sec';
-  return `<a class="btn ${cls} sm" href="HKCA_ITA_Synthesis_Flow.html" style="text-decoration:none">${lab}</a>`;
+  const ev = earlyOf(t) ? '?early='+formsGot(t) : '';
+  return `<a class="btn ${cls} sm" href="HKCA_ITA_Synthesis_Flow.html${ev}" style="text-decoration:none">${lab}</a>`;
 }
 function itaRowHtml(t){
   const k = itaState(t);
@@ -2123,6 +2161,26 @@ function itaCmp(a,b){
   return v ? v*itaSort.d : byName;
 }
 function itaSetSort(k){ itaSort = itaSort.k===k ? {k, d:-itaSort.d} : {k, d:1}; renderItaRound(); }
+let earlyId = null;
+function openEarly(id){
+  const t = ptrainees().find(x=>x.id===id); if(!t) return; earlyId = id;
+  const g = formsGot(t), m = RULES.minForms;
+  let when = '';
+  const dm = /^(\d+) (\w{3})/.exec(ROUND.due||''); if(dm){ const mi = MON.indexOf(dm[2]); if(mi>=0){ const d = new Date(TODAY.getFullYear(), mi, +dm[1]); const days = Math.round((d - TODAY)/86400000); when = days>=0 ? ` The trainer deadline is ${ROUND.due} (${days} day${days===1?'':'s'} away).` : ` The trainer deadline (${ROUND.due}) has passed.`; } }
+  document.getElementById('earlyLead').innerHTML = `<b>${lastFirst(t.name)}</b> has <b>${g} of ${m}</b> forms.${when} Starting now means the face-to-face rests on fewer trainer views than usual.`;
+  document.getElementById('earlyNote').value = '';
+  document.querySelector('input[name=earlyWhy]').checked = true;
+  document.getElementById('earlyModal').classList.add('on'); document.getElementById('earlyGo').focus();
+}
+function closeEarly(){ document.getElementById('earlyModal').classList.remove('on'); }
+function confirmEarly(){
+  const t = ptrainees().find(x=>x.id===earlyId); if(!t) return;
+  const why = document.querySelector('input[name=earlyWhy]:checked').value, note = document.getElementById('earlyNote').value.trim().replace(/[<>&]/g,'');
+  const g = formsGot(t);
+  EARLY[ROUND.cycle+'|'+t.id] = {got:g, reason:why, note, by:actor()};
+  logEvent(`Started ITA early: ${lastFirst(t.name)} &middot; ${g} of ${RULES.minForms} forms &middot; ${why}${note?' &mdash; '+note:''}`);
+  closeEarly(); renderAll(); toast(`ITA started for ${lastFirst(t.name)} with ${g} form${g===1?'':'s'}`);
+}
 function itaToggleGrp(k){ itaCollapsed.has(k) ? itaCollapsed.delete(k) : itaCollapsed.add(k); itaListOnly(); const b=document.querySelector('#grp-'+k+' .gtog'); if(b) b.focus(); }
 function itaCollapseAll(){ const ks = window._itaGrpKeys||[]; const allShut = ks.every(k=>itaCollapsed.has(k)); ks.forEach(k=> allShut ? itaCollapsed.delete(k) : itaCollapsed.add(k)); itaListOnly(); }
 function itaListOnly(){

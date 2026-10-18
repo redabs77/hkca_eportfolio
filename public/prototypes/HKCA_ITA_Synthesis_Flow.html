@@ -487,6 +487,7 @@
     <!-- SCREEN 1 — TIER 1: PRIVATE TRAINER INPUT (SOT view)   -->
     <!-- ==================================================== -->
     <section id="screen-s1">
+      <div class="banner bl" id="earlyBanner" style="display:none"><div style="flex:1"><h3>Started early</h3><p id="earlyTxt"></p></div></div>
       <div class="banner bl">
         <div style="flex:1">
           <h3>Tier 1 &mdash; trainer forms</h3>
@@ -1242,6 +1243,7 @@ const ASR = [
 /* Anonymise: shuffle so order says nothing, label Form 1..n. Trainers who ticked 'happy to be contacted' are shown by name; the rest stay anonymous. */
 ASR.forEach(a=>{ a.contact = (a.id==='LK' || a.id==='RC'); });
 (function(){ const ord=[2,0,3,1].map(i=>ASR[i]); ASR.length=0; ord.forEach((a,i)=>{ if(!a.contact){ delete a.name; delete a.role; } a.id='F'+(i+1); a.form = a.contact ? a.name : 'Form '+(i+1); ASR.push(a); }); })();
+(function(){ const n = new URLSearchParams(location.search).get('early'); if(n===null) return; const e=document.getElementById('earlyBanner'); document.getElementById('earlyTxt').textContent = 'This ITA was started with '+n+' of 3 trainer forms (below the usual minimum). Your summary should say it rests on fewer forms. Later forms are still added here.'; e.style.display=''; })();
 const CONTACT = {};   // relay threads by form id (demo, in memory)
 const gradesFor = c=>ASR.map(a=>a.r[D.find(d=>d.c===c).i]);
 const spreadOf = c=>{ const n=gradesFor(c).filter(g=>g!=='X').map(Number); return n.length?Math.max(...n)-Math.min(...n):0; };
