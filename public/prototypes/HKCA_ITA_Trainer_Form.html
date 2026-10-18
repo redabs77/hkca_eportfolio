@@ -228,6 +228,8 @@
   }
   @media (pointer:coarse){.g{min-height:56px}.anchor-btn{min-height:44px}}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+  .contactopt{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);font-size:13px;line-height:1.5;cursor:pointer}
+  .contactopt input{margin-top:3px}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 </head>
@@ -281,7 +283,7 @@
           <span><i class="chip kx">X</i>Unable to assess</span>
         </div>
         <p class="privacy"><b>Examples:</b> a rating of 4 needs a specific example. For 1, 2, 3 and X an example or comment is optional.</p>
-        <p class="privacy" style="margin-top:6px"><b>Private to the SOT and the College.</b> Your ratings are never shown to the trainee. Nothing is pre-filled
+        <p class="privacy" style="margin-top:6px"><b>Anonymous to the SOT team.</b> The SOT and ASOT read your ratings without your name. They are never shown to the trainee or to the College, which sees only the SOT's summary. Nothing is pre-filled
           from earlier cycles. The overall result is decided by the SOT, not by your individual ratings.</p>
       </div>
 
@@ -307,7 +309,8 @@
         <div class="closing">
           <label for="comments">Comments from Specialist Assessors</label>
           <textarea id="comments" placeholder="Anything the SOT should know that the items above do not capture (optional)."></textarea>
-          <p class="note">Optional. Be specific and factual &mdash; this may be read again if the assessment is contested.</p>
+          <p class="note">Optional. Be specific and factual &mdash; this may be read again if the assessment is contested. Write so that your comments do not identify you, as they are shown without your name.</p>
+          <label class="contactopt"><input type="checkbox" id="contactOk"> <span><b>I am happy to be contacted about my feedback.</b> If the SOT has a question, it reaches you through the portal. Your name stays hidden unless you choose to reply with it.</span></label>
         </div>
       </div>
     </div>
@@ -363,7 +366,7 @@ const DOMAINS = [
 const GR = [['1','Consistently exceeds'],['2','Occasionally exceeds'],['3','Usually meets'],['4','Unsatisfactory'],['X','Unable to assess']];
 const GFULL = {'1':'Consistently exceeds expectation','2':'Occasionally exceeds expectation','3':'Usually meets expectation','4':'Unsatisfactory','X':'Unable to assess'};
 const KEY = 'ita-trainer-draft-v1';
-let S = {r:{}, comments:'', sealed:null};          // r[code] = {g, ex}
+let S = {r:{}, comments:'', contact:false, sealed:null};          // r[code] = {g, ex}
 try{ const d = JSON.parse(localStorage.getItem(KEY)||'null'); if(d) S = d; }catch(e){}
 const $ = (s,el=document)=>el.querySelector(s), $$ = (s,el=document)=>[...el.querySelectorAll(s)];
 const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -515,6 +518,8 @@ $$('[data-toggle-anchors]').forEach(btn=>btn.addEventListener('click',()=>{
 }));
 $('#comments').value = S.comments||'';
 $('#comments').addEventListener('input',e=>{ S.comments=e.target.value; save(); });
+$('#contactOk').checked = !!S.contact;
+$('#contactOk').addEventListener('change',e=>{ S.contact=e.target.checked; save(); });
 
 /* ---------- review & seal ---------- */
 function openReview(){
@@ -532,6 +537,7 @@ function openReview(){
     <p class="meta">Dr. Kelvin Wong &middot; Higher Trainee year 2 &middot; 01 Jul &ndash; 31 Dec 2026</p>
     <div class="rev">${rows}</div>
     ${S.comments.trim()?`<p class="meta" style="margin-top:14px"><b>Comments:</b> ${esc(S.comments.trim())}</p>`:''}
+    <p class="meta" style="margin-top:10px">${S.contact?'You are <b>happy to be contacted</b> through the portal.':'You have <b>not</b> asked to be contacted.'} Your name is hidden from the SOT team either way.</p>
     <div class="acts"><button class="btn sec" id="sh-back">Keep editing</button><button class="btn pri" id="sh-go">Submit &amp; seal</button></div>
     <p class="fine">Once submitted, this form is sealed and cannot be edited. A later correction is recorded as a separate, dated annotation in the audit trail.</p></div>`;
   document.body.appendChild(el);
@@ -547,7 +553,7 @@ async function digest(txt){
   catch(e){ let h=2166136261; for(const ch of txt){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619)>>>0; } return 'fnv1a-'+h.toString(16); }
 }
 async function seal(){
-  const payload = JSON.stringify({r:S.r, comments:S.comments});
+  const payload = JSON.stringify({r:S.r, comments:S.comments, contact:!!S.contact});
   const hash = await digest(payload);
   S.sealed = {at:new Date().toISOString(), hash};
   save(); lockForm();
@@ -556,11 +562,11 @@ async function seal(){
 }
 function lockForm(){
   DOMAINS.forEach(d=>paintRow(d.c));
-  $$('textarea,#comments').forEach(t=>t.disabled=true);
+  $$('textarea,#comments,#contactOk').forEach(t=>t.disabled=true);
   $$('.addex').forEach(a=>a.classList.add('hidden'));
   const at = new Date(S.sealed.at);
   $('#sealedBanner').innerHTML = `<div class="sealed" role="status"><b>Submitted and sealed</b>
-    <p>The SOT can now see your ratings. You can no longer edit this form.<br>
+    <p>The SOT team can now read your ratings, without your name. You can no longer edit this form.<br>
     <span class="mono">${at.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} &middot; SHA-256 ${S.sealed.hash.slice(0,12)}&hellip;${S.sealed.hash.slice(-6)}</span></p></div>`;
   $('#saved').textContent = 'Sealed \u2014 read only'; paintRail();
 }

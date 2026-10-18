@@ -536,6 +536,34 @@
   .tb-a #rosterFilter{flex:1 1 220px;min-width:200px;max-width:340px}
   .tb-b .tb-push{margin-left:auto}
   .tb-b .btn,.tb-b summary.btn{min-height:34px}
+  /* ---- ITAs tab ---- */
+  .ita-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .ita-menu{min-width:300px;padding:6px}
+  .ita-menu .mi{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:9px 11px;border-radius:7px}
+  .ita-menu .mi:hover,.ita-menu .mi:focus-visible{background:var(--bg3)}
+  .ita-menu .mi b{display:block;font-size:13px;font-weight:650}
+  .ita-menu .mi span{display:block;font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.4}
+  .fn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+  .fn{all:unset;box-sizing:border-box;cursor:pointer;display:block;padding:13px 15px;border-radius:14px;background:var(--tb);color:var(--tf)}
+  .fn:hover{box-shadow:var(--shadow-md)} .fn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .fn b{display:block;font-size:28px;font-weight:750;letter-spacing:-.03em;line-height:1.05}
+  .fn span{display:block;font-size:12.5px;font-weight:600;margin-top:4px}
+  .ita-split{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px;background:var(--bg3)}
+  .ita-split i{display:block;height:100%}
+  .ita-two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;margin-top:18px}
+  .ita-panel{border:1px solid var(--border);border-radius:14px;padding:16px 18px;background:var(--surface)}
+  .ow-row{display:grid;grid-template-columns:170px minmax(0,1fr) 96px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-sub)}
+  .ow-row:last-child{border-bottom:0}
+  .ow-row .nm{font-size:13px;font-weight:650} .ow-row .nm small{display:block;font-size:12px;font-weight:500;color:var(--ink3)}
+  .ow-row .ct{font-size:12.5px;text-align:right;color:var(--ink2);font-variant-numeric:tabular-nums} .ow-row .ct b{color:var(--ink)}
+  .as-grid{display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px;align-items:start}
+  .as-person{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:11px 13px;border:1px solid var(--border);border-radius:11px;margin-bottom:8px;background:var(--surface)}
+  .as-person:hover{border-color:var(--acc)} .as-person:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .as-person.on{border-color:var(--acc);background:var(--acc-bg);box-shadow:0 0 0 1px var(--acc) inset}
+  .as-person b{display:block;font-size:13.5px;font-weight:650} .as-person span{display:block;font-size:12px;color:var(--ink2);margin-top:2px}
+  .as-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:11px}
+  .as-bar .sp{flex:1}
+  @media (max-width:1100px){ .ita-two,.as-grid{grid-template-columns:1fr} .ow-row{grid-template-columns:130px minmax(0,1fr) 80px} }
   /* ---- scale for 30+ trainees ---- */
   .tbl-scroll.tall{max-height:min(66vh,700px);overflow:auto;border:1px solid var(--border-sub);border-radius:12px}
   .tbl-scroll.tall thead th{background:var(--bg3);box-shadow:0 1px 0 var(--border)}
@@ -893,143 +921,43 @@
 
   <section id="tab-itas" role="tabpanel" aria-labelledby="tabbtn-itas" class="hidden">
 
-    <!-- ===== ITA round: invitations + ASOT assignment ===== -->
     <div class="card card-pad mb">
-      <div class="card-h" style="margin-bottom:10px">
+      <div class="card-h" style="margin-bottom:12px">
         <div>
           <div class="eyebrow">ITA round &middot; Jul &ndash; Dec 2026</div>
-          <div class="h2">Trainer invitations &amp; sign-off assignment</div>
+          <div class="h2">In-Training Assessments</div>
           <div class="meta" style="margin-top:2px" id="invSummary"></div>
-          <div class="note" id="hoAlert" style="color:var(--rd700);display:none"></div>
+          <div class="note" id="hoAlert" style="color:var(--bd-f);display:none"></div>
         </div>
         <div class="btn-row">
-          <button class="btn pri" onclick="openInvite()" data-need-sot>Invite all trainers</button>
-          <button class="btn sec" onclick="openHandover()" data-need-sot>Transfer responsibilities</button>
-          <button class="btn sec" onclick="autoBalance()" data-need-sot title="Flagged trainees stay with the SOT; the rest are spread evenly">Auto-balance</button>
+          <button class="btn pri" onclick="openInvite()" data-need-sot data-sot-only title="Sends an in-app request to every supervising trainer. Email will follow in a later version.">Invite all trainers</button>
+          <details class="colmenu" id="itaMore" data-sot-only>
+            <summary class="btn sec" aria-label="More actions" title="More actions. Transfer responsibilities is only for a change of SOT or ASOT.">&#8943;</summary>
+            <div class="menu ita-menu">
+              <button type="button" class="mi" onclick="document.getElementById('itaMore').open=false;openHandover()">
+                <b>Transfer responsibilities</b>
+                <span>Only needed when a SOT or ASOT is replaced or away. Moves their trainees to someone else.</span>
+              </button>
+            </div>
+          </details>
         </div>
       </div>
 
-      <div class="load" id="loadChips"></div>
-
-      <div class="assign-bar">
-        <label class="ctl" style="border:0;background:transparent;padding:0"><input type="checkbox" id="itaSelAll" onchange="itaToggleAll(this.checked)"> Select all</label>
-        <span class="meta" id="itaSelN">0 selected</span>
-        <span class="sp"></span>
-        <label class="ctl" style="border:0;background:transparent;padding:0"><input type="checkbox" id="itaMineCb" onchange="itaMine=this.checked;renderItaRound()"> Mine only</label>
-        <select class="ctl sm" id="itaField" data-need-sot aria-label="Role"><option value="asot">ITA sign-off by</option><option value="verifier">Logbook verifier</option></select>
-        <select class="ctl sm" id="itaAssignTo" data-need-sot></select>
-        <button class="btn sec sm" onclick="itaAssignSelected()" data-need-sot>Assign selected</button>
-      </div>
-
-      <div class="ita-filters" id="itaChips"></div>
-      <div class="tbl-scroll tall" id="itaScroll">
-        <table class="compact">
-          <thead>
-            <tr><th style="width:34px"></th><th style="min-width:190px">Trainee</th><th>Stage</th><th style="min-width:90px">Trainers</th>
-                <th style="min-width:250px">Trainer ITA forms</th><th style="min-width:190px">Logbook verifier</th><th style="min-width:190px">ITA sign-off by</th></tr>
-          </thead>
-          <tbody id="itaRoundBody"></tbody>
-        </table>
-      </div>
-      <p class="note">
-        Two roles: the <b>logbook verifier</b> is ongoing and verifies the trainee's logbook; the <b>ITA sign-off ASOT</b> holds the face-to-face discussion and can be assigned later in the cycle. The SOT can hold either role. An ASOT's sign-off is final and needs no SOT countersignature. Trainees rotated out are excluded (their exit assessment is run by the host hospital).
-        Only the SOT can invite trainers, change assignments or transfer responsibilities.
-      </p>
-    </div>
-
-
-    <div class="card card-pad mb">
-      <div class="card-h">
-        <div>
-          <div class="eyebrow">Awaiting your action</div>
-          <div class="h2">In-Training Assessments</div>
+      <div class="ita-bar">
+        <div class="seg" id="itaViewSeg" role="group" aria-label="ITA view">
+          <button type="button" data-v="overview" onclick="itaSetView('overview')">Overview</button>
+          <button type="button" data-v="all" onclick="itaSetView('all')">All trainees</button>
+          <button type="button" data-v="assign" data-sot-only onclick="itaSetView('assign')">Assign sign-off</button>
         </div>
-        <button class="btn pri sm">Initiate departmental ITA round</button>
+        <div class="seg" id="itaScopeSeg" role="group" aria-label="Whose trainees">
+          <button type="button" data-s="mine" onclick="itaSetScope('mine')">My sign-offs</button>
+          <button type="button" data-s="team" onclick="itaSetScope('team')">Whole team</button>
+        </div>
       </div>
 
-      <div class="tbl-scroll">
-        <table id="itaAwaitTable">
-          <thead>
-            <tr>
-              <th style="min-width:190px">Trainee</th><th>Period</th><th>Training type</th>
-              <th>Trainer feedback</th><th>Items graded 4</th><th>Stage</th><th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <div class="nm-cell">Dr. Kelvin Wong</div>
-                <div class="id-cell mono">HKCA 2022-019 &middot; HAT-2</div>
-              </td>
-              <td class="mono">Jul &ndash; Dec 2026</td>
-              <td><span class="pill info">Clinical Anaesthesia</span></td>
-              <td><span class="pill ok"><span class="dot g"></span>4 of 4 submitted (Tier 1)</span></td>
-              <td><span class="meta">Not yet graded</span></td>
-              <td><span class="pill warn">Tier 2 &middot; SOT synthesis pending (15 items + overall)</span></td>
-              <td><a class="btn pri sm" href="HKCA_ITA_Synthesis_Flow.html" style="text-decoration:none">Open ITA</a></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="nm-cell">Dr. Jasmine Ho</div>
-                <div class="id-cell mono">HKCA 2021-004 &middot; PFY</div>
-              </td>
-              <td class="mono">Jan &ndash; Dec 2026</td>
-              <td><span class="pill purple">PFY &middot; 3 domains</span></td>
-              <td><span class="pill ok"><span class="dot g"></span>5 of 5 submitted (Tier 1)</span></td>
-              <td><span class="mono">1 / 15</span></td>
-              <td><span class="pill warn">Tier 2 &middot; awaiting trainee signature</span></td>
-              <td><button class="btn pri sm">Open ITA</button></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="nm-cell">Dr. Priya Nair</div>
-                <div class="id-cell mono">HKCA 2023-015 &middot; HAT-2</div>
-              </td>
-              <td class="mono">Jul &ndash; Dec 2026</td>
-              <td><span class="pill info">Clinical Anaesthesia</span></td>
-              <td><span class="pill ok"><span class="dot g"></span>4 of 4 submitted (Tier 1)</span></td>
-              <td><span class="mono">2 / 15</span></td>
-              <td><span class="pill warn">Overall <span class="gradepill g4" style="width:16px;height:16px;font-size:11px;vertical-align:-2px">4</span> &middot; discretionary &middot; PIP reassess 15 Nov</span></td>
-              <td><button class="btn am sm">Open remedial plan</button></td>
-            </tr>
-            <tr class="flag">
-              <td>
-                <div class="nm-cell">Dr. Marcus Yip</div>
-                <div class="id-cell mono">HKCA 2024-008 &middot; BAT-2</div>
-              </td>
-              <td class="mono">Jan &ndash; Jun 2026</td>
-              <td><span class="pill info">Clinical Anaesthesia</span></td>
-              <td><span class="pill bad"><span class="dot r"></span>2 consecutive unsatisfactory</span></td>
-              <td><span class="mono" style="color:var(--rd700);font-weight:700">4 / 15</span><div class="id-cell">College rule met</div></td>
-              <td><span class="pill bad">BOE escalation triggered</span></td>
-              <td><button class="btn am sm">Open BOE escalation</button></td>
-            </tr>
-            <tr class="flag">
-              <td>
-                <div class="nm-cell">Dr. Sarah Lau</div>
-                <div class="id-cell mono">HKCA 2024-011 &middot; HAT-1</div>
-              </td>
-              <td class="mono">Jul &ndash; Dec 2026</td>
-              <td><span class="pill info">Clinical Anaesthesia</span></td>
-              <td><span class="pill ok"><span class="dot g"></span>4 of 4 submitted (Tier 1)</span></td>
-              <td><span class="mono" style="color:var(--rd700);font-weight:700">5 / 15</span><div class="id-cell">College rule met</div></td>
-              <td><span class="pill bad">Contested &middot; Overall <span class="gradepill g4" style="width:16px;height:16px;font-size:11px;vertical-align:-2px">4</span>, pending BOE</span></td>
-              <td><button class="btn am sm">View appeal</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="note">
-        <b>2-tier ITA model:</b> Tier 1 is each trainer's private, un-prefilled form on the College's 15 feedback items
-        (<span class="mono">ItaAssessorResponse</span>; X/1/2/3/4, with an example required for a 4 only), visible only to the SOT and the College.
-        Tier 2 is the SOT's consolidated grade for each of the 15 items plus the overall assessment
-        (<span class="mono">ItaSession.sotGrade</span>), which the trainee counter-signs. The overall is unsatisfactory (4) when 4 or more items are
-        graded 4; X items are not counted and a 3 is a pass. A trainee may contest the Tier 2 result, opening a formal
-        <span class="mono">ItaAppeal</span> for BOE review. A second consecutive unsatisfactory result escalates
-        automatically to the Board of Education (SOT &rarr; Assistant SOT &rarr; Cluster SOT &rarr; BOE).
-      </p>
+      <div id="itaView"></div>
     </div>
-  
+
     <div class="card card-pad" style="margin-top:18px">
       <div class="card-h" style="margin-bottom:8px">
         <div>
@@ -1422,6 +1350,11 @@
         <label class="radio"><input type="radio" name="invScope" value="all" onchange="renderInvitePreview()"><div><div id="invOptAll"></div><div class="s">Re-issue the invitation for every trainee in the round.</div></div></label>
       </div>
       <div class="field">
+        <div class="lbl">How trainers are notified</div>
+        <label class="attest"><input type="checkbox" checked disabled><span>In-app ping to every trainer</span></label>
+        <label class="attest" style="margin-top:6px"><input type="checkbox" disabled><span>Email <span class="meta">(coming in a later version)</span></span></label>
+      </div>
+      <div class="field">
         <div class="lbl">Trainer deadline</div>
         <input type="date" class="ctl" id="invDue" value="2026-11-30">
       </div>
@@ -1429,7 +1362,7 @@
         <div class="lbl">Message</div>
         <textarea class="ctl" id="invMsg">Dear colleague,
 
-The Jul&ndash;Dec 2026 In-Training Assessment round is open. Please complete your private trainer form for each trainee listed below by the deadline shown. Your form is seen only by the SOT and the College.
+The Jul&ndash;Dec 2026 In-Training Assessment round is open. Please complete your private trainer form for each trainee listed below by the deadline shown. Your form is read by the SOT team without your name, and the College does not see individual forms. If you are happy to be contacted about your feedback, you can tick that on the form.
 
 Thank you.</textarea>
       </div>
@@ -2001,101 +1934,200 @@ function setAsot(ids, asotId, field){
   renderAll();
   toast(asotId ? `${who} assigned to ${nameOf(asotId).replace('Dr. ','')}` : `Cleared for ${who}`);
 }
-function autoBalance(){
-  if(role==='asst') return;
-  const act = activeAsots(), counts = {}; act.forEach(a=>counts[a.id]=0);
-  const pool = ptrainees().slice().sort((a,b)=>sortVal(a,'stage')-sortVal(b,'stage') || lastFirst(a.name).localeCompare(lastFirst(b.name)));
-  const plan = {};
-  pool.filter(t=>t.health==='bad').forEach(t=>{ plan[t.id]='sot'; counts.sot++; });
-  pool.filter(t=>t.health!=='bad').forEach(t=>{
-    const pick = act.slice().sort((a,b)=>counts[a.id]-counts[b.id] || act.indexOf(a)-act.indexOf(b))[0];
-    plan[t.id] = pick.id; counts[pick.id]++;
-  });
-  pool.forEach(t=>{ t.asot = plan[t.id]; delete t.cover; });
-  logEvent('Auto-balanced ITA sign-off across ' + act.length + ' assessors (flagged trainees kept with SOT)');
-  renderAll();
-  toast('Sign-off balanced: ' + act.map(a=>counts[a.id]).join(' / '));
+/* ---------------- ITAs tab: overview, all trainees, assign ---------------- */
+/* Trainer forms are anonymous to the SOT team: this tab only ever shows counts, never which trainer has or has not returned a form. */
+const ITA_SEED = {'2022-019':'synth','2021-004':'sign','2023-015':'remedial','2024-008':'boe','2024-011':'contested'};   // illustrative in-progress / escalated ITAs
+const FOLLOW = ['remedial','boe','contested'];
+const ITA_LABEL = {notinv:'Not invited', collecting:'Collecting forms', ready:'Ready to review', sign:'Awaiting trainee signature', signed:'Signed off', remedial:'Remedial plan', boe:'BOE escalation', contested:'Contested'};
+const ITA_TONE = {notinv:['var(--bg3)','var(--ink2)'], collecting:['var(--t1b)','var(--t1f)'], ready:['var(--t4b)','var(--t4f)'], sign:['var(--t3b)','var(--t3f)'],
+                  signed:['var(--t2b)','var(--t2f)'], remedial:['var(--t6b)','var(--t6f)'], boe:['var(--t6b)','var(--t6f)'], contested:['var(--t6b)','var(--t6f)']};
+const ITA_FILL = {notinv:'var(--c0)', collecting:'var(--c2)', ready:'var(--c4)', sign:'var(--c1)', signed:'var(--c3)', follow:'var(--c5)'};
+function itaState(t){
+  const sd = ITA_SEED[t.id];
+  if(FOLLOW.includes(sd)) return sd;
+  if(sd==='sign') return 'sign';
+  if(sd==='synth') return 'ready';
+  const i = INV[t.id];
+  if(!i) return 'notinv';
+  if(itaSigned(t)) return 'signed';
+  return i.got>=i.total ? 'ready' : 'collecting';
 }
-
-/* ---------------- ITA round table ---------------- */
-let itaMine = false, itaFilter = 'all', itaQ = '';
-const itaSel = new Set();
-function invitePill(i,t){
-  if(!i) return '<span class="pill">Not invited</span>';
-  const x = t ? itain(t) : null, thin = x && x.got<RULES.minForms;
-  const wba = x ? `<span class="id-cell" style="display:inline;margin-left:6px" title="Trainers who did a WBA with this trainee: ${x.wbaGot} of ${x.wba} have responded">WBA ${x.wbaGot}/${x.wba}</span>` : '';
-  if(i.got>=i.total) return `<span class="pill ok"><span class="dot g"></span>${i.total} received</span>${wba}`;
-  return `<span class="pill ${thin?'warn':'info'}"><span class="dot ${thin?'a':'b'}"></span>${i.got} of ${i.total} received</span>${thin?' <span class="pill warn">Thin</span>':''}${wba}`;
-}
+const statePill = k => `<span class="pill" style="background:${ITA_TONE[k][0]};color:${ITA_TONE[k][1]}">${ITA_LABEL[k]}</span>`;
+let itaView = 'overview', itaScope = 'team', itaFilter = 'all', itaQ = '';
+let asWho = 'winnie', asSet = null, asFilter = 'all', asQ = '';
+const itaRows = () => ptrainees().filter(t=>itaScope==='team' || t.asot===mineId());
+const ownerName = id => id ? nameOf(id).replace('Dr. ','') : 'Unassigned';
 function itaMatch(t,f){
   if(f==='noasot') return !t.asot;
   if(f==='thin') return !!(itain(t) && itain(t).got<RULES.minForms);
-  if(f==='notinv') return !INV[t.id];
-  return true;
+  if(f==='followup') return FOLLOW.includes(itaState(t));
+  if(f==='all') return true;
+  return itaState(t)===f;
 }
-function asotSelect(t,field,dis){
-  const cur = t[field];
-  const opts = ['<option value="">Unassigned</option>'].concat(ASOTS.filter(a=>a.active!==false || a.id===cur)
-    .map(a=>`<option value="${a.id}" ${a.id===cur?'selected':''}>${a.name} (${a.tag})${a.active===false?' \u2013 inactive':''}</option>`)).join('');
-  return `<select class="ctl sm ${cur?'':'un'}" data-need-sot ${dis} aria-label="${ROLE_LABEL[field]} for ${lastFirst(t.name)}" onchange="setAsot(['${t.id}'],this.value,'${field}')">${opts}</select>`;
+function itaSetView(v){ itaView = v; renderItaRound(); }
+function itaSetScope(sc){ itaScope = sc; renderItaRound(); }
+function itaOpen(f){
+  if(f==='noasot' && role!=='asst'){ asFilter = 'unassigned'; asSet = null; itaView = 'assign'; }
+  else { itaView = 'all'; itaFilter = f; itaQ = ''; }
+  renderItaRound();
 }
 function renderItaRound(){
-  const body = document.getElementById('itaRoundBody'); if(!body) return;
+  const root = document.getElementById('itaView'); if(!root) return;
+  const asst = role==='asst';
+  if(asst && itaView==='assign') itaView = 'overview';
+  document.querySelectorAll('#tab-itas [data-sot-only]').forEach(el=>{ el.style.display = asst ? 'none' : ''; });
+  document.querySelectorAll('#itaViewSeg button').forEach(b=>{ const on = b.dataset.v===itaView; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+  document.querySelectorAll('#itaScopeSeg button').forEach(b=>{ const on = b.dataset.s===itaScope; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+  document.getElementById('itaScopeSeg').style.display = itaView==='assign' ? 'none' : '';
+
   const all = ptrainees();
-  const rows = all.filter(t=>!itaMine || t.asot===mineId()).filter(t=>itaMatch(t,itaFilter)).filter(t=>!itaQ || (lastFirst(t.name)+' '+t.id).toLowerCase().includes(itaQ))
-    .sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
-  const dis = role==='asst' ? 'disabled' : '';
-  body.innerHTML = rows.map(t=>{
-    const ts = trainersFor(t);
-    const cover = t.cover ? `<div class="id-cell">On cover until ${t.cover.until} &middot; <a class="lb-title" tabindex="0" onclick="endCover('${t.id}')">End cover</a></div>` : '';
-    return `<tr class="${t.asot===mineId()?'mine':''}">
-      <td><input type="checkbox" aria-label="Select ${lastFirst(t.name)}" ${itaSel.has(t.id)?'checked':''} onchange="itaToggle('${t.id}',this.checked)"></td>
-      <td><div class="nm-cell">${lastFirst(t.name)}</div><span class="id-cell mono" style="display:inline;margin-left:6px">${t.id}</span>${cover}</td>
-      <td>${stagePill(t.stage)}</td>
-      <td><span class="meta" title="${ts.join(', ')}">${ts.length} trainers</span></td>
-      <td>${invitePill(INV[t.id],t)}</td>
-      <td>${asotSelect(t,'verifier',dis)}</td>
-      <td>${asotSelect(t,'asot',dis)}</td>
-    </tr>`;
-  }).join('') || '<tr class="empty-row"><td colspan="7">No trainees signed off by you yet.</td></tr>';
-
-  document.getElementById('loadChips').innerHTML = ASOTS.filter(a=>a.active!==false || ROSTER.some(t=>t.verifier===a.id||t.asot===a.id)).map(a=>{
-    const v = all.filter(t=>t.verifier===a.id).length, s = all.filter(t=>t.asot===a.id).length;
-    return `<div class="${a.id===mineId()?'me':''}"><div class="n">${v} <span style="color:var(--ink3);font-weight:500">/</span> ${s}</div><div class="l">${a.name} &middot; ${a.tag}${a.id===mineId()?' (you)':''}${a.active===false?' &middot; inactive':''}</div></div>`;
-  }).join('') + '<div style="border-style:dashed"><div class="l" style="max-width:190px">Each card: trainees verified / ITA sign-offs</div></div>';
-
-  const invited = all.filter(t=>INV[t.id]).length, done = all.filter(t=>INV[t.id] && INV[t.id].got>=INV[t.id].total).length;
-  const un = all.filter(t=>!t.asot).length;
+  const invited = all.filter(t=>INV[t.id]).length, signed = all.filter(t=>itaState(t)==='signed').length, un = all.filter(t=>!t.asot).length;
   document.getElementById('invSummary').textContent =
-    `${invited} of ${all.length} invited \u00b7 ${done} complete \u00b7 ${un} without an ITA sign-off ASOT`;
+    `${invited} of ${all.length} trainees invited \u00b7 ${signed} signed off \u00b7 ${un} without a sign-off ASOT`;
   const gone = ASOTS.filter(a=>a.active===false && ROSTER.some(t=>t.verifier===a.id||t.asot===a.id));
   const al = document.getElementById('hoAlert');
   al.innerHTML = gone.map(a=>`${a.name} is inactive but still holds ${ROSTER.filter(t=>t.verifier===a.id||t.asot===a.id).length} trainee(s). <a class="lb-title" tabindex="0" onclick="openHandover('${a.id}')">Transfer now</a>`).join('<br>');
   al.style.display = gone.length ? '' : 'none';
-  document.getElementById('itaSelN').textContent = itaSel.size + ' selected';
-  const sa = document.getElementById('itaSelAll');
-  sa.checked = rows.length>0 && rows.every(t=>itaSel.has(t.id));
-  document.getElementById('itaMineCb').checked = itaMine;
-  const cnt = f => all.filter(t=>itaMatch(t,f)).length;
-  document.getElementById('itaChips').innerHTML = [['all','All'],['noasot','No sign-off ASOT'],['thin','Thin trainer input'],['notinv','Not invited']].map(([k,l])=>
-    `<button class="chip ${itaFilter===k?'on':''}" onclick="itaFilter='${k}';renderItaRound()">${l} <b>${cnt(k)}</b></button>`).join('') +
-    `<input type="search" class="ctl sm" id="itaSearch" placeholder="Search trainee" value="${itaQ}" oninput="itaQ=this.value.toLowerCase();var p=this.selectionStart;renderItaRound();var s=document.getElementById('itaSearch');s.focus();s.setSelectionRange(p,p)" style="width:170px;margin-left:auto">`;
+
+  if(itaView==='overview') root.innerHTML = itaOverviewHtml();
+  else if(itaView==='all'){ root.innerHTML = itaAllHtml(); itaListOnly(); }
+  else { root.innerHTML = itaAssignHtml(); assignRender(); }
 }
-function itaToggle(id,on){ on ? itaSel.add(id) : itaSel.delete(id); document.getElementById('itaSelN').textContent = itaSel.size+' selected'; }
-function itaToggleAll(on){
-  ptrainees().filter(t=>!itaMine || t.asot===mineId()).forEach(t=> on ? itaSel.add(t.id) : itaSel.delete(t.id));
-  renderItaRound();
+
+/* ---- Overview: sign-off progress ---- */
+function itaOverviewHtml(){
+  const rows = itaRows(), n = rows.length || 1, asst = role==='asst';
+  const c = k => rows.filter(t=>itaState(t)===k).length;
+  const fu = rows.filter(t=>FOLLOW.includes(itaState(t))).length;
+  const keys = ['notinv','collecting','ready','sign','signed'];
+  const split = keys.map(k=>`<i style="width:${c(k)/n*100}%;background:${ITA_FILL[k]}" title="${ITA_LABEL[k]}: ${c(k)}"></i>`).join('') + `<i style="width:${fu/n*100}%;background:${ITA_FILL.follow}" title="Needs follow-up: ${fu}"></i>`;
+  const tile = (f,label,num,tone) => `<button type="button" class="fn" style="--tb:${tone[0]};--tf:${tone[1]}" onclick="itaOpen('${f}')"><b>${num}</b><span>${label}</span></button>`;
+  const owners = itaScope==='mine' ? [asotById(mineId())] : ASOTS.filter(a=>a.active!==false || ptrainees().some(t=>t.asot===a.id));
+  const ownRow = (id,name,tag) => {
+    const mine = ptrainees().filter(t=>t.asot===id), tot = mine.length || 0;
+    const sg = mine.filter(t=>itaState(t)==='signed').length, ni = mine.filter(t=>itaState(t)==='notinv').length, ip = tot - sg - ni;
+    const seg = (v,col)=>`<i style="width:${tot?v/tot*100:0}%;background:${col}"></i>`;
+    return `<div class="ow-row"><div class="nm">${name}${tag?`<small>${tag}${id===mineId()?' (you)':''}</small>`:''}</div>
+      <div class="ita-split" role="img" aria-label="${name}: ${sg} signed, ${ip} in progress, ${ni} not invited">${seg(sg,ITA_FILL.signed)}${seg(ip,ITA_FILL.sign)}${seg(ni,ITA_FILL.notinv)}</div>
+      <div class="ct"><b>${sg}</b> of ${tot} signed</div></div>`;
+  };
+  const unRow = itaScope==='team' && ptrainees().some(t=>!t.asot) ? ownRow(null,'Unassigned','No sign-off ASOT yet') : '';
+  const thin = rows.filter(t=>itaMatch(t,'thin')).length, noasot = rows.filter(t=>!t.asot).length, notinv = c('notinv');
+  const flag = (f,label,num) => num ? `<button type="button" class="chip" onclick="itaOpen('${f}')">${label} <b>${num}</b></button>` : '';
+  const flags = [flag('followup','Needs follow-up (remedial, escalation, contested)',fu), flag('thin','Thin trainer input',thin), flag('notinv','Not invited yet',notinv), asst?'':flag('noasot','No sign-off ASOT',noasot)].join('');
+  return `<div class="ita-panel">
+      <div class="eyebrow">${itaScope==='mine'?'Your sign-offs':'Whole team'} &middot; ${rows.length} trainee${rows.length===1?'':'s'}</div>
+      <div class="ita-split" style="margin-top:10px" role="img" aria-label="ITA progress">${split}</div>
+      <div class="fn-grid">${keys.map(k=>tile(k,ITA_LABEL[k],c(k),ITA_TONE[k])).join('')}${tile('followup','Needs follow-up',fu,ITA_TONE.remedial)}</div>
+    </div>
+    <div class="ita-two">
+      <div class="ita-panel"><div class="eyebrow">Sign-off by SOT / ASOT</div>
+        <div style="margin-top:6px">${owners.map(a=>ownRow(a.id,a.name,a.tag)).join('')}${unRow}</div></div>
+      <div class="ita-panel"><div class="eyebrow">Needs attention</div>
+        <div class="ita-filters" style="margin:10px 0 0">${flags || '<span class="meta">Nothing needs attention.</span>'}</div>
+        <p class="note" style="margin-top:12px">Trainer forms are anonymous to the SOT team, so this page shows how many forms are in, never who has returned them.</p></div>
+    </div>`;
 }
-function itaAssignSelected(){
+
+/* ---- All trainees: list with ITA return status ---- */
+function itaAllHtml(){
+  return `<div class="ita-filters" style="margin-top:0"><span id="itaChips" style="display:contents"></span>
+      <input type="search" class="ctl sm" id="itaSearch" placeholder="Search trainee" aria-label="Search trainee" value="${itaQ}" oninput="itaQ=this.value.toLowerCase();itaListOnly()" style="width:170px;margin-left:auto"></div>
+    <div class="tbl-scroll tall">
+      <table class="compact"><thead><tr><th style="min-width:200px">Trainee</th><th>Stage</th><th style="min-width:180px">Trainer forms returned</th><th style="min-width:190px">ITA status</th><th style="min-width:150px">Sign-off by</th><th style="min-width:140px">Action</th></tr></thead>
+      <tbody id="itaRows"></tbody></table>
+    </div>
+    <p class="note">${itaScope==='mine'?'Showing the ITAs assigned to you. Switch to <b>Whole team</b> to track everyone.':'Showing the whole team. '}Trainer forms are anonymous: you see how many are back, not who sent them. An ASOT's sign-off is final and needs no SOT countersignature. Trainees rotated out are excluded (the host hospital runs their exit assessment).</p>`;
+}
+function itaFormsCell(t){
+  const i = INV[t.id]; if(!i) return '<span class="meta">&mdash;</span>';
+  const thin = i.got<RULES.minForms;
+  return `<span class="pill ${i.got>=i.total?'ok':thin?'warn':'info'}"><span class="dot ${i.got>=i.total?'g':thin?'a':'b'}"></span>${i.got} of ${i.total}</span>${i.got<i.total&&thin?' <span class="pill warn">Thin</span>':''}`;
+}
+function itaActionBtn(t,k){
+  const own = t.asot===mineId(), can = role!=='asst' || own;
+  if(k==='notinv') return role==='asst' ? '<span class="meta">&mdash;</span>' : '<button class="btn sec sm" onclick="openInvite()">Invite</button>';
+  if(!can) return '<span class="meta">&mdash;</span>';
+  const lab = {collecting:'View forms', ready:'Open ITA', sign:'Open ITA', signed:'View', remedial:'Open remedial plan', boe:'Open BOE escalation', contested:'View appeal'}[k];
+  const cls = FOLLOW.includes(k) ? 'am' : (k==='ready'||k==='sign') ? 'pri' : 'sec';
+  return `<a class="btn ${cls} sm" href="HKCA_ITA_Synthesis_Flow.html" style="text-decoration:none">${lab}</a>`;
+}
+function itaListOnly(){
+  const body = document.getElementById('itaRows'); if(!body) return;
+  const base = itaRows();
+  const chips = [['all','All'],['notinv','Not invited'],['collecting','Collecting forms'],['ready','Ready to review'],['sign','Awaiting signature'],['signed','Signed off'],['followup','Needs follow-up'],['noasot','No sign-off ASOT'],['thin','Thin input']]
+    .filter(([k])=>!(role==='asst' && k==='noasot'));
+  document.getElementById('itaChips').innerHTML = chips.map(([k,l])=>`<button type="button" class="chip ${itaFilter===k?'on':''}" onclick="itaFilter='${k}';itaListOnly()">${l} <b>${base.filter(t=>itaMatch(t,k)).length}</b></button>`).join('');
+  const rows = base.filter(t=>itaMatch(t,itaFilter)).filter(t=>!itaQ || (lastFirst(t.name)+' '+t.id).toLowerCase().includes(itaQ))
+    .sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+  body.innerHTML = rows.map(t=>{
+    const k = itaState(t);
+    const cover = t.cover ? `<div class="id-cell">On cover until ${t.cover.until} &middot; <a class="lb-title" tabindex="0" onclick="endCover('${t.id}')">End cover</a></div>` : '';
+    return `<tr class="${t.asot===mineId()?'mine':''}">
+      <td><div class="nm-cell">${lastFirst(t.name)}</div><span class="id-cell mono" style="display:inline;margin-left:6px">${t.id}</span></td>
+      <td>${stagePill(t.stage)}</td>
+      <td>${itaFormsCell(t)}</td>
+      <td>${statePill(k)}</td>
+      <td>${t.asot ? `<span class="meta">${ownerName(t.asot)}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '<span class="pill">Unassigned</span>'}${cover}</td>
+      <td>${itaActionBtn(t,k)}</td></tr>`;
+  }).join('') || '<tr class="empty-row"><td colspan="6">No trainees match.</td></tr>';
+}
+
+/* ---- Assign sign-off (SOT only): pick a person, tick their trainees ---- */
+function asInit(){ asSet = new Set(ptrainees().filter(t=>t.asot===asWho).map(t=>t.id)); }
+function asPick(id){ asWho = id; asInit(); asFilter = 'all'; assignRender(); }
+function asToggle(id,on){ on ? asSet.add(id) : asSet.delete(id); assignRender(); }
+function asTickShown(){ asShown().forEach(t=>{ if(itaState(t)!=='signed') asSet.add(t.id); }); assignRender(); }
+function asShown(){
+  return ptrainees().filter(t=> asFilter==='unassigned' ? !t.asot : asFilter==='this' ? t.asot===asWho : true)
+    .filter(t=>!asQ || (lastFirst(t.name)+' '+t.id).toLowerCase().includes(asQ))
+    .sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+}
+function itaAssignHtml(){
+  return `<div class="as-grid">
+    <div><div class="eyebrow" style="margin-bottom:8px">SOT team</div><div id="asTeam" role="radiogroup" aria-label="Choose a team member"></div>
+      <p class="note">Pick a person, then tick the trainees they will sign off in the face-to-face ITA. The logbook verifier is set separately in the Logbook tab.</p></div>
+    <div><div id="asHead"></div>
+      <div class="ita-filters" style="margin:10px 0"><span id="asChips" style="display:contents"></span>
+        <input type="search" class="ctl sm" id="asSearch" placeholder="Search trainee" aria-label="Search trainee" value="${asQ}" oninput="asQ=this.value.toLowerCase();assignRender()" style="width:170px;margin-left:auto"></div>
+      <div class="tbl-scroll tall"><table class="compact"><thead><tr><th style="width:34px"></th><th style="min-width:200px">Trainee</th><th>Stage</th><th style="min-width:170px">Currently signed off by</th><th style="min-width:170px">ITA status</th></tr></thead><tbody id="asRows"></tbody></table></div>
+      <div class="as-bar" id="asBar"></div></div></div>`;
+}
+function assignRender(){
+  if(!asSet || !asotById(asWho) || asotById(asWho).active===false){ asWho = (activeAsots().find(a=>a.id!=='sot')||activeAsots()[0]).id; asInit(); }
+  const all = ptrainees(), who = asotById(asWho);
+  document.getElementById('asTeam').innerHTML = activeAsots().map(a=>{
+    const mine = all.filter(t=>t.asot===a.id), sg = mine.filter(t=>itaState(t)==='signed').length;
+    return `<button type="button" role="radio" aria-checked="${a.id===asWho}" class="as-person ${a.id===asWho?'on':''}" onclick="asPick('${a.id}')"><b>${a.name}${a.id===mineId()?' (you)':''}</b><span>${a.tag} &middot; ${mine.length} ITA${mine.length===1?'':'s'} &middot; ${sg} signed</span></button>`;
+  }).join('') + `<div class="as-person" style="cursor:default;border-style:dashed"><b>Unassigned</b><span>${all.filter(t=>!t.asot).length} trainee${all.filter(t=>!t.asot).length===1?'':'s'} without a sign-off ASOT</span></div>`;
+  document.getElementById('asHead').innerHTML = `<div class="h3">Trainees for ${who.name}</div><div class="meta" style="margin-top:2px">Ticked trainees will be signed off by ${ownerName(asWho)}. Signed-off ITAs are locked.</div>`;
+  document.getElementById('asChips').innerHTML = [['all','All'],['unassigned','Unassigned'],['this','Already with '+ownerName(asWho).split(' ')[0]]].map(([k,l])=>
+    `<button type="button" class="chip ${asFilter===k?'on':''}" onclick="asFilter='${k}';assignRender()">${l}</button>`).join('') +
+    `<button type="button" class="chip" onclick="asTickShown()">Tick all shown</button>`;
+  document.getElementById('asRows').innerHTML = asShown().map(t=>{
+    const k = itaState(t), locked = k==='signed', on = asSet.has(t.id);
+    const cur = t.asot===asWho ? (on ? ownerName(t.asot) : `<span class="meta">${ownerName(t.asot)} &rarr; unassigned</span>`)
+      : on ? `<span class="meta">${ownerName(t.asot)} &rarr; <b>${ownerName(asWho)}</b></span>` : (t.asot ? ownerName(t.asot) : '<span class="pill">Unassigned</span>');
+    return `<tr class="${on?'mine':''}"><td><input type="checkbox" ${on?'checked':''} ${locked?'disabled':''} aria-label="Assign ${lastFirst(t.name)} to ${who.name}" onchange="asToggle('${t.id}',this.checked)"></td>
+      <td><div class="nm-cell">${lastFirst(t.name)}</div><span class="id-cell mono" style="display:inline;margin-left:6px">${t.id}</span></td>
+      <td>${stagePill(t.stage)}</td><td>${cur}</td><td>${statePill(k)}${locked?' <span class="meta">locked</span>':''}</td></tr>`;
+  }).join('') || '<tr class="empty-row"><td colspan="5">No trainees match.</td></tr>';
+  const add = [...asSet].filter(id=>ROSTER.find(x=>x.id===id).asot!==asWho).length;
+  const rem = all.filter(t=>t.asot===asWho && !asSet.has(t.id)).length, ch = add + rem;
+  document.getElementById('asBar').innerHTML = `<span class="meta" role="status"><b>${asSet.size}</b> ticked for ${ownerName(asWho)} &middot; ${ch} change${ch===1?'':'s'} to apply</span><span class="sp"></span>
+    <button class="btn sec sm" onclick="asInit();assignRender()" ${ch?'':'disabled'}>Reset</button>
+    <button class="btn pri sm" onclick="asApply()" ${ch?'':'disabled'}>Apply ${ch||''} change${ch===1?'':'s'}</button>`;
+}
+function asApply(){
   if(role==='asst') return;
-  if(!itaSel.size){ toast('Tick one or more trainees first'); return; }
-  const ids = Array.from(itaSel); itaSel.clear();
-  setAsot(ids, document.getElementById('itaAssignTo').value, document.getElementById('itaField').value);
+  const add = [...asSet].filter(id=>ROSTER.find(x=>x.id===id).asot!==asWho);
+  const rem = ptrainees().filter(t=>t.asot===asWho && !asSet.has(t.id)).map(t=>t.id);
+  if(add.length) setAsot(add, asWho, 'asot');
+  if(rem.length) setAsot(rem, null, 'asot');
+  asInit(); assignRender();
 }
 function refreshAsotOptions(){
   const act = activeAsots().map(a=>`<option value="${a.id}">${a.name} (${a.tag})</option>`).join('');
-  const f = document.getElementById('itaAssignTo'), v = f.value;
-  f.innerHTML = '<option value="">Unassigned</option>' + act; f.value = v;
   const b = document.getElementById('bulkAsot'), bv = b.value; b.innerHTML = act; if(bv) b.value = bv;
 }
 
@@ -2181,25 +2213,6 @@ function endCover(id){
   logEvent(`Cover ended: ${lastFirst(t.name)} returned to ${nameOf(f.asot||f.verifier)}`); renderAll(); toast('Cover ended');
 }
 
-/* existing "awaiting your action" table: add a Sign-off by column */
-function enhanceItaTable(){
-  const tbl = document.getElementById('itaAwaitTable'); if(!tbl) return;
-  const trh = tbl.querySelector('thead tr');
-  const th = document.createElement('th'); th.textContent = 'Sign-off by'; th.style.minWidth = '130px';
-  trh.insertBefore(th, trh.lastElementChild);
-  tbl.querySelectorAll('tbody tr').forEach(tr=>{
-    const td = document.createElement('td'); td.className = 'signcell';
-    tr.insertBefore(td, tr.lastElementChild);
-  });
-}
-function refreshItaSignoff(){
-  const tbl = document.getElementById('itaAwaitTable'); if(!tbl) return;
-  tbl.querySelectorAll('tbody tr').forEach(tr=>{
-    const cell = tr.querySelector('.nm-cell'); const orig = cell.dataset.orig || cell.textContent;
-    const t = ROSTER.find(x=>x.name===orig); const td = tr.querySelector('.signcell');
-    td.innerHTML = t ? (t.asot ? `<span class="meta">${asotById(t.asot).name.replace('Dr. ','')}</span><div class="id-cell">${asotById(t.asot).tag}</div>` : '<span class="pill">Unassigned</span>') : '';
-  });
-}
 function formatStaticNames(){
   document.querySelectorAll('#tab-itas .nm-cell, #tab-rotations .nm-cell').forEach(el=>{
     const s = el.textContent.trim();
@@ -2238,9 +2251,9 @@ function renderInvitePreview(){
   const scope = invScope(), tg = inviteTargets(scope);
   const uniq = new Set(); let pairs = 0;
   tg.forEach(x=>x.ts.forEach(n=>{ uniq.add(n); pairs++; }));
-  document.getElementById('invPreview').innerHTML = tg.map(x=>
+  document.getElementById('invPreview').innerHTML = (scope==='outstanding' ? '<div class="prev-row"><span class="meta">Reminders go to trainers who have not returned a form. To keep forms anonymous you will not see who they are.</span></div>' : '') + tg.map(x=>
     `<div class="prev-row"><div><b>${lastFirst(x.t.name)}</b> <span class="meta">${x.t.stage}</span></div>
-      <div class="tchips">${x.ts.map(n=>`<span class="${scope==='outstanding'?'out':''}">${n}</span>`).join('')}</div></div>`
+      ${scope==='outstanding' ? `<span class="meta">${x.ts.length} form${x.ts.length===1?'':'s'} outstanding</span>` : `<div class="tchips">${x.ts.map(n=>`<span>${n}</span>`).join('')}</div>`}</div>`
   ).join('') || '<div class="prev-row">Nobody to send to.</div>';
   document.getElementById('invCount').textContent = `${pairs} form request${pairs===1?'':'s'} to ${uniq.size} trainer${uniq.size===1?'':'s'}`;
   document.getElementById('invSend').disabled = !pairs;
@@ -2268,7 +2281,8 @@ function sendInvite(){
 /* trainer ITA input: voluntary. Trainers who did WBAs with the trainee are the recommended responders; everyone else is a hoped-for minimum. */
 /* ITA sign-off: signed = the SOT/ASOT and the trainee have met and signed. Illustrative: the five ITAs in the "awaiting your action" table are in progress. */
 const ITA_IN_PROGRESS = new Set(['2022-019','2021-004','2023-015','2024-008','2024-011']);
-function itaSigned(t){ const i = INV[t.id]; return !!(i && i.got>=i.total && !ITA_IN_PROGRESS.has(t.id) && t.itaStatus==='ok'); }
+const ITA_SIGNED = new Set(ptrainees().filter(t=>{ const i = INV[t.id]; return !!(t.asot && i && i.got>=i.total && !ITA_IN_PROGRESS.has(t.id) && t.itaStatus==='ok'); }).map(t=>t.id));   // illustrative: signed is a fixed fact, assigning an ASOT never signs an ITA
+function itaSigned(t){ return ITA_SIGNED.has(t.id); }
 function myItaHeld(){ const me = mineId(); return ptrainees().filter(t=>t.asot===me); }
 function myItaToSign(){ return myItaHeld().filter(t=>!itaSigned(t)).length; }
 function updateItaBadge(){ const b = document.getElementById('itaBadge'); if(b){ b.textContent = myItaToSign(); } }
@@ -3332,7 +3346,7 @@ function goalReminders(){
 }
 
 function renderAll(){
-  updateItaBadge(); refreshAsotOptions(); renderRoster(); renderItaRound(); refreshItaSignoff(); renderLog(); renderGoals(); renderLogbook(); renderRotations();
+  updateItaBadge(); refreshAsotOptions(); renderRoster(); renderItaRound(); renderLog(); renderGoals(); renderLogbook(); renderRotations();
 }
 
 /* ---------------- tabs ---------------- */
@@ -3405,7 +3419,7 @@ function applyRole(){
   document.getElementById('asstNote').textContent = asst
     ? 'Assistant SOTs can prepare the handshake but cannot approve it.'
     : 'Both SOTs must approve before the rotation is confirmed.';
-  itaMine = asst;
+  itaScope = asst ? 'mine' : 'team'; if(asst && itaView==='assign') itaView = 'overview';
   renderAll();
 }
 
@@ -3461,7 +3475,7 @@ function toggleTheme(){
 })();
 
 /* ---------------- init ---------------- */
-formatStaticNames(); enhanceItaTable(); buildColMenu(); syncControls(); renderTimeline();
+formatStaticNames(); buildColMenu(); syncControls(); renderTimeline();
 applyRole();
 </script>
 </body>

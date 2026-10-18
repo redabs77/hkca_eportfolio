@@ -409,6 +409,8 @@
   }
   .sot-opt .gt,.sot-opt .gd{display:block}
   .sot-opt .gd{margin-top:2px}
+  .cm-bg{position:fixed;inset:0;background:rgba(30,26,60,.45);display:grid;place-items:center;z-index:200;padding:20px}
+  .cm{background:var(--raised);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);padding:22px;width:min(520px,100%)}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 </head>
@@ -448,7 +450,7 @@
         <span class="idx">1</span>
         <span>
           <span class="lbl">Trainer Input</span>
-          <span class="sub">Tier 1 &middot; private</span>
+          <span class="sub">Tier 1 &middot; anonymous</span>
         </span>
       </button>
       <span class="step-arrow">&rsaquo;</span>
@@ -487,12 +489,12 @@
     <section id="screen-s1">
       <div class="banner bl">
         <div style="flex:1">
-          <h3>Tier 1 &mdash; private trainer submissions</h3>
+          <h3>Tier 1 &mdash; anonymous trainer forms</h3>
           <p>
             Each supervising trainer completes the College&rsquo;s 15-item In-Training Assessment form on their own
             (<a href="HKCA_ITA_Trainer_Form.html" style="color:inherit;font-weight:650">open the trainer&rsquo;s form</a>).
-            Submissions are visible <strong>only to the SOT and the College</strong> &mdash; never to the trainee, including after sign-off.
-            Nothing is pre-filled from earlier cycles. You are viewing one trainer&rsquo;s sealed form at a time.
+            Forms are read by the <strong>SOT and ASOT only, and without the trainer&rsquo;s name</strong>. They are never shown to the trainee or to the College:
+            the College sees only the final sign-off and your summary of comments. Nothing is pre-filled from earlier cycles. You are viewing one anonymous form at a time.
           </p>
         </div>
       </div>
@@ -502,22 +504,22 @@
           <div class="card card-pad mb">
             <div class="card-h">
               <div>
-                <div class="eyebrow">Assessor register</div>
+                <div class="eyebrow">Trainer forms received</div>
                 <div class="h2">Dr. Kelvin Wong &mdash; Jul &ndash; Dec 2026</div>
-                <div class="meta" style="margin-top:4px">PWH &middot; Clinical Anaesthesia &middot; Higher Trainee, year 2 &middot; 4 of 4 supervising trainers submitted</div>
+                <div class="meta" style="margin-top:4px">PWH &middot; Clinical Anaesthesia &middot; Higher Trainee, year 2 &middot; 4 of 4 supervising trainers have returned a form</div>
               </div>
               <span class="pill ok"><span class="dot g"></span>All submissions received</span>
             </div>
-            <div id="asrList" role="group" aria-label="Choose a trainer&rsquo;s submission"></div>
+            <div id="asrList" role="group" aria-label="Choose a form to read"></div>
             <p class="note" style="margin-top:13px">
-              Trainers are assigned by the SOT at cycle start. Submissions are sealed on receipt; a later correction is a separate, dated annotation.
+              Forms are anonymous: you can see how many are in, not who sent them. Forms are sealed on receipt; a later correction is a separate, dated annotation. Where a trainer has ticked &ldquo;happy to be contacted&rdquo;, you can send them a question through the portal.
             </p>
           </div>
 
           <div class="card card-pad mb">
             <div class="card-h">
               <div>
-                <div class="eyebrow" id="asrEyebrow">Sealed submission</div>
+                <div class="eyebrow" id="asrEyebrow">Anonymous form</div>
                 <div class="h2" id="asrTitle">&mdash;</div>
                 <div class="meta" style="margin-top:4px">All 15 items &middot; scale X / 1 / 2 / 3 / 4 &middot; examples as written by the trainer</div>
               </div>
@@ -532,7 +534,7 @@
 
         <div>
           <div class="card card-pad mb">
-            <div class="eyebrow">Comments from specialist assessor</div>
+            <div class="eyebrow">Comments on this form</div>
             <div class="h3" style="margin-top:6px;margin-bottom:10px" id="asrWho">&mdash;</div>
             <div class="readbox" id="asrComments">&mdash;</div>
           </div>
@@ -540,12 +542,13 @@
             <div class="eyebrow">Submission integrity</div>
             <div class="h3" style="margin-top:6px;margin-bottom:10px">Sealed on receipt</div>
             <div class="ledger-preview">
-              <div class="lr"><span class="lk">Assessor</span><span class="lv" id="intWho">&mdash;</span></div>
+              <div class="lr"><span class="lk">Author</span><span class="lv" id="intWho">Hidden</span></div>
               <div class="lr"><span class="lk">Submitted</span><span class="lv mono" id="intAt">&mdash;</span></div>
               <div class="lr"><span class="lk">Items rated</span><span class="lv mono" id="intN">&mdash;</span></div>
               <div class="lr"><span class="lk">SHA-256 of record</span><span class="lv mono" id="intHash">&mdash;</span></div>
             </div>
           </div>
+          <div class="card card-pad mb" id="asrContact"></div>
           <button class="btn pri" style="width:100%;justify-content:center" onclick="go('s2')">Proceed to SOT synthesis &rsaquo;</button>
         </div>
       </div>
@@ -569,6 +572,18 @@
       <div class="trx-grid">
         <div>
           <div class="card card-pad mb" id="glCard"></div>
+
+          <div class="card card-pad mb" id="sumCard">
+            <div class="card-h" style="margin-bottom:10px">
+              <div>
+                <div class="eyebrow">Draft summary &middot; system-generated, for you to edit</div>
+                <div class="h2">Themes across the forms</div>
+              </div>
+              <button type="button" class="btn sec sm" id="sumAdd">Add to my summary</button>
+            </div>
+            <div id="sumBody"></div>
+            <p class="note" style="margin-top:10px">Built from the item grades on the anonymous forms. In the product the system also drafts themes from the free-text comments and links each line to the forms behind it. Check it, edit it, and write your own summary: only your summary reaches the trainee and the College.</p>
+          </div>
 
           <div class="card card-pad mb">
             <div class="card-h">
@@ -622,9 +637,9 @@
             </div>
 
             <div style="margin-top:16px">
-              <div class="eyebrow" style="margin-bottom:8px">Supervisor of Training&rsquo;s comments / suggestions</div>
+              <div class="eyebrow" style="margin-bottom:8px">Your summary of the trainer feedback and suggestions <span style="text-transform:none;letter-spacing:0;font-weight:500">(shared with the trainee and the College)</span></div>
               <div class="freetext">
-                <textarea id="sotComments" aria-label="Supervisor of Training comments and suggestions" style="min-height:96px">Calm and well organised in crises, and communication with patients is a clear strength. Technical skills remain the main development area: arrange supervised block and cardiac TOE exposure before the next cycle. Review progress at month 3.</textarea>
+                <textarea id="sotComments" aria-label="Supervisor of Training summary of trainer feedback and suggestions" style="min-height:96px">Calm and well organised in crises, and communication with patients is a clear strength. Technical skills remain the main development area: arrange supervised block and cardiac TOE exposure before the next cycle. Review progress at month 3.</textarea>
               </div>
             </div>
 
@@ -675,7 +690,7 @@
             <div id="traineeView"></div>
 
             <div class="guidance" style="margin-top:16px">
-              <b>Governance note:</b> Individual trainer forms are held by the College and are not
+              <b>Governance note:</b> Individual trainer forms are anonymous and are read only by the SOT team. They are not shown to you or to the College, and are not
               disclosed at any point, including after sign-off. If you wish to dispute this assessment,
               you may do so in writing within 14 days, and your grounds will be reviewed by the Board of Education.
             </div>
@@ -762,7 +777,7 @@
           <div class="card card-pad" style="margin-top:18px">
             <div class="eyebrow">Audit Trail</div>
             <div class="ledger-preview" style="margin-top:9px">
-              <div class="lr"><span class="lk">Trainer forms sealed</span><span class="lv mono">4 / 4</span></div>
+              <div class="lr"><span class="lk">Trainer forms received</span><span class="lv mono">4 / 4</span></div>
               <div class="lr"><span class="lk">SOT synthesis</span><span class="lv mono">signed</span></div>
               <div class="lr"><span class="lk">F2F meeting held</span><span class="lv mono">18 Dec 2026</span></div>
               <div class="lr"><span class="lk">Trainee signature</span><span class="lv mono" id="auditSig">pending</span></div>
@@ -1224,6 +1239,10 @@ const ASR = [
       INTEGRITY:'Openly acknowledged a missed antibiotic timing to the surgeon and arranged the repeat dose.'},
   comments:'Good attitude and keen to learn. Time management on lists is the issue.'}
 ];
+/* Anonymise: drop names and roles, shuffle so order says nothing, label Form 1..n. Two trainers opted in to being contacted. */
+ASR.forEach(a=>{ a.contact = (a.id==='LK' || a.id==='RC'); });
+(function(){ const ord=[2,0,3,1].map(i=>ASR[i]); ASR.length=0; ord.forEach((a,i)=>{ delete a.name; delete a.role; a.id='F'+(i+1); a.form='Form '+(i+1); ASR.push(a); }); })();
+const CONTACT = {};   // relay threads by form id (demo, in memory)
 const gradesFor = c=>ASR.map(a=>a.r[D.find(d=>d.c===c).i]);
 const spreadOf = c=>{ const n=gradesFor(c).filter(g=>g!=='X').map(Number); return n.length?Math.max(...n)-Math.min(...n):0; };
 const isDiv = c=>spreadOf(c)>=2;
@@ -1232,8 +1251,8 @@ const SYN = {
   items:Object.fromEntries('2 3 4 3 3 2 3 2 3 2 2 1 2 2 2'.split(' ').map((g,i)=>[D[i].c,g])),
   overall:'3',
   reason:{
-    TIME_MANAGEMENT:'The 4 comes from the one trainer who supervised the two overrunning lists (Dr Chu); the other three saw timely, well-prioritised lists. Graded 3, with a specific goal on re-sequencing after a delayed first case.',
-    CRISIS_MANAGEMENT:'Dr Kwok observed one major airway event handled exceptionally; the others saw routine adverse events handled competently. 2 reflects the consistent pattern.'
+    TIME_MANAGEMENT:'The 4 comes from the one trainer who supervised the two overrunning lists; the other three saw timely, well-prioritised lists. Graded 3, with a specific goal on re-sequencing after a delayed first case.',
+    CRISIS_MANAGEMENT:'One trainer observed a major airway event handled exceptionally; the others saw routine adverse events handled competently. 2 reflects the consistent pattern.'
   },
   courses:{'EASE':true,'ADAM-A':true,'EMAC':true,'ECHO-A':true,'USRA-E':false},
   proj:false, why4:'', traineeComments:''
@@ -1247,14 +1266,39 @@ async function sha(txt){
 }
 function renderAsrList(){
   $('#asrList').innerHTML = ASR.map((a,i)=>`<button type="button" class="asr-pick" data-i="${i}" aria-pressed="${i===asrSel}">
-    <span class="left"><span class="ini">${a.id}</span><span><span class="nm" style="display:block">${a.name}</span><span class="rl" style="display:block">${a.role} \u00b7 submitted ${new Date(a.at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</span></span></span>
-    <span class="pill ok"><span class="dot g"></span>Sealed</span></button>`).join('');
+    <span class="left"><span class="ini">${i+1}</span><span><span class="nm" style="display:block">${a.form}</span><span class="rl" style="display:block">Author hidden \u00b7 ${a.r.length} items rated${a.contact?' \u00b7 happy to be contacted':''}</span></span></span>
+    <span class="pill ok"><span class="dot g"></span>Received</span></button>`).join('');
   $$('.asr-pick').forEach(b=>b.onclick=()=>{ asrSel=+b.dataset.i; renderAsrList(); renderAsr(); });
+}
+function renderContact(){
+  const a = ASR[asrSel], t = CONTACT[a.id], box = $('#asrContact');
+  if(!a.contact){ box.innerHTML = `<div class="eyebrow">Questions about this form</div><p class="note" style="margin-top:8px">This trainer has not asked to be contacted.</p>`; return; }
+  box.innerHTML = `<div class="eyebrow">Questions about this form</div>
+    <p class="note" style="margin:8px 0 12px">This trainer is happy to be contacted. Your message goes through the portal and their name stays hidden unless they choose to reply with it.</p>
+    ${t ? `<div class="readbox" style="margin-bottom:10px"><b>You wrote</b> <span class="meta">&middot; ${esc(t.at)}</span><br>${esc(t.msg)}</div><span class="pill warn"><span class="dot a"></span>Sent &middot; awaiting reply</span>` :
+    `<button type="button" class="btn sec" id="ctBtn" style="width:100%;justify-content:center">Contact trainer</button>`}`;
+  const b = $('#ctBtn'); if(b) b.onclick = openContact;
+}
+function openContact(){
+  const a = ASR[asrSel];
+  const bg = document.createElement('div'); bg.className = 'cm-bg'; bg.setAttribute('role','presentation');
+  bg.innerHTML = `<div class="cm" role="dialog" aria-modal="true" aria-labelledby="cmT">
+    <div class="eyebrow">Anonymous relay &middot; ${a.form}</div><div class="h2" id="cmT" style="margin:4px 0 8px">Ask the trainer a question</div>
+    <p class="note" style="margin-bottom:10px">The trainer sees your question and the trainee&rsquo;s name and cycle, so they know which form it is about. They are not shown who is asking beyond &ldquo;the SOT team&rdquo;, and you are not shown who they are.</p>
+    <textarea id="cmMsg" style="width:100%;min-height:110px;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--ink);resize:vertical" aria-label="Your question" placeholder="e.g. Could you say more about the airway example under Crisis management?"></textarea>
+    <div class="acts" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button type="button" class="btn sec" id="cmX">Cancel</button><button type="button" class="btn pri" id="cmGo" disabled>Send through portal</button></div></div>`;
+  document.body.appendChild(bg);
+  const msg = $('#cmMsg', bg), go = $('#cmGo', bg); msg.focus();
+  const close = ()=>{ bg.remove(); };
+  msg.addEventListener('input',()=>{ go.disabled = msg.value.trim().length<8; });
+  $('#cmX',bg).onclick = close; bg.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+  go.onclick = ()=>{ CONTACT[a.id] = {msg:msg.value.trim(), at:'Sent today'}; close(); renderContact(); announce('Question sent to the trainer through the portal.'); };
 }
 async function renderAsr(){
   const a = ASR[asrSel];
-  $('#asrTitle').textContent = a.name+' \u2014 sealed form';
-  $('#asrWho').textContent = a.name;
+  $('#asrTitle').textContent = a.form+' \u2014 anonymous, sealed on receipt';
+  $('#asrWho').textContent = a.form;
+  renderContact();
   $('#asrComments').textContent = a.comments;
   let html = '';
   ['C','T'].forEach(g=>{
@@ -1264,11 +1308,32 @@ async function renderAsr(){
       return `<div class="ro-row"><span class="no mono">${d.no}</span><span class="nm">${esc(d.l)}</span>${chipg(gr)}${ex?`<div class="exq">${esc(ex)}</div>`:''}</div>`; }).join('');
   });
   $('#asrGrid').innerHTML = html;
-  $('#intWho').textContent = a.name;
-  $('#intAt').textContent = new Date(a.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  $('#intWho').textContent = 'Hidden (anonymous)';
+  $('#intAt').textContent = 'Received Dec 2026';
   $('#intN').textContent = a.r.length+' / 15';
   const h = await sha(JSON.stringify({id:a.id,r:a.r,ex:a.ex,comments:a.comments}));
   $('#intHash').textContent = h.slice(0,8)+'\u2026'+h.slice(-6);
+}
+
+
+/* ---------- draft summary (deterministic from grades; labelled as a draft) ---------- */
+function draftSummary(){
+  const n = ASR.length, rows = D.map(d=>{ const g=gradesFor(d.c).filter(x=>x!=='X').map(Number); return {d, g, lo:Math.min(...g), hi:Math.max(...g), n4:g.filter(x=>x===4).length}; }).filter(r=>r.g.length);
+  const strengths = rows.filter(r=>r.hi<=2).map(r=>r.d.l);
+  const dev = rows.filter(r=>r.n4>0).sort((a,b)=>b.n4-a.n4).map(r=>({l:r.d.l, k:r.n4, n:r.g.length}));
+  const diff = rows.filter(r=>r.hi-r.lo>=2).map(r=>({l:r.d.l, lo:r.lo, hi:r.hi}));
+  return {n, strengths, dev, diff};
+}
+function renderSummary(){
+  const x = draftSummary(), li = a=>a.length ? '<ul style="margin:4px 0 0 18px">'+a.map(t=>'<li>'+t+'</li>').join('')+'</ul>' : '<div class="meta">None</div>';
+  $('#sumBody').innerHTML = `<div style="display:grid;gap:12px;font-size:13px">
+    <div><b>Strengths</b> <span class="meta">&middot; every form grades these 1 or 2</span>${li(x.strengths.map(esc))}</div>
+    <div><b>Areas to develop</b> <span class="meta">&middot; at least one form grades 4</span>${li(x.dev.map(d=>`${esc(d.l)} &mdash; ${d.k} of ${d.n} forms`))}</div>
+    <div><b>Where forms differ</b> <span class="meta">&middot; spread of 2 or more grades</span>${li(x.diff.map(d=>`${esc(d.l)} &mdash; grades ${d.lo} to ${d.hi}`))}</div></div>`;
+}
+function summaryText(){
+  const x = draftSummary(), j = a=>a.join(', ');
+  return `Strengths: ${j(x.strengths)}. Areas to develop: ${j(x.dev.map(d=>d.l))}. Forms differed on: ${j(x.diff.map(d=>d.l))}.`;
 }
 
 /* ---------- screen 2: item-by-item synthesis ---------- */
@@ -1357,6 +1422,8 @@ function updateOverall(){
     });
   });
   $('#why4').addEventListener('input',e=>{ SYN.why4=e.target.value; $('#why4Box').classList.remove('bad'); });
+  renderSummary();
+  $('#sumAdd').onclick = ()=>{ const t=$('#sotComments'); t.value = (t.value.trim()? t.value.trim()+'\n\n' : '') + summaryText(); SYN.sotComments = t.value; t.focus(); announce('Draft themes added to your summary. Edit before using.'); };
   $('#sotComments').addEventListener('input',e=>{ SYN.sotComments=e.target.value; });
   SYN.sotComments = $('#sotComments').value;
   // compulsory courses + formal project (SOT-only brackets on the College form)
@@ -1400,7 +1467,7 @@ function renderTrainee(){
       <div class="lr"><span class="lk">Trainers contributing</span><span class="lv mono">4 \u00b7 individually anonymous</span></div>
     </div>
     <div class="tv-grid">${items.replace(/<div class="tv-sec">/,'<div class="tv-sec" style="grid-column:1">').replace(/<div class="tv-sec">/,'<div class="tv-sec" style="grid-column:2">')}</div>
-    <div class="tv-sec"><div class="eyebrow">Supervisor of Training\u2019s comments / suggestions</div><div class="readbox">${esc(SYN.sotComments||'\u2014')}</div></div>
+    <div class="tv-sec"><div class="eyebrow">Supervisor of Training\u2019s summary and suggestions</div><div class="readbox">${esc(SYN.sotComments||'\u2014')}</div></div>
     <div class="tv-sec"><div class="eyebrow">Compulsory courses \u00b7 formal project</div><div class="readbox mono" style="font-size:12px">${courses}<br>Formal project completed: ${SYN.proj?'Yes':'No'}</div></div>
     <div class="tv-sec"><div class="eyebrow">Trainee\u2019s comments / suggestions</div>
       <div class="freetext"><textarea id="traineeComments" aria-label="Trainee comments and suggestions" placeholder="The trainee adds their own comments and learning goals here, during the meeting.">${esc(SYN.traineeComments)}</textarea></div></div>`;
