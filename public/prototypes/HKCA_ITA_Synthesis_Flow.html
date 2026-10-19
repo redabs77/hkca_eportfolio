@@ -478,14 +478,6 @@
           <span class="sub">Counter-signature</span>
         </span>
       </button>
-      <span class="step-arrow">&rsaquo;</span>
-      <button class="step" data-screen="s4">
-        <span class="idx">4</span>
-        <span>
-          <span class="lbl">Contested &amp; Appeal</span>
-          <span class="sub">BOE review</span>
-        </span>
-      </button>
     </div>
   </div>
 </div>
@@ -620,6 +612,7 @@
                 <div class="eyebrow">Learning contract &middot; the second input into this ITA</div>
                 <div class="h2">Goal achievement</div>
                 <div class="meta" id="goalAchieveSummary" style="margin-top:2px"></div>
+                <div id="goalAdvisory" style="margin-top:7px"></div>
               </div>
             </div>
             <p class="note" style="margin:0 0 6px">Trainers never see these goals: only you evaluate them, alongside the 15 clinical items above. Grade each goal on how the trainee did, using holistic judgement &mdash; a Partially or Not Achieved goal is not an automatic block on the overall assessment.</p>
@@ -649,11 +642,13 @@
             </div>
 
             <div style="margin-top:18px">
-              <div class="eyebrow" style="margin-bottom:6px">Compulsory courses attended? <span style="text-transform:none;letter-spacing:0;font-weight:500">(from trainee records &mdash; confirm)</span></div>
-              <div class="ledger-preview sotfields" id="courses" style="margin-top:0"></div>
-              <div class="ledger-preview sotfields" style="margin-top:10px">
-                <div class="lr"><span class="lk">Formal project completed?</span><span class="yn" id="projYN"></span></div>
+              <div class="eyebrow" style="margin-bottom:6px">Compulsory courses &amp; formal project <span style="text-transform:none;letter-spacing:0;font-weight:500">(from the trainee&rsquo;s record &mdash; read-only here)</span></div>
+              <div class="ledger-preview" id="courses" style="margin-top:0"></div>
+              <div class="ledger-preview" style="margin-top:10px">
+                <div class="lr"><span class="lk">Formal project completed?</span><span class="lv" id="projYN"></span></div>
               </div>
+              <button type="button" class="btn sec sm" id="flagRecordBtn" style="margin-top:9px;width:100%;justify-content:center">Flag an issue with College Admin</button>
+              <p class="note" style="margin-top:7px">If a course or the formal project status looks wrong, flag it to College Admin &mdash; it is not editable by the SOT or the trainee here.</p>
             </div>
 
             <div style="margin-top:16px">
@@ -690,8 +685,7 @@
           <p>
             Counter-signature happens in person, with the SOT and trainee reviewing the synthesis together. The trainee
             sees the <strong>overall assessment, the 15 item grades and the SOT&rsquo;s comments</strong> &mdash; never an individual trainer&rsquo;s form.
-            If the trainee disputes the grade, the record moves to <span class="mono">contested</span> and the rotation
-            credit is held pending BOE review.
+            Signing confirms the meeting happened and the grade was explained &mdash; not agreement with it.
           </p>
         </div>
       </div>
@@ -711,8 +705,8 @@
 
             <div class="guidance" style="margin-top:16px">
               <b>Governance note:</b> Individual trainer forms are anonymous and are read only by the SOT team. They are not shown to you or to the College, and are not
-              disclosed at any point, including after sign-off. If you wish to dispute this assessment,
-              you may do so in writing within 14 days, and your grounds will be reviewed by the Board of Education.
+              disclosed at any point, including after sign-off. If you have concerns about this assessment, raise them
+              directly with the College by email &mdash; this is handled outside the ePortfolio system.
             </div>
           </div>
 
@@ -741,13 +735,6 @@
                   <div class="d">Trainee understands that 6.0 months will be credited to Clinical Anaesthesia.</div>
                 </div>
               </div>
-              <div class="chk">
-                <div class="box" onclick="this.classList.toggle('on')">&#10003;</div>
-                <div>
-                  <div class="t">Appeal rights and 14-day window explained</div>
-                  <div class="d">Trainee informed of the formal grounds-for-appeal process.</div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -772,7 +759,12 @@
 
             <p class="note" style="margin-top:11px">
               Signature confirms the <strong>conversation took place and the grade was explained</strong>. It does not
-              constitute agreement with the grade. A trainee who disagrees may sign and still lodge an appeal.
+              constitute agreement with the grade.
+            </p>
+            <p class="note" style="margin-top:7px">
+              Shown here as a drawn signature for this prototype. In production this is an <strong>electronic
+              signature</strong> &mdash; the trainee signs by authenticating with their e-Portfolio login (username
+              and password), not a drawn mark.
             </p>
 
             <div class="btn-row" style="margin-top:15px">
@@ -780,9 +772,11 @@
                 Record sign-off &amp; credit rotation
               </button>
             </div>
-            <button class="btn sec" style="width:100%;justify-content:center;margin-top:9px" onclick="go('s4')">
-              Trainee disputes the grade
-            </button>
+            <p class="note" style="margin-top:9px">
+              If the trainee does not sign, the meeting still happened but the record stays unsigned here &mdash; the
+              College is not notified through this screen. A trainee who disputes the assessment raises it with the
+              College directly, by email, outside the system.
+            </p>
           </div>
 
           <div class="outcome ok" id="signOutcome">
@@ -790,7 +784,7 @@
             <div class="ob">
               The record is committed as <span class="mono">COMPLETED_SATISFACTORY</span>, the 6.0 months are
               posted to the Accredited Time Ledger as an immutable entry, and the progression gate is re-evaluated.
-              The trainee retains the right to appeal for a further 14 days.
+  
             </div>
           </div>
 
@@ -803,185 +797,6 @@
               <div class="lr"><span class="lk">Trainee signature</span><span class="lv mono" id="auditSig">pending</span></div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================================================== -->
-    <!-- SCREEN 4 — CONTESTED & BOE APPEAL                     -->
-    <!-- ==================================================== -->
-    <section id="screen-s4" class="hidden">
-      <div class="banner rd">
-        <div class="ic">&#9878;</div>
-        <div style="flex:1">
-          <h3>Contested assessment &mdash; pending BOE adjudication</h3>
-          <p>
-            The trainee has declined to accept the overall assessment. The record is frozen as
-            <span class="mono">contested</span>; the associated rotation credit is held in
-            <span class="mono">pending_boe_review</span> and cannot be posted to the ledger until the Board rules.
-            Both <span class="mono">sot_grade</span> and <span class="mono">final_grade</span> are retained so a
-            successful appeal can unblock progression without erasing the original record.
-          </p>
-          <div class="acts">
-            <span class="pill bad"><span class="dot r"></span>Progression gated</span>
-            <span class="pill warn">Credit held: 6.0 months</span>
-            <span class="pill info">Appeal lodged 20 Dec 2026</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="appeal-grid">
-        <div>
-          <div class="card card-pad mb">
-            <div class="card-h">
-              <div>
-                <div class="eyebrow">Case Timeline</div>
-                <div class="h2">Contested assessment docket</div>
-              </div>
-            </div>
-
-            <div class="timeline">
-              <div class="tl-item done">
-                <div class="knob"></div>
-                <div class="t">Trainer input window closed</div>
-                <div class="d">Four independent submissions received and sealed.</div>
-                <div class="when">16 Dec 2026</div>
-              </div>
-              <div class="tl-item done">
-                <div class="knob"></div>
-                <div class="t">SOT synthesis recorded</div>
-                <div class="d">Overall assessment 3 issued, with divergence reasoning recorded for two items.</div>
-                <div class="when">17 Dec 2026</div>
-              </div>
-              <div class="tl-item done">
-                <div class="knob"></div>
-                <div class="t">Face-to-face feedback meeting held</div>
-                <div class="d">Assessment explained; trainee declined to counter-sign.</div>
-                <div class="when">18 Dec 2026</div>
-              </div>
-              <div class="tl-item active">
-                <div class="knob"></div>
-                <div class="t">Formal grounds for appeal submitted</div>
-                <div class="d">Trainee statement received within the 14-day window. SOT rationale dossier attached.</div>
-                <div class="when">20 Dec 2026</div>
-              </div>
-              <div class="tl-item crit">
-                <div class="knob"></div>
-                <div class="t">BOE adjudication pending</div>
-                <div class="d">Board of Education panel to review. Progression and credit remain frozen until ruling.</div>
-                <div class="when">Awaiting panel</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card card-pad mb">
-            <div class="card-h">
-              <div>
-                <div class="eyebrow">Submissions on Record</div>
-                <div class="h2">Trainee grounds &amp; SOT rationale</div>
-              </div>
-            </div>
-            <div class="docket">
-              <div class="dh">Trainee statement &mdash; submitted 20 Dec 2026</div>
-              <div class="db">
-                <b>Ground:</b> The grade of 4 for <b>Technical skills</b> is said to reflect a first rotation with cardiac and
-                regional lists rather than inadequate performance. <b>Claim:</b> No prior cardiac exposure was
-                available at this hospital, and the learning objectives declared at rotation start were adjusted
-                mid-cycle; the trainee asks that the overall assessment be reconsidered as 2 and the rotation credited
-                without condition.
-              </div>
-            </div>
-            <div class="docket">
-              <div class="dh">SOT rationale dossier &mdash; attached 20 Dec 2026</div>
-              <div class="db">
-                <b>Position:</b> Overall 3 is supported. Three of four trainers independently rated Technical skills 4 with specific
-                examples; the two divergent items (Time management, Crisis management) were flagged and reasoned. <b>Mitigating evidence
-                acknowledged:</b> first cardiac exposure and a mid-cycle objective adjustment are both confirmed
-                against the declared rotation record. <b>Proposed:</b> credit retained, development actions recorded in the SOT comments.
-              </div>
-            </div>
-            <div class="docket" style="margin-bottom:0">
-              <div class="dh">Rotation &amp; objective record (system-verified)</div>
-              <div class="db">
-                Declared at ITA start: <b>Clinical Anaesthesia</b> with cardiac subspecialty interest.<br>
-                Learning objectives amended: <b>yes</b> &mdash; 14 Oct 2026, approved by SOT.<br>
-                Prior cardiac exposure on record: <b>none</b>.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Side: BOE ruling -->
-        <div>
-          <div class="card card-pad mb">
-            <div class="card-h" style="margin-bottom:13px">
-              <div>
-                <div class="eyebrow">Board of Education</div>
-                <div class="h3" style="margin-top:3px">Record adjudication</div>
-              </div>
-              <span class="pill purple">BOE only</span>
-            </div>
-
-            <div class="boe-opts" id="boeOpts">
-              <button class="boe-opt on" data-boe="uphold">
-                <span class="bt"><span class="gradepill g3" id="boeUpholdPill">3</span> Uphold &mdash; SOT grade stands</span>
-                <span class="bd">Credit is posted with the SOT comments attached. The SOT&rsquo;s overall assessment becomes the final grade.</span>
-              </button>
-              <button class="boe-opt" data-boe="overturn">
-                <span class="bt"><span class="gradepill g2">2</span> Overturn &mdash; amend final grade</span>
-                <span class="bd">final_grade is amended to the Board&rsquo;s grade. Credit posted without condition; progression unblocked.</span>
-              </button>
-              <button class="boe-opt" data-boe="reeval">
-                <span class="bt"><span class="gradepill gx">&#8635;</span> Order re-assessment</span>
-                <span class="bd">An independent panel conducts a fresh evaluation; original record retained alongside.</span>
-              </button>
-            </div>
-
-            <div style="margin-top:15px">
-              <div class="eyebrow" style="margin-bottom:8px">Panel reasoning (mandatory)</div>
-              <div class="freetext">
-                <textarea aria-label="BOE panel reasoning" style="min-height:82px" placeholder="Record the Board's reasoning in full..."></textarea>
-              </div>
-            </div>
-
-            <div class="ledger-preview">
-              <div class="lr"><span class="lk">Decision</span><span class="lv">UPHELD</span></div>
-              <div class="lr"><span class="lk">sot_grade</span><span class="lv mono">3</span></div>
-              <div class="lr"><span class="lk">final_grade</span><span class="lv mono">3</span></div>
-              <div class="lr"><span class="lk">Ledger entry</span><span class="lv mono">GRANT 6.0mo</span></div>
-              <div class="lr"><span class="lk">Reason code</span><span class="lv mono">&mdash;</span></div>
-            </div>
-
-            <div class="btn-row" style="margin-top:15px">
-              <button class="btn dng" style="flex:1;justify-content:center" onclick="recordBoe()">Record BOE ruling</button>
-            </div>
-            <p class="note" style="margin-top:10px">
-              A ledger grant, amendment or revocation is recorded as an immutable entry with the BOE actor ID
-              and reason taxonomy. Nothing is deleted; corrections are posted as new rows.
-            </p>
-          </div>
-
-          <div class="outcome rd">
-            <div class="oh">Why this stays manual</div>
-            <div class="ob">
-              No automated scoring or AI inference is permitted to set or amend a summative grade. The system
-              presents the distribution, the divergence flags and the evidence &mdash; the adjudication is a
-              human, panel-level decision recorded against a named BOE actor.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rollover -->
-      <div class="rollover">
-        <div class="rh">Related surfaces</div>
-        <div class="rp">The same lifecycle shown for other states, so the flow can be reviewed end to end.</div>
-        <div class="btn-row">
-          <button class="btn sec sm" onclick="go('s1')">Tier 1 &middot; Trainer input</button>
-          <button class="btn sec sm" onclick="go('s2')">Tier 2 &middot; Synthesis</button>
-          <button class="btn sec sm" onclick="go('s3')">Face-to-face sign-off</button>
-          <button class="btn sec sm">Remedial plan (PIP) view</button>
-          <button class="btn sec sm">Escalation ladder view</button>
         </div>
       </div>
     </section>
@@ -1006,14 +821,13 @@ function go(screen){
   const map = {
     s1:['Tier 1 &middot; Trainer input','info'],
     s2:['Tier 2 &middot; SOT synthesis','warn'],
-    s3:['Face-to-face &middot; Sign-off','ok'],
-    s4:['Contested &middot; BOE review','bad']
+    s3:['Face-to-face &middot; Sign-off','ok']
   };
   const [text, cls] = map[screen] || map.s1;
   badge.innerHTML = text;
   badge.className = 'pill ' + cls;
 
-  const names = {s1:'Tier 1 trainer input',s2:'Tier 2 SOT synthesis',s3:'Face-to-face sign-off',s4:'Contested and BOE review'};
+  const names = {s1:'Tier 1 trainer input',s2:'Tier 2 SOT synthesis',s3:'Face-to-face sign-off'};
   announce('Showing '+(names[screen]||screen));
 
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1057,7 +871,6 @@ function wireRadioGroup(containerSel, itemSel){
     });
   });
 }
-wireRadioGroup('#boeOpts','.boe-opt');
 
 /* discussion checklist: real checkbox semantics + keyboard */
 document.querySelectorAll('.chk').forEach(chk=>{
@@ -1141,55 +954,6 @@ function completeSignOff(){
       Accredited Time Ledger as an immutable grant entry (reason: <span class="mono">SATISFACTORY_ITA_COMPLETION</span>). Progression gate re-evaluated.
       The 14-day appeal window is now open.</div>`;
   announce(unsat ? 'Sign-off recorded. Rotation credit withheld; remedial plan opened.' : 'Sign-off recorded. Six months credited to Clinical Anaesthesia. Fourteen day appeal window open.');
-}
-
-/* ---------------- screen 4: BOE ruling ---------------- */
-const boeOutcomes = {
-  uphold:  { decision:'UPHELD',   get sot(){return String(SYN.overall)}, get final(){return String(SYN.overall)}, ledger:'GRANT 6.0mo',                reason:'&mdash;',                        cls:'rd' },
-  overturn:{ decision:'OVERTURNED', get sot(){return String(SYN.overall)}, final:'2', ledger:'GRANT 6.0mo (unconditional)', reason:'SUCCESSFUL_APPEAL_OVERTURN', cls:'ok' },
-  reeval:  { decision:'RE-ASSESS', get sot(){return String(SYN.overall)}, final:'provisional', ledger:'held &mdash; pending re-assess', reason:'REASSESSMENT_ORDERED',       cls:'am' }
-};
-document.querySelectorAll('#boeOpts .boe-opt').forEach(opt=>{
-  opt.onclick = ()=>{
-    document.querySelectorAll('#boeOpts .boe-opt').forEach(x=>x.classList.remove('on'));
-    opt.classList.add('on');
-    const d = boeOutcomes[opt.dataset.boe];
-    if(!d) return;
-    document.querySelectorAll('#screen-s4 .ledger-preview .lr').forEach(r=>{
-      const k = r.querySelector('.lk').textContent.trim();
-      const v = r.querySelector('.lv');
-      if(k==='Decision')      v.textContent = d.decision;
-      if(k==='sot_grade')     v.textContent = d.sot;
-      if(k==='final_grade')   v.textContent = d.final;
-      if(k==='Ledger entry')  v.innerHTML   = d.ledger;
-      if(k==='Reason code')   v.innerHTML   = d.reason;
-    });
-  };
-});
-function recordBoe(){
-  const picked = document.querySelector('#boeOpts .boe-opt.on');
-  const key = picked ? picked.dataset.boe : 'uphold';
-  const d = boeOutcomes[key];
-  const note = document.querySelector('#screen-s4 textarea');
-  if(note && note.value.trim().length < 10){
-    note.focus();
-    note.style.borderColor = 'var(--rd600)';
-    note.parentElement.style.borderColor = 'var(--rd600)';
-    note.placeholder = 'Panel reasoning is mandatory before the ruling can be recorded.';
-    return;
-  }
-  const box = document.querySelector('#screen-s4 .outcome');
-  box.className = 'outcome ' + (d.cls==='ok' ? 'ok' : d.cls==='am' ? '' : 'rd');
-  box.innerHTML = `
-    <div class="oh">&#10003; Ruling recorded &mdash; ${d.decision}</div>
-    <div class="ob">
-      <span class="mono">sot_grade</span> ${d.sot} retained on the original record;
-      <span class="mono">final_grade</span> set to <span class="mono">${d.final}</span>.
-      Ledger action: ${d.ledger}. The ruling is committed with the BOE actor ID, panel reasoning
-      and a hash-linked audit entry for appeal defensibility.
-    </div>`;
-  announce('Ruling recorded: '+d.decision+'. Final grade '+String(d.final).replace(/<[^>]+>/g,'')+'. Ledger action: '+d.ledger.replace(/&mdash;/g,'-').replace(/<[^>]+>/g,''));
-  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* ---------------- theme ---------------- */
@@ -1349,6 +1113,20 @@ function openContact(){
   $('#cmX',bg).onclick = close; bg.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
   go.onclick = ()=>{ CONTACT[a.id] = {msg:msg.value.trim(), at:'Sent today'}; close(); renderContact(); announce('Question sent to '+a.name+' through the portal.'); };
 }
+function openFlagToAdmin(){
+  const bg = document.createElement('div'); bg.className = 'cm-bg'; bg.setAttribute('role','presentation');
+  bg.innerHTML = `<div class="cm" role="dialog" aria-modal="true" aria-labelledby="flagT">
+    <div class="eyebrow">Flag to College Admin</div><div class="h2" id="flagT" style="margin:4px 0 8px">Report a course or project record issue</div>
+    <p class="note" style="margin-bottom:10px">Compulsory courses and formal-project status come from the trainee's record and cannot be changed by the SOT or the trainee here. Describe the discrepancy and College Admin will correct the record.</p>
+    <textarea id="flagMsg" style="width:100%;min-height:110px;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--ink);resize:vertical" aria-label="Describe the issue" placeholder="e.g. EASE shows not completed, but the trainee has a certificate dated..."></textarea>
+    <div class="acts" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button type="button" class="btn sec" id="flagX">Cancel</button><button type="button" class="btn pri" id="flagGo" disabled>Send to College Admin</button></div></div>`;
+  document.body.appendChild(bg);
+  const msg = $('#flagMsg', bg), send = $('#flagGo', bg); msg.focus();
+  const close = ()=>{ bg.remove(); };
+  msg.addEventListener('input',()=>{ send.disabled = msg.value.trim().length<8; });
+  $('#flagX',bg).onclick = close; bg.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+  send.onclick = ()=>{ close(); announce('Flag sent to College Admin for review.'); };
+}
 async function renderAsr(){
   const a = ASR[asrSel];
   $('#asrTitle').textContent = a.form+(a.contact?' \u2014 sealed on receipt':' \u2014 anonymous, sealed on receipt');
@@ -1482,13 +1260,15 @@ function updateOverall(){
   $('#sumAdd').onclick = ()=>{ const t=$('#sotComments'); t.value = (t.value.trim()? t.value.trim()+'\n\n' : '') + summaryText(); SYN.sotComments = t.value; t.focus(); announce('Draft themes added to your summary. Edit before using.'); };
   $('#sotComments').addEventListener('input',e=>{ SYN.sotComments=e.target.value; });
   SYN.sotComments = $('#sotComments').value;
-  // compulsory courses + formal project (SOT-only brackets on the College form)
-  $('#courses').innerHTML = Object.keys(SYN.courses).map(k=>`<div class="lr"><span class="lk">${k}</span><span class="yn" data-course="${k}"></span></div>`).join('');
-  const yn=(el,get,set)=>{ el.innerHTML=`<button type="button" class="y" aria-pressed="false">Yes</button><button type="button" class="n" aria-pressed="false">No</button>`;
-    const [y,n]=$$('button',el); const paint=()=>{ y.setAttribute('aria-pressed',get()===true); n.setAttribute('aria-pressed',get()===false); };
-    y.onclick=()=>{ set(true); paint(); }; n.onclick=()=>{ set(false); paint(); }; paint(); };
-  $$('[data-course]').forEach(el=>yn(el,()=>SYN.courses[el.dataset.course],v=>SYN.courses[el.dataset.course]=v));
-  yn($('#projYN'),()=>SYN.proj,v=>SYN.proj=v);
+  // compulsory courses + formal project: read-only from the trainee record, not editable here (SOT/trainee).
+  // Discrepancies go to College Admin via "Flag an issue", not an inline edit.
+  const courseBadge = v => v
+    ? '<span class="pill ok" style="padding:2px 8px"><span class="dot g"></span>Completed</span>'
+    : '<span class="pill bad" style="padding:2px 8px"><span class="dot r"></span>Not completed</span>';
+  $('#courses').innerHTML = Object.keys(SYN.courses).map(k=>`<div class="lr"><span class="lk">${k}</span><span class="lv">${courseBadge(SYN.courses[k])}</span></div>`).join('');
+  $('#projYN').innerHTML = courseBadge(SYN.proj);
+  const flagBtn = $('#flagRecordBtn');
+  if(flagBtn) flagBtn.onclick = openFlagToAdmin;
 })();
 $('#blankBtn').onclick=()=>{ D.forEach(d=>SYN.items[d.c]=null); SYN.overall=null; SYN.why4=''; $('#why4').value=''; paintItems(); updateOverall(); announce('All SOT grades cleared.'); };
 
@@ -1511,6 +1291,10 @@ function renderGoalAchievement(){
   document.getElementById('goalAchieveSummary').textContent = sum.pending
     ? `${sum.pending} of ${sum.total} goal${sum.total===1?'':'s'} not yet graded`
     : `${sum.completely} completely achieved \u00b7 ${sum.partially} partially achieved \u00b7 ${sum.notAchieved} not achieved`;
+  const adv = document.getElementById('goalAdvisory');
+  if(adv) adv.innerHTML = sum.notAchieved>0
+    ? `<span class="pill warn"><span class="dot a"></span>${sum.notAchieved} goal${sum.notAchieved>1?'s':''} not achieved \u2014 advisory only, does not change the ITA outcome</span>`
+    : '';
 }
 function setGoalOutcomeUI(gid,outcome){
   PlansStore.setGoalOutcome(PLAN_ID,'SIX_MONTH',gid,outcome);
@@ -1565,13 +1349,8 @@ function renderTraineeGoals(){
     return `<div class="readbox" style="margin-top:6px"><b>${i+1}. ${E(g.text)}</b> &mdash; <span class="pill ${o?o.tone:'warn'}">${o?o.label:'Not yet graded'}</span>${g.sotComment?`<br><span class="meta">${E(g.sotComment)}</span>`:''}</div>`;
   }).join('');
 }
-function renderS4(){
-  $$('#screen-s4 .ledger-preview .lr').forEach(r=>{ const k=r.querySelector('.lk').textContent.trim(), v=r.querySelector('.lv');
-    if(k==='sot_grade') v.textContent=SYN.overall; if(k==='final_grade' && v.textContent==='3') v.textContent=SYN.overall; });
-  const up=$('#boeUpholdPill'); if(up){ up.textContent=SYN.overall; up.className='gradepill g'+SYN.overall; }
-}
 const _go = go;
-go = function(screen){ if(screen==='s3') renderTrainee(); _go(screen); if(screen==='s4') renderS4(); };
+go = function(screen){ if(screen==='s3') renderTrainee(); _go(screen); };
 document.querySelectorAll('.step').forEach(b=>b.onclick=()=>go(b.dataset.screen));
 
 renderAsrList(); renderAsr(); buildSyn(); renderGoalAchievement();
@@ -1585,9 +1364,8 @@ renderAsrList(); renderAsr(); buildSyn(); renderGoalAchievement();
     $('#nFormsTxt').textContent = n+' trainer form'+(n===1?'':'s')+' returned';
     if(n<3){ pill.className='pill warn'; pill.innerHTML='<span class="dot a"></span>Below minimum of 3'; }
     else pill.innerHTML = '<span class="dot g"></span>Minimum of 3 met';
-    if(CTX.id && !['s4'].includes(CTX.step)===false){ const b=document.createElement('div'); b.className='banner bl'; b.innerHTML='<div style="flex:1"><h3>Worked example</h3><p>The appeal and Board of Education screens show one illustrative case; they are not specific to this trainee.</p></div>'; document.querySelector('#screen-s4').prepend(b); }
   }
-  if(CTX.step && /^s[1-4]$/.test(CTX.step)) go(CTX.step);
+  if(CTX.step && /^s[1-3]$/.test(CTX.step)) go(CTX.step);
 })();
 </script>
 </body>
