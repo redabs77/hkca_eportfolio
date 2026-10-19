@@ -1,0 +1,188 @@
+/* ==========================================================================
+   HKCA ePortfolio: shared mobile layer (phones, <= 720px)
+   Linked LAST in <head> after hkca-theme.css. Desktop is untouched: every
+   rule is inside the media query. Table-to-card conversion is driven by
+   hkca-mobile.js, which adds .mcard / data-label to tables.
+   ========================================================================== */
+/* sort control is a phone-only affordance (injected by hkca-mobile.js) */
+.m-sort{display:none}
+
+@media (max-width:720px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{overflow-wrap:break-word}
+  .wrap{padding:0 14px}
+  main{padding:14px 0 96px}
+
+  .lb-tab,.ctl,.btn,.seg button,.m-sort select,.lb-filters > *{box-sizing:border-box}
+
+  /* ---- touch comfort: 16px inputs stop iOS zooming on focus ---- */
+  input:not([type=checkbox]):not([type=radio]),select,textarea,.ctl{font-size:16px !important}
+  .ctl,select.ctl,input.ctl{min-height:42px}
+  .btn,.btn.sm,button.btn{min-height:42px}
+  input[type=checkbox],input[type=radio]{width:20px;height:20px}
+  .seg{max-width:100%;overflow-x:auto;scrollbar-width:none}
+  .seg::-webkit-scrollbar{display:none}
+  .seg button{min-height:38px;padding:8px 14px}
+
+  /* ---- top bar: one compact, non-sticky block; the tab bar is what sticks ---- */
+  .top{position:static}
+  .top-row{flex-wrap:wrap;gap:10px 8px;padding:10px 0}
+  .brand{flex:1 1 auto;gap:9px}
+  .brand h1{font-size:14.5px}
+  .brand p{display:none}
+  .top-row > a.btn{order:2;min-height:38px;padding:0 11px;font-size:12.5px}
+  .top-row > .top-right{order:3;gap:8px}
+  .top-row > #roleSeg{order:4;width:100%}
+  .top-row > #roleSeg button{flex:1;min-height:40px}
+  .who{padding-left:0;border-left:0}
+  .who > div:first-child{display:none}
+  .icon-btn{width:38px;height:38px}
+  .av{width:36px;height:36px}
+
+  /* ---- tab bar: sticky, swipeable, 46px targets, fade hints more to the right ---- */
+  .sub,.rail{top:0}
+  .sub .wrap{padding:0}
+  .tabs{padding:0 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 30px),transparent);
+            mask-image:linear-gradient(to right,#000 calc(100% - 30px),transparent)}
+  .rail-row{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 30px),transparent);
+            mask-image:linear-gradient(to right,#000 calc(100% - 30px),transparent)}
+  .tabs.at-end,.rail-row.at-end{-webkit-mask-image:none;mask-image:none}
+  .rail-row .step{min-height:48px}
+  .tab{min-height:48px;padding:0 13px;scroll-snap-align:center}
+
+  /* ---- cards and headings ---- */
+  .card-pad{padding:14px}
+  .card-h{gap:10px;margin-bottom:12px}
+  .h2{font-size:16px}
+
+  /* ---- home ---- */
+  .hm-head{margin:0 0 14px;gap:10px}
+  .hm-title{font-size:22px}
+  .hm-sub{font-size:13px}
+  .hm-side{width:100%;justify-content:space-between;gap:10px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .kpi{grid-template-columns:minmax(0,1fr);grid-template-areas:"ico" "kl" "kn" "ks";gap:2px;padding:12px 13px;border-radius:14px}
+  .kpi .ico{width:30px;height:30px;border-radius:9px;margin-bottom:4px}
+  .kpi .kl{font-size:12.5px}
+  .kpi .kn{font-size:30px;margin-top:2px}
+  .kpi .kn small{font-size:12px}
+  .kpi .ks{font-size:12px;line-height:1.3}
+  .hm-rail{grid-template-columns:minmax(0,1fr)!important}
+  .hm-two{grid-template-columns:minmax(0,1fr)!important}
+  .hm-drawer,.drawer{width:100vw;border-left:0}
+  .dr-head{padding:14px 16px}
+  .dr-body{padding:14px 16px 80px}
+
+  /* ---- filter bars: search full width, selects two-up ---- */
+  .toolbar{gap:8px}
+  .tb-a,.tb-b{gap:8px}
+  .tb-a #rosterFilter{flex:1 1 100%;max-width:none;min-width:0;order:-1}
+  .tb-a select{flex:1 1 calc(50% - 4px);min-width:0}
+  .tb-b .tb-push{margin-left:0}
+  .tb-b #densBtn,.tb-b #colMenu{display:none}
+  .tb-b #presetSeg{flex:1 1 100%}
+  .tb-b #presetSeg button{flex:1}
+  .tb-b > .btn{flex:1 1 calc(50% - 4px)}
+  .tb-b .tb-push{display:none}
+  #tab-roster .card > p.note{font-size:0;line-height:0}   /* drops the 'click a heading to sort' text, keeps the stage key */
+  #tab-roster .card > p.note .stage-key{font-size:12px;line-height:1.6}
+  .ita-filters,.lb-tabs{gap:6px}
+  .ita-filters input[type=search],.ita-filters .ctl{width:100% !important;margin-left:0 !important}
+  .ita-bar{gap:10px}
+
+  /* ---- tables become cards (see hkca-mobile.js) ---- */
+  .m-cardwrap,.tbl-scroll.tall.m-cardwrap{max-height:none;overflow:visible;border:0;border-radius:0}
+  table.mcard,.mcard thead,.mcard tbody{display:block;width:100%}
+  .mcard thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .mcard tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;position:relative;
+    padding:13px 14px;margin:0 0 10px;background:var(--raised);border:1px solid var(--border);
+    border-radius:14px;box-shadow:var(--shadow)}
+  .mcard tbody td{display:block;padding:0 !important;border:0 !important;background:transparent !important;
+    box-shadow:none !important;white-space:normal !important;min-width:0 !important;width:auto !important;font-size:13px;
+    position:static !important}
+  .mcard tbody td[data-label]:not(.m-title):not(.m-act)::before{content:attr(data-label);display:block;
+    font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px}
+  .mcard td.m-title{grid-column:1/-1;font-size:15px;padding-right:34px !important}
+  .mcard td.m-wide,.mcard td.m-act{grid-column:1/-1}
+  .mcard td.m-act{display:flex !important;flex-wrap:wrap;gap:8px;padding-top:2px !important}
+  .mcard td.m-act .btn,.mcard td.m-act button{min-height:42px;flex:1 1 auto}
+  .mcard tbody td.m-sel{position:absolute !important;top:4px;right:4px;left:auto !important;z-index:1;padding:8px !important}
+  .mcard td.m-sel input{width:22px;height:22px}
+  .mcard tbody tr.m-grp{display:block;background:transparent;border:0;box-shadow:none;padding:8px 2px 4px;margin:6px 0 8px}
+  .mcard tbody tr.m-grp td{font-size:13px}
+  .mcard tbody tr.empty-row{display:block;text-align:center;padding:22px 14px}
+  .mcard tbody tr.flag{border-color:rgba(239,68,68,.35);background:color-mix(in srgb,var(--raised) 94%,#ef4444)}
+  .mcard tbody tr.mine{border-color:var(--acc)}
+  .mcard tbody tr[data-stage=BAT]{border-left:4px solid var(--s-bat)}
+  .mcard tbody tr[data-stage=HAT]{border-left:4px solid var(--s-hat)}
+  .mcard tbody tr[data-stage=PFY]{border-left:4px solid var(--s-pfy)}
+  table.hm-tbl.mcard{padding:0 12px 12px;box-sizing:border-box}
+  table.hm-tbl.mcard tbody tr{box-shadow:none;margin-bottom:8px;padding:11px 12px}
+  table.hm-tbl.mcard tbody td:nth-child(4){display:block;grid-column:1/-1}   /* the 'Why' column carries the reason: keep it on phones */
+
+  #rosterPills .pill{min-height:34px;padding:0 12px}
+  .m-sort{display:flex !important;align-items:center;gap:8px;margin:2px 0 10px;font-size:12.5px;color:var(--ink2)}
+  .m-sort select{flex:1;min-width:0;min-height:42px}
+  .m-sort button{min-height:42px;min-width:44px;border:1px solid var(--border);background:var(--surface);
+    border-radius:8px;font-size:15px;color:var(--ink);cursor:pointer}
+
+  /* tables that stay tables (heatmaps, item lists): scroll sideways, keep first column in view */
+  .vop-tbl,.vop-hm{font-size:12px}
+  .vop-hm td:first-child,.vop-hm th:first-child{position:sticky;left:0;background:var(--raised);z-index:1}
+
+  /* ---- rotations timeline: fixed-width chart that scrolls sideways, names pinned ---- */
+  .tl-wrap{position:relative;-webkit-overflow-scrolling:touch}
+  .tl-body{min-width:780px}
+  .tl-hd,.tl-row{grid-template-columns:116px 1fr}
+  .tl-today-layer{left:116px}
+  .tl-name{position:sticky;left:0;z-index:5;background:var(--raised);padding-right:8px;font-size:12.5px}
+  .tl-hd > :first-child{position:sticky;left:0;z-index:5;background:var(--raised)}
+  .tl-wrap::after{content:"Swipe sideways for later months";display:block;position:sticky;left:0;width:100%;
+    font-size:12px;color:var(--ink3);padding:10px 0 2px}
+
+  /* ---- sheets, toasts, tooltips ---- */
+  .mscrim{align-items:flex-end;padding:0}
+  .modal{width:100%;max-height:92vh;max-height:92dvh;border-radius:18px 18px 0 0;border-bottom:0}
+  .modal-h{padding:14px 16px}
+  .modal-b{padding:14px 16px}
+  .modal-f{position:sticky;bottom:0;background:var(--bg);padding:12px 16px calc(12px + env(safe-area-inset-bottom));gap:8px}
+  .modal-f .btn{flex:1 1 auto}
+  .bulk{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));max-width:none;transform:translateY(20px)}
+  .bulk.on{transform:none}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom));max-width:calc(100vw - 28px);text-align:center}
+  .tip{position:fixed;left:14px;right:14px;top:auto;bottom:calc(14px + env(safe-area-inset-bottom));width:auto;max-width:none;z-index:300;font-size:13px}
+  .tipwrap{position:static}
+
+  /* ---- logbook verification ---- */
+  .lb-tabs{gap:8px;border-bottom:0;margin-bottom:12px}
+  .lb-tab{flex:1 1 calc(50% - 4px);justify-content:center;margin:0;padding:10px 8px;min-height:44px;
+    border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:12.5px;white-space:nowrap;gap:5px}
+  .lb-tab.on{background:var(--acc-bg);border-color:var(--acc)}
+  .lb-tabs .sp{display:none}
+  .lb-tabs > .btn{flex:1 1 100%}
+  .lb-filters{gap:8px}
+  .lb-filters > *{flex:1 1 calc(50% - 4px);min-width:0}
+  .lb-filters input:not([type=checkbox]){flex:1 1 100%;width:100% !important}
+  .lb-group{flex-wrap:wrap;gap:6px 10px;padding:10px 12px}
+  .lb-group > *{white-space:nowrap}
+  .lb-group .sp{display:none}
+  .lb-group > .btn{flex:1 1 100%;order:5;white-space:normal}
+  .lbr{grid-template-columns:30px minmax(0,1fr);gap:8px 6px;padding:12px 4px}
+  .lbr > :nth-child(3),.lbr > :nth-child(4){grid-column:1/-1}
+  .acts .btn{flex:1 1 auto}
+  .lb-pager{flex-wrap:wrap}
+
+  /* ---- synthesis flow: trainee-view sections stack (inline grid-column:2 would force a sliver column) ---- */
+  .tv-grid{grid-template-columns:minmax(0,1fr)}
+  .tv-grid .tv-sec{grid-column:1 !important}
+  .syn-row .gcell{width:100%;gap:6px}
+  .gbtn{flex:1 1 0;width:auto;min-width:0;height:44px;font-size:15px}
+  .why label em{white-space:nowrap}
+
+  /* ---- trainer form: five rating buttons do not fit side by side; 3 over 2 keeps full labels and 56px targets ---- */
+  .grades{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+  .grades .g{grid-column:span 2;min-height:58px;padding:8px 6px}
+  .grades .g[data-g="4"],.grades .g[data-g="X"]{grid-column:span 3}
+  .grades .g span{font-size:12px}
+}
