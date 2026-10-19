@@ -1348,6 +1348,18 @@
   </div>
   <div class="dr-body" id="lbPanelBody"></div>
 </aside>
+<div class="scrim" id="cScrim" onclick="contractDrawerClose()"></div>
+<aside class="drawer" id="cDrawer" aria-hidden="true">
+  <div class="dr-head">
+    <div><div class="eyebrow" id="cdEy"></div><div class="h2" id="cdTitle" style="font-size:15px"></div></div>
+    <button class="btn sec sm" onclick="contractDrawerClose()">Close</button>
+  </div>
+  <div class="dr-body" id="cdBody"></div>
+  <div class="dr-head" style="position:sticky;bottom:0;top:auto;border-top:1px solid var(--border);border-bottom:none">
+    <span class="meta" id="cdMeta" style="align-self:center"></span>
+    <div class="btn-row"><button class="btn pri" id="cdOk"></button></div>
+  </div>
+</aside>
 <div class="bulk" id="lbBulk" role="region" aria-label="Logbook bulk actions">
   <span class="bn" id="lbBulkN"></span>
   <button class="btn sm" onclick="lbApproveReview(true)">Review &amp; approve selected</button>
@@ -2117,7 +2129,7 @@ function itaContractsHtml(){
           <button type="button" data-s="all" onclick="planSetScope('all')">All trainees</button>
         </div>
       </div>
-      <div class="lb-tabs" id="goalsTabs" role="tablist"></div>
+      <div class="chips" id="goalsTabs" style="margin:0 0 10px"></div>
       <div class="tbl-scroll">
         <table>
           <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th style="min-width:200px">Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
@@ -2186,7 +2198,7 @@ function itaActionBtn(t,k){
     return '<span class="meta">Waiting for forms</span>';
   }
   if(k==='waitcontract'){
-    return can ? `<button type="button" class="btn sec sm" onclick="itaView='contracts';renderItaRound()" title="The face-to-face can&rsquo;t start until the Assigned SOT signs the learning contract. Trainer forms can still be collected in the meantime.">Open learning contract</button>`
+    return can ? `<button type="button" class="btn sec sm" onclick="planOpen('${t.id}','SIX_MONTH')" title="The face-to-face can&rsquo;t start until the Assigned SOT signs the learning contract. Trainer forms can still be collected in the meantime.">Open learning contract</button>`
                : '<span class="meta">Waiting for the learning contract</span>';
   }
   if(!can) return '<span class="meta">&mdash;</span>';
@@ -3419,6 +3431,26 @@ function lbModalOpen(cfg){
 }
 function lbModalClose(){ document.getElementById('lbModal').classList.remove('on'); lbModalCfg = null; }
 
+let cDrawerCfg = null;
+function contractDrawerOpen(cfg){
+  cDrawerCfg = cfg;
+  document.getElementById('cdEy').textContent = cfg.ey || '';
+  document.getElementById('cdTitle').textContent = cfg.title;
+  document.getElementById('cdBody').innerHTML = cfg.body;
+  const ok = document.getElementById('cdOk');
+  ok.textContent = cfg.ok; ok.className = 'btn ' + (cfg.danger ? 'am' : 'pri'); ok.style.display = cfg.ok ? '' : 'none'; ok.onclick = ()=>cfg.onOk();
+  document.getElementById('cdMeta').textContent = '';
+  const upd = ()=>{ if(cfg.check) ok.disabled = !cfg.check(); else ok.disabled = false; };
+  document.getElementById('cdBody').oninput = upd; document.getElementById('cdBody').onchange = upd;
+  document.getElementById('cScrim').classList.add('on');
+  const d = document.getElementById('cDrawer'); d.classList.add('on'); d.setAttribute('aria-hidden','false'); upd();
+}
+function contractDrawerClose(){
+  document.getElementById('cScrim').classList.remove('on');
+  const d = document.getElementById('cDrawer'); d.classList.remove('on'); d.setAttribute('aria-hidden','true');
+  cDrawerCfg = null;
+}
+
 /* ---- detail panel ---- */
 function lbPanelOpen(id){ lbPanelId = id; lbActive = id; lbPanelRender(); document.getElementById('lbScrim').classList.add('on'); const p = document.getElementById('lbPanel'); p.classList.add('on'); p.setAttribute('aria-hidden','false'); }
 function lbPanelClose(){ lbPanelId = null; document.getElementById('lbScrim').classList.remove('on'); const p = document.getElementById('lbPanel'); p.classList.remove('on'); p.setAttribute('aria-hidden','true'); }
@@ -3454,7 +3486,7 @@ document.addEventListener('keydown', ev=>{
 /* ================= learning plans (SOT side): 6-month goals + PF year plan ================= */
 const TODAY_ISO = '2026-10-17';
 function iso2d(s){ const p = s.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
-const planUI = {type:'SIX_MONTH', tab:'action', scope:'all'};
+const planUI = {type:'SIX_MONTH', tab:'all', scope:'all'};
 const PLAN_TYPES = [['SIX_MONTH','6-month goals'],['PF_YEAR','PF year plans']];
 function pget(t,type){ return PlansStore.get(t.id,type) || PlansStore.blank(type); }
 function pst(t,type){ return PlansStore.eff(pget(t,type), RULES.reviewLead); }
@@ -3473,7 +3505,7 @@ function pTabs(type){
           ['signed','Signed',['SIGNED','AWAITING_COS','CHANGE_COS']],['reviewed','Reviewed',['REVIEWED']]];
 }
 function pCounts(type, scope){
-  const ppl = pscope(type, scope), out = {};
+  const ppl = pscope(type, scope), out = {all: ppl.length};
   pTabs(type).forEach(([k,,st])=>out[k] = ppl.filter(t=>st.includes(pst(t,type))).length);
   return out;
 }
@@ -3497,7 +3529,7 @@ function planDetail(t,p,st){
   }
   return '';
 }
-function planSetType(t){ planUI.type = t; planUI.tab = 'action'; renderGoals(); }
+function planSetType(t){ planUI.type = t; planUI.tab = 'all'; renderGoals(); }
 function planSetScope(s){ planUI.scope = s; renderGoals(); }
 function planDemoReview(on){ PlansStore.setDemoReview(on); renderAll(); }
 function planAssign(reassign){ go('itas'); if(reassign){ asFilter = 'all'; asSet = null; itaView = 'assign'; renderItaRound(); } else itaOpen('noasot'); }
@@ -3511,18 +3543,20 @@ function renderGoals(){
   document.querySelectorAll('#planScopeSeg button').forEach(b=>{ const on = b.dataset.s===planUI.scope; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
   const dr = document.getElementById('planDemoRev'); if(dr) dr.checked = PlansStore.demoReview();
   const ppl = pscope(type, planUI.scope), cnt = pCounts(type, planUI.scope);
-  if(!tabs.find(x=>x[0]===planUI.tab)) planUI.tab = 'action';
+  if(planUI.tab!=='all' && !tabs.find(x=>x[0]===planUI.tab)) planUI.tab = 'all';
   document.getElementById('plansEyebrow').textContent = (pf ? 'PF year plan \u00b7 ' : '6-month goals \u00b7 ') + PlansStore.PER[type].label;
-  document.getElementById('goalsTabs').innerHTML = tabs.map(([k,l])=>`<button class="lb-tab ${planUI.tab===k?'on':''}" role="tab" aria-selected="${planUI.tab===k}" onclick="planUI.tab='${k}';renderGoals()">${l} <span class="cnt ${k==='action'&&cnt[k]?'hot':''}">${cnt[k]}</span></button>`).join('') +
-    '<span class="sp"></span>' + (planUI.tab==='waiting' && role==='sot' ? `<button class="btn pri sm" ${cnt.waiting?'':'disabled'} onclick="goalsRemindAll()">Remind ${cnt.waiting} trainee${cnt.waiting===1?'':'s'}</button>` : '');
-  const st = tabs.find(x=>x[0]===planUI.tab)[2];
-  const rows = ppl.filter(t=>st.includes(pst(t,type))).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+  const chipList = [['all','All']].concat(tabs);
+  document.getElementById('goalsTabs').innerHTML = chipList.map(([k,l])=>`<button type="button" class="chip ${planUI.tab===k?'on':''}" onclick="planUI.tab='${k}';renderGoals()">${l} <b>${cnt[k]}</b></button>`).join('') +
+    (planUI.tab==='waiting' && role==='sot' ? `<button class="btn pri sm" style="margin-left:8px" ${cnt.waiting?'':'disabled'} onclick="goalsRemindAll()">Remind ${cnt.waiting} trainee${cnt.waiting===1?'':'s'}</button>` : '');
+  const st = planUI.tab==='all' ? null : tabs.find(x=>x[0]===planUI.tab)[2];
+  const rows = ppl.filter(t=>!st || st.includes(pst(t,type))).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+  const actionSt = tabs.find(x=>x[0]==='action')[2], waitingSt = tabs.find(x=>x[0]==='waiting')[2];
   body.innerHTML = rows.map(t=>{
     const p = pget(t,type), s = PlansStore.eff(p, RULES.reviewLead), can = pCanAct(t);
     let act;
-    if(planUI.tab==='action') act = !t.asot ? (role==='sot' ? `<button class="btn pri sm" onclick="planAssign()">Assign SOT</button>` : '<span class="meta">No SOT assigned</span>')
-      : `<button class="btn pri sm" onclick="planOpen('${t.id}','${type}')">${pCosCan() ? (s==='AWAITING_COS'?'Approve':'Review change') : can ? 'Review' : 'View'}</button>`;
-    else if(planUI.tab==='waiting') act = role==='sot' ? `<button class="btn sec sm" onclick="goalRemind('${t.id}')">Remind trainee</button>` : `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
+    if(!t.asot) act = role==='sot' ? `<button class="btn pri sm" onclick="planAssign()">Assign SOT</button>` : '<span class="meta">No SOT assigned</span>';
+    else if(actionSt.includes(s)) act = `<button class="btn pri sm" onclick="planOpen('${t.id}','${type}')">${pCosCan() ? (s==='AWAITING_COS'?'Approve':'Review change') : can ? 'Review' : 'View'}</button>`;
+    else if(waitingSt.includes(s)) act = role==='sot' ? `<button class="btn sec sm" onclick="goalRemind('${t.id}')">Remind trainee</button>` : `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
     else act = `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
     return `<tr><td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td><td>${stagePill(t.stage)}</td><td>${sotChip(t.asot)}${role==='sot'&&t.asot?'<a class="lb-title" tabindex="0" style="display:block;margin:2px 0 0 30px;font-size:12px" onclick="planAssign(true)" title="Reassign if the working relationship did not work out">Reassign</a>':''}</td>
       <td>${goalPill(type,s)}</td><td class="meta">${planDetail(t,p,s)}</td><td>${act}</td></tr>`;
@@ -3548,7 +3582,7 @@ function goalList(goals, type, refl, against, tag){
 function planOpen(id,type){
   const t = ROSTER.find(x=>x.id===id), p = pget(t,type), s = PlansStore.eff(p, RULES.reviewLead), pf = type==='PF_YEAR', E = PlansStore.esc;
   const can = pCanAct(t), cos = pCosCan();
-  let body = '', okLabel = 'Close', ok = ()=>lbModalClose(), extra = '', needComment = false, canComment = false;
+  let body = '', okLabel = '', ok = ()=>contractDrawerClose(), extra = '', needComment = false, canComment = false;
   const who = `<p class="meta" style="margin-bottom:8px">Assigned SOT: <b>${t.asot?E(asotById(t.asot).name):'none yet'}</b></p>`;
   if(s==='CHANGE_PROPOSED'){
     body = who + `<p class="meta" style="margin-bottom:10px"><b>Reason:</b> ${E(p.proposal.reason)}</p>
@@ -3571,13 +3605,15 @@ function planOpen(id,type){
     if(cos){ okLabel = 'Approve as Chief of Service'; ok = ()=>planDecide(id,type,'cos'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','cosback')">Send back</button>`; canComment = true; needComment = 'back'; }
   } else {
     body = who + goalList(p.goals,type) + (p.comments.length ? `<p class="note">Earlier comment: ${E(p.comments[p.comments.length-1].text)}</p>` : '');
+    if(s==='NOT_SET') body += `<p class="note">The trainee has not started this ${pf?'year plan':'learning contract'} yet. ${role==='sot'?'You can remind them, or they will get a reminder automatically as the deadline nears.':''}</p>`;
+    if(s==='DRAFT') body += '<p class="note">Saved as a draft. The trainee has not submitted it for sign-off yet.</p>';
     if(s==='SUBMITTED' && can){ okLabel = pf ? 'Sign off' : 'Sign off & lock'; ok = ()=>planDecide(id,type,'sign'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','changes')">Request changes</button>`; canComment = true; needComment = 'changes'; }
     if(s==='SIGNED') body += `<p class="note">${pf?'Approved':'Signed'} ${PlansStore.fmt(p.cosAt||p.signedAt)} by ${E(p.cosBy||p.signedBy)}. Locked. The trainee can propose a change, which the Assigned SOT approves.</p>`;
   }
   if(canComment) body += `<div class="field" style="margin-top:14px;margin-bottom:6px"><div class="lbl">Comment ${s==='REVIEW_SUBMITTED'?'on the review (shown to the trainee)':'to trainee'} ${needComment?`(required to ${needComment==='back'?'send back':'request changes'})`:'(optional)'}</div><textarea class="ctl" id="gComment"></textarea></div><div class="btn-row">${extra}</div>`;
   if(!can && !(s==='AWAITING_COS' && cos) && ['SUBMITTED','CHANGE_PROPOSED','REVIEW_SUBMITTED'].includes(s))
     body += `<p class="note">${t.asot ? 'Only the Assigned SOT or the SOT can act on this.' : 'Assign an SOT first. Nobody can sign this yet.'}</p>`;
-  lbModalOpen({ey:`${lastFirst(t.name)} \u00b7 ${t.stage} \u00b7 ${p.period.label}`, title: pf ? 'PF year plan' : '6-month goals', body, ok:okLabel, onOk:ok});
+  contractDrawerOpen({ey:`${lastFirst(t.name)} \u00b7 ${t.stage} \u00b7 ${p.period.label}`, title: pf ? 'PF year plan' : '6-month goals', body, ok:okLabel, onOk:ok});
 }
 function planDecide(id,type,act){
   const t = ROSTER.find(x=>x.id===id), c = (document.getElementById('gComment')||{value:''}).value.trim(), pf = type==='PF_YEAR', who = actorName();
@@ -3596,7 +3632,7 @@ function planDecide(id,type,act){
   const nm = pf ? 'PF year plan' : '6-month goals';
   logEvent(`${nm}: ${lastFirst(t.name)} ${msg}`);
   if(act==='cosapprove') logEvent(`Board of Education informed: PF year plan changed for ${lastFirst(t.name)}`);
-  lbModalClose(); renderAll(); toast(`${nm} ${msg}`);
+  contractDrawerClose(); renderAll(); toast(`${nm} ${msg}`);
 }
 function goalRemind(id){
   const t = ROSTER.find(x=>x.id===id); logEvent(`Learning plan: reminder sent to ${lastFirst(t.name)}`); toast('Reminder sent');
@@ -3773,7 +3809,7 @@ function closeDrawer(){
   const d = document.getElementById('drawer');
   d.classList.remove('on'); d.setAttribute('aria-hidden','true');
 }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDrawer(); closeInvite(); lbPanelClose(); lbModalClose(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDrawer(); closeInvite(); lbPanelClose(); lbModalClose(); contractDrawerClose(); } });
 
 /* ---------------- theme ---------------- */
 function toggleTheme(){
