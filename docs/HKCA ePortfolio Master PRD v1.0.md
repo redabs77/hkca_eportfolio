@@ -82,18 +82,18 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 
 | Role | Persona & Scope | Primary Jobs to be Done |
 | :--- | :--- | :--- |
-| **Trainee** | Basic (BAT), Higher (HAT), or Provisional Fellow (PFY). Scoped to self. | Mobile logbook entry in recovery; setting per-cycle learning goals; WBA initiation; reviewing feedback; exam registration; exit portfolio compilation. |
-| **Trainer / Assessor** | Specialist Anaesthetist / Consultant in accredited centre. Scoped to hospital. | Completing voluntary private ITA feedback (15 College items); bedside WBA evaluation; viewing trainee learning goals (read-only). |
+| **Trainee** | Basic (BAT), Higher (HAT), or Provisional Fellow (PFY). Scoped to self. | Mobile logbook entry in recovery; setting 6-month learning goals and (as PFY) the PF year plan; WBA initiation; reviewing feedback; exam registration; exit portfolio compilation. |
+| **Trainer / Assessor** | Specialist Anaesthetist / Consultant in accredited centre. Scoped to hospital. | Completing voluntary private ITA feedback (15 College items); bedside WBA evaluation; sees no learning plans (they are separate from the ITA). |
 | **Logbook Verifier ASOT** | Assistant SOT / Designated Specialist. Scoped to assigned trainees. | Ongoing, year-round case verification, procedural recategorization, and VOP velocity monitoring for assigned cohort. |
-| **ITA Sign-Off ASOT** | Assistant SOT / Senior Trainer. Scoped to assigned trainees per cycle. | Conducting mandatory face-to-face feedback meetings and executing final summative ITA sign-offs (delegated late in cycle by SOT; sign-off is final without SOT countersign). |
-| **Supervisor of Training (SOT)** | Clinical lead for training at hospital level. Scoped to hospital trainees. | Executive cohort triage via HRM dashboard; signing per-cycle learning goals; private rotation planning and bilateral handshakes; delegating sign-offs; escalation management. |
-| **Cluster SOT / COS** | Cluster Training Director / Chief of Service. Scoped to hospital cluster. | Cross-hospital rotation oversight; Level 2 deadline escalation; PFY 3-domain plan sign-off. |
+| **Assigned SOT** | SOT or Assistant SOT. Scoped to assigned trainees per 6-month period. | Assigned by the SOT at the start of each period (transferable later if the working relationship does not work). Signs the trainee's learning plans, reviews them near the end of the period, conducts the face-to-face meeting and executes the final summative ITA sign-off (final, no SOT countersign). |
+| **Supervisor of Training (SOT)** | Clinical lead for training at hospital level. Scoped to hospital trainees. | Executive cohort triage via HRM dashboard; assigning SOTs at the start of each period; signing learning plans for own assigned trainees; private rotation planning and bilateral handshakes; delegating sign-offs; escalation management. |
+| **Cluster SOT / COS** | Cluster Training Director / Chief of Service. Scoped to hospital cluster. | Cross-hospital rotation oversight; Level 2 deadline escalation; second-step approval of the PF year plan (after the Assigned SOT). |
 | **College Admin / BOE** | HKCA Board of Education & Secretariat Staff. College-wide scope. | Accreditation registry; curriculum edition management; approving ledger credit revocations/appeals; appointment of replacement/acting SOTs; bulk CSV ingestion; formal project reviewer assignment. |
 
 ### 3.1 Role Delegation & Handover Protocol
 1. **Ongoing vs. Cycle-Specific Split:**
    - **Logbook Verifier:** Ongoing operational assignment; verifies cases continuously. An unassigned logbook pool allows peer verifiers to claim unassigned trainees.
-   - **ITA Sign-Off ASOT:** Cycle-specific assignment finalized in the penultimate month of the training block based on clinical contact.
+   - **Assigned SOT:** Period-specific assignment made by the SOT at the **start** of each 6-month period, so the learning plan can be signed within 2 weeks and the same person plans, reviews and later conducts the ITA. Transferable at any time (for example at the end of the period if the working relationship has not worked). Plans already signed keep their original signer.
    - **No Suggested-ASOT Heuristics:** Assignment is explicitly driven by SOT clinical discretion; algorithmic matching is excluded.
 2. **Transfer Responsibilities Wizard:**
    - Built into the SOT Console to reallocate trainees between supervisors.
@@ -111,7 +111,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 * **11 Approved ICU Training Units:** Tracking mandatory 6-month ICU rotations constrained strictly to College-accredited units with joint/legacy ICM curriculum rules.
 * **Configurable Curriculum Engine:** Versioned rules, dynamic form rubrics, and JSON behavioral anchors.
 * **2-Tier ITA Engine (Official 15-Item Form):** Private voluntary trainer feedback $\rightarrow$ SOT/ASOT summative synthesis $\rightarrow$ Trainee in-person sign-off (ASOT sign-off final; no SOT countersign).
-* **Per-Cycle Learning Goals Workflow:** 2-week cycle-start drafting $\rightarrow$ SOT digital sign-off and locking $\rightarrow$ versioned change proposals $\rightarrow$ advisory goal outcome evaluation at final ITA.
+* **Learning Plans (two types, delinked from the ITA):** 6-month goals and the PF year plan share one workflow: 2-week drafting $\rightarrow$ Assigned SOT sign-off and locking (PF plan: then Chief of Service approval) $\rightarrow$ versioned change proposals $\rightarrow$ formative end-of-period review (not graded).
 * **Dual-Track Volume of Practice (Logbook):** Hospital-only case logging with 2-year retrospective lock, AI/heuristic classification, `To verify` queue with milestone-lock reopening rules, and `Browse trainee progress` featuring Cohort Heatmaps and expandable domain-to-item minimums.
 * **Executive SOT Console:** HRM-style overview dashboard (colour-coded KPI cards, ITA assignment donut, unified all-trainee denominators, Needs Attention queue, monthly reminder drawer) and compact roster with "Essential" column presets.
 * **External WBA Asynchronous Sync:** Ingestion integration with HKAM iWBA API (reflecting JCIMED specifications and quarantine conflict handling).
@@ -172,20 +172,23 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
   * Individual trainer submissions are sealed with a cryptographic hash and strictly confidential from the trainee.
 * **2.2 Tier 2: Summative Synthesis & ASOT Delegation:**
   * SOT console displays the full distribution spread across all 15 items. If trainer ratings diverge by $\ge 2$ levels, the synthesizer must document a rationale.
-  * SOT may delegate summative sign-off to a designated **ITA Sign-Off ASOT**. The ASOT's sign-off is **final and authoritative** (no SOT countersign required).
+  * The summative sign-off is held by the trainee's **Assigned SOT** (SOT or ASOT, set at period start). The ASOT's sign-off is **final and authoritative** (no SOT countersign required).
   * Consolidated grades for the 15 items start completely blank (no automated pre-fill).
   * **College Overall Rule:** Overall rating is automatically locked to `4 (Unsatisfactory)` if 4 or more of the 15 consolidated items are rated 4. If fewer than 4 items are unsatisfactory, the synthesizer may still issue a discretionary 4 but must record an explicit clinical justification. Items rated `X` do not count toward the failure threshold.
 * **2.3 Mandatory Face-to-Face Sign-Off & Contested Appeals:**
   * Trainee reviews consolidated feedback during a mandatory in-person sign-off interview.
   * Disputed assessments transition to `contested`; trainee submits an objection statement; record enters `pending_boe_review`.
   * System records both `sot_grade` and post-appeal `final_grade`. Progression gates evaluate `final_grade`.
-* **2.4 Per-Cycle Learning Goals Workflow (P0):**
-  * **Cycle Initiation:** Trainee receives an automated notification at cycle start to draft 2–5 structured learning goals within 2 weeks.
-  * **Goal Structure:** Each goal defines objective, success criteria, proposed evidence, and optional curriculum domain mapping.
-  * **SOT Approval & Locking:** The **SOT** (not ASOT) reviews, requests adjustments, or digitally approves and locks the goals.
-  * **Mid-Cycle Amendments:** Locked goals cannot be edited directly. Trainees submit a formal "Propose Change" amendment which version-controls the original and requires SOT re-approval.
-  * **ITA Synthesis Integration:** Approved goals resurface on the ITA Synthesis console. The synthesizer evaluates each goal as *Achieved / Partly Achieved / Not Achieved* with evaluative commentary. Goal evaluations are **advisory** and do not alter College 15-item grading thresholds.
-  * **Trainer Visibility:** Supervising trainers can view approved learning goals in read-only mode on their feedback form.
+* **2.4 Learning Plans Workflow (P0), delinked from the ITA:** two plan types share one engine. Goals are **not** assessed at the ITA and are not shown on the trainer form.
+  * **Plan types:**
+    - `SIX_MONTH` (6-month learning goals, all stages): 2-5 goals, one per 6-month period.
+    - `PF_YEAR` (Provisional Fellow year plan, PFY trainees, in addition to the 6-month goals): one per PFY year, three domains: **Clinical, Management, Education**, at least one goal in each (up to 3 per domain).
+  * **Drafting:** the trainee is notified at period start and drafts within **2 weeks**. Each goal has a domain, objective, measurable success criterion and evidence. 6-month goals draw on curriculum domains (Clinical Fundamentals `CF-2.x`, Subspecialty `SM-3.x`) or ITA competencies (the 15 College items, e.g. technical skills, crisis management, teamwork, communication) or `Other`; the picker suggests domains from the current rotation.
+  * **Assigned SOT:** set by the SOT at the **start** of the period (not late in the cycle). The Assigned SOT, or the SOT for any assigned trainee, reviews, requests changes, or signs and locks. An unassigned trainee's plan cannot be signed (alert to the SOT). Transfer is allowed later; signed plans keep the original signer.
+  * **PF year plan approval:** Assigned SOT signs, then the **Chief of Service** approves and locks (`AWAITING_COS` state). A Chief of Service may send it back with a comment.
+  * **Mid-period changes:** locked plans change only through "Propose change", version-controlled, re-approved by the Assigned SOT (PF plan: no second COS approval, COS informed in the audit log; open for confirmation).
+  * **Formative review:** opens a configurable lead time before the period ends (default 4 weeks). The trainee notes progress on each goal (PF plan: also a year summary, the completion report) and sends it; the Assigned SOT adds a comment and marks it reviewed. No Achieved/Partly/Not grade; no effect on the ITA or progression.
+  * **Reminders (configurable):** no Assigned SOT after period start; plan not submitted after 2 weeks; plan or review awaiting the signer for 7 days; review not sent.
 
 ---
 
@@ -234,7 +237,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
   * Top-level landing view featuring 6 colour-coded pastel KPI cards (ITA, Logbook, Goals, Rotations, Trainer Forms, Progression Risk).
   * Radial visualizer: "ITAs assigned to SOT team" donut tracking unassigned, assigned, and completed sign-offs.
   * Action Queue ("Needs Attention") surfacing prioritized items across all trainees.
-  * Reminder rules drawer allowing SOTs to customize lead times (e.g., alert if ITA Sign-Off ASOT is unassigned with $\le 1$ month left; monthly cumulative logbook reminder).
+  * Reminder rules drawer allowing SOTs to customize lead times (e.g., alert if no Assigned SOT has been set a set time after the period starts, plans not submitted or not signed, reviews waiting; monthly cumulative logbook reminder).
 * **5.2 Compact Trainee Roster & Column Presets:**
   * High-density table with sticky headers, "Last, First" naming, and stage pills (BAT blue, HAT teal, PFY violet).
   * **"Essential" Column Preset:** Toggles between full data grid and high-priority columns: *Trainee · Stage · Rotation · Accredited Time · VOP Progress · Action*.
@@ -330,7 +333,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 | :--- | :--- | :--- |
 | **§2 (Curriculum Engine)** | Future Curriculum Review Flexibility | `curriculum_editions`, `form_templates`, `curriculum_milestones` |
 | **§5.1 (Ledger & Rotations)** | M2, M3, H5, F5, Albert Rotations Directives | `accredited_time_ledger`, Bilateral Handshake, ICU 11-Unit Filter |
-| **§5.2 (2-Tier ITA & Goals)** | M1, M6, H1, H8, I1, Albert ITA/Goals Directives | 15-Item Form, Voluntary Trainer Forms, SOT Goal Lock, ASOT Final Sign-Off |
+| **§5.2 (2-Tier ITA & Goals)** | M1, M6, H1, H8, I1, Albert ITA/Goals Directives | 15-Item Form, Voluntary Trainer Forms, Learning Plans (6-month goals, PF year plan), Assigned SOT, ASOT Final Sign-Off |
 | **§5.3 (PWA Logbook & VOP)** | H5, U2, U3, U4, Albert VOP Directives | Mobile PWA, Hospital-Only Scoping, Milestone Reopening, Cohort Heatmap |
 | **§5.4 (WBA & iWBA)** | E2, Albert Directive | OAuth2 SSO, Background Polling Daemon |
 | **§5.5 (SOT Console)** | H2, Direction B, Albert HRM Directives | HRM Dashboard, Unified Denominator, Essential Columns Preset |

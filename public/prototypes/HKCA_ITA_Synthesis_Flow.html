@@ -574,8 +574,6 @@
 
       <div class="trx-grid">
         <div>
-          <div class="card card-pad mb" id="glCard"></div>
-
           <div class="card card-pad mb" id="sumCard">
             <div class="card-h" style="margin-bottom:10px">
               <div>
@@ -971,7 +969,6 @@
   </div>
 </main>
 
-<script src="hkca-goals-store.js"></script>
 <script>
 /* ---------------- navigation ---------------- */
 function go(screen){
@@ -1510,7 +1507,7 @@ function renderTrainee(){
     <div class="tv-sec"><div class="eyebrow">Supervisor of Training\u2019s summary and suggestions</div><div class="readbox">${esc(SYN.sotComments||'\u2014')}</div></div>
     <div class="tv-sec"><div class="eyebrow">Compulsory courses \u00b7 formal project</div><div class="readbox mono" style="font-size:12px">${courses}<br>Formal project completed: ${SYN.proj?'Yes':'No'}</div></div>
     <div class="tv-sec"><div class="eyebrow">Trainee\u2019s comments / suggestions</div>
-      <div class="freetext"><textarea id="traineeComments" aria-label="Trainee comments and suggestions" placeholder="The trainee adds their own comments and learning goals here, during the meeting.">${esc(SYN.traineeComments)}</textarea></div></div>`;
+      <div class="freetext"><textarea id="traineeComments" aria-label="Trainee comments and suggestions" placeholder="The trainee adds their own comments and suggestions here, during the meeting.">${esc(SYN.traineeComments)}</textarea></div></div>`;
   $('#traineeComments').addEventListener('input',e=>SYN.traineeComments=e.target.value);
 }
 function renderS4(){
@@ -1536,48 +1533,6 @@ renderAsrList(); renderAsr(); buildSyn();
     if(CTX.id && !['s4'].includes(CTX.step)===false){ const b=document.createElement('div'); b.className='banner bl'; b.innerHTML='<div style="flex:1"><h3>Worked example</h3><p>The appeal and Board of Education screens show one illustrative case; they are not specific to this trainee.</p></div>'; document.querySelector('#screen-s4').prepend(b); }
   }
   if(CTX.step && /^s[1-4]$/.test(CTX.step)) go(CTX.step);
-})();
-</script>
-<script>
-/* ===== learning goals review (advisory; does not change the 15-item College grading) ===== */
-(function(){
-  var ID='2022-019', S=window.GoalsStore, E=S.esc;
-  var OPTS=[['ACHIEVED','Achieved'],['PARTLY','Partly'],['NOT','Not achieved']];
-  function card(){ return document.getElementById('glCard'); }
-  function render(){
-    var c=card(); if(!c) return;
-    var s=S.get(ID)||{status:'NOT_SET',goals:[]};
-    var head='<div class="card-h"><div><div class="eyebrow">Set at the start of the cycle &middot; '+E(S.CYCLE)+'</div><div class="h2">Learning goals</div>'+
-      '<div class="meta" style="margin-top:4px">Judge each goal on top of the College items below. This is advisory and does not change the College grade.</div></div>';
-    if(s.status!=='SIGNED'){
-      c.innerHTML=head+'<span class="pill warn">'+E(S.LABEL[s.status])+'</span></div>'+
-        '<p class="meta">Goals appear here once the SOT has signed them off. Nothing has been locked for this trainee yet.</p>'+
-        '<div style="margin-top:10px"><button class="btn sec" id="glDemo">Load sample signed goals (demo)</button></div>';
-      document.getElementById('glDemo').onclick=function(){ S.demoSign(ID,'HAT-2'); render(); };
-      return;
-    }
-    var n={ACHIEVED:0,PARTLY:0,NOT:0}, unmarked=0;
-    s.goals.forEach(function(g){ var o=(s.outcomes||{})[g.id]; if(o&&o.result) n[o.result]++; else unmarked++; });
-    var pill='<span class="pill '+(unmarked?'warn':'ok')+'">'+n.ACHIEVED+' achieved &middot; '+n.PARTLY+' partly &middot; '+n.NOT+' not'+(unmarked?' &middot; '+unmarked+' to mark':'')+'</span>';
-    var rows=s.goals.map(function(g,i){
-      var o=(s.outcomes||{})[g.id]||{}, r=(s.reflections||{})[g.id];
-      return '<div style="padding:12px 0;border-top:1px solid var(--border-sub)">'+
-        '<div style="font-weight:650;font-size:13.5px">'+(i+1)+'. '+E(g.text)+'</div>'+
-        '<div class="meta"><b>Success:</b> '+E(g.success)+' &middot; <b>Evidence:</b> '+E(g.evidence||'\u2014')+'</div>'+
-        '<div class="meta" style="margin-top:6px"><b>Trainee notes:</b> '+(r?E(r):'<i>none added yet</i>')+'</div>'+
-        '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" role="group" aria-label="Outcome for goal '+(i+1)+'">'+
-        OPTS.map(function(p){ return '<button class="btn '+(o.result===p[0]?'pri':'sec')+'" aria-pressed="'+(o.result===p[0])+'" data-g="'+g.id+'" data-r="'+p[0]+'">'+p[1]+'</button>'; }).join('')+'</div>'+
-        '<input data-c="'+g.id+'" value="'+E(o.comment||'')+'" placeholder="Comment for the trainee (optional)" style="width:100%;margin-top:8px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font:inherit;font-size:12.5px;background:var(--surface);color:var(--ink)"></div>';
-    }).join('');
-    c.innerHTML=head+pill+'</div>'+rows+
-      '<div class="meta" style="margin-top:8px">Signed '+E(S.fmt(s.signedAt))+' by '+E(s.signedBy)+' &middot; version '+s.version+' &middot; locked</div>';
-    c.querySelectorAll('button[data-g]').forEach(function(b){ b.onclick=function(){
-      S.update(ID,function(x){ x.outcomes=x.outcomes||{}; var o=x.outcomes[b.dataset.g]=x.outcomes[b.dataset.g]||{}; o.result=(o.result===b.dataset.r)?null:b.dataset.r; }); render(); }; });
-    c.querySelectorAll('input[data-c]').forEach(function(i){ i.onchange=function(){
-      S.update(ID,function(x){ x.outcomes=x.outcomes||{}; var o=x.outcomes[i.dataset.c]=x.outcomes[i.dataset.c]||{}; o.comment=i.value; }); }; });
-  }
-  window.addEventListener('storage',function(e){ if(e.key===S.KEY) render(); });
-  render();
 })();
 </script>
 </body>

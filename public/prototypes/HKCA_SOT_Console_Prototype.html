@@ -746,7 +746,7 @@
       <button class="tab" data-tab="logbook" role="tab" id="tabbtn-logbook" aria-controls="tab-logbook" aria-selected="false" tabindex="-1">Logbook Verification <span class="cnt hot">18</span></button>
       <button class="tab" data-tab="rotations" role="tab" id="tabbtn-rotations" aria-controls="tab-rotations" aria-selected="false" tabindex="-1">Rotations <span class="cnt hot" id="rotBadge">2</span></button>
       <button class="tab" data-tab="itas" role="tab" id="tabbtn-itas" aria-controls="tab-itas" aria-selected="false" tabindex="-1">ITAs <span class="cnt hot" id="itaBadge">4</span></button>
-      <button class="tab" data-tab="goals" role="tab" id="tabbtn-goals" aria-controls="tab-goals" aria-selected="false" tabindex="-1">Learning goals <span class="cnt hot" id="goalsCnt">0</span></button>
+      <button class="tab" data-tab="goals" role="tab" id="tabbtn-goals" aria-controls="tab-goals" aria-selected="false" tabindex="-1">Learning plans <span class="cnt hot" id="goalsCnt">0</span></button>
       <button class="tab" data-tab="review" role="tab" id="tabbtn-review" aria-controls="tab-review" aria-selected="false" tabindex="-1">Progression Risk <span class="cnt crit">5</span></button>
     </nav>
   </div>
@@ -776,7 +776,7 @@
         <div class="kpis" id="kpis"></div>
         <div class="hm-two">
           <button class="card card-pad hm-cardbtn" id="ownCard" onclick="go('itas')" aria-label="Open ITAs"></button>
-          <button class="card card-pad hm-cardbtn" id="goalsCard" onclick="go('goals')" aria-label="Open learning goals"></button>
+          <button class="card card-pad hm-cardbtn" id="goalsCard" onclick="go('goals')" aria-label="Open learning plans"></button>
         </div>
         <div class="card" id="attn"></div>
       </div>
@@ -1025,23 +1025,33 @@
     <div class="card card-pad mb">
       <div class="card-h" style="margin-bottom:12px">
         <div>
-          <div class="eyebrow">ITA cycle &middot; Jul &ndash; Dec 2026</div>
-          <div class="h2">Learning goals</div>
+          <div class="eyebrow" id="plansEyebrow"></div>
+          <div class="h2">Learning plans</div>
           <div class="meta" id="goalsSub" style="margin-top:2px"></div>
         </div>
-        <div class="btn-row"><button class="btn sec sm" onclick="goalsReset()" title="Restore the sample learning-goal data shared by the prototypes">Reset demo data</button></div>
+        <div class="btn-row">
+          <label class="meta" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="planDemoRev" onchange="planDemoReview(this.checked)"> Demo: show the review window (3 Dec)</label>
+          <button class="btn sec sm" onclick="goalsReset()" title="Restore the sample learning-plan data shared by the prototypes">Reset demo data</button>
+        </div>
+      </div>
+      <div class="ita-bar" style="margin-bottom:10px">
+        <div class="seg" id="planTypeSeg" role="group" aria-label="Plan type">
+          <button type="button" data-t="SIX_MONTH" onclick="planSetType('SIX_MONTH')">6-month goals</button>
+          <button type="button" data-t="PF_YEAR" onclick="planSetType('PF_YEAR')">PF year plans</button>
+        </div>
+        <div class="seg" id="planScopeSeg" role="group" aria-label="Whose trainees">
+          <button type="button" data-s="mine" onclick="planSetScope('mine')">My trainees</button>
+          <button type="button" data-s="all" onclick="planSetScope('all')">All trainees</button>
+        </div>
       </div>
       <div class="lb-tabs" id="goalsTabs" role="tablist"></div>
       <div class="tbl-scroll">
         <table>
-          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
+          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th>Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
           <tbody id="goalsBody"></tbody>
         </table>
       </div>
-      <p class="note">
-        At the start of each ITA cycle the trainee sets 2&ndash;5 goals. The SOT signs them off, which locks them. At the ITA they appear beside the College's
-        15 items so each goal can be judged achieved, partly or not. Changes after signing need the SOT's approval. Goals are advisory and do not change the College grade.
-      </p>
+      <p class="note" id="planNote"></p>
     </div>
   </section>
 
@@ -1474,7 +1484,7 @@ Thank you.</textarea>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="hkca-goals-store.js"></script>
+<script src="hkca-plans-store.js"></script>
 <script>
 /* ---------------- roster data ---------------- */
 const ROSTER = [
@@ -1651,7 +1661,7 @@ const ASSIGN_SEED = {
   '2023-022':'raymond','2025-003':'raymond','2023-009':'raymond','2023-018':'raymond',
   '2024-019':'tina','2022-031':'tina','2025-012':'tina'
 };
-const ASOT_UNASSIGNED = new Set(['2023-022','2025-003','2023-009','2024-025','2024-019']);   // ITA sign-off ASOT is assigned late in the cycle
+const ASOT_UNASSIGNED = new Set(['2023-009','2025-012']);   // the Assigned SOT is set at the start of the period; these two joined late and are still unassigned
 ROSTER.forEach(t=>{
   t.verifier = t.id==='2024-033' ? null : (ASSIGN_SEED[t.id] || 'winnie');   // logbook verifier: ongoing
   t.asot = ASOT_UNASSIGNED.has(t.id) ? null : (ASSIGN_SEED[t.id] || 'winnie'); // ITA sign-off ASOT: per cycle
@@ -1675,7 +1685,7 @@ ptrainees().forEach(t=>{
 const TODAY = new Date(2026,9,17);
 const DAY = 864e5;
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const RULES = {ita:30, logbook:1, handshake:5, signature:14, asot:30, goalsDue:14, goalsSign:7, minForms:3};
+const RULES = {ita:30, logbook:1, handshake:5, signature:14, asot:14, goalsDue:14, goalsSign:7, minForms:3, reviewLead:28};
 const RULE_DEF = {
   ita:       {label:'Chase trainers for ITA input', suffix:'before the rotation ends', opts:[[14,'2 weeks'],[30,'1 month'],[60,'2 months'],[90,'3 months']]},
   logbook:   {label:'Monthly logbook reminder', suffix:'cumulative entries awaiting approval', opts:[[1,'On, 1st of the month'],[0,'Off']]},
@@ -1683,9 +1693,10 @@ const RULE_DEF = {
   signature: {label:'Trainee ITA signature pending for', suffix:'', opts:[[7,'7 days'],[14,'14 days'],[21,'21 days']]}
 };
 RULE_DEF.minForms = {label:'Minimum trainer ITA forms per trainee', suffix:'(voluntary, a signal only)', opts:[[2,'2'],[3,'3']]};
-RULE_DEF.asot = {label:'ITA: no SOT assigned yet', suffix:'before the cycle ends', opts:[[14,'2 weeks'],[30,'1 month'],[45,'6 weeks']]};
-RULE_DEF.goalsDue = {label:'Learning goals not submitted after', suffix:'', opts:[[7,'1 week'],[14,'2 weeks'],[21,'3 weeks']]};
-RULE_DEF.goalsSign = {label:'Goals awaiting your sign-off for', suffix:'', opts:[[3,'3 days'],[7,'7 days'],[14,'14 days']]};
+RULE_DEF.asot = {label:'No SOT assigned after the period starts', suffix:'', opts:[[7,'1 week'],[14,'2 weeks'],[30,'1 month']]};
+RULE_DEF.goalsDue = {label:'Learning plan not submitted after', suffix:'', opts:[[7,'1 week'],[14,'2 weeks'],[21,'3 weeks']]};
+RULE_DEF.goalsSign = {label:'Plans or reviews awaiting you for', suffix:'', opts:[[3,'3 days'],[7,'7 days'],[14,'14 days']]};
+RULE_DEF.reviewLead = {label:'Plan review opens', suffix:'before the period ends', opts:[[14,'2 weeks'],[28,'4 weeks'],[42,'6 weeks']]};
 const ACTIVITY = [
   {t:'14 Oct 2026 16:40', a:'Dr. Raymond Ng (ASOT)', x:'Signed off ITA &mdash; Lam, David &middot; Jan&ndash;Jun 2026 &middot; final'},
   {t:'09 Oct 2026 11:05', a:'Dr. Winnie Ho (ASOT)',  x:'Signed off ITA &mdash; Chow, Ian &middot; Jan&ndash;Jun 2026 &middot; final'},
@@ -1781,7 +1792,7 @@ const COLS = [
   {k:'msf',label:'MSF'},
   {k:'courses',label:'Courses',min:118},
   {k:'project',label:'Formal Project',min:140},
-  {k:'goals',label:'Learning goals',min:150},
+  {k:'goals',label:'6-month goals',min:150},
   {k:'ita',label:'Last ITA'},
   {k:'act',label:'Action',fixed:true,nosort:true}
 ];
@@ -1811,7 +1822,7 @@ function sortVal(t,k){
     case 'stage':   return (STAGE_ORDER[stagePrefix(t.stage)]??9)*10 + (parseInt(t.stage.split('-')[1])||0);
     case 'rot':     return ({in:0,own:1,out:2})[t.rot.kind] ?? 1;
     case 'asot':    return t.asot ? asotById(t.asot).name : 'zzz';
-    case 'goals':   return ['NOT_SET','DRAFT','CHANGES_REQUESTED','SUBMITTED','CHANGE_PROPOSED','SIGNED'].indexOf((GoalsStore.get(t.id)||{status:'NOT_SET'}).status);
+    case 'goals':   return ['NOT_SET','DRAFT','CHANGES_REQUESTED','SUBMITTED','CHANGE_PROPOSED','SIGNED','REVIEW_OPEN','REVIEW_SUBMITTED','REVIEWED'].indexOf(PlansStore.eff(PlansStore.get(t.id,'SIX_MONTH')||PlansStore.blank('SIX_MONTH'), RULES.reviewLead));
     case 'acc':     return t.months.cur;
     case 'cf': case 'sm': case 'vop': case 'msf': return t[k].n / t[k].t;
     case 'courses': return t.courses.done / t.courses.total;
@@ -1877,7 +1888,7 @@ function cellFor(k,t){
     case 'msf':     return `<td>${meter(t.msf.n,t.msf.t, t.msf.n>=t.msf.t?'':'a')}</td>`;
     case 'courses': return `<td>${coursesPill(t.courses)}</td>`;
     case 'project': return `<td>${projectPill(t.project)}</td>`;
-    case 'goals':   { const gs = (GoalsStore.get(t.id)||{status:'NOT_SET'}).status; return `<td><span class="pill ${GoalsStore.TONE[gs]}">${GoalsStore.LABEL[gs]}</span></td>`; }
+    case 'goals':   { const gs = PlansStore.eff(PlansStore.get(t.id,'SIX_MONTH')||PlansStore.blank('SIX_MONTH'), RULES.reviewLead); return `<td><span class="pill ${PlansStore.TONE[gs]}">${PlansStore.label('SIX_MONTH',gs)}</span></td>`; }
     case 'ita':     return `<td>${itaListPill(t.itaStatus, t.ita)}</td>`;
     case 'act':     return `<td><button class="btn sec sm" onclick="openDrawer('${t.name}','${t.id}','${t.stage}','${t.parent||'Prince of Wales Hospital'}')">View</button></td>`;
   }
@@ -2012,7 +2023,7 @@ function renderLog(){
 
 /* ---------------- roles: logbook verifier (ongoing) and ITA sign-off ASOT (per cycle) ---------------- */
 const activeAsots = () => ASOTS.filter(a=>a.active!==false);
-const ROLE_LABEL = {asot:'ITA sign-off', verifier:'logbook verification'};
+const ROLE_LABEL = {asot:'Assigned SOT', verifier:'logbook verification'};
 const nameOf = id => id ? asotById(id).name : 'Unassigned';
 function setAsot(ids, asotId, field){
   field = field || 'asot'; asotId = asotId || null;
@@ -2098,7 +2109,7 @@ function itaOverviewHtml(){
   const rows = itaRows(), n = rows.length || 1, sot = role!=='asst', min = RULES.minForms;
   const c = k => k==='waiting' ? rows.filter(t=>['none','partial'].includes(itaState(t))).length : k==='follow' ? rows.filter(t=>FOLLOW.includes(itaState(t))).length : rows.filter(t=>itaState(t)===k).length;
   const noSot = ptrainees().filter(t=>!t.asot).length;
-  const alert = itaScope==='team' && noSot ? `<div class="ita-alert"><span><b>${noSot} trainee${noSot===1?' has':'s have'} no SOT assigned yet.</b> <span class="meta">Nobody is set to run ${noSot===1?'their':'their'} face-to-face.</span></span>${sot ? `<button type="button" class="btn sec sm" onclick="itaOpen('noasot')">Assign SOT</button>` : '<span class="meta">The SOT assigns them.</span>'}</div>` : '';
+  const alert = itaScope==='team' && noSot ? `<div class="ita-alert"><span><b>${noSot} trainee${noSot===1?' has':'s have'} no SOT assigned yet.</b> <span class="meta">Nobody can sign ${noSot===1?'their':'their'} learning plan or run ${noSot===1?'their':'their'} ITA.</span></span>${sot ? `<button type="button" class="btn sec sm" onclick="itaOpen('noasot')">Assign SOT</button>` : '<span class="meta">The SOT assigns them.</span>'}</div>` : '';
   if(!ROUND.open) return alert + `<div class="ita-panel">
       <div class="eyebrow">ITA ${ROUND.cycle}</div>
       <div class="h2" style="margin:6px 0 4px">Not initiated yet</div>
@@ -2261,7 +2272,7 @@ function assignRender(){
     const mine = all.filter(t=>t.asot===a.id), sg = mine.filter(t=>itaState(t)==='signed').length;
     return `<button type="button" role="radio" aria-checked="${a.id===asWho}" class="as-person ${a.id===asWho?'on':''}" style="--pc:${sotCol(a.id)}" onclick="asPick('${a.id}')"><b>${sotAv(a.id)}${a.name}${a.id===mineId()?' (you)':''}</b><span>${a.tag} &middot; ${mine.length} ITA${mine.length===1?'':'s'} &middot; ${sg} signed</span></button>`;
   }).join('') + `<div class="as-person none" style="cursor:default"><b><span class="unas"><i></i>Not assigned</span></b><span>${all.filter(t=>!t.asot).length} trainee${all.filter(t=>!t.asot).length===1?'':'s'} still to be assigned</span></div>`;
-  document.getElementById('asHead').innerHTML = `<div class="h3">Trainees for ${who.name}</div><div class="meta" style="margin-top:2px">Ticked trainees will be signed off by ${sotName(asWho)}. Signed-off ITAs are locked.</div>`;
+  document.getElementById('asHead').innerHTML = `<div class="h3">Trainees for ${who.name}</div><div class="meta" style="margin-top:2px">Ticked trainees will be assigned to ${sotName(asWho)}, who signs their learning plans and runs their ITA. Assign at the start of the period; you can transfer later. Signed-off ITAs and signed plans keep their original signer.</div>`;
   document.getElementById('asChips').innerHTML = [['all','All'],['unassigned','No SOT assigned yet'],['this','Already with '+sotName(asWho).split(' ')[0]]].map(([k,l])=>
     `<button type="button" class="chip ${asFilter===k?'on':''}" onclick="asFilter='${k}';assignRender()">${l}</button>`).join('') +
     `<button type="button" class="chip" onclick="asTickShown()">Tick all shown</button>`;
@@ -2315,7 +2326,7 @@ function hoRender(){
   let h = `<div class="field"><div class="lbl">Handing over from</div>
     <select class="ctl" style="width:100%" onchange="ho.out=this.value;ho.inc='';ho.sel=new Set(hoHeld().map(t=>t.id));hoRender()">
       ${ASOTS.map(a=>opt(a.id,`${a.name} (${a.tag})${a.active===false?' \u2013 inactive':''}`,ho.out)).join('')}</select>
-    <p class="note">${o.name} verifies logbooks for <b>${vN}</b> trainee${vN===1?'':'s'}, signs off ITAs for <b>${sN}</b>, and has <b>${pend}</b> logbook entr${pend===1?'y':'ies'} waiting. Pending items move with the role. Anything already signed or verified stays under the original name.</p></div>`;
+    <p class="note">${o.name} verifies logbooks for <b>${vN}</b> trainee${vN===1?'':'s'}, is the Assigned SOT for <b>${sN}</b>, and has <b>${pend}</b> logbook entr${pend===1?'y':'ies'} waiting. Pending items (including learning plans waiting for sign-off) move with the role. Anything already signed or verified stays under the original name.</p></div>`;
   if(isSot){
     h += `<div class="banner" style="margin-bottom:0"><b>The SOT role is not transferred here.</b> The College admin appoints an acting or replacement SOT. Until then, ASOT assignments stay as they are. You can notify the College admin below.</div>`;
     m.innerHTML = h; hoRefreshOk(); return;
@@ -2326,7 +2337,7 @@ function hoRender(){
       ${opt('__new','Add a new ASOT\u2026',ho.inc)}</select>
     ${ho.inc==='__new' ? `<input class="ctl" style="width:100%;margin-top:8px" placeholder="Full name, e.g. Dr. Mary Chan" value="${ho.newName}" oninput="ho.newName=this.value;hoRefreshOk()"><p class="note">The new ASOT is invited and becomes active when they accept. You can assign trainees to them now.</p>` : ''}</div>
     <div class="field"><div class="lbl">What to hand over</div>
-      ${[['both','Both roles: logbook verifier and ITA sign-off'],['verifier','Logbook verifier only'],['asot','ITA sign-off only']].map(([v,l])=>
+      ${[['both','Both roles: logbook verifier and Assigned SOT'],['verifier','Logbook verifier only'],['asot','Assigned SOT only (learning plans and ITA)']].map(([v,l])=>
         `<label class="radio"><input type="radio" name="hoScope" ${ho.scope===v?'checked':''} onchange="ho.scope='${v}';ho.sel=new Set(hoHeld().map(t=>t.id));hoRender()"><div>${l}</div></label>`).join('')}</div>
     <div class="field"><div class="lbl">Trainees (${ho.sel.size} of ${hoHeld().length})</div>
       <div class="mlist">${hoHeld().map(t=>`<label><input type="checkbox" ${ho.sel.has(t.id)?'checked':''} onchange="this.checked?ho.sel.add('${t.id}'):ho.sel.delete('${t.id}');hoRefreshOk()"><span>${lastFirst(t.name)} <span class="meta">${t.stage}</span></span></label>`).join('') || '<div class="prev-row">Nothing to hand over for this choice.</div>'}</div></div>
@@ -2505,8 +2516,8 @@ const ICON = {
   risk:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>'
 };
 const svg = k => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
-const REM_TYPE = {'ita-input':'forms','logbook':'logbook','handshake':'rot','signature':'ita','pip':'risk','goals-late':'goals','goals-sign':'goals','asot-unassigned':'ita'};
-const TYPE_LABEL = {ita:'ITA',logbook:'Logbook',goals:'Learning goals',rot:'Rotations',forms:'Trainer input',risk:'Progression risk'};
+const REM_TYPE = {'ita-input':'forms','logbook':'logbook','handshake':'rot','signature':'ita','pip':'risk','goals-late':'goals','goals-sign':'goals','goals-review':'goals','goals-review-open':'goals','asot-unassigned':'ita'};
+const TYPE_LABEL = {ita:'ITA',logbook:'Logbook',goals:'Learning plans',rot:'Rotations',forms:'Trainer input',risk:'Progression risk'};
 function logbookOldest(){
   const asst = role==='asst', ds = LB.filter(e=>e.state!=='verified' && (!asst || trOf(e).verifier===mineId())).map(e=>{
     const p = e.date.split(' '); return Math.round((TODAY - new Date(2026, MON.indexOf(p[1]), +p[0]))/DAY); });
@@ -2518,11 +2529,9 @@ function attentionRows(){
   const asst = role==='asst', rows = [];
   const mine = t => !asst || t.verifier===mineId();
   riskPeople().filter(mine).sort((a,b)=>(a.health==='bad'?0:1)-(b.health==='bad'?0:1)).slice(0,2).forEach(t=>rows.push({t, k:'risk', d:plain(t.ita.txt), tab:'review'}));
-  if(!asst){
-    goalPeople().map(t=>({t,s:gset(t)})).filter(x=>['SUBMITTED','CHANGE_PROPOSED'].includes(x.s.status))
-      .sort((a,b)=>(a.s.submittedAt||'9').localeCompare(b.s.submittedAt||'9')).slice(0,1)
-      .forEach(x=>rows.push({t:x.t, k:'goals', d:`Waiting for your sign-off since ${GoalsStore.fmt(x.s.submittedAt)}`, tab:'goals'}));
-  }
+  planRows().filter(x=>['SUBMITTED','CHANGE_PROPOSED','REVIEW_SUBMITTED'].includes(x.s) || (x.s==='AWAITING_COS' && pCosCan()))
+    .sort((a,b)=>(a.p.submittedAt||'9').localeCompare(b.p.submittedAt||'9')).slice(0,1)
+    .forEach(x=>rows.push({t:x.t, k:'goals', d:`${x.type==='PF_YEAR'?'PF year plan':'6-month goals'}: waiting for your action`, tab:'goals'}));
   const pend = {}; LB.filter(e=>e.state!=='verified').forEach(e=>{ const t=trOf(e); if(mine(t)){ pend[t.id]=(pend[t.id]||0)+1; } });
   Object.keys(pend).sort((a,b)=>pend[b]-pend[a]).slice(0,1).forEach(id=>rows.push({t:ROSTER.find(x=>x.id===id), k:'logbook', d:`${pend[id]} logbook entries awaiting approval`, tab:'logbook'}));
   thinInput().filter(mine).sort((a,b)=>itain(a).got-itain(b).got).slice(0,1).forEach(t=>{ const x=itain(t);
@@ -2537,7 +2546,7 @@ function renderHome(){
   const kp = [
     {k:'ita', tab:'itas', label:'ITAs for you to sign off', n:myItaToSign(), sub:`${myItaHeld().filter(itaSigned).length} of ${myItaHeld().length} assigned to you signed so far`},
     {k:'logbook', tab:'logbook', label:'Logbook to verify', n:lbPending(), sub:`oldest waiting ${logbookOldest()} days`},
-    asst ? null : {k:'goals', tab:'goals', label:'Learning goals to sign off', n:goalsAction(), sub:`${ppl.filter(t=>['NOT_SET','DRAFT','CHANGES_REQUESTED'].includes(gset(t).status)).length} not yet submitted`},
+    {k:'goals', tab:'goals', label:'Learning plans for your action', n:goalsAction(), sub:`${planRows().filter(x=>['NOT_SET','DRAFT','CHANGES_REQUESTED'].includes(x.s)).length} not yet submitted by trainees`},
     {k:'rot', tab:'rotations', label:'Rotations to confirm', n:rotToConfirm(), sub:`${rotWaiting()} waiting on other SOTs`},
     {k:'forms', tab:'itas', label:'Trainer ITA forms received', n:`${meetsN}<small> of ${n}</small>`, sub:`trainees have ${RULES.minForms}+ trainer forms` + (ROUND.open ? '' : ' &middot; ITA not initiated yet')},
     {k:'risk', tab:'review', label:'Trainees flagged', n:FLAGGED, sub:'on progression risk'}
@@ -2552,14 +2561,16 @@ function renderHome(){
   const pal = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)'];
   const R = 40, C = 2*Math.PI*R; let off = 0;
   const arcs = holders.map((h,i)=>{ const len = h.v/n*C, s = `<circle r="${R}" cx="60" cy="60" fill="none" stroke="${h.un?'var(--c0)':pal[i%pal.length]}" stroke-width="16" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 60 60)"/>`; off += len; h.col = h.un?'var(--c0)':pal[i%pal.length]; return s; }).join('');
-  document.getElementById('ownCard').innerHTML = `<div class="eyebrow">ITAs assigned to the SOT team</div><div class="hm-donut"><svg viewBox="0 0 120 120" width="132" height="132" role="img" aria-label="ITAs assigned to the SOT team">${arcs}<text x="60" y="58" text-anchor="middle" class="dn">${n}</text><text x="60" y="73" text-anchor="middle" class="dl">trainees</text></svg>
+  document.getElementById('ownCard').innerHTML = `<div class="eyebrow">Trainees by Assigned SOT</div><div class="hm-donut"><svg viewBox="0 0 120 120" width="132" height="132" role="img" aria-label="Trainees by Assigned SOT">${arcs}<text x="60" y="58" text-anchor="middle" class="dn">${n}</text><text x="60" y="73" text-anchor="middle" class="dl">trainees</text></svg>
     <ul class="hm-leg">${holders.map(h=>`<li><i style="background:${h.col}"></i><span>${h.l}</span><b>${h.v}</b></li>`).join('')}</ul></div>`;
 
-  /* learning goals status */
-  const gsets = ppl.map(t=>gset(t).status), gc = s=>gsets.filter(x=>s.includes(x)).length;
-  const G = [['Signed',gc(['SIGNED']),'var(--c3)'],['Awaiting your sign-off',gc(['SUBMITTED','CHANGE_PROPOSED']),'var(--c1)'],['With trainee',gc(['DRAFT','CHANGES_REQUESTED']),'var(--c4)'],['Not started',gc(['NOT_SET']),'var(--c0)']];
-  document.getElementById('goalsCard').innerHTML = `<div class="eyebrow">Learning goals &middot; ${n} trainees</div><div class="hm-stack">${G.map(g=>`<i style="flex:${g[1]};background:${g[2]}"></i>`).join('')}</div>
-    <ul class="hm-list">${G.map(g=>`<li><i style="background:${g[2]}"></i><span>${g[0]}</span><b>${g[1]}</b><em>${Math.round(g[1]/n*100)}%</em></li>`).join('')}</ul>`;
+  /* learning plans status (6-month goals; PF plans summarised below) */
+  const g6 = ppl.map(t=>pst(t,'SIX_MONTH')), gc = s=>g6.filter(x=>s.includes(x)).length;
+  const G = [['In force or reviewed',gc(['SIGNED','REVIEW_OPEN','REVIEW_SUBMITTED','REVIEWED']),'var(--c3)'],['Awaiting sign-off',gc(['SUBMITTED','CHANGE_PROPOSED']),'var(--c1)'],['With trainee',gc(['DRAFT','CHANGES_REQUESTED']),'var(--c4)'],['Not started',gc(['NOT_SET']),'var(--c0)']];
+  const pfp = pbase('PF_YEAR'), pfIn = pfp.filter(t=>['SIGNED','REVIEW_OPEN','REVIEW_SUBMITTED','REVIEWED'].includes(pst(t,'PF_YEAR'))).length;
+  document.getElementById('goalsCard').innerHTML = `<div class="eyebrow">6-month goals &middot; ${n} trainees</div><div class="hm-stack">${G.map(g=>`<i style="flex:${g[1]};background:${g[2]}"></i>`).join('')}</div>
+    <ul class="hm-list">${G.map(g=>`<li><i style="background:${g[2]}"></i><span>${g[0]}</span><b>${g[1]}</b><em>${Math.round(g[1]/n*100)}%</em></li>`).join('')}</ul>
+    <div class="meta" style="margin-top:8px">PF year plans approved: <b>${pfIn} of ${pfp.length}</b></div>`;
 
   /* needs attention */
   const rows = attentionRows();
@@ -2571,10 +2582,10 @@ function renderHome(){
 
   /* right rail: this cycle */
   const lbv = LB.filter(e=>e.state==='verified').length;
-  const gs = ppl.filter(t=>gset(t).status==='SIGNED').length;
+  const gs = ppl.filter(t=>['SIGNED','REVIEW_OPEN','REVIEW_SUBMITTED','REVIEWED'].includes(pst(t,'SIX_MONTH'))).length;
   const row = (tab,l,a,b,c,note)=>`<button class="pg-row" onclick="go('${tab}')"><div class="pg-l"><span>${l}</span><b>${a} of ${b}</b></div><div class="pg"><i class="${c||''}" style="width:${b?Math.round(a/b*100):0}%"></i></div>${note?`<div class="pg-n">${note}</div>`:''}</button>`;
   document.getElementById('cycleRows').innerHTML =
-    row('itas','ITAs signed off',ppl.filter(itaSigned).length,n,'b') + row('goals','Learning goals signed',gs,n,'p') + row('logbook','Logbook entries verified',lbv,LB.length);
+    row('itas','ITAs signed off',ppl.filter(itaSigned).length,n,'b') + row('goals','6-month goals signed',gs,n,'p') + row('logbook','Logbook entries verified',lbv,LB.length);
   const left = Math.round((new Date(2026,11,31)-TODAY)/DAY);
   document.getElementById('cycleFoot').textContent = `Cycle ends 31 Dec, in ${left} days.`;
   const by = {BAT:0,HAT:0,PFY:0}; ROSTER.forEach(t=>{ const k = String(t.stage).slice(0,3); if(by[k]!==undefined) by[k]++; });
@@ -3411,112 +3422,181 @@ document.addEventListener('keydown', ev=>{
   else if(ev.key==='Enter' && lbActive && ev.target===document.body){ lbPanelOpen(lbActive); }
 });
 
-/* ================= learning goals (SOT side) ================= */
+/* ================= learning plans (SOT side): 6-month goals + PF year plan ================= */
 const TODAY_ISO = '2026-10-17';
 function iso2d(s){ const p = s.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
-function goalPeople(){ return ptrainees().filter(t=> role!=='asst' || t.verifier===mineId()); }
-function gset(t){ return GoalsStore.get(t.id) || {status:'NOT_SET', goals:[], comments:[]}; }
-function goalsAction(){ return goalPeople().filter(t=>['SUBMITTED','CHANGE_PROPOSED'].includes(gset(t).status)).length; }
-function goalPill(st){ const tone = GoalsStore.TONE[st]; return `<span class="pill ${tone}">${GoalsStore.LABEL[st]}</span>`; }
-const goalsUI = {tab:'action'};
-const G_TABS = [['action','Needs your sign-off',['SUBMITTED','CHANGE_PROPOSED']],['waiting','Waiting on trainee',['NOT_SET','DRAFT','CHANGES_REQUESTED']],['signed','Signed',['SIGNED']]];
-function goalDetail(t,s){
-  switch(s.status){
-    case 'SUBMITTED': return `Submitted ${GoalsStore.fmt(s.submittedAt)} &middot; ${s.goals.length} goals`;
-    case 'CHANGE_PROPOSED': return `Change proposed ${GoalsStore.fmt(s.proposal.at)} &middot; ${s.proposal.reason}`;
-    case 'CHANGES_REQUESTED': return `You asked for changes${s.comments.length?': '+s.comments[s.comments.length-1].text:''}`;
-    case 'DRAFT': return `Draft saved &middot; not submitted`;
-    case 'NOT_SET': { const due = new Date(iso2d(s.notifiedAt||'2026-07-01').getTime()+RULES.goalsDue*DAY);
-      return `Notified ${GoalsStore.fmt(s.notifiedAt||'2026-07-01')} &middot; due ${due.getDate()} ${MON[due.getMonth()]}`; }
-    case 'SIGNED': return `Signed ${GoalsStore.fmt(s.signedAt)} by ${s.signedBy.replace('Dr. ','')} &middot; version ${s.version}`;
+const planUI = {type:'SIX_MONTH', tab:'action', scope:'all'};
+const PLAN_TYPES = [['SIX_MONTH','6-month goals'],['PF_YEAR','PF year plans']];
+function pget(t,type){ return PlansStore.get(t.id,type) || PlansStore.blank(type); }
+function pst(t,type){ return PlansStore.eff(pget(t,type), RULES.reviewLead); }
+function pbase(type){ return type==='PF_YEAR' ? ptrainees().filter(t=>String(t.stage).startsWith('PFY')) : ptrainees(); }
+function pscope(type, scope){ return pbase(type).filter(t=> scope==='all' || t.asot===mineId()); }
+/* who may act: the Assigned SOT, or the SOT for any trainee who has one. Chief of Service approval (PF plan, second step) is the SOT login in this demo. */
+function pCanAct(t){ return !!t.asot && (role==='sot' || t.asot===mineId()); }
+function pCosCan(){ return role==='sot'; }
+function pActionSet(type){ return ['SUBMITTED','CHANGE_PROPOSED','REVIEW_SUBMITTED'].concat(type==='PF_YEAR' && pCosCan() ? ['AWAITING_COS'] : []); }
+function pTabs(type){
+  const act = pActionSet(type);
+  return [['action','Needs your action',act],['waiting','Waiting on trainee',['NOT_SET','DRAFT','CHANGES_REQUESTED','REVIEW_OPEN']],
+          ['signed','In force',['SIGNED','AWAITING_COS'].filter(x=>!act.includes(x))],['reviewed','Reviewed',['REVIEWED']]];
+}
+function pCounts(type, scope){
+  const ppl = pscope(type, scope), out = {};
+  pTabs(type).forEach(([k,,st])=>out[k] = ppl.filter(t=>st.includes(pst(t,type))).length);
+  return out;
+}
+function goalsAction(){ return PLAN_TYPES.reduce((a,[ty])=>a+pCounts(ty, role==='sot'?'all':'mine').action, 0); }
+function goalPill(type,st){ return `<span class="pill ${PlansStore.TONE[st]}">${PlansStore.label(type,st)}</span>`; }
+function pDue(p){ return new Date(iso2d(p.notifiedAt||p.period.start).getTime()+RULES.goalsDue*DAY); }
+function planDetail(t,p,st){
+  const F = PlansStore.fmt, pf = p.type==='PF_YEAR';
+  switch(st){
+    case 'SUBMITTED': return `Submitted ${F(p.submittedAt)} &middot; ${p.goals.length} goals`;
+    case 'CHANGE_PROPOSED': return `Change proposed ${F(p.proposal.at)} &middot; ${PlansStore.esc(p.proposal.reason)}`;
+    case 'CHANGES_REQUESTED': return `Changes requested${p.comments.length?': '+PlansStore.esc(p.comments[p.comments.length-1].text):''}`;
+    case 'DRAFT': return 'Draft saved &middot; not submitted';
+    case 'NOT_SET': { const d = pDue(p); return `Notified ${F(p.notifiedAt||p.period.start)} &middot; due ${d.getDate()} ${MON[d.getMonth()]}`; }
+    case 'AWAITING_COS': return `Signed by ${PlansStore.esc(p.signedBy.replace('Dr. ',''))} ${F(p.signedAt)} &middot; waiting for the Chief of Service`;
+    case 'SIGNED': return `${pf?'Approved':'Signed'} ${F(p.cosAt||p.signedAt)} by ${PlansStore.esc((p.cosBy||p.signedBy).replace('Dr. ',''))} &middot; version ${p.version}`;
+    case 'REVIEW_OPEN': return `Review opened ${F(PlansStore.reviewOpens(p, RULES.reviewLead))} &middot; not sent yet`;
+    case 'REVIEW_SUBMITTED': return `Review sent ${F(p.review.submittedAt)} &middot; waiting for your comment`;
+    case 'REVIEWED': return `Reviewed ${F(p.review.reviewedAt)} by ${PlansStore.esc((p.review.reviewedBy||'').replace('Dr. ',''))}`;
   }
   return '';
 }
+function planSetType(t){ planUI.type = t; planUI.tab = 'action'; renderGoals(); }
+function planSetScope(s){ planUI.scope = s; renderGoals(); }
+function planDemoReview(on){ PlansStore.setDemoReview(on); renderAll(); }
+function planAssign(){ go('itas'); itaOpen('noasot'); }
 function renderGoals(){
   const body = document.getElementById('goalsBody'); if(!body) return;
-  const ppl = goalPeople();
-  const cnt = {}; G_TABS.forEach(([k,,st])=>cnt[k]=ppl.filter(t=>st.includes(gset(t).status)).length);
-  document.getElementById('goalsTabs').innerHTML = G_TABS.map(([k,l])=>`<button class="lb-tab ${goalsUI.tab===k?'on':''}" role="tab" aria-selected="${goalsUI.tab===k}" onclick="goalsUI.tab='${k}';renderGoals()">${l} <span class="cnt ${k==='action'&&cnt[k]?'hot':''}">${cnt[k]}</span></button>`).join('') +
-    '<span class="sp"></span>' + (goalsUI.tab==='waiting' ? `<button class="btn pri sm" ${cnt.waiting?'':'disabled'} onclick="goalsRemindAll()">Remind ${cnt.waiting} trainee${cnt.waiting===1?'':'s'}</button>` : '');
-  const st = G_TABS.find(x=>x[0]===goalsUI.tab)[2];
-  const rows = ppl.filter(t=>st.includes(gset(t).status)).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
-  const asst = role==='asst';
+  const type = planUI.type, pf = type==='PF_YEAR', tabs = pTabs(type);
+  document.querySelectorAll('#planTypeSeg button').forEach(b=>{ const on = b.dataset.t===type; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+  document.querySelectorAll('#planScopeSeg button').forEach(b=>{ const on = b.dataset.s===planUI.scope; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+  const dr = document.getElementById('planDemoRev'); if(dr) dr.checked = PlansStore.demoReview();
+  const ppl = pscope(type, planUI.scope), cnt = pCounts(type, planUI.scope);
+  if(!tabs.find(x=>x[0]===planUI.tab)) planUI.tab = 'action';
+  document.getElementById('plansEyebrow').textContent = (pf ? 'PF year plan \u00b7 ' : '6-month goals \u00b7 ') + PlansStore.PER[type].label;
+  document.getElementById('goalsTabs').innerHTML = tabs.map(([k,l])=>`<button class="lb-tab ${planUI.tab===k?'on':''}" role="tab" aria-selected="${planUI.tab===k}" onclick="planUI.tab='${k}';renderGoals()">${l} <span class="cnt ${k==='action'&&cnt[k]?'hot':''}">${cnt[k]}</span></button>`).join('') +
+    '<span class="sp"></span>' + (planUI.tab==='waiting' && role==='sot' ? `<button class="btn pri sm" ${cnt.waiting?'':'disabled'} onclick="goalsRemindAll()">Remind ${cnt.waiting} trainee${cnt.waiting===1?'':'s'}</button>` : '');
+  const st = tabs.find(x=>x[0]===planUI.tab)[2];
+  const rows = ppl.filter(t=>st.includes(pst(t,type))).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
   body.innerHTML = rows.map(t=>{
-    const s = gset(t);
-    let act = '';
-    if(goalsUI.tab==='action') act = `<button class="btn pri sm" onclick="goalReview('${t.id}')">${asst?'View':'Review'}</button>`;
-    else if(goalsUI.tab==='waiting') act = `<button class="btn sec sm" onclick="goalRemind('${t.id}')">Remind trainee</button>`;
-    else act = `<button class="btn sec sm" onclick="goalReview('${t.id}')">View</button>`;
-    return `<tr><td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td><td>${stagePill(t.stage)}</td>
-      <td>${goalPill(s.status)}</td><td class="meta">${goalDetail(t,s)}</td><td>${act}</td></tr>`;
-  }).join('') || '<tr class="empty-row"><td colspan="5">Nothing here.</td></tr>';
-  document.getElementById('goalsSub').textContent = `${cnt.action} to sign off \u00b7 ${cnt.waiting} waiting on trainees \u00b7 ${cnt.signed} signed`;
-  const badge = document.getElementById('goalsCnt'); if(badge){ badge.textContent = cnt.action; badge.style.display = cnt.action ? '' : 'none'; }
+    const p = pget(t,type), s = PlansStore.eff(p, RULES.reviewLead), can = pCanAct(t);
+    let act;
+    if(planUI.tab==='action') act = !t.asot ? (role==='sot' ? `<button class="btn pri sm" onclick="planAssign()">Assign SOT</button>` : '<span class="meta">No SOT assigned</span>')
+      : `<button class="btn pri sm" onclick="planOpen('${t.id}','${type}')">${(s==='AWAITING_COS' ? pCosCan() : can) ? (s==='AWAITING_COS'?'Approve':'Review') : 'View'}</button>`;
+    else if(planUI.tab==='waiting') act = role==='sot' ? `<button class="btn sec sm" onclick="goalRemind('${t.id}')">Remind trainee</button>` : `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
+    else act = `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
+    return `<tr><td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td><td>${stagePill(t.stage)}</td><td>${sotChip(t.asot)}</td>
+      <td>${goalPill(type,s)}</td><td class="meta">${planDetail(t,p,s)}</td><td>${act}</td></tr>`;
+  }).join('') || `<tr class="empty-row"><td colspan="6">${pf && !ppl.length ? 'No Provisional Fellows in this view.' : 'Nothing here.'}</td></tr>`;
+  document.getElementById('goalsSub').textContent = `${cnt.action} need your action \u00b7 ${cnt.waiting} waiting on trainees \u00b7 ${cnt.signed+cnt.reviewed} in force or reviewed`;
+  document.getElementById('planNote').innerHTML = pf
+    ? 'The PF year plan covers three domains: clinical, management and education. The trainee drafts it within 2 weeks of starting the year. The <b>Assigned SOT</b> signs first, then the <b>Chief of Service</b> approves and it locks. Near the end of the year the trainee reviews it and the SOT comments. The review is a guide and is not graded.'
+    : 'The trainee sets 2&ndash;5 goals within 2 weeks of the period starting, drawn from the curriculum domains or the ITA competencies. The <b>Assigned SOT</b> signs them off, which locks them. Near the end of the period the trainee reviews each goal and the SOT comments. The review is a guide and is not graded. These goals are separate from the ITA.';
+  const badge = document.getElementById('goalsCnt'); const ga = goalsAction(); if(badge){ badge.textContent = ga; badge.style.display = ga ? '' : 'none'; }
 }
-function goalList(goals){
-  return goals.map((g,i)=>`<div style="padding:9px 0;border-bottom:1px solid var(--border-sub)"><div style="font-weight:650;font-size:13px">${i+1}. ${GoalsStore.esc(g.text)}</div>
-    <div class="meta"><b>Success:</b> ${GoalsStore.esc(g.success)}</div><div class="meta"><b>Evidence:</b> ${GoalsStore.esc(g.evidence)}</div></div>`).join('');
+function goalList(goals, type, refl){
+  const E = PlansStore.esc, one = (g,i)=>`<div style="padding:9px 0;border-bottom:1px solid var(--border-sub)">${type!=='PF_YEAR' && g.domain?`<div class="meta" style="margin-bottom:2px"><span class="pill info">${E(PlansStore.domCode(g.domain)?g.domain+' \u00b7 ':'')}${E(PlansStore.domLabel(g.domain))}</span></div>`:''}
+    <div style="font-weight:650;font-size:13px">${i}. ${E(g.text)}</div>
+    <div class="meta"><b>Success:</b> ${E(g.success)}</div><div class="meta"><b>Evidence:</b> ${E(g.evidence||'\u2014')}</div>
+    ${refl && refl[g.id] ? `<div class="meta" style="margin-top:4px"><b>Trainee&rsquo;s reflection:</b> ${E(refl[g.id])}</div>` : ''}</div>`;
+  if(type==='PF_YEAR') return PlansStore.PF_DOMAINS.map(d=>{ let n = 0; const gs = goals.filter(g=>g.domain===d.c);
+    return `<div class="eyebrow" style="margin:10px 0 2px">${d.label}</div>${gs.map(g=>one(g,++n)).join('') || '<div class="meta">No goal under this domain.</div>'}`; }).join('');
+  return goals.map((g,i)=>one(g,i+1)).join('');
 }
-function goalReview(id){
-  const t = ROSTER.find(x=>x.id===id), s = gset(t), asst = role==='asst';
-  const canAct = !asst && (s.status==='SUBMITTED' || s.status==='CHANGE_PROPOSED');
-  let body = '', okLabel = 'Close', ok = ()=>lbModalClose(), extra = '';
-  if(s.status==='CHANGE_PROPOSED'){
-    body = `<p class="meta" style="margin-bottom:10px"><b>Reason:</b> ${GoalsStore.esc(s.proposal.reason)}</p>
-      <div class="grid2"><div><div class="eyebrow" style="margin-bottom:4px">Signed (locked) &middot; v${s.version}</div>${goalList(s.goals)}</div>
-      <div><div class="eyebrow" style="margin-bottom:4px">Proposed</div>${goalList(s.proposal.goals)}</div></div>`;
-    if(canAct){ okLabel = 'Approve change'; ok = ()=>goalDecide(id,'approve'); extra = `<button class="btn sec" onclick="goalDecide('${id}','decline')">Decline change</button>`; }
+function planOpen(id,type){
+  const t = ROSTER.find(x=>x.id===id), p = pget(t,type), s = PlansStore.eff(p, RULES.reviewLead), pf = type==='PF_YEAR', E = PlansStore.esc;
+  const can = pCanAct(t), cos = pCosCan();
+  let body = '', okLabel = 'Close', ok = ()=>lbModalClose(), extra = '', needComment = false, canComment = false;
+  const who = `<p class="meta" style="margin-bottom:8px">Assigned SOT: <b>${t.asot?E(asotById(t.asot).name):'none yet'}</b></p>`;
+  if(s==='CHANGE_PROPOSED'){
+    body = who + `<p class="meta" style="margin-bottom:10px"><b>Reason:</b> ${E(p.proposal.reason)}</p>
+      <div class="grid2"><div><div class="eyebrow" style="margin-bottom:4px">Signed (locked) &middot; v${p.version}</div>${goalList(p.goals,type)}</div>
+      <div><div class="eyebrow" style="margin-bottom:4px">Proposed</div>${goalList(p.proposal.goals,type)}</div></div>`;
+    if(can){ okLabel = 'Approve change'; ok = ()=>planDecide(id,type,'approve'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','decline')">Decline change</button>`; canComment = true; }
+  } else if(s==='REVIEW_SUBMITTED' || s==='REVIEWED' || s==='REVIEW_OPEN'){
+    body = who + goalList(p.goals,type,p.review.reflections) + (pf && p.review.summary ? `<p class="note"><b>Trainee&rsquo;s year summary:</b> ${E(p.review.summary)}</p>` : '');
+    if(s==='REVIEW_OPEN') body += '<p class="note">The review window is open. The trainee has not sent a review yet.</p>';
+    if(s==='REVIEWED') body += `<p class="note"><b>${E(p.review.reviewedBy||'')}</b> reviewed this on ${PlansStore.fmt(p.review.reviewedAt)}: ${E(p.review.comment||'no comment')}. Formative only; not graded.</p>`;
+    if(s==='REVIEW_SUBMITTED' && can){ okLabel = 'Mark as reviewed'; ok = ()=>planDecide(id,type,'reviewed'); canComment = true; }
+  } else if(s==='AWAITING_COS'){
+    body = who + goalList(p.goals,type) + `<p class="note">Signed by ${E(p.signedBy)} on ${PlansStore.fmt(p.signedAt)}. The Chief of Service approves next, which locks the plan.</p>`;
+    if(cos){ okLabel = 'Approve as Chief of Service'; ok = ()=>planDecide(id,type,'cos'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','cosback')">Send back</button>`; canComment = true; needComment = 'back'; }
   } else {
-    body = goalList(s.goals) + (s.comments.length ? `<p class="note">Earlier comment: ${GoalsStore.esc(s.comments[s.comments.length-1].text)}</p>` : '');
-    if(canAct){ okLabel = 'Sign off & lock'; ok = ()=>goalDecide(id,'sign'); extra = `<button class="btn sec" onclick="goalDecide('${id}','changes')">Request changes</button>`; }
-    if(s.status==='SIGNED') body += `<p class="note">Signed ${GoalsStore.fmt(s.signedAt)} by ${s.signedBy}. Locked. The trainee can propose a change, which needs your approval.</p>`;
+    body = who + goalList(p.goals,type) + (p.comments.length ? `<p class="note">Earlier comment: ${E(p.comments[p.comments.length-1].text)}</p>` : '');
+    if(s==='SUBMITTED' && can){ okLabel = pf ? 'Sign off' : 'Sign off & lock'; ok = ()=>planDecide(id,type,'sign'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','changes')">Request changes</button>`; canComment = true; needComment = 'changes'; }
+    if(s==='SIGNED') body += `<p class="note">${pf?'Approved':'Signed'} ${PlansStore.fmt(p.cosAt||p.signedAt)} by ${E(p.cosBy||p.signedBy)}. Locked. The trainee can propose a change, which the Assigned SOT approves.</p>`;
   }
-  if(canAct) body += `<div class="field" style="margin-top:14px;margin-bottom:6px"><div class="lbl">Comment to trainee ${s.status==='SUBMITTED'?'(required to request changes)':'(optional)'}</div><textarea class="ctl" id="gComment"></textarea></div><div class="btn-row">${extra}</div>`;
-  if(asst && (s.status==='SUBMITTED'||s.status==='CHANGE_PROPOSED')) body += '<p class="note">Only the SOT can sign off learning goals.</p>';
-  lbModalOpen({ey:`${lastFirst(t.name)} \u00b7 ${t.stage} \u00b7 ${GoalsStore.CYCLE}`, title:'Learning goals', body, ok:okLabel, onOk:ok});
+  if(canComment) body += `<div class="field" style="margin-top:14px;margin-bottom:6px"><div class="lbl">Comment ${s==='REVIEW_SUBMITTED'?'on the review (shown to the trainee)':'to trainee'} ${needComment?`(required to ${needComment==='back'?'send back':'request changes'})`:'(optional)'}</div><textarea class="ctl" id="gComment"></textarea></div><div class="btn-row">${extra}</div>`;
+  if(!can && !(s==='AWAITING_COS' && cos) && ['SUBMITTED','CHANGE_PROPOSED','REVIEW_SUBMITTED'].includes(s))
+    body += `<p class="note">${t.asot ? 'Only the Assigned SOT or the SOT can act on this.' : 'Assign an SOT first. Nobody can sign this yet.'}</p>`;
+  lbModalOpen({ey:`${lastFirst(t.name)} \u00b7 ${t.stage} \u00b7 ${p.period.label}`, title: pf ? 'PF year plan' : '6-month goals', body, ok:okLabel, onOk:ok});
 }
-function goalDecide(id,act){
-  const t = ROSTER.find(x=>x.id===id), c = (document.getElementById('gComment')||{value:''}).value.trim(), who = 'Dr. Albert Chan';
-  if(act==='changes' && !c){ toast('Add a comment so the trainee knows what to change'); return; }
-  GoalsStore.update(id, s=>{
-    if(act==='sign'){ s.status='SIGNED'; s.version=(s.version||0)+1; s.signedBy=who; s.signedAt=TODAY_ISO; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
-    if(act==='changes'){ s.status='CHANGES_REQUESTED'; s.comments.push({by:who,at:TODAY_ISO,text:c}); }
-    if(act==='approve'){ s.versions=(s.versions||[]).concat([{v:s.version,goals:s.goals,signedAt:s.signedAt}]); s.goals=s.proposal.goals; s.version++; s.signedAt=TODAY_ISO; s.signedBy=who; s.proposal=null; s.status='SIGNED'; }
-    if(act==='decline'){ s.proposal=null; s.status='SIGNED'; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+function planDecide(id,type,act){
+  const t = ROSTER.find(x=>x.id===id), c = (document.getElementById('gComment')||{value:''}).value.trim(), pf = type==='PF_YEAR', who = nameOf(mineId());
+  if((act==='changes'||act==='cosback') && !c){ toast('Add a comment so the trainee knows what to change'); return; }
+  PlansStore.update(id, type, s=>{
+    if(act==='sign'){ s.status = pf ? 'AWAITING_COS' : 'SIGNED'; s.version = (s.version||0)+1; s.signedBy = who; s.signedAt = TODAY_ISO; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    if(act==='cos'){ s.status = 'SIGNED'; s.cosBy = who; s.cosAt = TODAY_ISO; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    if(act==='changes' || act==='cosback'){ s.status = 'CHANGES_REQUESTED'; s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    if(act==='approve'){ s.versions = (s.versions||[]).concat([{v:s.version,goals:s.goals,signedAt:s.signedAt}]); s.goals = s.proposal.goals; s.version++; s.signedAt = TODAY_ISO; s.signedBy = who; s.proposal = null; s.status = 'SIGNED'; }
+    if(act==='decline'){ s.proposal = null; s.status = 'SIGNED'; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    if(act==='reviewed'){ s.review.reviewedAt = PlansStore.now(); s.review.reviewedBy = who; s.review.comment = c; }
   });
-  const msg = {sign:'signed off and locked',changes:'sent back for changes',approve:'change approved',decline:'change declined'}[act];
-  logEvent(`Learning goals: ${lastFirst(t.name)} ${msg}`);
-  lbModalClose(); renderAll(); toast(`Learning goals ${msg}`);
+  const msg = {sign: pf?'signed, now with the Chief of Service':'signed off and locked', cos:'approved and locked', changes:'sent back for changes', cosback:'sent back for changes', approve:'change approved', decline:'change declined', reviewed:'review completed'}[act];
+  const nm = pf ? 'PF year plan' : '6-month goals';
+  logEvent(`${nm}: ${lastFirst(t.name)} ${msg}`);
+  lbModalClose(); renderAll(); toast(`${nm} ${msg}`);
 }
 function goalRemind(id){
-  const t = ROSTER.find(x=>x.id===id); logEvent(`Learning goals: reminder sent to ${lastFirst(t.name)}`); toast('Reminder sent');
+  const t = ROSTER.find(x=>x.id===id); logEvent(`Learning plan: reminder sent to ${lastFirst(t.name)}`); toast('Reminder sent');
 }
 function goalsRemindAll(){
-  const n = goalPeople().filter(t=>G_TABS[1][2].includes(gset(t).status)).length;
-  logEvent(`Learning goals: reminder sent to ${n} trainees`); toast(`Reminder sent to ${n} trainees`);
+  const type = planUI.type, st = pTabs(type)[1][2], n = pscope(type, planUI.scope).filter(t=>st.includes(pst(t,type))).length;
+  logEvent(`Learning plan: reminder sent to ${n} trainees`); toast(`Reminder sent to ${n} trainees`);
 }
-function goalsReset(){ GoalsStore.reset(); renderAll(); toast('Learning-goal demo data reset'); }
-window.addEventListener('storage', e=>{ if(e.key===GoalsStore.KEY) renderAll(); });
+function goalsReset(){ PlansStore.reset(); renderAll(); toast('Learning-plan demo data reset'); }
+window.addEventListener('storage', e=>{ if(e.key===PlansStore.KEY) renderAll(); });
+function planRows(){   // every plan (both types) that falls in the current user's remit
+  const out = [], sc = role==='sot' ? 'all' : 'mine';
+  PLAN_TYPES.forEach(([type])=>pscope(type, sc).forEach(t=>out.push({t, type, p:pget(t,type), s:pst(t,type)})));
+  return out;
+}
 function goalReminders(){
-  const out = [], ppl = ptrainees();
-  const sets = ppl.map(t=>({t, s:gset(t)}));
-  const un = ppl.filter(t=>!t.asot);
-  if(un.length) out.push({id:'asot-unassigned', title:`ITA sign-off ASOT not assigned &mdash; ${un.length} trainee${un.length===1?'':'s'}`,
-    detail:'Assign before the cycle ends on 31 Dec', due:new Date(2026,11,31-RULES.asot), tab:'itas', btn:'Assign now'});
-  const late = sets.filter(x=>['NOT_SET','DRAFT','CHANGES_REQUESTED'].includes(x.s.status));
+  const out = [], sets = planRows(), lead = RULES.goalsSign*DAY;
+  const un = ptrainees().filter(t=>!t.asot);
+  if(un.length) out.push({id:'asot-unassigned', title:`No SOT assigned yet &mdash; ${un.length} trainee${un.length===1?'':'s'}`,
+    detail:'Their learning plans cannot be signed until someone is assigned', due:iso2d(PlansStore.addDays(PlansStore.PER.SIX_MONTH.start, RULES.asot)), tab:'itas', btn:'Assign now'});
+  const late = sets.filter(x=>['NOT_SET','DRAFT','CHANGES_REQUESTED'].includes(x.s));
   if(late.length){
-    const due = Math.min(...late.map(x=>iso2d(x.s.notifiedAt||'2026-07-01').getTime()+RULES.goalsDue*DAY));
-    out.push({id:'goals-late', title:`Learning goals not submitted &mdash; ${late.length} trainee${late.length===1?'':'s'}`,
+    const due = Math.min(...late.map(x=>pDue(x.p).getTime()));
+    out.push({id:'goals-late', title:`Learning plans not submitted &mdash; ${late.length}`,
       detail:late.slice(0,3).map(x=>lastFirst(x.t.name)).join('; ')+(late.length>3?` +${late.length-3} more`:''), due:new Date(due), tab:'goals', btn:'Remind trainees'});
   }
-  const wait = sets.filter(x=>['SUBMITTED','CHANGE_PROPOSED'].includes(x.s.status));
+  const wait = sets.filter(x=>['SUBMITTED','CHANGE_PROPOSED'].includes(x.s) || (x.s==='AWAITING_COS' && pCosCan()));
   if(wait.length){
-    const due = Math.min(...wait.map(x=>iso2d((x.s.status==='CHANGE_PROPOSED' && x.s.proposal ? x.s.proposal.at : x.s.submittedAt) || TODAY_ISO).getTime()+RULES.goalsSign*DAY));
-    out.push({id:'goals-sign', title:`Learning goals waiting for your sign-off &mdash; ${wait.length}`,
+    const at = x=> x.s==='CHANGE_PROPOSED' && x.p.proposal ? x.p.proposal.at : x.s==='AWAITING_COS' ? x.p.signedAt : x.p.submittedAt;
+    const due = Math.min(...wait.map(x=>iso2d(at(x)||TODAY_ISO).getTime()+lead));
+    out.push({id:'goals-sign', title:`Learning plans waiting for sign-off &mdash; ${wait.length}`,
       detail:wait.slice(0,3).map(x=>lastFirst(x.t.name)).join('; ')+(wait.length>3?` +${wait.length-3} more`:''), due:new Date(due), tab:'goals', btn:'Review'});
+  }
+  const rev = sets.filter(x=>x.s==='REVIEW_SUBMITTED');
+  if(rev.length){
+    const due = Math.min(...rev.map(x=>iso2d(x.p.review.submittedAt).getTime()+lead));
+    out.push({id:'goals-review', title:`Plan reviews waiting for your comment &mdash; ${rev.length}`,
+      detail:rev.slice(0,3).map(x=>lastFirst(x.t.name)).join('; ')+(rev.length>3?` +${rev.length-3} more`:''), due:new Date(due), tab:'goals', btn:'Review'});
+  }
+  const open = sets.filter(x=>x.s==='REVIEW_OPEN');
+  if(open.length){
+    const due = Math.min(...open.map(x=>iso2d(PlansStore.reviewOpens(x.p, RULES.reviewLead)).getTime()+RULES.goalsDue*DAY));
+    out.push({id:'goals-review-open', title:`Plan reviews not sent &mdash; ${open.length} trainee${open.length===1?'':'s'}`,
+      detail:open.slice(0,3).map(x=>lastFirst(x.t.name)).join('; ')+(open.length>3?` +${open.length-3} more`:''), due:new Date(due), tab:'goals', btn:'Remind trainees'});
   }
   return out;
 }
+
 
 function renderAll(){
   updateItaBadge(); refreshAsotOptions(); renderRoster(); renderItaRound(); renderLog(); renderGoals(); renderLogbook(); renderRotations();
@@ -3587,7 +3667,7 @@ function applyRole(){
     : '';
   document.getElementById('asstLockNote').textContent = lock;
   document.getElementById('drAsstNote').textContent = asst
-    ? 'You can verify logbook entries and prepare ITAs. For trainees assigned to you, your ITA sign-off is final.'
+    ? 'You can verify logbook entries and prepare ITAs. For trainees assigned to you, you sign their learning plans and your ITA sign-off is final.'
     : '';
   document.getElementById('asstNote').textContent = asst
     ? 'Assistant SOTs can prepare the handshake but cannot approve it.'

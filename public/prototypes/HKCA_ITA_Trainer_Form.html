@@ -269,11 +269,6 @@
         <div><dt>Date of assessment</dt><dd class="mono" style="font-size:12.5px" id="today">&mdash;</dd></div>
       </dl>
 
-      <details class="frame" id="glDet" style="margin-top:14px">
-        <summary style="cursor:pointer;font-size:13px;font-weight:650">Trainee&rsquo;s learning goals for this cycle <span id="glDetState" style="font-weight:500;color:var(--ink3)"></span></summary>
-        <div id="glDetBody" style="margin-top:10px"></div>
-      </details>
-
       <div class="frame">
         <p><b>Rate against what is expected at this trainee&rsquo;s level of experience</b> &mdash; a Higher Trainee in year 2 &mdash;
           not against a consultant, and not against other trainees.</p>
@@ -345,7 +340,6 @@
 
 <div id="live" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
 
-<script src="hkca-goals-store.js"></script>
 <script>
 /* The 15 official items — mirrors domain/ita/itaDomains.ts (source of truth for the build). */
 const DOMAINS = [
@@ -582,22 +576,6 @@ function toggleTheme(){ const d=document.documentElement.classList.toggle('dark'
 /* ---------- init ---------- */
 DOMAINS.forEach(d=>paintRow(d.c)); paintRail();
 if(S.sealed) lockForm(); else if(rated()) $('#saved').textContent='Draft restored from this device';
-</script>
-<script>
-(function(){
-  var ID='2022-019', S=window.GoalsStore, E=S.esc;
-  function render(){
-    var s=S.get(ID)||{status:'NOT_SET',goals:[]}, b=document.getElementById('glDetBody'), st=document.getElementById('glDetState');
-    if(!b) return;
-    if(s.status!=='SIGNED' && s.status!=='CHANGE_PROPOSED'){ st.textContent='\u00b7 not signed off yet'; b.innerHTML='<p style="font-size:12.5px;color:var(--ink2)">The trainee&rsquo;s goals have not been signed off by the SOT yet.</p>'; return; }
-    st.textContent='\u00b7 signed '+S.fmt(s.signedAt)+', read only';
-    b.innerHTML=s.goals.map(function(g,i){ return '<div style="padding:8px 0;border-top:1px solid var(--border-sub)"><div style="font-weight:650;font-size:13px">'+(i+1)+'. '+E(g.text)+'</div>'+
-      '<div style="font-size:12.5px;color:var(--ink2)">Success: '+E(g.success)+'</div></div>'; }).join('')+
-      '<p style="font-size:12px;color:var(--ink3);margin-top:8px">Use these as context. Rate against the College items as usual; the SOT reviews the goals with the trainee.</p>';
-  }
-  window.addEventListener('storage',function(e){ if(e.key===S.KEY) render(); });
-  render();
-})();
 </script>
 </body>
 </html>

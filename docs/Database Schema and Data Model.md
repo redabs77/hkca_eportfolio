@@ -799,6 +799,53 @@ CREATE INDEX idx_pfy_plans_trainee ON pfy_plans(trainee_id);
 
 ---
 
+### PROPOSED: `learning_plans` and `learning_goals` (supersedes `pfy_plans` and `ita_sessions.trainee_learning_goals`)
+Learning plans are delinked from the ITA. One table serves both plan types. Proposal only; the committed baseline migration is not edited.
+
+```sql
+CREATE TABLE learning_plans (
+  id                 SERIAL PRIMARY KEY,
+  trainee_id         INTEGER REFERENCES trainee_profiles(id) ON DELETE CASCADE,
+  plan_type          TEXT NOT NULL,            -- SIX_MONTH | PF_YEAR
+  period_start       DATE NOT NULL,
+  period_end         DATE NOT NULL,
+  assigned_sot_id    TEXT REFERENCES users(id), -- set at period start; transferable
+  status             TEXT DEFAULT 'NOT_SET',
+  -- NOT_SET -> DRAFT -> SUBMITTED -> (CHANGES_REQUESTED) -> [PF: AWAITING_COS ->] SIGNED -> CHANGE_PROPOSED <-> SIGNED
+  version            INTEGER DEFAULT 0,
+  notified_at        DATE,
+  submitted_at       DATE,
+  signed_by          TEXT REFERENCES users(id), -- immutable once signed; survives a later transfer
+  signed_at          DATE,
+  cos_approved_by    TEXT REFERENCES users(id), -- PF_YEAR only
+  cos_approved_at    DATE,
+  -- end-of-period formative review (not graded)
+  review_summary     TEXT,                      -- PF_YEAR completion report
+  review_submitted_at DATE,
+  reviewed_by        TEXT REFERENCES users(id),
+  reviewed_at        DATE,
+  review_comment     TEXT,
+  UNIQUE (trainee_id, plan_type, period_start)
+);
+CREATE TABLE learning_goals (
+  id            SERIAL PRIMARY KEY,
+  plan_id       INTEGER REFERENCES learning_plans(id) ON DELETE CASCADE,
+  plan_version  INTEGER NOT NULL,              -- goals are versioned with the plan
+  domain_code   TEXT NOT NULL,                 -- CF-2.x | SM-3.x | ITA-<ITEM> | OTHER | CLINICAL | MANAGEMENT | EDUCATION
+  objective     TEXT NOT NULL,
+  success       TEXT NOT NULL,
+  evidence      TEXT,
+  reflection    TEXT                            -- trainee's note at review
+);
+CREATE TABLE learning_plan_proposals (          -- mid-period change request
+  id SERIAL PRIMARY KEY, plan_id INTEGER REFERENCES learning_plans(id) ON DELETE CASCADE,
+  reason TEXT NOT NULL, proposed_goals_json JSONB NOT NULL, proposed_at DATE, decided_at DATE, decision TEXT
+);
+```
+Migration: each legacy `pfy_plans` row (clinical/management/education text) becomes one `PF_YEAR` plan with one goal per domain, marked signed/approved from `sot_signed_at` / `cos_signed_at`. `ita_sessions.trainee_learning_goals` is deprecated; keep read-only for history.
+
+---
+
 ## 10. Audit & Notifications
 
 ### `audit_log`

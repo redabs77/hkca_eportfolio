@@ -211,6 +211,21 @@ main{padding:30px 0 70px}
 .gl-bn h3{font-size:14.5px;font-weight:700;margin-bottom:4px}
 .gl-bn p{font-size:12.5px;color:var(--slate);line-height:1.55}
 .gl-bn .acts{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.gl-dom{display:inline-block;font-size:12px;font-weight:650;color:var(--acc,var(--teal));background:var(--surface-2,rgba(0,0,0,.04));border:1px solid var(--border);border-radius:999px;padding:2px 10px;margin-bottom:6px}
+:root{--pf:#0f6b66}
+:root.dark{--pf:#5fd0c4}
+.gl-sec{margin-top:6px}
+.gl-sech{font-size:12px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;color:var(--acc,var(--slate));padding-top:10px;border-top:1px solid var(--border)}
+.gl-sec:first-child .gl-sech{border-top:0;padding-top:2px}
+.gl-ref{font-size:12.5px;color:var(--navy);margin-top:8px;padding:8px 10px;border-left:3px solid var(--acc,var(--teal));background:var(--surface-2,rgba(0,0,0,.03));border-radius:0 8px 8px 0}
+.gl-cb{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--border);border-left:4px solid var(--acc,var(--teal));border-radius:10px;padding:12px 14px;margin:10px 0;font-size:12.5px;color:var(--navy)}
+.gl-cb.ok{border-left-color:var(--green,#007a67)}
+.gl-card{border-top:3px solid var(--acc,var(--teal))}
+.gl-who{font-size:12.5px;color:var(--slate);margin-bottom:10px}
+.gl-demo{display:flex;gap:14px;align-items:center;justify-content:flex-end;flex-wrap:wrap;font-size:12px;color:var(--slate);margin:-8px 0 14px}
+.gl-demo select{font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--navy)}
+.gl-demo a{color:var(--slate)}
+.gl-ed select{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px;background:var(--surface);color:var(--navy)}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 <link rel="stylesheet" href="hkca-mobile.css">
@@ -258,7 +273,7 @@ main{padding:30px 0 70px}
         <p>
           The 6-month assessment for your <strong>Prince of Wales Hospital</strong> rotation closes on
           <strong>31 December 2026</strong> — 18 days away. Your Supervisor of Training has already
-          collected feedback from 4 department trainers. Reflect on how you got on with your learning goals so the
+          collected feedback from 4 department trainers. Reflect on how the six months went so the
           assessment can be signed off.
         </p>
         <div class="acts">
@@ -729,7 +744,6 @@ main{padding:30px 0 70px}
         <dl style="display:grid;grid-template-columns:auto 1fr;gap:9px 16px;font-size:12.5px">
           <dt style="color:var(--slate)">Period</dt><dd class="mono" style="font-weight:600;text-align:right">01 Jul &ndash; 31 Dec 2026</dd>
           <dt style="color:var(--slate)">Training type</dt><dd style="font-weight:600;text-align:right">Clinical Anaesthesia</dd>
-          <dt style="color:var(--slate)">Learning goals</dt><dd style="font-weight:600;text-align:right">Cardiac subspecialty, advanced airway</dd>
           <dt style="color:var(--slate)">Credited on sign-off</dt><dd style="font-weight:600;text-align:right">6 months &rarr; Clinical Anaesthesia</dd>
         </dl>
         <p class="note">
@@ -784,7 +798,7 @@ main{padding:30px 0 70px}
       <h3 id="glTitle" style="font-size:18px;font-weight:750"></h3>
       <button onclick="closeModal('modalGoals')" aria-label="Close" style="background:transparent;border:0;font-size:20px;cursor:pointer;color:var(--slate)">&times;</button>
     </div>
-    <p style="font-size:12.5px;color:var(--slate);margin-bottom:16px">2 to 5 goals. Once your SOT signs them off they are locked.</p>
+    <p id="glHint" style="font-size:12.5px;color:var(--slate);margin-bottom:16px"></p>
     <div class="gl-ed" id="glBody"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px" id="glActs"></div>
   </div>
@@ -792,7 +806,7 @@ main{padding:30px 0 70px}
 <div id="modalReflection" class="hidden" style="position:fixed;inset:0;background:rgba(10,37,64,.65);backdrop-filter:blur(3px);z-index:100;display:grid;place-items:center;padding:20px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:580px;width:100%;padding:28px;box-shadow:0 12px 36px rgba(0,0,0,.25)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h3 style="font-size:18px;font-weight:750">Trainee Self-Reflection &amp; Goals</h3>
+      <h3 style="font-size:18px;font-weight:750">Trainee Self-Reflection</h3>
       <button onclick="closeModal('modalReflection')" style="background:transparent;border:0;font-size:20px;cursor:pointer;color:var(--slate)">&times;</button>
     </div>
     <p style="font-size:13px;color:var(--slate);margin-bottom:18px">
@@ -845,80 +859,155 @@ main{padding:30px 0 70px}
   </div>
 </div>
 
-<script src="hkca-goals-store.js"></script>
+<script src="hkca-plans-store.js"></script>
 <script>
 
-/* ===== learning goals (set at cycle start, signed by SOT, locked, reviewed at ITA) ===== */
-const GL_ID='2022-019', GL_TODAY='2026-10-17', GL_MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-let glEd=null;
-function glDue(s){ const d=new Date(new Date((s.notifiedAt||'2026-07-01')+'T00:00:00').getTime()+14*864e5); return d.getDate()+' '+GL_MON[d.getMonth()]; }
-function glList(s, reflect){
-  const E=GoalsStore.esc;
-  return s.goals.map((g,i)=>`<div class="gl-item"><h4>${i+1}. ${E(g.text)}</h4>
-    <div class="m"><b>Success:</b> ${E(g.success)}</div><div class="m"><b>Evidence:</b> ${E(g.evidence||'\u2014')}</div>
-    ${reflect?`<div style="margin-top:8px"><label style="font-size:12px;font-weight:700;color:var(--slate)">Notes for my ITA (progress so far)</label>
-      <textarea rows="2" placeholder="What have you done towards this goal?" onchange="glReflect('${g.id}',this.value)">${E((s.reflections||{})[g.id]||'')}</textarea></div>`:''}</div>`).join('');
+/* ===== learning plans: 6-month goals + PF year plan (delinked from ITAs) ===== */
+const PS = PlansStore, GE = PS.esc;
+const GL_TODAY = PS.TODAY, GL_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const GL_PEOPLE = {
+  '2022-019':{name:'Dr. Kelvin Wong', stage:'HAT-2', sot:'Dr. Albert Chan', rot:'PWH \u00b7 Clinical Anaesthesia', pf:false},
+  '2021-004':{name:'Dr. Jasmine Ho',  stage:'PFY',   sot:'Dr. Winnie Ho',   rot:'PWH \u00b7 Clinical Anaesthesia', pf:true}
+};
+const GL_SUGGEST = ['CF-2.1','CF-2.2','CF-2.3','CF-2.4','CF-2.5','CF-2.6','CF-2.7'];   // Clinical Anaesthesia rotation: clinical fundamentals (a subspecialty rotation would suggest its SM module)
+const GL_ACC = {SIX_MONTH:'var(--teal)', PF_YEAR:'var(--pf)'};
+let GL_ID = '2022-019', glEd = null;
+function glDue(p, days){ const s = PS.addDays(p.notifiedAt||p.period.start, days), d = PS.d2(s); return d.getDate()+' '+GL_MON[d.getMonth()]; }
+function glDomTag(g){ return g.domain ? `<span class="gl-dom">${GE(PS.domCode(g.domain) ? g.domain+' \u00b7 ' : '')}${GE(PS.domLabel(g.domain))}</span>` : ''; }
+function glGoalHtml(g, i, p, showRef){
+  const ref = showRef ? (p.review.reflections||{})[g.id] : '';
+  return `<div class="gl-item">${glDomTag(g)}<h4>${i}. ${GE(g.text)}</h4>
+    <div class="m"><b>Success:</b> ${GE(g.success)}</div><div class="m"><b>Evidence:</b> ${GE(g.evidence||'\u2014')}</div>
+    ${ref ? `<div class="gl-ref"><b>My reflection:</b> ${GE(ref)}</div>` : ''}</div>`;
+}
+function glList(p, showRef){
+  if(p.type==='PF_YEAR'){
+    return PS.PF_DOMAINS.map(d=>{ const gs = p.goals.filter(g=>g.domain===d.c); let n = 0;
+      return `<div class="gl-sec"><div class="gl-sech">${d.label}</div>${gs.map(g=>glGoalHtml(g, ++n, p, showRef)).join('') || '<div class="m" style="padding:8px 0">No goal under this domain.</div>'}</div>`; }).join('');
+  }
+  return p.goals.map((g,i)=>glGoalHtml(g, i+1, p, showRef)).join('');
+}
+function glPlanCard(type){
+  const info = GL_PEOPLE[GL_ID], T = PS.TYPES[type], acc = GL_ACC[type];
+  const p = PS.get(GL_ID, type) || PS.blank(type), st = PS.eff(p), E = GE, last = p.comments[p.comments.length-1], per = p.period.label;
+  const pf = type==='PF_YEAR', sot = E(info.sot);
+  const eyebrow = pf ? `PF year plan \u00b7 ${per}` : `6-month goals \u00b7 ${per}`;
+  if(st==='NOT_SET' || st==='DRAFT'){
+    return `<div class="gl-bn" style="border-left-color:${acc}"><div style="flex:1"><div class="eyebrow">${pf?'Year plan':'New this period'} \u00b7 due ${glDue(p,14)}</div>
+      <h3>${st==='DRAFT' ? (pf?'Finish your PF year plan':'Finish your 6-month goals') : (pf?`Set your PF year plan for ${per}`:`Set your 6-month learning goals for ${per}`)}</h3>
+      <p>${pf ? 'Write goals under three domains: clinical, management and education, with at least one in each. Your Assigned SOT signs first, then the Chief of Service approves. You review the plan with your SOT near the end of the year.'
+              : 'Choose 2 to 5 goals from the curriculum domains or the ITA competencies. Your Assigned SOT signs them off and they are then locked. You review them with your SOT near the end of the period. They are a guide and are not graded.'}</p>
+      <p style="margin-top:6px">Your Assigned SOT: <b>${sot}</b></p>
+      <div class="acts"><button class="btn pri" onclick="glEdit('${type}','set')">${st==='DRAFT'?'Continue draft':(pf?'Set PF year plan':'Set 6-month goals')}</button></div></div></div>`;
+  }
+  if(st==='CHANGES_REQUESTED'){
+    return `<div class="gl-bn" style="border-left-color:var(--am)"><div style="flex:1"><div class="eyebrow">${E(last?last.by.replace('Dr. ','Dr '):'Your SOT')} asked for changes</div>
+      <h3>Update your ${pf?'PF year plan':'6-month goals'}</h3><p>&ldquo;${E(last?last.text:'')}&rdquo;</p>
+      <div class="acts"><button class="btn am" onclick="glEdit('${type}','set')">Edit and resubmit</button></div></div></div>`;
+  }
+  const pills = {SIGNED:`<span class="pill ok">${PS.label(type,'SIGNED')}</span>`, SUBMITTED:'<span class="pill warn">Awaiting SOT sign-off</span>',
+    CHANGE_PROPOSED:'<span class="pill info">Change awaiting SOT approval</span>', AWAITING_COS:'<span class="pill info">Awaiting Chief of Service</span>',
+    REVIEW_OPEN:'<span class="pill info">Review open</span>', REVIEW_SUBMITTED:'<span class="pill warn">Review sent to SOT</span>', REVIEWED:'<span class="pill ok">Reviewed</span>'};
+  const lockedFoot = pf
+    ? `Signed ${PS.fmt(p.signedAt)} by ${E(p.signedBy)}${p.cosAt?`, approved by the Chief of Service ${PS.fmt(p.cosAt)}`:''} &middot; version ${p.version}. Locked.`
+    : `Signed ${PS.fmt(p.signedAt)} by ${E(p.signedBy)} &middot; version ${p.version}. Locked.`;
+  const change = `If your circumstances change, <a href="#" onclick="glEdit('${type}','change');return false" style="color:var(--bl);font-weight:650">propose a change</a> for your SOT to approve.`;
+  const foot = {
+    SIGNED: `<div class="gl-lock">${lockedFoot} ${change}</div>`,
+    SUBMITTED: `<div class="gl-lock">Submitted ${PS.fmt(p.submittedAt)}. You can&rsquo;t edit while your SOT is reviewing.</div>`,
+    CHANGE_PROPOSED: `<div class="gl-lock">Your signed ${pf?'plan':'goals'} stay in force until your SOT approves the change.</div>`,
+    AWAITING_COS: `<div class="gl-lock">Signed by ${E(p.signedBy)} on ${PS.fmt(p.signedAt)}. Waiting for the Chief of Service to approve. You can&rsquo;t edit meanwhile.</div>`,
+    REVIEW_OPEN: `<div class="gl-lock">${lockedFoot}</div>`,
+    REVIEW_SUBMITTED: `<div class="gl-lock">${lockedFoot} Review sent ${PS.fmt(p.review.submittedAt)}; your SOT will add a comment.</div>`,
+    REVIEWED: `<div class="gl-lock">${lockedFoot} Reviewed by ${E(p.review.reviewedBy||p.signedBy)} on ${PS.fmt(p.review.reviewedAt)}. This is a formative guide and is not graded.</div>`
+  }[st] || '';
+  let callout = '';
+  if(st==='REVIEW_OPEN') callout = `<div class="gl-cb"><div><b>Time to review ${pf?'your year':'these six months'}.</b> Note how you got on with each goal and send it to your SOT before ${PS.fmt(p.period.end)}. This is formative: it guides your next plan and is not graded.</div><button class="btn pri sm" onclick="glEdit('${type}','review')">Start review</button></div>`;
+  let comment = '';
+  if(st==='REVIEWED' && p.review.comment) comment = `<div class="gl-cb ok"><div><b>${E((p.review.reviewedBy||'SOT').replace('Dr. ','Dr '))}:</b> ${E(p.review.comment)}</div></div>`;
+  const summary = pf && p.review.summary && (st==='REVIEW_SUBMITTED'||st==='REVIEWED') ? `<div class="gl-ref" style="margin-top:10px"><b>My year summary:</b> ${E(p.review.summary)}</div>` : '';
+  return `<div class="card gl-card" style="margin-bottom:20px;--acc:${acc}"><div class="hd"><div><div class="eyebrow" style="color:${acc}">${eyebrow}</div><h2>${pf?'My PF year plan':'My 6-month goals'}</h2>
+    <p>${pf?'Clinical, management and education. Signed by your Assigned SOT, then approved by the Chief of Service.':`Signed by your Assigned SOT, ${sot}. Separate from your ITA.`}</p></div>${pills[st]||''}</div>${callout}${glList(p, st==='REVIEW_SUBMITTED'||st==='REVIEWED')}${summary}${comment}${foot}</div>`;
 }
 function renderGoalsMount(){
-  const m=document.getElementById('goalsMount'); if(!m) return;
-  const s=GoalsStore.get(GL_ID)||{status:'NOT_SET',goals:[],comments:[]}, E=GoalsStore.esc, st=s.status, last=s.comments[s.comments.length-1];
-  const reset='<a href="#" style="color:var(--slate);font-size:12px" onclick="glReset();return false">Reset demo data</a>';
-  let h='';
-  if(st==='NOT_SET'||st==='DRAFT'){
-    h=`<div class="gl-bn"><div style="flex:1"><div class="eyebrow">New this cycle &middot; due ${glDue(s)}</div>
-      <h3>${st==='DRAFT'?'Finish your learning goals':'Set your learning goals for Jul \u2013 Dec 2026'}</h3>
-      <p>Choose 2 to 5 goals for this cycle. Your SOT signs them off and they are then locked. They come back at your ITA, where your SOT reviews how you got on, alongside the College assessment items.</p>
-      <div class="acts"><button class="btn pri" onclick="glEdit('set')">${st==='DRAFT'?'Continue draft':'Set learning goals'}</button></div></div></div>`;
-  } else if(st==='CHANGES_REQUESTED'){
-    h=`<div class="gl-bn" style="border-left-color:var(--am)"><div style="flex:1"><div class="eyebrow">Your SOT asked for changes</div>
-      <h3>Update your learning goals</h3><p>&ldquo;${E(last?last.text:'')}&rdquo;</p>
-      <div class="acts"><button class="btn am" onclick="glEdit('set')">Edit and resubmit</button></div></div></div>`;
-  } else {
-    const pill = st==='SIGNED' ? '<span class="pill ok">Signed &middot; locked</span>' : st==='SUBMITTED' ? '<span class="pill warn">Awaiting SOT sign-off</span>' : '<span class="pill info">Change awaiting SOT approval</span>';
-    const foot = st==='SIGNED' ? `<div class="gl-lock">Signed ${GoalsStore.fmt(s.signedAt)} by ${E(s.signedBy)} &middot; version ${s.version}. Locked. If your circumstances change, <a href="#" onclick="glEdit('change');return false" style="color:var(--bl);font-weight:650">propose a change</a> for your SOT to approve.</div>`
-      : st==='SUBMITTED' ? `<div class="gl-lock">Submitted ${GoalsStore.fmt(s.submittedAt)}. You can&rsquo;t edit while your SOT is reviewing.</div>`
-      : `<div class="gl-lock">Your signed goals stay in force until your SOT approves the change.</div>`;
-    h=`<div class="card" style="margin-bottom:20px"><div class="hd"><div><div class="eyebrow">ITA cycle &middot; Jul &ndash; Dec 2026</div><h2>My learning goals</h2>
-      <p>Your SOT will review these with you at your ITA.</p></div>${pill}</div>${glList(s, st==='SIGNED')}${foot}</div>`;
-  }
-  m.innerHTML=h+`<div style="text-align:right;margin:-12px 0 12px">${reset}</div>`;
+  const m = document.getElementById('goalsMount'); if(!m) return;
+  const info = GL_PEOPLE[GL_ID];
+  const who = GL_ID==='2022-019' ? '' : `<div class="gl-who">Demo view: showing the plans of <b>${GE(info.name)}</b> &middot; ${info.stage}</div>`;
+  const opts = Object.keys(GL_PEOPLE).map(id=>`<option value="${id}" ${id===GL_ID?'selected':''}>${GE(GL_PEOPLE[id].name)} \u00b7 ${GL_PEOPLE[id].stage}</option>`).join('');
+  m.innerHTML = who + glPlanCard('SIX_MONTH') + (info.pf ? glPlanCard('PF_YEAR') : '') +
+    `<div class="gl-demo">Demo controls: view as <select aria-label="View plans as" onchange="glWho(this.value)">${opts}</select>
+      <label><input type="checkbox" ${PS.demoReview()?'checked':''} onchange="glReviewWindow(this.checked)"> Show the end-of-period review window (3 Dec)</label>
+      <a href="#" onclick="glReset();return false">Reset demo data</a></div>`;
 }
-function glEdit(mode){
-  const s=GoalsStore.get(GL_ID)||{goals:[]};
-  const base = mode==='change' ? s.goals : s.goals;
-  glEd={mode, reason:'', goals: base.length ? base.map(g=>Object.assign({},g)) : [GoalsStore.newGoal(),GoalsStore.newGoal()]};
+function glWho(id){ GL_ID = id; renderGoalsMount(); }
+function glReviewWindow(on){ PS.setDemoReview(on); renderGoalsMount(); }
+function glEdit(type, mode){
+  const p = PS.get(GL_ID, type) || PS.blank(type);
+  let goals;
+  if(mode==='review') goals = p.goals.map(g=>Object.assign({}, g));
+  else if(mode==='change' || p.goals.length) goals = p.goals.map(g=>Object.assign({}, g));
+  else goals = type==='PF_YEAR' ? PS.PF_DOMAINS.map(d=>PS.newGoal(d.c)) : [PS.newGoal(), PS.newGoal()];
+  glEd = {type, mode, reason:'', goals, refl:Object.assign({}, p.review.reflections||{}), summary:p.review.summary||''};
   glDraw();
-  const m=document.getElementById('modalGoals'); m.classList.remove('hidden'); m.style.display='grid';
+  const m = document.getElementById('modalGoals'); m.classList.remove('hidden'); m.style.display = 'grid';
+}
+function glDomPick(i, v){ glEd.goals[i].domain = v; }
+function glRow(g, i, canDel){
+  const pf = glEd.type==='PF_YEAR', ph = pf ? PS.PF_DOMAINS.find(d=>d.c===g.domain).hint : 'e.g. Run an ASA I\u2013II list with indirect supervision';
+  return `<div class="row"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:13px">Goal ${pf ? glEd.goals.filter((x,k)=>x.domain===g.domain && k<=i).length : i+1}</b>
+      ${canDel?`<button class="btn sec sm" onclick="glDel(${i})">Remove</button>`:''}</div>
+    ${pf ? '' : `<label>Domain</label>${PS.domainSelect(g.domain, `glDomPick(${i},this.value)`, GL_SUGGEST, 'Domain for goal '+(i+1))}`}
+    <label>What do you want to achieve?</label><input value="${GE(g.text)}" oninput="glEd.goals[${i}].text=this.value" placeholder="${GE(ph)}">
+    <label>What will success look like? (measurable)</label><input value="${GE(g.success)}" oninput="glEd.goals[${i}].success=this.value" placeholder="e.g. 10 consecutive lists with no supervisor intervention">
+    <label>Evidence you will use</label><input value="${GE(g.evidence)}" oninput="glEd.goals[${i}].evidence=this.value" placeholder="e.g. Logbook and 2 DOPS"></div>`;
 }
 function glDraw(){
-  const E=GoalsStore.esc, ch=glEd.mode==='change';
-  document.getElementById('glTitle').textContent = ch ? 'Propose a change to your goals' : 'My learning goals \u00b7 Jul \u2013 Dec 2026';
-  document.getElementById('glBody').innerHTML = (ch?`<div class="row" style="border:0;padding:0;margin-bottom:12px"><label>Why is the change needed?</label><textarea rows="2" oninput="glEd.reason=this.value">${E(glEd.reason)}</textarea></div>`:'') +
-    glEd.goals.map((g,i)=>`<div class="row"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">Goal ${i+1}</b>
-      ${glEd.goals.length>2?`<button class="btn sec sm" onclick="glDel(${i})">Remove</button>`:''}</div>
-      <label>What do you want to achieve?</label><input value="${E(g.text)}" oninput="glEd.goals[${i}].text=this.value" placeholder="e.g. Run an ASA I\u2013II list with indirect supervision">
-      <label>What will success look like? (measurable)</label><input value="${E(g.success)}" oninput="glEd.goals[${i}].success=this.value" placeholder="e.g. 10 consecutive lists with no supervisor intervention">
-      <label>Evidence you will use</label><input value="${E(g.evidence)}" oninput="glEd.goals[${i}].evidence=this.value" placeholder="e.g. Logbook and 2 DOPS"></div>`).join('') +
-    (glEd.goals.length<5?'<button class="btn sec sm" onclick="glAdd()">+ Add a goal</button>':'');
-  document.getElementById('glActs').innerHTML = (ch?'':'<button class="btn sec" onclick="glSave(\'DRAFT\')">Save draft</button>') +
-    `<button class="btn pri" onclick="glSave('${ch?'CHANGE':'SUBMITTED'}')">${ch?'Send for SOT approval':'Submit to SOT'}</button>`;
+  const ch = glEd.mode==='change', rv = glEd.mode==='review', pf = glEd.type==='PF_YEAR', per = PS.TYPES[glEd.type].title;
+  const per2 = (PS.get(GL_ID, glEd.type)||PS.blank(glEd.type)).period.label;
+  document.getElementById('glTitle').textContent = rv ? `Review: ${per2}` : ch ? `Propose a change to your ${pf?'PF year plan':'6-month goals'}` : `${pf?'PF year plan':'6-month goals'} \u00b7 ${per2}`;
+  document.getElementById('glHint').textContent = rv ? 'Say how you got on with each goal. This is a guide for your next plan and is not graded.'
+    : pf ? 'At least one goal under each of Clinical, Management and Education. Your SOT signs first, then the Chief of Service approves. Locked after that.'
+    : '2 to 5 goals. Choose a domain for each. Once your SOT signs them off they are locked.';
+  let body = '';
+  if(rv){
+    const list = pf ? PS.PF_DOMAINS.map(d=>[d.label, glEd.goals.map((g,i)=>[g,i]).filter(x=>x[0].domain===d.c)]) : [[null, glEd.goals.map((g,i)=>[g,i])]];
+    body = list.map(([h, gs])=>(h?`<div class="gl-sech" style="margin:6px 0">${h}</div>`:'') + gs.map(([g,i])=>`<div class="row">${glDomTag(g)}<b style="font-size:13px">${GE(g.text)}</b>
+      <div class="m" style="font-size:12.5px;color:var(--slate)">Success: ${GE(g.success)}</div>
+      <label>How did you get on?</label><textarea rows="2" oninput="glEd.refl['${g.id}']=this.value">${GE(glEd.refl[g.id]||'')}</textarea></div>`).join('')).join('') +
+      (pf ? `<div class="row"><label>Summary of your year (completion report)</label><textarea rows="3" oninput="glEd.summary=this.value" placeholder="What you achieved across clinical, management and education, and what comes next">${GE(glEd.summary)}</textarea></div>` : '');
+  } else {
+    body = (ch?`<div class="row" style="border:0;padding:0;margin-bottom:12px"><label>Why is the change needed?</label><textarea rows="2" oninput="glEd.reason=this.value">${GE(glEd.reason)}</textarea></div>`:'');
+    if(pf) body += PS.PF_DOMAINS.map(d=>`<div class="gl-sech" style="margin:10px 0 6px">${d.label}</div>` +
+        glEd.goals.map((g,i)=>[g,i]).filter(x=>x[0].domain===d.c).map(([g,i],k,arr)=>glRow(g,i,arr.length>1)).join('') +
+        (glEd.goals.filter(g=>g.domain===d.c).length<3 ? `<button class="btn sec sm" onclick="glAdd('${d.c}')">+ Add a ${d.label.toLowerCase()} goal</button>` : '')).join('');
+    else body += glEd.goals.map((g,i)=>glRow(g,i,glEd.goals.length>2)).join('') + (glEd.goals.length<5?'<button class="btn sec sm" onclick="glAdd()">+ Add a goal</button>':'');
+  }
+  document.getElementById('glBody').innerHTML = body;
+  document.getElementById('glBody').style.setProperty('--acc', GL_ACC[glEd.type]);
+  document.getElementById('glActs').innerHTML = rv ? `<button class="btn sec" onclick="glSave('RDRAFT')">Save for later</button><button class="btn pri" onclick="glSave('RSUBMIT')">Send review to SOT</button>`
+    : (ch?'':'<button class="btn sec" onclick="glSave(\'DRAFT\')">Save draft</button>') + `<button class="btn pri" onclick="glSave('${ch?'CHANGE':'SUBMITTED'}')">${ch?'Send for SOT approval':'Submit to SOT'}</button>`;
 }
-function glAdd(){ if(glEd.goals.length<5){ glEd.goals.push(GoalsStore.newGoal()); glDraw(); } }
+function glAdd(domain){ const max = PS.TYPES[glEd.type].max; if(glEd.goals.length<max){ glEd.goals.push(PS.newGoal(domain)); glDraw(); } }
 function glDel(i){ glEd.goals.splice(i,1); glDraw(); }
 function glSave(kind){
-  const full=glEd.goals.filter(g=>g.text.trim()&&g.success.trim());
-  if(kind!=='DRAFT' && (full.length<2 || full.length!==glEd.goals.length)){ alert('Each goal needs a description and what success looks like. Use at least 2 goals.'); return; }
+  const type = glEd.type;
+  if(kind==='RDRAFT' || kind==='RSUBMIT'){
+    if(kind==='RSUBMIT' && glEd.goals.some(g=>!(glEd.refl[g.id]||'').trim())){ alert('Add a short note for every goal before you send the review.'); return; }
+    if(kind==='RSUBMIT' && type==='PF_YEAR' && !glEd.summary.trim()){ alert('Add a summary of your year.'); return; }
+    PS.update(GL_ID, type, s=>{ s.review.reflections = glEd.refl; s.review.summary = glEd.summary; if(kind==='RSUBMIT') s.review.submittedAt = GL_TODAY; });
+    closeModal('modalGoals'); renderGoalsMount(); return;
+  }
+  if(kind!=='DRAFT'){ const err = PS.check(type, glEd.goals); if(err){ alert(err); return; } }
   if(kind==='CHANGE' && !glEd.reason.trim()){ alert('Say why the change is needed.'); return; }
-  GoalsStore.update(GL_ID, s=>{
-    if(kind==='DRAFT'){ s.goals=glEd.goals; s.status='DRAFT'; }
-    else if(kind==='SUBMITTED'){ s.goals=glEd.goals; s.status='SUBMITTED'; s.submittedAt=GL_TODAY; }
-    else { s.proposal={goals:glEd.goals, reason:glEd.reason.trim(), at:GL_TODAY}; s.status='CHANGE_PROPOSED'; }
+  PS.update(GL_ID, type, s=>{
+    if(kind==='DRAFT'){ s.goals = glEd.goals; s.status = 'DRAFT'; }
+    else if(kind==='SUBMITTED'){ s.goals = glEd.goals; s.status = 'SUBMITTED'; s.submittedAt = GL_TODAY; }
+    else { s.proposal = {goals:glEd.goals, reason:glEd.reason.trim(), at:GL_TODAY}; s.status = 'CHANGE_PROPOSED'; }
   });
   closeModal('modalGoals'); renderGoalsMount();
 }
-function glReflect(gid,v){ GoalsStore.update(GL_ID, s=>{ s.reflections=s.reflections||{}; s.reflections[gid]=v; }); }
-function glReset(){ GoalsStore.reset(); renderGoalsMount(); }
-window.addEventListener('storage', e=>{ if(e.key===GoalsStore.KEY) renderGoalsMount(); });
+function glReset(){ PS.reset(); renderGoalsMount(); }
+window.addEventListener('storage', e=>{ if(e.key===PS.KEY) renderGoalsMount(); });
 renderGoalsMount();
 function openReflectionModal(){
   const m=document.getElementById('modalReflection');
