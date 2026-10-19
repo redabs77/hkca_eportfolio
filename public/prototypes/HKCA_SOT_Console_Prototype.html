@@ -2132,7 +2132,7 @@ function itaContractsHtml(){
       <div class="chips" id="goalsTabs" style="margin:0 0 10px"></div>
       <div class="tbl-scroll">
         <table>
-          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th style="min-width:200px">Status</th><th>Action</th></tr></thead>
+          <thead><tr>${[['name','Trainee','min-width:190px'],['stage','Stage',''],['sot','Assigned SOT',''],['status','Status','min-width:200px']].map(([k,l,st])=>`<th style="${st}" aria-sort="${goalsSort.k===k?(goalsSort.d>0?'ascending':'descending'):'none'}"><button type="button" class="sortbtn ${goalsSort.k===k?'on':''}" onclick="goalsSetSort('${k}')">${l}<span class="sa" aria-hidden="true">${goalsSort.k===k?(goalsSort.d>0?'\u2191':'\u2193'):'\u2195'}</span></button></th>`).join('')}<th>Action</th></tr></thead>
           <tbody id="goalsBody"></tbody>
         </table>
       </div>
@@ -3490,6 +3490,20 @@ document.addEventListener('keydown', ev=>{
 const TODAY_ISO = '2026-10-17';
 function iso2d(s){ const p = s.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
 const planUI = {type:'SIX_MONTH', tab:'all', scope:'all'};
+let goalsSort = {k:'name', d:1};
+function goalsSetSort(k){ goalsSort = goalsSort.k===k ? {k, d:-goalsSort.d} : {k, d:1}; renderItaRound(); }
+const PLAN_ORD = {NOT_SET:0, DRAFT:1, CHANGES_REQUESTED:2, SUBMITTED:3, REVIEW_OPEN:4, CHANGE_PROPOSED:5, AWAITING_COS:6, CHANGE_COS:7, SIGNED:8, REVIEW_SUBMITTED:9, REVIEWED:10};
+function goalsCmp(a,b,type){
+  const byName = lastFirst(a.name).localeCompare(lastFirst(b.name));
+  const stg = t => (STAGE_ORDER[stagePrefix(t.stage)]??9)*10 + (parseInt(t.stage.split('-')[1])||0);
+  const v = {
+    name: ()=>byName,
+    stage: ()=>stg(a)-stg(b),
+    sot: ()=>(a.asot?sotName(a.asot):'\uffff').localeCompare(b.asot?sotName(b.asot):'\uffff'),
+    status: ()=>(PLAN_ORD[PlansStore.eff(pget(a,type), RULES.reviewLead)]??5)-(PLAN_ORD[PlansStore.eff(pget(b,type), RULES.reviewLead)]??5)
+  }[goalsSort.k]();
+  return v ? v*goalsSort.d : byName;
+}
 const PLAN_TYPES = [['SIX_MONTH','6-month goals'],['PF_YEAR','PF year plans']];
 function pget(t,type){ return PlansStore.get(t.id,type) || PlansStore.blank(type); }
 function pst(t,type){ return PlansStore.eff(pget(t,type), RULES.reviewLead); }
@@ -3552,7 +3566,7 @@ function renderGoals(){
   document.getElementById('goalsTabs').innerHTML = chipList.map(([k,l])=>`<button type="button" class="chip ${planUI.tab===k?'on':''}" onclick="planUI.tab='${k}';renderGoals()">${l} <b>${cnt[k]}</b></button>`).join('') +
     (planUI.tab==='waiting' && role==='sot' ? `<button class="btn pri sm" style="margin-left:8px" ${cnt.waiting?'':'disabled'} onclick="goalsRemindAll()">Remind ${cnt.waiting} trainee${cnt.waiting===1?'':'s'}</button>` : '');
   const st = planUI.tab==='all' ? null : tabs.find(x=>x[0]===planUI.tab)[2];
-  const rows = ppl.filter(t=>!st || st.includes(pst(t,type))).sort((a,b)=>lastFirst(a.name).localeCompare(lastFirst(b.name)));
+  const rows = ppl.filter(t=>!st || st.includes(pst(t,type))).sort((a,b)=>goalsCmp(a,b,type));
   const actionSt = tabs.find(x=>x[0]==='action')[2], waitingSt = tabs.find(x=>x[0]==='waiting')[2];
   body.innerHTML = rows.map(t=>{
     const p = pget(t,type), s = PlansStore.eff(p, RULES.reviewLead), can = pCanAct(t);
