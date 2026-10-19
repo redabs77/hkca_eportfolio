@@ -223,8 +223,10 @@
   .stack{display:flex;height:20px;border-radius:5px;overflow:hidden;background:var(--bg3);min-width:120px}
   .stack i{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:750;
     font-family:'JetBrains Mono',monospace;color:#171717;transition:width .3s ease}
-  .stack i.s1{background:var(--em700);color:#fff}
-  .stack i.s2{background:var(--bl600);color:#fff}
+  .stack i.s1{background:#065f46;color:#fff}
+  .stack i.s2{background:#6ee7b7;color:#065f46}
+  .stack i b{font-weight:800}
+  .stack i .ct{font-weight:600;font-size:9px;margin-left:3px;opacity:.82;white-space:nowrap}
   .stack i.s3{background:var(--am500);color:#171717}
   .stack i.s4{background:var(--rd500);color:#171717}
   .stack i.sx{background:var(--g400);color:#171717}
@@ -590,7 +592,7 @@
               <div>
                 <div class="eyebrow">Item-by-item synthesis</div>
                 <div class="h2">What <span id="nWord">four</span> trainers said &rarr; what goes on the form</div>
-                <div class="meta" style="margin-top:4px">Each segment is one grade, sized by how many trainers gave it; the number is the count. X (unable to assess) is excluded from the spread.</div>
+                <div class="meta" style="margin-top:4px">Each segment is one grade, sized by how many trainers gave it. The bold number is the grade; the small &times;N is the count. X (unable to assess) is excluded from the spread.</div>
               </div>
               <span class="pill warn" id="divPill"><span class="dot a"></span>&mdash;</span>
             </div>
@@ -604,6 +606,7 @@
               This prototype shows a completed synthesis. In the product every SOT grade starts blank &mdash; no median or suggested value is shown &mdash;
               so the grade is a judgement, not a click-through (U1).
               <button class="tgl" id="blankBtn" type="button">Start from blank</button>
+              <button class="tgl" id="computedBtn" type="button">Revert to computed grading</button>
             </p>
           </div>
 
@@ -833,7 +836,11 @@ function go(screen){
 
   window.scrollTo({top:0,behavior:'smooth'});
 }
-document.querySelectorAll('.step').forEach(b=>b.onclick=()=>go(b.dataset.screen));
+document.querySelectorAll('.step').forEach(b=>b.onclick=()=>{
+  const screen = b.dataset.screen;
+  if(screen==='s3'){ go('s2'); if(!validateSynthesis()) return; }
+  go(screen);
+});
 
 /* ---------------- accessibility layer ---------------- */
 
@@ -1199,7 +1206,7 @@ function buildSyn(){
       // grouped by grade, not one sliver per trainer -- stays readable at any panel size
       const counts = {}; sorted.forEach(g=>{ counts[g]=(counts[g]||0)+1; });
       const seg = ['1','2','3','4','X'].filter(g=>counts[g]).map(g=>
-        `<i class="s${g.toLowerCase()}" style="width:${100*counts[g]/sorted.length}%" title="${counts[g]} of ${sorted.length} trainers graded ${g}">${counts[g]}</i>`).join('');
+        `<i class="s${g.toLowerCase()}" style="width:${100*counts[g]/sorted.length}%" title="${counts[g]} of ${sorted.length} trainers graded ${g}"><b>${g}</b><span class="ct">&times;${counts[g]}</span></i>`).join('');
       return `<div class="syn-row${div?' div':''}" data-code="${d.c}">
         <div><div class="dm"><span class="no">${d.no}</span><span>${esc(d.l)}</span></div>
           <div class="rng"><span>${lo===hi?lo:lo+'\u2013'+hi}${nx?' \u00b7 '+nx+' X':''}</span>${div?'<span class="divergence">\u26A0 spread \u2265 2</span>':''}</div></div>
@@ -1293,6 +1300,18 @@ function updateOverall(){
   if(flagBtn) flagBtn.onclick = openFlagToAdmin;
 })();
 $('#blankBtn').onclick=()=>{ D.forEach(d=>SYN.items[d.c]=null); SYN.overall=null; SYN.why4=''; $('#why4').value=''; paintItems(); updateOverall(); announce('All SOT grades cleared.'); };
+function medianOf(arr){ const s=[...arr].sort((a,b)=>a-b), m=Math.floor(s.length/2); return s.length%2 ? s[m] : Math.round((s[m-1]+s[m])/2); }
+$('#computedBtn').onclick=()=>{
+  D.forEach(d=>{
+    const nums = gradesFor(d.c).filter(g=>g!=='X').map(Number);
+    SYN.items[d.c] = nums.length ? String(medianOf(nums)) : 'X';
+  });
+  const itemNums = D.map(d=>Number(SYN.items[d.c])).filter(n=>!isNaN(n));
+  SYN.overall = String(itemNums.length ? medianOf(itemNums) : 3);
+  SYN.why4=''; $('#why4').value='';
+  paintItems(); updateOverall();
+  announce('Items and overall set to the median across trainer forms. This is a starting point -- review and adjust before continuing; it is not a substitute for your own judgement.');
+};
 
 const PLAN_ID = CTX.id || '2024-011';
 function renderGoalAchievement(){
@@ -1322,18 +1341,21 @@ function setGoalOutcomeUI(gid,outcome){
   PlansStore.setGoalOutcome(PLAN_ID,'SIX_MONTH',gid,outcome);
   renderGoalAchievement();
 }
-function toF2F(){
+function validateSynthesis(){
   const err=$('#synErr'); err.classList.remove('on'); $$('.why').forEach(w=>w.classList.remove('bad'));
   const blanks=D.filter(d=>!SYN.items[d.c]);
   const noWhy=D.filter(d=>isDiv(d.c) && (SYN.reason[d.c]||'').trim().length<15);
   const n=nUnsat(), need4=SYN.overall==='4' && n<4 && (SYN.why4||'').trim().length<15;
   let msg='', focusEl=null;
-  if(blanks.length){ msg=`${blanks.length} item${blanks.length>1?'s':''} still need an SOT grade.`; focusEl=$(`.syn-row[data-code="${blanks[0].c}"] .gbtn`); }
+  if(blanks.length){ msg=`${blanks.length} item${blanks.length>1?'s':''} still need an SOT grade before face-to-face can be arranged.`; focusEl=$(`.syn-row[data-code="${blanks[0].c}"] .gbtn`); }
   else if(noWhy.length){ msg=`Record why trainers differ on: ${noWhy.map(d=>d.l).join('; ')}.`; noWhy.forEach(d=>$(`[data-why="${d.c}"]`).classList.add('bad')); focusEl=$(`#why-${noWhy[0].c}`); }
   else if(!SYN.overall){ msg='Choose the overall assessment.'; focusEl=$('#sotOpts .sot-opt'); }
   else if(need4){ msg='An overall 4 with fewer than 4 unsatisfactory items needs your reasoning.'; $('#why4Box').classList.add('bad'); focusEl=$('#why4'); }
-  if(msg){ err.textContent=msg; err.classList.add('on'); announce(msg); if(focusEl){ focusEl.focus(); } return; }
-  go('s3');
+  if(msg){ err.textContent=msg; err.classList.add('on'); announce(msg); if(focusEl){ focusEl.focus(); } return false; }
+  return true;
+}
+function toF2F(){
+  if(validateSynthesis()) go('s3');
 }
 
 /* ---------- screen 3: what the trainee sees ---------- */
@@ -1373,7 +1395,11 @@ function renderTraineeGoals(){
 }
 const _go = go;
 go = function(screen){ if(screen==='s3') renderTrainee(); _go(screen); };
-document.querySelectorAll('.step').forEach(b=>b.onclick=()=>go(b.dataset.screen));
+document.querySelectorAll('.step').forEach(b=>b.onclick=()=>{
+  const screen = b.dataset.screen;
+  if(screen==='s3'){ go('s2'); if(!validateSynthesis()) return; }
+  go(screen);
+});
 
 renderAsrList(); renderAsr(); buildSyn(); renderGoalAchievement();
 (function ctxInit(){
