@@ -746,8 +746,7 @@
       <button class="tab" data-tab="roster" role="tab" id="tabbtn-roster" aria-controls="tab-roster" aria-selected="false" tabindex="-1">Trainee List</button>
       <button class="tab" data-tab="logbook" role="tab" id="tabbtn-logbook" aria-controls="tab-logbook" aria-selected="false" tabindex="-1">Logbook Verification <span class="cnt hot">18</span></button>
       <button class="tab" data-tab="rotations" role="tab" id="tabbtn-rotations" aria-controls="tab-rotations" aria-selected="false" tabindex="-1">Rotations <span class="cnt hot" id="rotBadge">2</span></button>
-      <button class="tab" data-tab="itas" role="tab" id="tabbtn-itas" aria-controls="tab-itas" aria-selected="false" tabindex="-1">ITAs <span class="cnt hot" id="itaBadge">4</span></button>
-      <button class="tab" data-tab="goals" role="tab" id="tabbtn-goals" aria-controls="tab-goals" aria-selected="false" tabindex="-1">Learning plans <span class="cnt hot" id="goalsCnt">0</span></button>
+      <button class="tab" data-tab="itas" role="tab" id="tabbtn-itas" aria-controls="tab-itas" aria-selected="false" tabindex="-1">ITAs &amp; Learning Cycles <span class="cnt hot" id="itaBadge">4</span></button>
       <button class="tab" data-tab="review" role="tab" id="tabbtn-review" aria-controls="tab-review" aria-selected="false" tabindex="-1">Progression Risk <span class="cnt crit">5</span></button>
     </nav>
   </div>
@@ -996,6 +995,7 @@
         <div class="seg" id="itaViewSeg" role="group" aria-label="ITA view">
           <button type="button" data-v="overview" onclick="itaSetView('overview')">Overview</button>
           <button type="button" data-v="all" onclick="itaSetView('all')">All trainees</button>
+          <button type="button" data-v="contracts" onclick="itaSetView('contracts')">Learning contracts</button>
           <button type="button" data-v="assign" data-sot-only onclick="itaSetView('assign')">Reassign SOT</button>
         </div>
         <div class="seg" id="itaScopeSeg" role="group" aria-label="Whose trainees">
@@ -1016,43 +1016,6 @@
       </div>
       <ul class="log" id="actLog"></ul>
       <p class="note">Every invitation, assignment and sign-off is recorded with who did it and when. Earlier entries are illustrative.</p>
-    </div>
-  </section>
-
-  <!-- ==================================================== -->
-  <!-- TAB 5 — FALLING BEHIND                                -->
-  <!-- ==================================================== -->
-  <section id="tab-goals" role="tabpanel" aria-labelledby="tabbtn-goals" class="hidden">
-    <div class="card card-pad mb">
-      <div class="card-h" style="margin-bottom:12px">
-        <div>
-          <div class="eyebrow" id="plansEyebrow"></div>
-          <div class="h2">Learning plans</div>
-          <div class="meta" id="goalsSub" style="margin-top:2px"></div>
-        </div>
-        <div class="btn-row">
-          <label class="meta" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="planDemoRev" onchange="planDemoReview(this.checked)"> Demo: show the review window (3 Dec)</label>
-          <button class="btn sec sm" onclick="goalsReset()" title="Restore the sample learning-plan data shared by the prototypes">Reset demo data</button>
-        </div>
-      </div>
-      <div class="ita-bar" style="margin-bottom:10px">
-        <div class="seg" id="planTypeSeg" role="group" aria-label="Plan type">
-          <button type="button" data-t="SIX_MONTH" onclick="planSetType('SIX_MONTH')">6-month goals</button>
-          <button type="button" data-t="PF_YEAR" onclick="planSetType('PF_YEAR')">PF year plans</button>
-        </div>
-        <div class="seg" id="planScopeSeg" role="group" aria-label="Whose trainees">
-          <button type="button" data-s="mine" onclick="planSetScope('mine')">My trainees</button>
-          <button type="button" data-s="all" onclick="planSetScope('all')">All trainees</button>
-        </div>
-      </div>
-      <div class="lb-tabs" id="goalsTabs" role="tablist"></div>
-      <div class="tbl-scroll">
-        <table>
-          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th style="min-width:200px">Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
-          <tbody id="goalsBody"></tbody>
-        </table>
-      </div>
-      <p class="note" id="planNote"></p>
     </div>
   </section>
 
@@ -2061,6 +2024,23 @@ function itaState(t){
   return g>=RULES.minForms ? 'ready' : g>0 ? 'partial' : 'none';
 }
 const statePill = k => `<span class="pill" style="background:${ITA_TONE[k][0]};color:${ITA_TONE[k][1]}">${ITA_LABEL[k]}</span>`;
+/* Unified lifecycle: the front half (learning contract) and back half (ITA) of the same 6-month cycle, as one stage per trainee. */
+const LIFECYCLE_LABEL = {contract:'Contract due', inforce:'In force', feedback:'Feedback call', facetoface:'Face-to-face ready', signed:'Signed off'};
+const LIFECYCLE_DESC  = {contract:'Learning contract not yet signed', inforce:'Contract signed \u00b7 cycle under way', feedback:'Collecting trainer feedback forms', facetoface:'Forms in \u00b7 ready for face-to-face synthesis', signed:'Learning contract + ITA complete'};
+const MODULAR_RE = /ICU|Intensive Care|Pain|HKCH|Children/i;
+const isModular3 = t => MODULAR_RE.test(t.rot.label||'');
+function lifecycleStage(t){
+  if(itaState(t)==='signed') return 'signed';
+  const s = pst(t,'SIX_MONTH');
+  if(!['SIGNED','CHANGE_PROPOSED','AWAITING_COS','CHANGE_COS','REVIEW_OPEN','REVIEW_SUBMITTED','REVIEWED'].includes(s)) return 'contract';
+  if(!ROUND.open) return 'inforce';
+  if(formsGot(t) < RULES.minForms && !earlyOf(t)) return 'feedback';
+  return 'facetoface';
+}
+const LIFECYCLE_TONE = () => ({contract:ITA_TONE.none, inforce:ITA_TONE.ready, feedback:ITA_TONE.sign, facetoface:ITA_TONE.ready, signed:ITA_TONE.signed});
+function lifecyclePill(t){ const k = lifecycleStage(t), tone = LIFECYCLE_TONE()[k];
+  return `<span class="pill" style="background:${tone[0]};color:${tone[1]}">${LIFECYCLE_LABEL[k]}</span>${isModular3(t)?' <span class="pill info" title="3-month modular cycle: contract due week 2, feedback call at month 2.5, face-to-face at month 3">3-month cycle</span>':''}`;
+}
 let itaView = 'overview', itaScope = 'team', itaFilter = 'all', itaQ = '', itaGroup = 'none', itaCollapsed = new Set(), itaSort = {k:'name', d:1};
 let asWho = 'winnie', asSet = null, asFilter = 'all', asQ = '';
 const itaRows = () => ptrainees().filter(t=>itaScope==='team' || t.asot===mineId());
@@ -2071,6 +2051,7 @@ function itaMatch(t,f){
   if(f==='followup') return FOLLOW.includes(itaState(t));
   if(f==='waiting') return ['none','partial'].includes(itaState(t));
   if(f==='all') return true;
+  if(['contract','inforce','feedback','facetoface','signed'].includes(f)) return lifecycleStage(t)===f;
   return itaState(t)===f;
 }
 function itaSetView(v){ itaView = v; renderItaRound(); }
@@ -2087,7 +2068,7 @@ function renderItaRound(){
   document.querySelectorAll('#tab-itas [data-sot-only]').forEach(el=>{ el.style.display = asst ? 'none' : ''; });
   document.querySelectorAll('#itaViewSeg button').forEach(b=>{ const on = b.dataset.v===itaView; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
   document.querySelectorAll('#itaScopeSeg button').forEach(b=>{ const on = b.dataset.s===itaScope; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
-  document.getElementById('itaScopeSeg').style.display = itaView==='assign' ? 'none' : '';
+  document.getElementById('itaScopeSeg').style.display = (itaView==='assign'||itaView==='contracts') ? 'none' : '';
 
   const all = ptrainees();
   const haveMin = all.filter(t=>ROUND.open && formsGot(t)>=RULES.minForms).length, signed = all.filter(t=>itaState(t)==='signed').length, un = all.filter(t=>!t.asot).length;
@@ -2104,7 +2085,44 @@ function renderItaRound(){
 
   if(itaView==='overview') root.innerHTML = itaOverviewHtml();
   else if(itaView==='all'){ root.innerHTML = itaAllHtml(); itaListOnly(); }
+  else if(itaView==='contracts'){ root.innerHTML = itaContractsHtml(); renderGoals(); }
   else { root.innerHTML = itaAssignHtml(); assignRender(); }
+}
+
+/* ---- Learning contracts: the front half of the unified ITA & Learning Cycle (moved in from the old standalone tab) ---- */
+function itaContractsHtml(){
+  return `<div class="card card-pad mb" style="margin-top:14px">
+      <div class="card-h" style="margin-bottom:12px">
+        <div>
+          <div class="eyebrow" id="plansEyebrow"></div>
+          <div class="h2">Learning contract</div>
+          <div class="meta" id="goalsSub" style="margin-top:2px"></div>
+        </div>
+        <div class="btn-row">
+          <label class="meta" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="planDemoRev" onchange="planDemoReview(this.checked)"> Demo: show the review window (3 Dec)</label>
+          <button class="btn sec sm" onclick="goalsReset()" title="Restore the sample learning-plan data shared by the prototypes">Reset demo data</button>
+        </div>
+      </div>
+      <p class="note" style="margin:0 0 10px">The learning contract is the front half of this trainee's 6-month ITA cycle: drafted and signed in weeks 1&ndash;2, it stays in force until the trainer feedback call, when goal achievement feeds into the final ITA synthesis.</p>
+      <div class="ita-bar" style="margin-bottom:10px">
+        <div class="seg" id="planTypeSeg" role="group" aria-label="Plan type">
+          <button type="button" data-t="SIX_MONTH" onclick="planSetType('SIX_MONTH')">6-month goals</button>
+          <button type="button" data-t="PF_YEAR" onclick="planSetType('PF_YEAR')">PF year plans</button>
+        </div>
+        <div class="seg" id="planScopeSeg" role="group" aria-label="Whose trainees">
+          <button type="button" data-s="mine" onclick="planSetScope('mine')">My trainees</button>
+          <button type="button" data-s="all" onclick="planSetScope('all')">All trainees</button>
+        </div>
+      </div>
+      <div class="lb-tabs" id="goalsTabs" role="tablist"></div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th style="min-width:200px">Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
+          <tbody id="goalsBody"></tbody>
+        </table>
+      </div>
+      <p class="note" id="planNote"></p>
+    </div>`;
 }
 
 /* ---- Overview: 0) round status, 1) where is each trainee's ITA, 2) who owns which ITAs ---- */
@@ -2121,21 +2139,21 @@ function itaOverviewHtml(){
     </div>`;
   const haveMin = rows.filter(t=>formsGot(t)>=min).length, below = rows.filter(t=>formsGot(t)<min), short = below.reduce((a,t)=>a+(min-formsGot(t)),0);
   const stages = [
-    ['waiting','Waiting for trainers',`Fewer than ${min} forms back`,'Trainers',ITA_TONE.none,ITA_FILL.none],
-    ['ready','Ready to meet',`${min}+ forms back`,'Assigned SOT',ITA_TONE.ready,ITA_FILL.ready],
-    ['sign','Awaiting signature','Summary shared with the trainee','Trainee',ITA_TONE.sign,ITA_FILL.sign],
-    ['signed','Signed off','Face-to-face done and signed','',ITA_TONE.signed,ITA_FILL.signed],
-    ['followup','Needs follow-up','Remedial plan, escalation or contested','SOT / BOE',ITA_TONE.remedial,ITA_FILL.follow]
+    ['contract','Contract due','Learning contract not yet signed','Trainee / SOT',ITA_TONE.none,ITA_FILL.none],
+    ['inforce','In force','Contract signed \u00b7 cycle under way','SOT',ITA_TONE.ready,ITA_FILL.ready],
+    ['feedback','Feedback call',`Collecting trainer forms (need ${min})`,'Trainers',ITA_TONE.sign,ITA_FILL.sign],
+    ['facetoface','Face-to-face ready','Forms in \u00b7 ready for the synthesis meeting','Assigned SOT',ITA_TONE.ready,ITA_FILL.ready],
+    ['signed','Signed off','Learning contract + ITA complete','',ITA_TONE.signed,ITA_FILL.signed]
   ];
-  const cnt = k => c(k==='followup'?'follow':k);
+  const cnt = k => rows.filter(t=>lifecycleStage(t)===k).length;
   const split = stages.map(([k,l,,,,fill])=>`<i style="width:${cnt(k)/n*100}%;background:${fill}" title="${l}: ${cnt(k)}"></i>`).join('');
   const tile = ([k,l,d,who,tone]) => `<button type="button" class="fn" style="--tb:${tone[0]};--tf:${tone[1]}" onclick="itaOpen('${k}')"><b>${cnt(k)}</b><span>${l}</span><em>${d}</em><u>${who ? 'Next move: '+who : '&nbsp;'}</u></button>`;
   return alert + `<div class="ita-panel">
-      <div class="eyebrow">Where each trainee's ITA has got to &middot; ${rows.length} trainee${rows.length===1?'':'s'}${itaScope==='mine'?' assigned to you':''}</div>
+      <div class="eyebrow">Where each trainee's learning contract &amp; ITA cycle has got to &middot; ${rows.length} trainee${rows.length===1?'':'s'}${itaScope==='mine'?' assigned to you':''}</div>
       <p class="note" style="margin:6px 0 0"><b>${haveMin} of ${rows.length}</b> have the ${min}+ forms needed for the face-to-face.${below.length ? ` ${below.length} still short (${short} more form${short===1?'':'s'} in total): ${sot?'send a reminder and the trainers are pinged.':'the SOT can send a reminder.'}` : ' Everyone is covered.'}</p>
-      <div class="ita-split" style="margin-top:10px" role="img" aria-label="ITA progress">${split}</div>
+      <div class="ita-split" style="margin-top:10px" role="img" aria-label="Cycle progress">${split}</div>
       <div class="fn-grid">${stages.map(tile).join('')}</div>
-      <p class="note" style="margin-top:12px">Click a stage to see those trainees and their assigned SOT. Trainer forms are anonymous to the SOT team: this tab shows how many forms are in, never who returned them.</p>
+      <p class="note" style="margin-top:12px">Click a stage to see those trainees. Trainer forms are anonymous to the SOT team: this tab shows how many forms are in, never who returned them. Needs-follow-up ITAs (remedial, BOE, contested) still show in All trainees under ITA status.</p>
     </div>`;
 }
 
@@ -2145,7 +2163,7 @@ function itaAllHtml(){
       <span class="tb-br" aria-hidden="true"></span><span class="grpctl" role="group" aria-label="Group by"><span class="meta">Group by</span><button type="button" class="${itaGroup==='sot'?'on':''}" onclick="itaGroup='sot';renderItaRound()">Assigned SOT</button><button type="button" class="${itaGroup==='none'?'on':''}" onclick="itaGroup='none';renderItaRound()">None</button>${itaGroup==='sot'?`<button type="button" class="gall" id="itaCollapseAll" onclick="itaCollapseAll()"></button>`:''}</span>
       <input type="search" class="ctl sm" id="itaSearch" placeholder="Search trainee" aria-label="Search trainee" value="${itaQ}" oninput="itaQ=this.value.toLowerCase();itaListOnly()" style="width:180px;margin-left:auto"></div>
     <div class="tbl-scroll tall">
-      <table class="compact"><thead><tr>${[['name','Trainee','min-width:200px'],['stage','Stage',''],['forms','Trainer forms returned','min-width:180px'],['status','ITA status','min-width:190px']].concat(itaGroup==='sot'?[]:[['sot','Assigned SOT','min-width:150px']]).map(([k,l,st])=>`<th style="${st}" aria-sort="${itaSort.k===k?(itaSort.d>0?'ascending':'descending'):'none'}"><button type="button" class="sortbtn ${itaSort.k===k?'on':''}" onclick="itaSetSort('${k}')">${l}<span class="sa" aria-hidden="true">${itaSort.k===k?(itaSort.d>0?'\u2191':'\u2193'):'\u2195'}</span></button></th>`).join('')}<th style="min-width:140px">Action</th></tr></thead>
+      <table class="compact"><thead><tr>${[['name','Trainee','min-width:200px'],['stage','Stage',''],['forms','Trainer forms returned','min-width:180px'],['status','ITA status','min-width:190px']].concat(itaGroup==='sot'?[]:[['sot','Assigned SOT','min-width:150px']]).map(([k,l,st])=>`<th style="${st}" aria-sort="${itaSort.k===k?(itaSort.d>0?'ascending':'descending'):'none'}"><button type="button" class="sortbtn ${itaSort.k===k?'on':''}" onclick="itaSetSort('${k}')">${l}<span class="sa" aria-hidden="true">${itaSort.k===k?(itaSort.d>0?'\u2191':'\u2193'):'\u2195'}</span></button></th>`).join('')}<th style="min-width:190px">Cycle stage</th><th style="min-width:140px">Action</th></tr></thead>
       <tbody id="itaRows"></tbody></table>
     </div>
     <p class="note">${itaScope==='mine'?'Showing the ITAs assigned to you. Switch to <b>All ITAs</b> to track everyone. ':'Showing all ITAs. '}Trainer forms are anonymous: you see how many are back, not who sent them. An ASOT's sign-off is final and needs no SOT countersignature. Trainees rotated out are excluded (the host hospital runs their exit assessment).</p>`;
@@ -2181,6 +2199,7 @@ function itaRowHtml(t){
       <td>${itaFormsCell(t)}</td>
       <td>${statePill(k)}</td>
       ${sotCell===null ? '' : `<td>${sotCell}${cover}</td>`}
+      <td>${lifecyclePill(t)}</td>
       <td>${itaActionBtn(t,k)}</td></tr>`;
 }
 const ITA_ORD = {none:0, partial:1, ready:2, sign:3, signed:4};
@@ -2476,7 +2495,7 @@ const ITA_SIGNED = new Set(ptrainees().filter(t=>{ const i = INV[t.id]; return !
 function itaSigned(t){ return !ROUND.fresh && ITA_SIGNED.has(t.id); }
 function myItaHeld(){ const me = mineId(); return ptrainees().filter(t=>t.asot===me); }
 function myItaToSign(){ return myItaHeld().filter(t=>!itaSigned(t)).length; }
-function updateItaBadge(){ const b = document.getElementById('itaBadge'); if(b){ b.textContent = myItaToSign(); } }
+function updateItaBadge(){ const b = document.getElementById('itaBadge'); if(b){ b.textContent = myItaToSign() + goalsAction(); } }
 function itain(t){
   const i = INV[t.id]; if(!i) return null;
   const idx = ROSTER.indexOf(t), wba = Math.min(i.total, 2 + (idx%2));
@@ -3506,7 +3525,7 @@ function renderGoals(){
     ? 'You approve the PF year plan after the Assigned SOT has signed it, and you approve any mid-year change to it after the SOT has. When you approve a change, the Board of Education is informed automatically. Approving locks the plan.'
     : pf
     ? 'The PF year plan covers three domains: clinical, management and education. The trainee drafts it within 2 weeks of starting the year. The <b>Assigned SOT</b> signs first, then the <b>Chief of Service</b> approves and it locks. A mid-year change needs the SOT, then the Chief of Service, and the Board of Education is informed. Near the end of the year the trainee reviews it and the SOT comments. The review is a guide and is not graded.'
-    : 'The trainee sets 2&ndash;5 goals within 2 weeks of the period starting, drawn from the curriculum domains or the ITA competencies. The <b>Assigned SOT</b> (carried over from the previous period; use Reassign if it is not working) signs them off, which locks them. Near the end of the period the trainee reviews each goal and the SOT comments. The review is a guide and is not graded. These goals are separate from the ITA.';
+    : 'The trainee sets 2&ndash;5 goals within 2 weeks of the period starting, drawn from the curriculum domains or the ITA competencies. This is the <b>Learning Contract</b> for the 6-month ITA cycle: the <b>Assigned SOT</b> (carried over from the previous period; use Reassign if it is not working) signs it off, which locks it. Near the end of the period the trainee reviews each goal and the SOT comments \u2014 formative, not graded. At the ITA face-to-face, the SOT formally grades whether each goal was achieved, alongside the trainer ratings.';
   const badge = document.getElementById('goalsCnt'); const ga = goalsAction(); if(badge){ badge.textContent = ga; badge.style.display = ga ? '' : 'none'; }
 }
 function goalList(goals, type, refl, against, tag){
@@ -3631,6 +3650,9 @@ function renderAll(){
 
 /* ---------------- tabs ---------------- */
 function go(id, focusTab){
+  /* 'goals' is a legacy id: the old standalone Learning plans tab is now the
+     Learning contracts sub-view inside the unified ITAs & Learning Cycles tab. */
+  if(id==='goals'){ id = 'itas'; itaView = 'contracts'; }
   document.querySelectorAll('.tab').forEach(b=>{
     const on = b.dataset.tab===id;
     b.classList.toggle('on', on);
@@ -3638,9 +3660,10 @@ function go(id, focusTab){
     b.tabIndex = on ? 0 : -1;
     if(on && focusTab) b.focus();
   });
-  ['home','roster','logbook','rotations','itas','goals','review'].forEach(t=>{
+  ['home','roster','logbook','rotations','itas','review'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden', t!==id);
   });
+  if(id==='itas') renderItaRound();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(b.dataset.tab));

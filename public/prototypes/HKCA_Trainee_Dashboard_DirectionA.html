@@ -862,7 +862,7 @@ main{padding:30px 0 70px}
 <script src="hkca-plans-store.js"></script>
 <script>
 
-/* ===== learning plans: 6-month goals + PF year plan (delinked from ITAs) ===== */
+/* ===== learning plans: 6-month goals (= the Learning Contract for the 6-month ITA cycle) + PF year plan (kept isolated) ===== */
 const PS = PlansStore, GE = PS.esc;
 const GL_TODAY = PS.TODAY, GL_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const GL_PEOPLE = {
@@ -891,12 +891,12 @@ function glPlanCard(type){
   const info = GL_PEOPLE[GL_ID], T = PS.TYPES[type], acc = GL_ACC[type];
   const p = PS.get(GL_ID, type) || PS.blank(type), st = PS.eff(p), E = GE, last = p.comments[p.comments.length-1], per = p.period.label;
   const pf = type==='PF_YEAR', sot = E(info.sot);
-  const eyebrow = pf ? `PF year plan \u00b7 ${per}` : `6-month goals \u00b7 ${per}`;
+  const eyebrow = pf ? `PF year plan \u00b7 ${per}` : `Learning contract \u00b7 ${per} ITA cycle`;
   if(st==='NOT_SET' || st==='DRAFT'){
     return `<div class="gl-bn" style="border-left-color:${acc}"><div style="flex:1"><div class="eyebrow">${pf?'Year plan':'New this period'} \u00b7 due ${glDue(p,14)}</div>
       <h3>${st==='DRAFT' ? (pf?'Finish your PF year plan':'Finish your 6-month goals') : (pf?`Set your PF year plan for ${per}`:`Set your 6-month learning goals for ${per}`)}</h3>
       <p>${pf ? 'Write goals under three domains: clinical, management and education, with at least one in each. Your Assigned SOT signs first, then the Chief of Service approves. You review the plan with your SOT near the end of the year.'
-              : 'Choose 2 to 5 goals from the curriculum domains or the ITA competencies. Your Assigned SOT signs them off and they are then locked. You review them with your SOT near the end of the period. They are a guide and are not graded.'}</p>
+              : 'Choose 2 to 5 goals from the curriculum domains or the ITA competencies. This is your Learning Contract for the 6-month ITA cycle: your Assigned SOT signs it off and it is then locked. Near the end of the period you add your own reflection on each goal (formative, not graded), and at the ITA face-to-face your SOT formally grades whether each goal was completely achieved, partially achieved or not achieved, alongside your trainer ratings.'}</p>
       <p style="margin-top:6px">Your Assigned SOT: <b>${sot}</b></p>
       <div class="acts"><button class="btn pri" onclick="glEdit('${type}','set')">${st==='DRAFT'?'Continue draft':(pf?'Set PF year plan':'Set 6-month goals')}</button></div></div></div>`;
   }
@@ -928,7 +928,7 @@ function glPlanCard(type){
   if(st==='REVIEWED' && p.review.comment) comment = `<div class="gl-cb ok"><div><b>${E((p.review.reviewedBy||'SOT').replace('Dr. ','Dr '))}:</b> ${E(p.review.comment)}</div></div>`;
   const summary = pf && p.review.summary && (st==='REVIEW_SUBMITTED'||st==='REVIEWED') ? `<div class="gl-ref" style="margin-top:10px"><b>My year summary:</b> ${E(p.review.summary)}</div>` : '';
   return `<div class="card gl-card" style="margin-bottom:20px;--acc:${acc}"><div class="hd"><div><div class="eyebrow" style="color:${acc}">${eyebrow}</div><h2>${pf?'My PF year plan':'My 6-month goals'}</h2>
-    <p>${pf?'Clinical, management and education. Signed by your Assigned SOT, then approved by the Chief of Service.':`Signed by your Assigned SOT, ${sot}. Separate from your ITA.`}</p></div>${pills[st]||''}</div>${callout}${glList(p, st==='REVIEW_SUBMITTED'||st==='REVIEWED')}${summary}${comment}${foot}</div>`;
+    <p>${pf?'Clinical, management and education. Signed by your Assigned SOT, then approved by the Chief of Service.':`Signed by your Assigned SOT, ${sot}. This is the front half of your 6-month ITA cycle: goal achievement is graded at the ITA face-to-face meeting, alongside your trainer ratings.`}</p></div>${pills[st]||''}</div>${callout}${glList(p, st==='REVIEW_SUBMITTED'||st==='REVIEWED')}${summary}${comment}${foot}</div>`;
 }
 function renderGoalsMount(){
   const m = document.getElementById('goalsMount'); if(!m) return;

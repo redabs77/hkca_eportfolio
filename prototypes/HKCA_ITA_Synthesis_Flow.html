@@ -409,12 +409,19 @@
   }
   .sot-opt .gt,.sot-opt .gd{display:block}
   .sot-opt .gd{margin-top:2px}
+  .ga-opt{font:inherit;font-size:12px;font-weight:650;padding:6px 11px;border-radius:999px;border:1px solid var(--border);
+    background:var(--bg2);color:var(--ink2);cursor:pointer}
+  .ga-opt:hover{border-color:var(--ink3)}
+  .ga-opt.on[data-k="COMPLETELY_ACHIEVED"]{background:var(--ok-bg);color:var(--ok-f);border-color:transparent}
+  .ga-opt.on[data-k="PARTIALLY_ACHIEVED"]{background:var(--wn-bg);color:var(--wn-f);border-color:transparent}
+  .ga-opt.on[data-k="NOT_ACHIEVED"]{background:var(--bd-bg);color:var(--bd-f);border-color:transparent}
   .cm-bg{position:fixed;inset:0;background:rgba(30,26,60,.45);display:grid;place-items:center;z-index:200;padding:20px}
   .cm{background:var(--raised);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);padding:22px;width:min(520px,100%)}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 <link rel="stylesheet" href="hkca-mobile.css">
 <script src="hkca-mobile.js" defer></script>
+<script src="hkca-plans-store.js"></script>
 </head>
 <body>
 
@@ -605,6 +612,18 @@
               so the grade is a judgement, not a click-through (U1).
               <button class="tgl" id="blankBtn" type="button">Start from blank</button>
             </p>
+          </div>
+
+          <div class="card card-pad mb" id="goalAchieveCard">
+            <div class="card-h" style="margin-bottom:6px">
+              <div>
+                <div class="eyebrow">Learning contract &middot; the second input into this ITA</div>
+                <div class="h2">Goal achievement</div>
+                <div class="meta" id="goalAchieveSummary" style="margin-top:2px"></div>
+              </div>
+            </div>
+            <p class="note" style="margin:0 0 6px">Trainers never see these goals: only you evaluate them, alongside the 15 clinical items above. Grade each goal on how the trainee did, using holistic judgement &mdash; a Partially or Not Achieved goal is not an automatic block on the overall assessment.</p>
+            <div id="goalAchieveBody"></div>
           </div>
         </div>
 
@@ -1473,6 +1492,30 @@ function updateOverall(){
 })();
 $('#blankBtn').onclick=()=>{ D.forEach(d=>SYN.items[d.c]=null); SYN.overall=null; SYN.why4=''; $('#why4').value=''; paintItems(); updateOverall(); announce('All SOT grades cleared.'); };
 
+const PLAN_ID = CTX.id || '2024-011';
+function renderGoalAchievement(){
+  const box = document.getElementById('goalAchieveBody'); if(!box || !window.PlansStore) return;
+  const p = PlansStore.get(PLAN_ID,'SIX_MONTH') || PlansStore.blank('SIX_MONTH');
+  if(!p.goals || !p.goals.length){ box.innerHTML = '<p class="meta">No learning contract goals recorded for this cycle.</p>'; document.getElementById('goalAchieveSummary').textContent=''; return; }
+  const E = PlansStore.esc;
+  box.innerHTML = p.goals.map((g,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--border-sub)" data-gid="${g.id}">
+      ${g.domain?`<div class="meta" style="margin-bottom:2px"><span class="pill info">${E((PlansStore.domCode(g.domain)?g.domain+' \u00b7 ':'')+PlansStore.domLabel(g.domain))}</span></div>`:''}
+      <div style="font-weight:650;font-size:13px">${i+1}. ${E(g.text)}</div>
+      <div class="meta"><b>Success:</b> ${E(g.success)}</div>
+      ${g.reflection?`<div class="meta" style="margin-top:4px"><b>Trainee\u2019s reflection:</b> ${E(g.reflection)}</div>`:''}
+      <div role="radiogroup" aria-label="Goal outcome for ${E(g.text)}" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        ${Object.values(PlansStore.OUTCOMES).map(o=>`<button type="button" class="ga-opt ${g.outcome===o.key?'on':''}" data-k="${o.key}" aria-pressed="${g.outcome===o.key}" onclick="setGoalOutcomeUI('${g.id}','${o.key}')">${o.label}</button>`).join('')}
+      </div>
+    </div>`).join('');
+  const sum = PlansStore.getGoalsOutcomeSummary(PLAN_ID,'SIX_MONTH');
+  document.getElementById('goalAchieveSummary').textContent = sum.pending
+    ? `${sum.pending} of ${sum.total} goal${sum.total===1?'':'s'} not yet graded`
+    : `${sum.completely} completely achieved \u00b7 ${sum.partially} partially achieved \u00b7 ${sum.notAchieved} not achieved`;
+}
+function setGoalOutcomeUI(gid,outcome){
+  PlansStore.setGoalOutcome(PLAN_ID,'SIX_MONTH',gid,outcome);
+  renderGoalAchievement();
+}
 function toF2F(){
   const err=$('#synErr'); err.classList.remove('on'); $$('.why').forEach(w=>w.classList.remove('bad'));
   const blanks=D.filter(d=>!SYN.items[d.c]);
@@ -1507,8 +1550,20 @@ function renderTrainee(){
     <div class="tv-sec"><div class="eyebrow">Supervisor of Training\u2019s summary and suggestions</div><div class="readbox">${esc(SYN.sotComments||'\u2014')}</div></div>
     <div class="tv-sec"><div class="eyebrow">Compulsory courses \u00b7 formal project</div><div class="readbox mono" style="font-size:12px">${courses}<br>Formal project completed: ${SYN.proj?'Yes':'No'}</div></div>
     <div class="tv-sec"><div class="eyebrow">Trainee\u2019s comments / suggestions</div>
-      <div class="freetext"><textarea id="traineeComments" aria-label="Trainee comments and suggestions" placeholder="The trainee adds their own comments and suggestions here, during the meeting.">${esc(SYN.traineeComments)}</textarea></div></div>`;
+      <div class="freetext"><textarea id="traineeComments" aria-label="Trainee comments and suggestions" placeholder="The trainee adds their own comments and suggestions here, during the meeting.">${esc(SYN.traineeComments)}</textarea></div></div>
+    <div class="tv-sec" id="tvGoals"></div>`;
   $('#traineeComments').addEventListener('input',e=>SYN.traineeComments=e.target.value);
+  renderTraineeGoals();
+}
+function renderTraineeGoals(){
+  const box = document.getElementById('tvGoals'); if(!box || !window.PlansStore) return;
+  const p = PlansStore.get(PLAN_ID,'SIX_MONTH') || PlansStore.blank('SIX_MONTH');
+  if(!p.goals || !p.goals.length){ box.innerHTML = ''; return; }
+  const E = PlansStore.esc, OL = PlansStore.OUTCOMES;
+  box.innerHTML = `<div class="eyebrow">Learning contract goal achievement</div>` + p.goals.map((g,i)=>{
+    const o = g.outcome ? OL[g.outcome] : null;
+    return `<div class="readbox" style="margin-top:6px"><b>${i+1}. ${E(g.text)}</b> &mdash; <span class="pill ${o?o.tone:'warn'}">${o?o.label:'Not yet graded'}</span>${g.sotComment?`<br><span class="meta">${E(g.sotComment)}</span>`:''}</div>`;
+  }).join('');
 }
 function renderS4(){
   $$('#screen-s4 .ledger-preview .lr').forEach(r=>{ const k=r.querySelector('.lk').textContent.trim(), v=r.querySelector('.lv');
@@ -1519,7 +1574,7 @@ const _go = go;
 go = function(screen){ if(screen==='s3') renderTrainee(); _go(screen); if(screen==='s4') renderS4(); };
 document.querySelectorAll('.step').forEach(b=>b.onclick=()=>go(b.dataset.screen));
 
-renderAsrList(); renderAsr(); buildSyn();
+renderAsrList(); renderAsr(); buildSyn(); renderGoalAchievement();
 (function ctxInit(){
   document.querySelectorAll('.trn').forEach(e=>e.textContent=TRN);
   const n = ASR.length, W=['no','one','two','three','four','five','six','seven','eight'];
