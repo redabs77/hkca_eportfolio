@@ -2132,7 +2132,7 @@ function itaContractsHtml(){
       <div class="chips" id="goalsTabs" style="margin:0 0 10px"></div>
       <div class="tbl-scroll">
         <table>
-          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th style="min-width:200px">Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
+          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th style="min-width:200px">Status</th><th>Action</th></tr></thead>
           <tbody id="goalsBody"></tbody>
         </table>
       </div>
@@ -2198,8 +2198,11 @@ function itaActionBtn(t,k){
     return '<span class="meta">Waiting for forms</span>';
   }
   if(k==='waitcontract'){
-    return can ? `<button type="button" class="btn sec sm" onclick="planOpen('${t.id}','SIX_MONTH')" title="The face-to-face can&rsquo;t start until the Assigned SOT signs the learning contract. Trainer forms can still be collected in the meantime.">Open learning contract</button>`
-               : '<span class="meta">Waiting for the learning contract</span>';
+    if(!can) return '<span class="meta">Waiting for the learning contract</span>';
+    const submitted = !['NOT_SET','DRAFT'].includes(pst(t,'SIX_MONTH'));
+    return submitted
+      ? `<button type="button" class="btn sec sm" onclick="planOpen('${t.id}','SIX_MONTH')" title="The face-to-face can&rsquo;t start until the Assigned SOT signs the learning contract. Trainer forms can still be collected in the meantime.">Open learning contract</button>`
+      : `<button type="button" class="btn sec sm" disabled title="The trainee has not submitted the learning contract yet &mdash; nothing to open.">Open learning contract</button>`;
   }
   if(!can) return '<span class="meta">&mdash;</span>';
   const lab = {ready:'Start face-to-face', sign:'Open ITA', signed:'View', remedial:'Open remedial plan', boe:'Open BOE escalation', contested:'View appeal'}[k];
@@ -3558,9 +3561,9 @@ function renderGoals(){
     else if(actionSt.includes(s)) act = `<button class="btn pri sm" onclick="planOpen('${t.id}','${type}')">${pCosCan() ? (s==='AWAITING_COS'?'Approve':'Review change') : can ? 'Review' : 'View'}</button>`;
     else if(waitingSt.includes(s)) act = role==='sot' ? `<button class="btn sec sm" onclick="goalRemind('${t.id}')">Remind trainee</button>` : `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
     else act = `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
-    return `<tr><td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td><td>${stagePill(t.stage)}</td><td>${sotChip(t.asot)}${role==='sot'&&t.asot?'<a class="lb-title" tabindex="0" style="display:block;margin:2px 0 0 30px;font-size:12px" onclick="planAssign(true)" title="Reassign if the working relationship did not work out">Reassign</a>':''}</td>
-      <td>${goalPill(type,s)}</td><td class="meta">${planDetail(t,p,s)}</td><td>${act}</td></tr>`;
-  }).join('') || `<tr class="empty-row"><td colspan="6">${pf && !ppl.length ? 'No Provisional Fellows in this view.' : 'Nothing here.'}</td></tr>`;
+    return `<tr><td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td><td>${stagePill(t.stage)}</td><td>${sotChip(t.asot)}</td>
+      <td>${goalPill(type,s)}</td><td>${act}</td></tr>`;
+  }).join('') || `<tr class="empty-row"><td colspan="5">${pf && !ppl.length ? 'No Provisional Fellows in this view.' : 'Nothing here.'}</td></tr>`;
   document.getElementById('goalsSub').textContent = `${cnt.action} need your action \u00b7 ${cnt.waiting} waiting on trainees \u00b7 ${cnt.signed+cnt.reviewed} in force or reviewed`;
   document.getElementById('planNote').innerHTML = role==='cos'
     ? 'You approve the PF year plan after the Assigned SOT has signed it, and you approve any mid-year change to it after the SOT has. When you approve a change, the Board of Education is informed automatically. Approving locks the plan.'
