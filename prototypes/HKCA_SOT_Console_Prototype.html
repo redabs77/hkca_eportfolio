@@ -2162,9 +2162,12 @@ function itaOverviewHtml(){
     ['inforce','In force','Contract signed \u00b7 cycle under way','SOT',ITA_TONE.ready,ITA_FILL.ready],
     ['feedback','Feedback call',`Collecting trainer forms (need ${min})`,'Trainers',ITA_TONE.sign,ITA_FILL.sign],
     ['facetoface','Face-to-face ready','Forms in \u00b7 ready for the synthesis meeting','Assigned SOT',ITA_TONE.ready,ITA_FILL.ready],
-    ['signed','Signed off','Learning contract + ITA complete','',ITA_TONE.signed,ITA_FILL.signed]
+    ['signed','Signed off','Learning contract + ITA complete','',ITA_TONE.signed,ITA_FILL.signed],
+    ['followup','Needs follow-up','Remedial plan \u00b7 BOE escalation \u00b7 contested','Assigned SOT / BOE',ITA_TONE.remedial,ITA_FILL.follow]
   ];
-  const cnt = k => rows.filter(t=>lifecycleStage(t)===k).length;
+  /* Trainees in a FOLLOW state (remedial/BOE/contested) are counted only in the 'followup' tile, never double-counted into
+     whichever generic contract/forms bucket they'd otherwise fall into -- matches how the All-trainees chips already split them out. */
+  const cnt = k => k==='followup' ? rows.filter(t=>FOLLOW.includes(itaState(t))).length : rows.filter(t=>lifecycleStage(t)===k && !FOLLOW.includes(itaState(t))).length;
   const split = stages.map(([k,l,,,,fill])=>`<i style="width:${cnt(k)/n*100}%;background:${fill}" title="${l}: ${cnt(k)}"></i>`).join('');
   const tile = ([k,l,d,who,tone]) => `<button type="button" class="fn" style="--tb:${tone[0]};--tf:${tone[1]}" onclick="itaOpen('${k}')"><b>${cnt(k)}</b><span>${l}</span><em>${d}</em><u>${who ? 'Next move: '+who : '&nbsp;'}</u></button>`;
   return alert + `<div class="ita-panel">
@@ -2172,7 +2175,7 @@ function itaOverviewHtml(){
       <p class="note" style="margin:6px 0 0"><b>${haveMin} of ${rows.length}</b> have the ${min}+ forms needed for the face-to-face.${below.length ? ` ${below.length} still short (${short} more form${short===1?'':'s'} in total): ${sot?'send a reminder and the trainers are pinged.':'the SOT can send a reminder.'}` : ' Everyone is covered.'}</p>
       <div class="ita-split" style="margin-top:10px" role="img" aria-label="Cycle progress">${split}</div>
       <div class="fn-grid">${stages.map(tile).join('')}</div>
-      <p class="note" style="margin-top:12px">Click a stage to see those trainees. Trainer forms are anonymous to the SOT team: this tab shows how many forms are in, never who returned them. Needs-follow-up ITAs (remedial, BOE, contested) still show in All trainees under ITA status.</p>
+      <p class="note" style="margin-top:12px">Click a stage to see those trainees. Trainer forms are anonymous to the SOT team: this tab shows how many forms are in, never who returned them.</p>
     </div>`;
 }
 
