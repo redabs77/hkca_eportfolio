@@ -1,8 +1,8 @@
 ---
 type: prd
 project: "[[HKCA Portfolio Revamp]]"
-version: "1.1.0"
-date: 2026-10-17
+version: "1.2.0"
+date: 2026-10-19
 status: approved_for_implementation
 stakeholders:
   - "Dr. Albert Chan (Chief of Service / Project Lead)"
@@ -10,7 +10,7 @@ stakeholders:
   - "Tina Huang / Engineering Team"
 ---
 
-# Master Product Requirements Document (PRD v1.1)
+# Master Product Requirements Document (PRD v1.2)
 ## Next-Generation HKCA Electronic Portfolio & Vocational Training System
 
 ---
@@ -92,7 +92,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 
 ### 3.1 Role Delegation & Handover Protocol
 1. **Ongoing vs. Cycle-Specific Split:**
-   - **Logbook Verifier:** Ongoing operational assignment; verifies cases continuously. An unassigned logbook pool allows peer verifiers to claim unassigned trainees.
+   - **Logbook Verifier:** Ongoing operational assignment; verifies cases continuously. An unassigned logbook pool allows peer verifiers to claim unassigned trainees. Backed by `logbook_verifier_assignments` (see Database Schema and Data Model) &mdash; the legacy system had **no equivalent**: `patient2.approved_by` was free text with no foreign key, and any SOT/Assistant SOT could sign off any case ad hoc. The new table therefore starts empty at migration; every trainee needs a fresh initial assignment or sits in the unassigned pool.
    - **Assigned SOT:** Period-specific, carried over from the previous period by default so the learning plan can be signed within 2 weeks and the same person plans, reviews and later conducts the ITA. The SOT reassigns at any time (for example if the relationship did not work); pending sign-offs move with the trainee and plans already signed keep their original signer.
    - **No Suggested-ASOT Heuristics:** Assignment is explicitly driven by SOT clinical discretion; algorithmic matching is excluded.
 2. **Transfer Responsibilities Wizard:**
@@ -111,7 +111,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 * **11 Approved ICU Training Units:** Tracking mandatory 6-month ICU rotations constrained strictly to College-accredited units with joint/legacy ICM curriculum rules.
 * **Configurable Curriculum Engine:** Versioned rules, dynamic form rubrics, and JSON behavioral anchors.
 * **2-Tier ITA Engine (Official 15-Item Form):** Private voluntary trainer feedback $\rightarrow$ SOT/ASOT summative synthesis $\rightarrow$ Trainee in-person sign-off (ASOT sign-off final; no SOT countersign).
-* **Learning Plans (two types, delinked from the ITA):** 6-month goals and the PF year plan share one workflow: 2-week drafting $\rightarrow$ Assigned SOT sign-off and locking (PF plan: then Chief of Service approval) $\rightarrow$ versioned change proposals $\rightarrow$ formative end-of-period review (not graded).
+* **Learning Plans (two types, linked to the ITA via goal-achievement review, §2.4):** 6-month goals and the PF year plan share one workflow: 2-week drafting $\rightarrow$ Assigned SOT sign-off and locking (PF plan: then Chief of Service approval) $\rightarrow$ versioned change proposals $\rightarrow$ formative end-of-period review (not graded) $\rightarrow$ goal-achievement graded by the Assigned SOT during ITA synthesis (advisory only, never shown to trainers).
 * **Dual-Track Volume of Practice (Logbook):** Hospital-only case logging with 2-year retrospective lock, AI/heuristic classification, `To verify` queue with milestone-lock reopening rules, and `Browse trainee progress` featuring Cohort Heatmaps and expandable domain-to-item minimums.
 * **Executive SOT Console:** HRM-style overview dashboard (colour-coded KPI cards, ITA assignment donut, unified all-trainee denominators, Needs Attention queue, monthly reminder drawer) and compact roster with "Essential" column presets.
 * **External WBA Asynchronous Sync:** Ingestion integration with HKAM iWBA API (reflecting JCIMED specifications and quarantine conflict handling).
@@ -169,17 +169,22 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
     - `1` Consistently exceeds · `2` Occasionally exceeds · `3` Usually meets (Pass) · `4` Unsatisfactory · `X` Unable to assess.
   * Concrete examples are mandatory **only for ratings of 4** (unsatisfactory ratings must be legally defensible); optional for 1, 2, 3, and X.
   * **Voluntary Feedback Principle:** Trainer forms carry no artificial "overdue" state. SOT dashboard monitors forms received and surfaces a **"Thin input" alert** when fewer than 3 forms are returned (default threshold). Assessors with linked WBAs for the trainee are highlighted as recommended responders.
+  * **ITA Round Lifecycle (Albert directive 2026-10-19):** Each assessment period opens one round when the SOT clicks **"Initiate ITA & invite all trainers"**, sending one batch of invitations logged with an open timestamp. The SOT may send follow-up reminders to non-responders within the same round rather than opening a new one. A round stays open until the SOT moves to synthesis; starting synthesis below the minimum-forms threshold is allowed but requires an explicit **"start anyway" override**, logged with the form count at the time.
   * Individual trainer submissions are sealed with a cryptographic hash and strictly confidential from the trainee.
 * **2.2 Tier 2: Summative Synthesis & ASOT Delegation:**
   * SOT console displays the full distribution spread across all 15 items. If trainer ratings diverge by $\ge 2$ levels, the synthesizer must document a rationale.
   * The summative sign-off is held by the trainee's **Assigned SOT** (SOT or ASOT, set at period start). The ASOT's sign-off is **final and authoritative** (no SOT countersign required).
   * Consolidated grades for the 15 items start completely blank (no automated pre-fill).
   * **College Overall Rule:** Overall rating is automatically locked to `4 (Unsatisfactory)` if 4 or more of the 15 consolidated items are rated 4. If fewer than 4 items are unsatisfactory, the synthesizer may still issue a discretionary 4 but must record an explicit clinical justification. Items rated `X` do not count toward the failure threshold.
-* **2.3 Mandatory Face-to-Face Sign-Off & Contested Appeals:**
-  * Trainee reviews consolidated feedback during a mandatory in-person sign-off interview.
-  * Disputed assessments transition to `contested`; trainee submits an objection statement; record enters `pending_boe_review`.
-  * System records both `sot_grade` and post-appeal `final_grade`. Progression gates evaluate `final_grade`.
-* **2.4 Learning Plans Workflow (P0), delinked from the ITA:** two plan types share one engine. Goals are **not** assessed at the ITA and are not shown on the trainer form.
+  * **Divergence Rule, Scaled for Panel Size (Albert directive 2026-10-19):** Trainer ratings diverging by $\ge 2$ levels require a documented rationale. For panels of 5 or fewer trainer forms, a single outlier is treated as a meaningful signal (unchanged rule). For panels of 6 or more, divergence requires **at least 2 trainers at each end of the gap** — a lone outlier in a large panel is normal variation, not signal, and should not force a justification on nearly every item.
+  * **Learning-Contract Gate (cohort-scoped, Albert directive 2026-10-19):** The Assigned SOT cannot open Tier 2 synthesis until the trainee's current-period learning contract (§2.4) is signed — the ITA holds at status `waitcontract` until then. This gate is intentional policy going forward, introduced alongside the ongoing curriculum review, but applies **only to trainees who start training under that review**. Legacy/already-training trainees are exempt by default at migration (see §7) — the rule is never applied retroactively to trainees who never trained under it. The exact cohort cut-off date is a College/Board of Education policy decision, configurable, not hardcoded.
+* **2.3 Mandatory Face-to-Face Sign-Off:**
+  * Trainee reviews consolidated feedback &mdash; the overall assessment, the 15 item grades, and the SOT's comments, never an individual trainer's form &mdash; during a mandatory in-person meeting.
+  * Signing confirms the meeting happened and the grade was explained, not agreement with the grade. If the trainee does not sign, the record simply stays unsigned &mdash; the system does not host a dispute or appeal workflow.
+  * **Appeals happen outside the system (Albert directive 2026-10-19):** a trainee who disagrees raises it with the College directly, by email. The College/Board of Education panel process for hearing and ruling on a dispute is explicitly out of scope for the ePortfolio.
+  * The system still records `sot_grade` and a `final_grade`. College Admin may manually update `final_grade` to reflect an externally-concluded Board of Education ruling (uphold / overturn / re-assess), with the ruling and reasoning logged for audit &mdash; an administrative record, not an in-app appeal flow. Progression gates evaluate `final_grade`.
+  * Production sign-off is an **electronic signature** &mdash; the trainee authenticates with their own ePortfolio login (username and password) &mdash; not a drawn signature.
+* **2.4 Learning Plans Workflow (P0), linked to the ITA via goal-achievement review (confirmed 2026-10-19 &mdash; corrects earlier "delinked" framing):** two plan types share one engine. Goal achievement is reviewed and graded by the Assigned SOT as part of ITA synthesis (§2.2) and shown to the trainee alongside the 15 items. What stays true from the original "delinked" intent: goals are **never shown to trainers** and never appear on the trainer form, and a Partially/Not Achieved goal is **advisory only** &mdash; it does not affect the ITA's overall grade or the College Overall Rule (§2.2), the same non-blocking soft-signal pattern as the $\ge 2$ lifetime unsatisfactory-ITA flag in §5.3.
   * **Plan types:**
     - `SIX_MONTH` (6-month learning goals, all stages): 2-5 goals, one per 6-month period.
     - `PF_YEAR` (Provisional Fellow year plan, PFY trainees, in addition to the 6-month goals): one per PFY year, three domains: **Clinical, Management, Education**, at least one goal in each (up to 3 per domain).
@@ -239,6 +244,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
   * Radial visualizer: "ITAs assigned to SOT team" donut tracking unassigned, assigned, and completed sign-offs.
   * Action Queue ("Needs Attention") surfacing prioritized items across all trainees.
   * Reminder rules drawer allowing SOTs to customize lead times (e.g., alert if no Assigned SOT has been set a set time after the period starts, plans not submitted or not signed, reviews waiting; monthly cumulative logbook reminder).
+  * **Unified ITA & Learning Cycle View:** per-trainee ITA tracking and per-cycle learning-goal tracking are presented as one consolidated view, not two separate tabs, reflecting §2.4's goal-achievement linkage to the ITA.
 * **5.2 Compact Trainee Roster & Column Presets:**
   * High-density table with sticky headers, "Last, First" naming, and stage pills (BAT blue, HAT teal, PFY violet).
   * **"Essential" Column Preset:** Toggles between full data grid and high-priority columns: *Trainee · Stage · Rotation · Accredited Time · VOP Progress · Action*.
@@ -325,6 +331,8 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
    - Verified surgical logbook counts.
    - Historical ITA outcomes and remediation plans.
 3. **Data Provenance:** Every migrated record carries `legacy_table`, `legacy_pk`, and `migrated_at` timestamps.
+4. **Learning-Contract Gate Exemption (Albert directive 2026-10-19):** The §2.2 contract-signing gate applies only to trainees who start training under the curriculum review that introduces it. All migrated/legacy trainees default to gate-exempt (`learning_contract_gate_required = false`) &mdash; they never trained under this rule, and applying it retroactively would newly block in-flight trainees on the day of cutover.
+5. **No Legacy Logbook Verifier Data to Migrate:** The legacy system (`patient2.approved_by`) had no persistent verifier assignment &mdash; any SOT/Assistant SOT could sign off any trainee's case, recorded per-case as free text with no foreign key. The new ongoing Logbook Verifier role (§3.1) starts with an empty `logbook_verifier_assignments` table at cutover; every trainee needs a fresh initial assignment or sits in the unassigned pool.
 
 ---
 
@@ -346,3 +354,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 | **§6 (NFRs & Security)** | M4, M5, H6, H7, E1, E4 | Append-Only Hashes, Base Table Queries, `ON DELETE RESTRICT` |
 | **§5.5 & §6 (AI Safety)** | Albert Directive / Model Contract | `draft_only` Hard-Stop, Pinned Snapshot, Cache Breakpoint |
 | **§7 (Migration)** | E5, Rollover Plan | Scoped Active Migration, CI Parity Suite |
+| **§2.2 (ITA Round Model & Contract Gate)** | Albert Directive 2026-10-19 | `itas.status='waitcontract'`, round lifecycle fields, cohort-scoped `trainee_profiles.learning_contract_gate_required` |
+| **§2.3 (Appeals Removed from App)** | Albert Directive 2026-10-19 | `itas.boe_ruling*` admin-entered fields; no in-app appeal/BOE UI |
+| **§2.4 (Goals Linked to ITA)** | Albert Directive 2026-10-19 | Goal achievement graded in ITA synthesis; advisory-only Not Achieved flag |
+| **§3.1 (Logbook Verifier Entity)** | Prototype Workflow Appraisal 2026-10-19 | `logbook_verifier_assignments` (no legacy predecessor) |

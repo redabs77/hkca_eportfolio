@@ -148,6 +148,13 @@ CREATE TABLE trainee_profiles (
   intermediate_exam_date    DATE,
   final_exam_passed         BOOLEAN DEFAULT false,
   final_exam_date           DATE,
+
+  -- Learning-contract gate (cohort-scoped; Albert directive 2026-10-19)
+  -- Confirmed policy going forward: the Assigned SOT cannot open ITA Tier-2 synthesis until
+  -- the current-period learning contract is signed (itas.status = 'waitcontract' until then).
+  -- Applies only to trainees who start training under the curriculum review introducing it;
+  -- legacy/already-training trainees default to false and are never gated retroactively.
+  learning_contract_gate_required BOOLEAN NOT NULL DEFAULT false,
   
   -- Status
   is_active                 BOOLEAN DEFAULT true,
@@ -349,15 +356,23 @@ CREATE TABLE itas (
   
   -- Workflow status
   status                    TEXT DEFAULT 'pending_trainer_feedback',
-  -- pending_trainer_feedback → sot_assessment → trainee_review → completed
-  
+  -- pending_trainer_feedback → waitcontract (if gated and unsigned) → sot_assessment → trainee_review → completed
+  -- 'waitcontract' added 2026-10-19: gates Tier-2 synthesis on the period's learning contract
+  -- being signed; only reachable when trainee_profiles.learning_contract_gate_required = true.
+
+  -- ITA round lifecycle (Albert directive 2026-10-19)
+  round_opened_at           TIMESTAMP,        -- set when the SOT clicks "Initiate ITA & invite all trainers"
+  min_forms_threshold        INTEGER DEFAULT 3,
+  started_below_threshold    BOOLEAN DEFAULT false, -- true if synthesis began via the explicit "start anyway" override
+
   -- Trainer feedback (consensus)
   trainers_consulted        TEXT[],           -- Array of trainer user IDs
   trainer_feedback_json     JSONB,            -- Domain ratings + comments
   trainer_consensus_date    DATE,
   
   -- SOT assessment
-  sot_overall_rating        INTEGER,          -- 1-4 scale (1=exceeds, 4=unsatisfactory)
+  sot_overall_rating        INTEGER,          -- 1-4 scale (1=exceeds, 4=unsatisfactory); this is sot_grade in M6/PRD §2.3
+  final_grade                INTEGER,          -- M6: distinct from sot_overall_rating; equal by default, may change after a BOE ruling (see boe_ruling* below)
   sot_comments              TEXT,
   sot_signed_by             TEXT REFERENCES users(id),
   sot_signed_at             TIMESTAMP,
@@ -377,6 +392,14 @@ CREATE TABLE itas (
   remediation_plan          TEXT,
   remediation_due_date      DATE,
   remediation_completed     BOOLEAN DEFAULT false,
+
+  -- BOE ruling on an externally-raised dispute (Albert directive 2026-10-19: appeals are
+  -- raised with the College by email, not through the system -- these fields are an
+  -- administrative record of the outcome, entered by College Admin, not an in-app appeal flow)
+  boe_ruling                 TEXT,             -- upheld | overturned | re_assess
+  boe_ruling_recorded_by     TEXT REFERENCES users(id),
+  boe_ruling_recorded_at     TIMESTAMP,
+  boe_ruling_note            TEXT,
   
   -- Overdue tracking
   due_date                  DATE NOT NULL,
@@ -799,8 +822,8 @@ CREATE INDEX idx_pfy_plans_trainee ON pfy_plans(trainee_id);
 
 ---
 
-### PROPOSED: `learning_plans` and `learning_goals` (supersedes `pfy_plans` and `ita_sessions.trainee_learning_goals`)
-Learning plans are delinked from the ITA. One table serves both plan types. Proposal only; the committed baseline migration is not edited.
+### PROPOSED: `learning_plans`, `learning_goals` & `logbook_verifier_assignments` (supersedes `pfy_plans` and `ita_sessions.trainee_learning_goals`; `logbook_verifier_assignments` has no legacy predecessor)
+Learning plans are **linked** to the ITA via goal-achievement review during synthesis (confirmed 2026-10-19, corrects the earlier "delinked" framing) &mdash; but goals are still never shown to trainers, and a Not Achieved goal is advisory-only (does not affect the ITA grade; see PRD §2.4). One table serves both plan types. Proposal only; the committed baseline migration is not edited.
 
 ```sql
 CREATE TABLE learning_plans (
@@ -836,7 +859,14 @@ CREATE TABLE learning_goals (
   objective     TEXT NOT NULL,
   success       TEXT NOT NULL,
   evidence      TEXT,
-  reflection    TEXT                            -- trainee's note at review
+  reflection    TEXT,                           -- trainee's note at review
+  -- Goal-achievement outcome (Albert directive 2026-10-19: linked to the ITA, graded by the
+  -- Assigned SOT during synthesis -- shown to the trainee, never to trainers, advisory only:
+  -- does not affect the ITA's overall grade or the College Overall Rule, PRD §2.2/§2.4)
+  outcome            TEXT,                      -- COMPLETELY_ACHIEVED | PARTIALLY_ACHIEVED | NOT_ACHIEVED
+  outcome_graded_by  TEXT REFERENCES users(id),
+  outcome_graded_at  TIMESTAMP,
+  outcome_ita_id     INTEGER REFERENCES itas(id) -- which ITA synthesis session graded this goal
 );
 CREATE TABLE learning_plan_proposals (          -- mid-period change request
   id SERIAL PRIMARY KEY, plan_id INTEGER REFERENCES learning_plans(id) ON DELETE CASCADE,
@@ -850,9 +880,17 @@ CREATE TABLE sot_assignments (                  -- carried over each period; rea
   sot_id TEXT REFERENCES users(id), period_start DATE NOT NULL, reassigned_from TEXT REFERENCES users(id),
   reassigned_at DATE, reassigned_by TEXT REFERENCES users(id), reason TEXT
 );
+CREATE TABLE logbook_verifier_assignments (     -- ONGOING, not period-boxed (unlike sot_assignments above)
+  id SERIAL PRIMARY KEY, trainee_id INTEGER REFERENCES trainee_profiles(id) ON DELETE CASCADE,
+  verifier_id TEXT REFERENCES users(id),        -- NULL = unassigned pool, open for any ASOT/SOT at the
+                                                 -- trainee's hospital to claim (PRD §3.1)
+  assigned_at TIMESTAMP, assigned_by TEXT REFERENCES users(id),
+  unassigned_at TIMESTAMP, unassigned_reason TEXT,
+  is_current BOOLEAN DEFAULT true
+);
 ```
 The Chief of Service is a distinct role (`role = 'COS'`), not an SOT permission; PF plan approval and PF plan change approval are gated on it.
-Migration: each legacy `pfy_plans` row (clinical/management/education text) becomes one `PF_YEAR` plan with one goal per domain, marked signed/approved from `sot_signed_at` / `cos_signed_at`. `ita_sessions.trainee_learning_goals` is deprecated; keep read-only for history.
+Migration: each legacy `pfy_plans` row (clinical/management/education text) becomes one `PF_YEAR` plan with one goal per domain, marked signed/approved from `sot_signed_at` / `cos_signed_at`. `ita_sessions.trainee_learning_goals` is deprecated; keep read-only for history. `logbook_verifier_assignments` has **no legacy predecessor** &mdash; `patient2.approved_by` was free text with no foreign key, and any SOT/Assistant SOT could sign off any case ad hoc (see Legacy EPS Schema Audit §5). The table therefore starts empty at cutover; every trainee needs a fresh initial assignment or sits in the unassigned pool.
 
 ---
 
@@ -1175,3 +1213,4 @@ CREATE TABLE echo_assessments (...);    -- legacy: atp_echo (1,350 rows) — FTT
 - [[System Architecture and Roadmap]]
 - [[Legacy EPS Schema Audit]]
 - [[New Workflow Changes - Curriculum Updates Required]]
+- [[Prototype Workflow Appraisal - PRD, Schema, Migration, JCIMED (2026-10-19)]]
