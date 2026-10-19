@@ -3579,7 +3579,9 @@ function renderGoals(){
   body.innerHTML = rows.map(t=>{
     const p = pget(t,type), s = PlansStore.eff(p, RULES.reviewLead), can = pCanAct(t);
     let act;
-    if(!t.asot) act = role==='sot' ? `<button class="btn pri sm" onclick="planAssign()">Assign SOT</button>` : '<span class="meta">No SOT assigned</span>';
+    if(!t.asot) act = role==='sot'
+      ? `<select class="ctl sm" aria-label="Assign SOT for ${lastFirst(t.name)}" onchange="if(this.value)setAsot(['${t.id}'],this.value,'asot')"><option value="">Assign SOT&hellip;</option>${activeAsots().map(a=>`<option value="${a.id}">${a.name} (${a.tag})</option>`).join('')}</select>`
+      : '<span class="meta">No SOT assigned</span>';
     else if(actionSt.includes(s)) act = `<button class="btn pri sm" onclick="planOpen('${t.id}','${type}')">${pCosCan() ? (s==='AWAITING_COS'?'Approve':'Review change') : can ? 'Review' : 'View'}</button>`;
     else if(waitingSt.includes(s)) act = role==='sot' ? `<button class="btn sec sm" onclick="goalRemind('${t.id}')">Remind trainee</button>` : `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
     else act = `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
