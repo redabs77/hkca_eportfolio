@@ -666,13 +666,13 @@
               <div class="lr"><span class="lk">Trainee</span><span class="lv trn">Dr. Kelvin Wong</span></div>
               <div class="lr"><span class="lk">Cycle</span><span class="lv mono">Jul &ndash; Dec 2026</span></div>
               <div class="lr"><span class="lk">sot_grade</span><span class="lv mono" id="lgSot">3</span></div>
-              <div class="lr"><span class="lk">final_grade</span><span class="lv mono">pending appeal window</span></div>
+              <div class="lr"><span class="lk">final_grade</span><span class="lv mono">pending counter-signature</span></div>
               <div class="lr"><span class="lk">Rotation credit</span><span class="lv mono" id="lgCredit">6.0 months &rarr; Clinical Anaesthesia</span></div>
             </div>
 
             <div class="errmsg" id="synErr" role="alert"></div>
             <button class="btn pri" style="width:100%;justify-content:center;margin-top:15px" onclick="toF2F()">Prepare face-to-face review &rsaquo;</button>
-            <p class="note" style="margin-top:10px;text-align:center">The grade is not final until the trainee counter-signs or the appeal window expires.</p>
+            <p class="note" style="margin-top:10px;text-align:center">The grade is not final until the trainee counter-signs at the face-to-face meeting.</p>
           </div>
         </div>
       </div>
@@ -955,13 +955,11 @@ function completeSignOff(){
   out.innerHTML = unsat ? `
     <div class="oh">Committed &mdash; unsatisfactory</div>
     <div class="ob">Record committed as <span class="mono">REMEDIAL_ACTIVE</span>. Rotation credit is withheld, a remedial plan is opened,
-      and the consecutive-unsatisfactory count increases by one (a second consecutive unsatisfactory ITA escalates to the Board of Education).
-      The 14-day appeal window is now open.</div>` : `
+      and the consecutive-unsatisfactory count increases by one (a second consecutive unsatisfactory ITA escalates to the Board of Education).</div>` : `
     <div class="oh">&#10003; Committed &mdash; rotation credited</div>
     <div class="ob">Record committed as <span class="mono">COMPLETED_SATISFACTORY</span>. <span class="mono">6.0 months</span> posted to the
-      Accredited Time Ledger as an immutable grant entry (reason: <span class="mono">SATISFACTORY_ITA_COMPLETION</span>). Progression gate re-evaluated.
-      The 14-day appeal window is now open.</div>`;
-  announce(unsat ? 'Sign-off recorded. Rotation credit withheld; remedial plan opened.' : 'Sign-off recorded. Six months credited to Clinical Anaesthesia. Fourteen day appeal window open.');
+      Accredited Time Ledger as an immutable grant entry (reason: <span class="mono">SATISFACTORY_ITA_COMPLETION</span>). Progression gate re-evaluated.</div>`;
+  announce(unsat ? 'Sign-off recorded. Rotation credit withheld; remedial plan opened.' : 'Sign-off recorded. Six months credited to Clinical Anaesthesia.');
 }
 
 /* ---------------- theme ---------------- */
@@ -1364,7 +1362,12 @@ function renderTrainee(){
   let items=''; ['C','T'].forEach(gk=>{
     items += `<div class="tv-sec"><div class="eyebrow">${GROUPS[gk]}</div>`+D.filter(d=>d.g===gk).map(d=>`<div class="tv-row">${chipg(SYN.items[d.c])}<span>${esc(d.l)}</span></div>`).join('')+'</div>';
   });
-  const courses = Object.keys(SYN.courses).map(k=>`${k} ${SYN.courses[k]?'\u2713':'\u2717'}`).join(' \u00b7 ');
+  const courseChips = Object.keys(SYN.courses).map(k=> SYN.courses[k]
+    ? `<span class="pill ok" style="margin:0 6px 6px 0"><span class="dot g"></span>${esc(k)}</span>`
+    : `<span class="pill bad" style="margin:0 6px 6px 0"><span class="dot r"></span>${esc(k)}</span>`
+  ).join('') + (SYN.proj
+    ? `<span class="pill ok" style="margin:0 6px 6px 0"><span class="dot g"></span>Formal project</span>`
+    : `<span class="pill bad" style="margin:0 6px 6px 0"><span class="dot r"></span>Formal project</span>`);
   $('#traineeView').innerHTML = `
     <div class="ledger-preview" style="margin-top:0">
       <div class="lh">Assessment outcome</div>
@@ -1376,7 +1379,7 @@ function renderTrainee(){
     </div>
     <div class="tv-grid">${items.replace(/<div class="tv-sec">/,'<div class="tv-sec" style="grid-column:1">').replace(/<div class="tv-sec">/,'<div class="tv-sec" style="grid-column:2">')}</div>
     <div class="tv-sec"><div class="eyebrow">Supervisor of Training\u2019s summary and suggestions</div><div class="readbox">${esc(SYN.sotComments||'\u2014')}</div></div>
-    <div class="tv-sec"><div class="eyebrow">Compulsory courses \u00b7 formal project</div><div class="readbox mono" style="font-size:12px">${courses}<br>Formal project completed: ${SYN.proj?'Yes':'No'}</div></div>
+    <div class="tv-sec"><div class="eyebrow">Compulsory courses \u00b7 formal project</div><div style="display:flex;flex-wrap:wrap;margin-top:6px">${courseChips}</div></div>
     <div class="tv-sec"><div class="eyebrow">Trainee\u2019s comments / suggestions</div>
       <div class="freetext"><textarea id="traineeComments" aria-label="Trainee comments and suggestions" placeholder="The trainee adds their own comments and suggestions here, during the meeting.">${esc(SYN.traineeComments)}</textarea></div></div>
     <div class="tv-sec" id="tvGoals"></div>`;
