@@ -811,7 +811,8 @@ CREATE TABLE learning_plans (
   period_end         DATE NOT NULL,
   assigned_sot_id    TEXT REFERENCES users(id), -- set at period start; transferable
   status             TEXT DEFAULT 'NOT_SET',
-  -- NOT_SET -> DRAFT -> SUBMITTED -> (CHANGES_REQUESTED) -> [PF: AWAITING_COS ->] SIGNED -> CHANGE_PROPOSED <-> SIGNED
+  -- NOT_SET -> DRAFT -> SUBMITTED -> (CHANGES_REQUESTED) -> [PF: AWAITING_COS ->] SIGNED -> CHANGE_PROPOSED -> [PF: CHANGE_COS ->] SIGNED
+  -- review: REVIEW_OPEN -> REVIEW_SUBMITTED -> REVIEWED
   version            INTEGER DEFAULT 0,
   notified_at        DATE,
   submitted_at       DATE,
@@ -831,7 +832,7 @@ CREATE TABLE learning_goals (
   id            SERIAL PRIMARY KEY,
   plan_id       INTEGER REFERENCES learning_plans(id) ON DELETE CASCADE,
   plan_version  INTEGER NOT NULL,              -- goals are versioned with the plan
-  domain_code   TEXT NOT NULL,                 -- CF-2.x | SM-3.x | ITA-<ITEM> | OTHER | CLINICAL | MANAGEMENT | EDUCATION
+  domain_code   TEXT NOT NULL,                 -- CF-2.x | SM-3.x | ITA-CLINICAL_SKILLS | ITA-CRISIS_MANAGEMENT | ITA-TEAMWORK | ITA-COMMUNICATION | OTHER | CLINICAL | MANAGEMENT | EDUCATION
   objective     TEXT NOT NULL,
   success       TEXT NOT NULL,
   evidence      TEXT,
@@ -839,9 +840,18 @@ CREATE TABLE learning_goals (
 );
 CREATE TABLE learning_plan_proposals (          -- mid-period change request
   id SERIAL PRIMARY KEY, plan_id INTEGER REFERENCES learning_plans(id) ON DELETE CASCADE,
-  reason TEXT NOT NULL, proposed_goals_json JSONB NOT NULL, proposed_at DATE, decided_at DATE, decision TEXT
+  reason TEXT NOT NULL, proposed_goals_json JSONB NOT NULL, proposed_at DATE,
+  sot_decided_by TEXT REFERENCES users(id), sot_decided_at DATE, sot_decision TEXT,   -- step 1, Assigned SOT
+  cos_decided_by TEXT REFERENCES users(id), cos_decided_at DATE, cos_decision TEXT,   -- step 2, PF_YEAR only
+  board_informed_at DATE                                                              -- Board of Education notified on final approval (PF_YEAR)
+);
+CREATE TABLE sot_assignments (                  -- carried over each period; reassign writes a new row
+  id SERIAL PRIMARY KEY, trainee_id INTEGER REFERENCES trainee_profiles(id) ON DELETE CASCADE,
+  sot_id TEXT REFERENCES users(id), period_start DATE NOT NULL, reassigned_from TEXT REFERENCES users(id),
+  reassigned_at DATE, reassigned_by TEXT REFERENCES users(id), reason TEXT
 );
 ```
+The Chief of Service is a distinct role (`role = 'COS'`), not an SOT permission; PF plan approval and PF plan change approval are gated on it.
 Migration: each legacy `pfy_plans` row (clinical/management/education text) becomes one `PF_YEAR` plan with one goal per domain, marked signed/approved from `sot_signed_at` / `cos_signed_at`. `ita_sessions.trainee_learning_goals` is deprecated; keep read-only for history.
 
 ---

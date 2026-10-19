@@ -707,7 +707,7 @@
       <div class="mark">H</div>
       <div>
         <h1>HKCA e-Portfolio</h1>
-        <p>Supervisor of Training Console</p>
+        <p id="brandSub">Supervisor of Training Console</p>
       </div>
     </div>
 
@@ -717,10 +717,11 @@
       <button data-scope="cluster">NTEC Cluster (all)</button>
     </div>
 
-    <!-- role: SOT vs Assistant SOT -->
+    <!-- role: SOT, Assistant SOT or Chief of Service (separate login; approves PF plans) -->
     <div class="seg" id="roleSeg">
       <button class="on" data-role="sot">SOT</button>
       <button data-role="asst">Assistant SOT</button>
+      <button data-role="cos">Chief of Service</button>
     </div>
     <a class="btn sec" href="HKCA_Trainee_Dashboard_DirectionA.html" target="_blank" rel="noopener">Trainee view &#8599;</a>
 
@@ -731,7 +732,7 @@
           <div class="nm" id="userName">Dr. Albert Chan</div>
           <div class="rl" id="userRole">SOT &middot; Prince of Wales Hospital</div>
         </div>
-        <div class="av">AC</div>
+        <div class="av" id="userAv">AC</div>
       </div>
     </div>
   </div>
@@ -995,7 +996,7 @@
         <div class="seg" id="itaViewSeg" role="group" aria-label="ITA view">
           <button type="button" data-v="overview" onclick="itaSetView('overview')">Overview</button>
           <button type="button" data-v="all" onclick="itaSetView('all')">All trainees</button>
-          <button type="button" data-v="assign" data-sot-only onclick="itaSetView('assign')">Assign SOT</button>
+          <button type="button" data-v="assign" data-sot-only onclick="itaSetView('assign')">Reassign SOT</button>
         </div>
         <div class="seg" id="itaScopeSeg" role="group" aria-label="Whose trainees">
           <button type="button" data-s="mine" onclick="itaSetScope('mine')">My ITAs</button>
@@ -1047,7 +1048,7 @@
       <div class="lb-tabs" id="goalsTabs" role="tablist"></div>
       <div class="tbl-scroll">
         <table>
-          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th>Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
+          <thead><tr><th style="min-width:190px">Trainee</th><th>Stage</th><th>Assigned SOT</th><th style="min-width:200px">Status</th><th style="min-width:300px">Detail</th><th>Action</th></tr></thead>
           <tbody id="goalsBody"></tbody>
         </table>
       </div>
@@ -2028,12 +2029,14 @@ const nameOf = id => id ? asotById(id).name : 'Unassigned';
 function setAsot(ids, asotId, field){
   field = field || 'asot'; asotId = asotId || null;
   const changed = [];
-  ids.forEach(id=>{ const t = ROSTER.find(x=>x.id===id); if(t && t[field]!==asotId){ t[field] = asotId; delete t.cover; changed.push(t); } });
+  const prev = {};
+  ids.forEach(id=>{ const t = ROSTER.find(x=>x.id===id); if(t && t[field]!==asotId){ prev[id] = t[field]; t[field] = asotId; delete t.cover; changed.push(t); } });
   if(!changed.length){ toast('Already set'); return; }
   const who = changed.length<=2 ? changed.map(t=>lastFirst(t.name)).join(' and ') : changed.length+' trainees';
-  logEvent(asotId ? `Assigned ${who} to ${nameOf(asotId)} for ${ROLE_LABEL[field]}` : `Cleared ${ROLE_LABEL[field]} for ${who}`);
+  const re = changed.every(t=>prev[t.id]) ? 'Reassigned' : 'Assigned', reT = re==='Reassigned' ? 'reassigned' : 'assigned';
+  logEvent(asotId ? `${re} ${who} to ${nameOf(asotId)} for ${ROLE_LABEL[field]}` : `Cleared ${ROLE_LABEL[field]} for ${who}`);
   renderAll();
-  toast(asotId ? `${who} assigned to ${nameOf(asotId).replace('Dr. ','')}` : `Cleared for ${who}`);
+  toast(asotId ? `${who} ${reT} to ${nameOf(asotId).replace('Dr. ','')}` : `Cleared for ${who}`);
 }
 /* ---------------- ITAs tab: overview, all trainees, assign ---------------- */
 /* Trainer forms are anonymous to the SOT team: this tab only ever shows counts, never which trainer has or has not returned a form. */
@@ -2258,7 +2261,7 @@ function asShown(){
 function itaAssignHtml(){
   return `<div class="as-grid">
     <div><div class="eyebrow" style="margin-bottom:8px">SOT team</div><div id="asTeam" role="radiogroup" aria-label="Choose a team member"></div>
-      <p class="note">Pick a team member, then tick the trainees whose ITA is assigned to them: they review the forms, meet the trainee and sign off.</p></div>
+      <p class="note">Pick a team member, then tick the trainees they supervise. They sign the learning plans, review the trainer forms, meet the trainee and sign off the ITA.</p></div>
     <div><div id="asHead"></div>
       <div class="ita-filters" style="margin:10px 0"><span id="asChips" style="display:contents"></span>
         <input type="search" class="ctl sm" id="asSearch" placeholder="Search trainee" aria-label="Search trainee" value="${asQ}" oninput="asQ=this.value.toLowerCase();assignRender()" style="width:170px;margin-left:auto"></div>
@@ -2271,8 +2274,8 @@ function assignRender(){
   document.getElementById('asTeam').innerHTML = activeAsots().map(a=>{
     const mine = all.filter(t=>t.asot===a.id), sg = mine.filter(t=>itaState(t)==='signed').length;
     return `<button type="button" role="radio" aria-checked="${a.id===asWho}" class="as-person ${a.id===asWho?'on':''}" style="--pc:${sotCol(a.id)}" onclick="asPick('${a.id}')"><b>${sotAv(a.id)}${a.name}${a.id===mineId()?' (you)':''}</b><span>${a.tag} &middot; ${mine.length} ITA${mine.length===1?'':'s'} &middot; ${sg} signed</span></button>`;
-  }).join('') + `<div class="as-person none" style="cursor:default"><b><span class="unas"><i></i>Not assigned</span></b><span>${all.filter(t=>!t.asot).length} trainee${all.filter(t=>!t.asot).length===1?'':'s'} still to be assigned</span></div>`;
-  document.getElementById('asHead').innerHTML = `<div class="h3">Trainees for ${who.name}</div><div class="meta" style="margin-top:2px">Ticked trainees will be assigned to ${sotName(asWho)}, who signs their learning plans and runs their ITA. Assign at the start of the period; you can transfer later. Signed-off ITAs and signed plans keep their original signer.</div>`;
+  }).join('') + `<div class="as-person none" style="cursor:default"><b><span class="unas"><i></i>Not assigned</span></b><span>${all.filter(t=>!t.asot).length} trainee${all.filter(t=>!t.asot).length===1?'':'s'} new, not assigned yet</span></div>`;
+  document.getElementById('asHead').innerHTML = `<div class="h3">Trainees for ${who.name}</div><div class="meta" style="margin-top:2px">Every trainee keeps their Assigned SOT from the previous period. Reassign here if it is not working, or to assign a new joiner. Ticked trainees will be assigned to ${sotName(asWho)}, who signs their learning plans and runs their ITA. Anything waiting for sign-off moves with the trainee; signed plans and signed-off ITAs keep their original signer.</div>`;
   document.getElementById('asChips').innerHTML = [['all','All'],['unassigned','No SOT assigned yet'],['this','Already with '+sotName(asWho).split(' ')[0]]].map(([k,l])=>
     `<button type="button" class="chip ${asFilter===k?'on':''}" onclick="asFilter='${k}';assignRender()">${l}</button>`).join('') +
     `<button type="button" class="chip" onclick="asTickShown()">Tick all shown</button>`;
@@ -2516,7 +2519,7 @@ const ICON = {
   risk:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>'
 };
 const svg = k => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
-const REM_TYPE = {'ita-input':'forms','logbook':'logbook','handshake':'rot','signature':'ita','pip':'risk','goals-late':'goals','goals-sign':'goals','goals-review':'goals','goals-review-open':'goals','asot-unassigned':'ita'};
+const REM_TYPE = {'ita-input':'forms','logbook':'logbook','handshake':'rot','signature':'ita','pip':'risk','goals-late':'goals','goals-sign':'goals','goals-review':'goals','goals-review-open':'goals','cos-wait':'goals','asot-unassigned':'ita'};
 const TYPE_LABEL = {ita:'ITA',logbook:'Logbook',goals:'Learning plans',rot:'Rotations',forms:'Trainer input',risk:'Progression risk'};
 function logbookOldest(){
   const asst = role==='asst', ds = LB.filter(e=>e.state!=='verified' && (!asst || trOf(e).verifier===mineId())).map(e=>{
@@ -3431,21 +3434,24 @@ function pget(t,type){ return PlansStore.get(t.id,type) || PlansStore.blank(type
 function pst(t,type){ return PlansStore.eff(pget(t,type), RULES.reviewLead); }
 function pbase(type){ return type==='PF_YEAR' ? ptrainees().filter(t=>String(t.stage).startsWith('PFY')) : ptrainees(); }
 function pscope(type, scope){ return pbase(type).filter(t=> scope==='all' || t.asot===mineId()); }
-/* who may act: the Assigned SOT, or the SOT for any trainee who has one. Chief of Service approval (PF plan, second step) is the SOT login in this demo. */
-function pCanAct(t){ return !!t.asot && (role==='sot' || t.asot===mineId()); }
-function pCosCan(){ return role==='sot'; }
-function pActionSet(type){ return ['SUBMITTED','CHANGE_PROPOSED','REVIEW_SUBMITTED'].concat(type==='PF_YEAR' && pCosCan() ? ['AWAITING_COS'] : []); }
+/* who may act: the Assigned SOT, or the SOT for any trainee who has one. The Chief of Service is a separate login: it approves PF plans (second step) and PF plan changes, and cannot act on anything else. */
+function pCanAct(t){ return role!=='cos' && !!t.asot && (role==='sot' || t.asot===mineId()); }
+function pCosCan(){ return role==='cos'; }
+function planScopeFor(){ return role==='asst' ? 'mine' : 'all'; }
+function planTypesFor(){ return role==='cos' ? ['PF_YEAR'] : PLAN_TYPES.map(x=>x[0]); }
+function actorName(){ return role==='cos' ? 'Dr. Peter Lam' : nameOf(mineId()); }
 function pTabs(type){
-  const act = pActionSet(type);
-  return [['action','Needs your action',act],['waiting','Waiting on trainee',['NOT_SET','DRAFT','CHANGES_REQUESTED','REVIEW_OPEN']],
-          ['signed','In force',['SIGNED','AWAITING_COS'].filter(x=>!act.includes(x))],['reviewed','Reviewed',['REVIEWED']]];
+  if(role==='cos') return [['action','Needs your approval',['AWAITING_COS','CHANGE_COS']],['waiting','Not with you yet',['NOT_SET','DRAFT','CHANGES_REQUESTED','SUBMITTED']],
+    ['signed','Approved',['SIGNED','CHANGE_PROPOSED','REVIEW_OPEN','REVIEW_SUBMITTED']],['reviewed','Reviewed',['REVIEWED']]];
+  return [['action','Needs your action',['SUBMITTED','CHANGE_PROPOSED','REVIEW_SUBMITTED']],['waiting','Waiting on trainee',['NOT_SET','DRAFT','CHANGES_REQUESTED','REVIEW_OPEN']],
+          ['signed','Signed',['SIGNED','AWAITING_COS','CHANGE_COS']],['reviewed','Reviewed',['REVIEWED']]];
 }
 function pCounts(type, scope){
   const ppl = pscope(type, scope), out = {};
   pTabs(type).forEach(([k,,st])=>out[k] = ppl.filter(t=>st.includes(pst(t,type))).length);
   return out;
 }
-function goalsAction(){ return PLAN_TYPES.reduce((a,[ty])=>a+pCounts(ty, role==='sot'?'all':'mine').action, 0); }
+function goalsAction(){ return planTypesFor().reduce((a,ty)=>a+pCounts(ty, planScopeFor()).action, 0); }
 function goalPill(type,st){ return `<span class="pill ${PlansStore.TONE[st]}">${PlansStore.label(type,st)}</span>`; }
 function pDue(p){ return new Date(iso2d(p.notifiedAt||p.period.start).getTime()+RULES.goalsDue*DAY); }
 function planDetail(t,p,st){
@@ -3456,8 +3462,9 @@ function planDetail(t,p,st){
     case 'CHANGES_REQUESTED': return `Changes requested${p.comments.length?': '+PlansStore.esc(p.comments[p.comments.length-1].text):''}`;
     case 'DRAFT': return 'Draft saved &middot; not submitted';
     case 'NOT_SET': { const d = pDue(p); return `Notified ${F(p.notifiedAt||p.period.start)} &middot; due ${d.getDate()} ${MON[d.getMonth()]}`; }
+    case 'CHANGE_COS': return `Change approved by ${PlansStore.esc(((p.proposal&&p.proposal.sotBy)||p.signedBy).replace('Dr. ',''))} ${F(p.proposal&&p.proposal.sotAt)} &middot; waiting for the Chief of Service`;
     case 'AWAITING_COS': return `Signed by ${PlansStore.esc(p.signedBy.replace('Dr. ',''))} ${F(p.signedAt)} &middot; waiting for the Chief of Service`;
-    case 'SIGNED': return `${pf?'Approved':'Signed'} ${F(p.cosAt||p.signedAt)} by ${PlansStore.esc((p.cosBy||p.signedBy).replace('Dr. ',''))} &middot; version ${p.version}`;
+    case 'SIGNED': return `${pf?'Approved':'Signed'} ${F(p.cosAt||p.signedAt)} by ${PlansStore.esc((p.cosBy||p.signedBy).replace('Dr. ',''))} &middot; version ${p.version}${pf&&p.boardInformedAt?` &middot; Board informed ${F(p.boardInformedAt)}`:''}`;
     case 'REVIEW_OPEN': return `Review opened ${F(PlansStore.reviewOpens(p, RULES.reviewLead))} &middot; not sent yet`;
     case 'REVIEW_SUBMITTED': return `Review sent ${F(p.review.submittedAt)} &middot; waiting for your comment`;
     case 'REVIEWED': return `Reviewed ${F(p.review.reviewedAt)} by ${PlansStore.esc((p.review.reviewedBy||'').replace('Dr. ',''))}`;
@@ -3467,9 +3474,12 @@ function planDetail(t,p,st){
 function planSetType(t){ planUI.type = t; planUI.tab = 'action'; renderGoals(); }
 function planSetScope(s){ planUI.scope = s; renderGoals(); }
 function planDemoReview(on){ PlansStore.setDemoReview(on); renderAll(); }
-function planAssign(){ go('itas'); itaOpen('noasot'); }
+function planAssign(reassign){ go('itas'); if(reassign){ asFilter = 'all'; asSet = null; itaView = 'assign'; renderItaRound(); } else itaOpen('noasot'); }
 function renderGoals(){
   const body = document.getElementById('goalsBody'); if(!body) return;
+  const cosv = role==='cos'; if(cosv){ planUI.type = 'PF_YEAR'; planUI.scope = 'all'; }
+  document.getElementById('planTypeSeg').style.display = cosv ? 'none' : '';
+  document.getElementById('planScopeSeg').style.display = cosv ? 'none' : '';
   const type = planUI.type, pf = type==='PF_YEAR', tabs = pTabs(type);
   document.querySelectorAll('#planTypeSeg button').forEach(b=>{ const on = b.dataset.t===type; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
   document.querySelectorAll('#planScopeSeg button').forEach(b=>{ const on = b.dataset.s===planUI.scope; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
@@ -3485,20 +3495,23 @@ function renderGoals(){
     const p = pget(t,type), s = PlansStore.eff(p, RULES.reviewLead), can = pCanAct(t);
     let act;
     if(planUI.tab==='action') act = !t.asot ? (role==='sot' ? `<button class="btn pri sm" onclick="planAssign()">Assign SOT</button>` : '<span class="meta">No SOT assigned</span>')
-      : `<button class="btn pri sm" onclick="planOpen('${t.id}','${type}')">${(s==='AWAITING_COS' ? pCosCan() : can) ? (s==='AWAITING_COS'?'Approve':'Review') : 'View'}</button>`;
+      : `<button class="btn pri sm" onclick="planOpen('${t.id}','${type}')">${pCosCan() ? (s==='AWAITING_COS'?'Approve':'Review change') : can ? 'Review' : 'View'}</button>`;
     else if(planUI.tab==='waiting') act = role==='sot' ? `<button class="btn sec sm" onclick="goalRemind('${t.id}')">Remind trainee</button>` : `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
     else act = `<button class="btn sec sm" onclick="planOpen('${t.id}','${type}')">View</button>`;
-    return `<tr><td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td><td>${stagePill(t.stage)}</td><td>${sotChip(t.asot)}</td>
+    return `<tr><td><div class="nm-cell">${lastFirst(t.name)}</div><div class="id-cell mono">HKCA ${t.id}</div></td><td>${stagePill(t.stage)}</td><td>${sotChip(t.asot)}${role==='sot'&&t.asot?'<a class="lb-title" tabindex="0" style="display:block;margin:2px 0 0 30px;font-size:12px" onclick="planAssign(true)" title="Reassign if the working relationship did not work out">Reassign</a>':''}</td>
       <td>${goalPill(type,s)}</td><td class="meta">${planDetail(t,p,s)}</td><td>${act}</td></tr>`;
   }).join('') || `<tr class="empty-row"><td colspan="6">${pf && !ppl.length ? 'No Provisional Fellows in this view.' : 'Nothing here.'}</td></tr>`;
   document.getElementById('goalsSub').textContent = `${cnt.action} need your action \u00b7 ${cnt.waiting} waiting on trainees \u00b7 ${cnt.signed+cnt.reviewed} in force or reviewed`;
-  document.getElementById('planNote').innerHTML = pf
-    ? 'The PF year plan covers three domains: clinical, management and education. The trainee drafts it within 2 weeks of starting the year. The <b>Assigned SOT</b> signs first, then the <b>Chief of Service</b> approves and it locks. Near the end of the year the trainee reviews it and the SOT comments. The review is a guide and is not graded.'
-    : 'The trainee sets 2&ndash;5 goals within 2 weeks of the period starting, drawn from the curriculum domains or the ITA competencies. The <b>Assigned SOT</b> signs them off, which locks them. Near the end of the period the trainee reviews each goal and the SOT comments. The review is a guide and is not graded. These goals are separate from the ITA.';
+  document.getElementById('planNote').innerHTML = role==='cos'
+    ? 'You approve the PF year plan after the Assigned SOT has signed it, and you approve any mid-year change to it after the SOT has. When you approve a change, the Board of Education is informed automatically. Approving locks the plan.'
+    : pf
+    ? 'The PF year plan covers three domains: clinical, management and education. The trainee drafts it within 2 weeks of starting the year. The <b>Assigned SOT</b> signs first, then the <b>Chief of Service</b> approves and it locks. A mid-year change needs the SOT, then the Chief of Service, and the Board of Education is informed. Near the end of the year the trainee reviews it and the SOT comments. The review is a guide and is not graded.'
+    : 'The trainee sets 2&ndash;5 goals within 2 weeks of the period starting, drawn from the curriculum domains or the ITA competencies. The <b>Assigned SOT</b> (carried over from the previous period; use Reassign if it is not working) signs them off, which locks them. Near the end of the period the trainee reviews each goal and the SOT comments. The review is a guide and is not graded. These goals are separate from the ITA.';
   const badge = document.getElementById('goalsCnt'); const ga = goalsAction(); if(badge){ badge.textContent = ga; badge.style.display = ga ? '' : 'none'; }
 }
-function goalList(goals, type, refl){
-  const E = PlansStore.esc, one = (g,i)=>`<div style="padding:9px 0;border-bottom:1px solid var(--border-sub)">${type!=='PF_YEAR' && g.domain?`<div class="meta" style="margin-bottom:2px"><span class="pill info">${E(PlansStore.domCode(g.domain)?g.domain+' \u00b7 ':'')}${E(PlansStore.domLabel(g.domain))}</span></div>`:''}
+function goalList(goals, type, refl, against, tag){
+  const key = g=>[g.domain,g.text,g.success,g.evidence].join('|'), other = against ? new Set(against.map(key)) : null;
+  const E = PlansStore.esc, one = (g,i)=>`<div style="padding:9px 0;border-bottom:1px solid var(--border-sub)">${other && !other.has(key(g)) ? `<div class="meta" style="margin-bottom:2px"><span class="pill warn">${tag}</span></div>` : ''}${type!=='PF_YEAR' && g.domain?`<div class="meta" style="margin-bottom:2px"><span class="pill info">${E(PlansStore.domCode(g.domain)?g.domain+' \u00b7 ':'')}${E(PlansStore.domLabel(g.domain))}</span></div>`:''}
     <div style="font-weight:650;font-size:13px">${i}. ${E(g.text)}</div>
     <div class="meta"><b>Success:</b> ${E(g.success)}</div><div class="meta"><b>Evidence:</b> ${E(g.evidence||'\u2014')}</div>
     ${refl && refl[g.id] ? `<div class="meta" style="margin-top:4px"><b>Trainee&rsquo;s reflection:</b> ${E(refl[g.id])}</div>` : ''}</div>`;
@@ -3513,14 +3526,20 @@ function planOpen(id,type){
   const who = `<p class="meta" style="margin-bottom:8px">Assigned SOT: <b>${t.asot?E(asotById(t.asot).name):'none yet'}</b></p>`;
   if(s==='CHANGE_PROPOSED'){
     body = who + `<p class="meta" style="margin-bottom:10px"><b>Reason:</b> ${E(p.proposal.reason)}</p>
-      <div class="grid2"><div><div class="eyebrow" style="margin-bottom:4px">Signed (locked) &middot; v${p.version}</div>${goalList(p.goals,type)}</div>
-      <div><div class="eyebrow" style="margin-bottom:4px">Proposed</div>${goalList(p.proposal.goals,type)}</div></div>`;
-    if(can){ okLabel = 'Approve change'; ok = ()=>planDecide(id,type,'approve'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','decline')">Decline change</button>`; canComment = true; }
+      <div class="grid2"><div><div class="eyebrow" style="margin-bottom:4px">Signed (locked) &middot; v${p.version}</div>${goalList(p.goals,type,null,p.proposal.goals,'Replaced')}</div>
+      <div><div class="eyebrow" style="margin-bottom:4px">Proposed</div>${goalList(p.proposal.goals,type,null,p.goals,'New or edited')}</div></div>`;
+    if(can){ okLabel = pf ? 'Approve and send to Chief of Service' : 'Approve change'; ok = ()=>planDecide(id,type,'approve'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','decline')">Decline change</button>`; canComment = true; }
   } else if(s==='REVIEW_SUBMITTED' || s==='REVIEWED' || s==='REVIEW_OPEN'){
     body = who + goalList(p.goals,type,p.review.reflections) + (pf && p.review.summary ? `<p class="note"><b>Trainee&rsquo;s year summary:</b> ${E(p.review.summary)}</p>` : '');
     if(s==='REVIEW_OPEN') body += '<p class="note">The review window is open. The trainee has not sent a review yet.</p>';
     if(s==='REVIEWED') body += `<p class="note"><b>${E(p.review.reviewedBy||'')}</b> reviewed this on ${PlansStore.fmt(p.review.reviewedAt)}: ${E(p.review.comment||'no comment')}. Formative only; not graded.</p>`;
     if(s==='REVIEW_SUBMITTED' && can){ okLabel = 'Mark as reviewed'; ok = ()=>planDecide(id,type,'reviewed'); canComment = true; }
+  } else if(s==='CHANGE_COS'){
+    body = who + `<p class="meta" style="margin-bottom:10px"><b>Reason:</b> ${E(p.proposal.reason)} <span class="meta">&middot; approved by ${E(((p.proposal.sotBy)||p.signedBy))} on ${PlansStore.fmt(p.proposal.sotAt)}</span></p>
+      <div class="grid2"><div><div class="eyebrow" style="margin-bottom:4px">In force &middot; v${p.version}</div>${goalList(p.goals,type,null,p.proposal.goals,'Replaced')}</div>
+      <div><div class="eyebrow" style="margin-bottom:4px">Proposed change</div>${goalList(p.proposal.goals,type,null,p.goals,'New or edited')}</div></div>`;
+    if(cos){ okLabel = 'Approve change'; ok = ()=>planDecide(id,type,'cosapprove'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','cosdecline')">Decline change</button>`; canComment = true; body += '<p class="note">Approving applies the change, locks the plan again and informs the Board of Education.</p>'; }
+    else body += '<p class="note">With the Chief of Service for approval. The signed plan stays in force until then.</p>';
   } else if(s==='AWAITING_COS'){
     body = who + goalList(p.goals,type) + `<p class="note">Signed by ${E(p.signedBy)} on ${PlansStore.fmt(p.signedAt)}. The Chief of Service approves next, which locks the plan.</p>`;
     if(cos){ okLabel = 'Approve as Chief of Service'; ok = ()=>planDecide(id,type,'cos'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','cosback')">Send back</button>`; canComment = true; needComment = 'back'; }
@@ -3535,19 +3554,22 @@ function planOpen(id,type){
   lbModalOpen({ey:`${lastFirst(t.name)} \u00b7 ${t.stage} \u00b7 ${p.period.label}`, title: pf ? 'PF year plan' : '6-month goals', body, ok:okLabel, onOk:ok});
 }
 function planDecide(id,type,act){
-  const t = ROSTER.find(x=>x.id===id), c = (document.getElementById('gComment')||{value:''}).value.trim(), pf = type==='PF_YEAR', who = nameOf(mineId());
+  const t = ROSTER.find(x=>x.id===id), c = (document.getElementById('gComment')||{value:''}).value.trim(), pf = type==='PF_YEAR', who = actorName();
   if((act==='changes'||act==='cosback') && !c){ toast('Add a comment so the trainee knows what to change'); return; }
   PlansStore.update(id, type, s=>{
     if(act==='sign'){ s.status = pf ? 'AWAITING_COS' : 'SIGNED'; s.version = (s.version||0)+1; s.signedBy = who; s.signedAt = TODAY_ISO; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
     if(act==='cos'){ s.status = 'SIGNED'; s.cosBy = who; s.cosAt = TODAY_ISO; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
     if(act==='changes' || act==='cosback'){ s.status = 'CHANGES_REQUESTED'; s.comments.push({by:who,at:TODAY_ISO,text:c}); }
-    if(act==='approve'){ s.versions = (s.versions||[]).concat([{v:s.version,goals:s.goals,signedAt:s.signedAt}]); s.goals = s.proposal.goals; s.version++; s.signedAt = TODAY_ISO; s.signedBy = who; s.proposal = null; s.status = 'SIGNED'; }
-    if(act==='decline'){ s.proposal = null; s.status = 'SIGNED'; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    if(act==='approve' && pf){ s.proposal.sotBy = who; s.proposal.sotAt = TODAY_ISO; s.status = 'CHANGE_COS'; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    else if(act==='approve'){ s.versions = (s.versions||[]).concat([{v:s.version,goals:s.goals,signedAt:s.signedAt}]); s.goals = s.proposal.goals; s.version++; s.signedAt = TODAY_ISO; s.signedBy = who; s.proposal = null; s.status = 'SIGNED'; }
+    if(act==='cosapprove'){ s.versions = (s.versions||[]).concat([{v:s.version,goals:s.goals,signedAt:s.signedAt}]); s.goals = s.proposal.goals; s.version++; s.cosBy = who; s.cosAt = TODAY_ISO; s.boardInformedAt = TODAY_ISO; s.proposal = null; s.status = 'SIGNED'; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
+    if(act==='decline' || act==='cosdecline'){ s.proposal = null; s.status = 'SIGNED'; if(c) s.comments.push({by:who,at:TODAY_ISO,text:c}); }
     if(act==='reviewed'){ s.review.reviewedAt = PlansStore.now(); s.review.reviewedBy = who; s.review.comment = c; }
   });
-  const msg = {sign: pf?'signed, now with the Chief of Service':'signed off and locked', cos:'approved and locked', changes:'sent back for changes', cosback:'sent back for changes', approve:'change approved', decline:'change declined', reviewed:'review completed'}[act];
+  const msg = {sign: pf?'signed, now with the Chief of Service':'signed off and locked', cos:'approved and locked', changes:'sent back for changes', cosback:'sent back for changes', approve: pf?'change approved by the SOT, now with the Chief of Service':'change approved', cosapprove:'change approved; Board of Education informed', decline:'change declined', cosdecline:'change declined', reviewed:'review completed'}[act];
   const nm = pf ? 'PF year plan' : '6-month goals';
   logEvent(`${nm}: ${lastFirst(t.name)} ${msg}`);
+  if(act==='cosapprove') logEvent(`Board of Education informed: PF year plan changed for ${lastFirst(t.name)}`);
   lbModalClose(); renderAll(); toast(`${nm} ${msg}`);
 }
 function goalRemind(id){
@@ -3560,12 +3582,17 @@ function goalsRemindAll(){
 function goalsReset(){ PlansStore.reset(); renderAll(); toast('Learning-plan demo data reset'); }
 window.addEventListener('storage', e=>{ if(e.key===PlansStore.KEY) renderAll(); });
 function planRows(){   // every plan (both types) that falls in the current user's remit
-  const out = [], sc = role==='sot' ? 'all' : 'mine';
-  PLAN_TYPES.forEach(([type])=>pscope(type, sc).forEach(t=>out.push({t, type, p:pget(t,type), s:pst(t,type)})));
+  const out = [], sc = planScopeFor();
+  planTypesFor().forEach(type=>pscope(type, sc).forEach(t=>out.push({t, type, p:pget(t,type), s:pst(t,type)})));
   return out;
 }
 function goalReminders(){
   const out = [], sets = planRows(), lead = RULES.goalsSign*DAY;
+  if(role==='cos'){
+    const cw = sets.filter(x=>['AWAITING_COS','CHANGE_COS'].includes(x.s));
+    if(cw.length) out.push({id:'cos-wait', title:`PF plans waiting for your approval &mdash; ${cw.length}`, detail:cw.map(x=>lastFirst(x.t.name)).join('; '), due:new Date(Math.min(...cw.map(x=>iso2d((x.s==='CHANGE_COS'&&x.p.proposal?x.p.proposal.sotAt:x.p.signedAt)||TODAY_ISO).getTime()+lead))), tab:'goals', btn:'Review'});
+    return out;
+  }
   const un = ptrainees().filter(t=>!t.asot);
   if(un.length) out.push({id:'asot-unassigned', title:`No SOT assigned yet &mdash; ${un.length} trainee${un.length===1?'':'s'}`,
     detail:'Their learning plans cannot be signed until someone is assigned', due:iso2d(PlansStore.addDays(PlansStore.PER.SIX_MONTH.start, RULES.asot)), tab:'itas', btn:'Assign now'});
@@ -3575,9 +3602,9 @@ function goalReminders(){
     out.push({id:'goals-late', title:`Learning plans not submitted &mdash; ${late.length}`,
       detail:late.slice(0,3).map(x=>lastFirst(x.t.name)).join('; ')+(late.length>3?` +${late.length-3} more`:''), due:new Date(due), tab:'goals', btn:'Remind trainees'});
   }
-  const wait = sets.filter(x=>['SUBMITTED','CHANGE_PROPOSED'].includes(x.s) || (x.s==='AWAITING_COS' && pCosCan()));
+  const wait = sets.filter(x=>['SUBMITTED','CHANGE_PROPOSED'].includes(x.s));
   if(wait.length){
-    const at = x=> x.s==='CHANGE_PROPOSED' && x.p.proposal ? x.p.proposal.at : x.s==='AWAITING_COS' ? x.p.signedAt : x.p.submittedAt;
+    const at = x=> x.s==='CHANGE_PROPOSED' && x.p.proposal ? x.p.proposal.at : x.p.submittedAt;
     const due = Math.min(...wait.map(x=>iso2d(at(x)||TODAY_ISO).getTime()+lead));
     out.push({id:'goals-sign', title:`Learning plans waiting for sign-off &mdash; ${wait.length}`,
       detail:wait.slice(0,3).map(x=>lastFirst(x.t.name)).join('; ')+(wait.length>3?` +${wait.length-3} more`:''), due:new Date(due), tab:'goals', btn:'Review'});
@@ -3619,7 +3646,7 @@ function go(id, focusTab){
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(b.dataset.tab));
 /* roving tabindex: arrow keys / Home / End move between tabs (WAI-ARIA tabs pattern) */
 document.querySelector('[role=tablist]').addEventListener('keydown', e=>{
-  const tabs = [...document.querySelectorAll('.tab')];
+  const tabs = [...document.querySelectorAll('.tab')].filter(b=>b.style.display!=='none');
   const i = tabs.findIndex(b=>b.getAttribute('aria-selected')==='true');
   let n = -1;
   if(e.key==='ArrowRight') n = (i+1)%tabs.length;
@@ -3653,12 +3680,11 @@ document.querySelectorAll('#roleSeg button').forEach(b=>{
 });
 
 function applyRole(){
-  const asst = role==='asst';
-  document.getElementById('userName').textContent = asst ? 'Dr. Winnie Ho' : 'Dr. Albert Chan';
-  document.getElementById('userRole').innerHTML = asst
-    ? 'Assistant SOT &middot; Prince of Wales Hospital'
-    : 'SOT &middot; Prince of Wales Hospital';
-
+  const asst = role==='asst', cos = role==='cos';
+  const who = {sot:['Dr. Albert Chan','SOT &middot; Prince of Wales Hospital','AC'], asst:['Dr. Winnie Ho','Assistant SOT &middot; Prince of Wales Hospital','WH'], cos:['Dr. Peter Lam','Chief of Service &middot; Prince of Wales Hospital','PL']}[role];
+  document.getElementById('userName').textContent = who[0];
+  document.getElementById('userRole').innerHTML = who[1];
+  document.getElementById('userAv').textContent = who[2];
   // rotation approval is SOT-only
   document.querySelectorAll('[data-need-sot]').forEach(el=>{ el.disabled = asst; });
 
@@ -3673,7 +3699,13 @@ function applyRole(){
     ? 'Assistant SOTs can prepare the handshake but cannot approve it.'
     : 'Both SOTs must approve before the rotation is confirmed.';
   itaScope = asst ? 'mine' : 'team'; if(asst && itaView==='assign') itaView = 'overview';
+  /* the Chief of Service is a separate login with one job here: approving PF year plans and changes */
+  document.querySelectorAll('.tab').forEach(b=>{ b.style.display = cos && b.dataset.tab!=='goals' ? 'none' : ''; });
+  document.getElementById('scopeSeg').style.display = cos ? 'none' : '';
+  document.getElementById('brandSub').textContent = cos ? 'Chief of Service approvals' : 'Supervisor of Training Console';
+  if(cos){ planUI.type = 'PF_YEAR'; planUI.scope = 'all'; planUI.tab = 'action'; }
   renderAll();
+  if(cos) go('goals');
 }
 
 /* ---------------- logbook accordion ---------------- */

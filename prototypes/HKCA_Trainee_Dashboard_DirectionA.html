@@ -906,16 +906,17 @@ function glPlanCard(type){
       <div class="acts"><button class="btn am" onclick="glEdit('${type}','set')">Edit and resubmit</button></div></div></div>`;
   }
   const pills = {SIGNED:`<span class="pill ok">${PS.label(type,'SIGNED')}</span>`, SUBMITTED:'<span class="pill warn">Awaiting SOT sign-off</span>',
-    CHANGE_PROPOSED:'<span class="pill info">Change awaiting SOT approval</span>', AWAITING_COS:'<span class="pill info">Awaiting Chief of Service</span>',
+    CHANGE_PROPOSED:'<span class="pill info">Change awaiting SOT approval</span>', AWAITING_COS:'<span class="pill info">Awaiting Chief of Service</span>', CHANGE_COS:'<span class="pill info">Change awaiting Chief of Service</span>',
     REVIEW_OPEN:'<span class="pill info">Review open</span>', REVIEW_SUBMITTED:'<span class="pill warn">Review sent to SOT</span>', REVIEWED:'<span class="pill ok">Reviewed</span>'};
   const lockedFoot = pf
-    ? `Signed ${PS.fmt(p.signedAt)} by ${E(p.signedBy)}${p.cosAt?`, approved by the Chief of Service ${PS.fmt(p.cosAt)}`:''} &middot; version ${p.version}. Locked.`
+    ? `Signed ${PS.fmt(p.signedAt)} by ${E(p.signedBy)}${p.cosAt?`, approved by the Chief of Service ${PS.fmt(p.cosAt)}`:''} &middot; version ${p.version}. Locked.${p.boardInformedAt?` The Board of Education was informed of the change on ${PS.fmt(p.boardInformedAt)}.`:''}`
     : `Signed ${PS.fmt(p.signedAt)} by ${E(p.signedBy)} &middot; version ${p.version}. Locked.`;
-  const change = `If your circumstances change, <a href="#" onclick="glEdit('${type}','change');return false" style="color:var(--bl);font-weight:650">propose a change</a> for your SOT to approve.`;
+  const change = `If your circumstances change, <a href="#" onclick="glEdit('${type}','change');return false" style="color:var(--bl);font-weight:650">propose a change</a> ${pf?'for your SOT and then the Chief of Service to approve. The Board of Education is informed once it is approved.':'for your SOT to approve.'}`;
   const foot = {
     SIGNED: `<div class="gl-lock">${lockedFoot} ${change}</div>`,
     SUBMITTED: `<div class="gl-lock">Submitted ${PS.fmt(p.submittedAt)}. You can&rsquo;t edit while your SOT is reviewing.</div>`,
-    CHANGE_PROPOSED: `<div class="gl-lock">Your signed ${pf?'plan':'goals'} stay in force until your SOT approves the change.</div>`,
+    CHANGE_PROPOSED: `<div class="gl-lock">Your signed ${pf?'plan':'goals'} stay in force until your SOT ${pf?'and then the Chief of Service approve':'approves'} the change.</div>`,
+    CHANGE_COS: `<div class="gl-lock">Your SOT approved the change on ${p.proposal?PS.fmt(p.proposal.sotAt):''}. It now needs the Chief of Service; your signed plan stays in force until then.</div>`,
     AWAITING_COS: `<div class="gl-lock">Signed by ${E(p.signedBy)} on ${PS.fmt(p.signedAt)}. Waiting for the Chief of Service to approve. You can&rsquo;t edit meanwhile.</div>`,
     REVIEW_OPEN: `<div class="gl-lock">${lockedFoot}</div>`,
     REVIEW_SUBMITTED: `<div class="gl-lock">${lockedFoot} Review sent ${PS.fmt(p.review.submittedAt)}; your SOT will add a comment.</div>`,
@@ -985,7 +986,7 @@ function glDraw(){
   document.getElementById('glBody').innerHTML = body;
   document.getElementById('glBody').style.setProperty('--acc', GL_ACC[glEd.type]);
   document.getElementById('glActs').innerHTML = rv ? `<button class="btn sec" onclick="glSave('RDRAFT')">Save for later</button><button class="btn pri" onclick="glSave('RSUBMIT')">Send review to SOT</button>`
-    : (ch?'':'<button class="btn sec" onclick="glSave(\'DRAFT\')">Save draft</button>') + `<button class="btn pri" onclick="glSave('${ch?'CHANGE':'SUBMITTED'}')">${ch?'Send for SOT approval':'Submit to SOT'}</button>`;
+    : (ch?'':'<button class="btn sec" onclick="glSave(\'DRAFT\')">Save draft</button>') + `<button class="btn pri" onclick="glSave('${ch?'CHANGE':'SUBMITTED'}')">${ch?(pf?'Send for SOT and Chief of Service approval':'Send for SOT approval'):'Submit to SOT'}</button>`;
 }
 function glAdd(domain){ const max = PS.TYPES[glEd.type].max; if(glEd.goals.length<max){ glEd.goals.push(PS.newGoal(domain)); glDraw(); } }
 function glDel(i){ glEd.goals.splice(i,1); glDraw(); }

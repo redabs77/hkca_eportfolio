@@ -3,7 +3,7 @@
    Lets the Trainee Dashboard and SOT Console show the same data when opened from the same site.
    Illustrative only; not production code. */
 (function(){
-  var KEY = 'hkca.plans.v2', TODAY = '2026-10-17', DEMO_DAY = '2026-12-03';
+  var KEY = 'hkca.plans.v3', TODAY = '2026-10-17', DEMO_DAY = '2026-12-03';
   var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   function pad(n){ return (n<10?'0':'')+n; }
   function d2(iso){ var p = iso.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
@@ -25,12 +25,11 @@
     {c:'MANAGEMENT', label:'Management', hint:'e.g. contribute to rostering, audit or service improvement'},
     {c:'EDUCATION',  label:'Education',  hint:'e.g. teach, supervise or assess junior trainees'}
   ];
-  /* curriculum domains from the HKCA Curriculum Competency Mapping Table; ITA items from the 15-item College form */
+  /* curriculum domains from the HKCA Curriculum Competency Mapping Table; ITA competencies are a shortlist of the 15-item College form */
   var GROUPS = [
     {g:'Clinical fundamentals', items:[['CF-2.1','General anaesthesia and sedation'],['CF-2.2','Regional anaesthesia'],['CF-2.3','Airway management'],['CF-2.4','Acute pain management'],['CF-2.5','Perioperative medicine'],['CF-2.6','Trauma, crisis management and resuscitation'],['CF-2.7','Safety and quality in anaesthesia']]},
     {g:'Subspecialty', items:[['SM-3.1','General surgery, urology, gynaecology, endoscopy'],['SM-3.2','Head and neck / ENT'],['SM-3.3','Orthopaedic surgery'],['SM-3.4','Paediatric anaesthesia'],['SM-3.5','Obstetric anaesthesia and analgesia'],['SM-3.6','Neuroanaesthesia'],['SM-3.7','Ophthalmic anaesthesia'],['SM-3.8','Anaesthesia outside the operating theatre'],['SM-3.9','Cardiac surgery and interventional cardiology'],['SM-3.10','Thoracic surgery'],['SM-3.11','Vascular surgery'],['SM-3.12','Pain medicine'],['SM-3.13','Intensive care medicine']]},
-    {g:'ITA competencies: clinical performance', items:[['ITA-PATIENT_ASSESSMENT','Patient assessment'],['ITA-CLINICAL_MANAGEMENT','Clinical management'],['ITA-TECHNICAL_SKILLS','Technical skills'],['ITA-KNOWLEDGE_LEARNING','Knowledge and initiative to learn'],['ITA-TIME_MANAGEMENT','Time management and prioritisation'],['ITA-CRISIS_MANAGEMENT','Crisis management'],['ITA-LEADERSHIP','Leadership'],['ITA-VIGILANCE','Vigilance'],['ITA-INSIGHTFULNESS','Insightfulness']]},
-    {g:'ITA competencies: communication and teamwork', items:[['ITA-COMM_PATIENTS','Communication with patients and relatives'],['ITA-COMM_COLLEAGUES','Communication with colleagues'],['ITA-INTEGRITY','Integrity'],['ITA-TEAMWORK','Teamwork'],['ITA-PROFESSIONAL_BEHAVIOUR','Professional behaviour']]},
+    {g:'ITA competencies', items:[['ITA-CLINICAL_SKILLS','Clinical skills'],['ITA-CRISIS_MANAGEMENT','Crisis management'],['ITA-TEAMWORK','Teamwork'],['ITA-COMMUNICATION','Communication']]},
     {g:'Other', items:[['OTHER','Other (explain in the goal)']]}
   ];
   var DOM = {}; GROUPS.forEach(function(g){ g.items.forEach(function(i){ DOM[i[0]] = {label:i[1], group:g.g}; }); });
@@ -50,9 +49,9 @@
   }
 
   var LABEL = {NOT_SET:'Not set', DRAFT:'Draft', SUBMITTED:'Awaiting sign-off', CHANGES_REQUESTED:'Changes requested',
-    AWAITING_COS:'With Chief of Service', SIGNED:'Signed \u00b7 locked', CHANGE_PROPOSED:'Change proposed',
+    AWAITING_COS:'With Chief of Service', CHANGE_COS:'Change with Chief of Service', SIGNED:'Signed \u00b7 locked', CHANGE_PROPOSED:'Change proposed',
     REVIEW_OPEN:'Review open', REVIEW_SUBMITTED:'Review submitted', REVIEWED:'Reviewed'};
-  var TONE = {NOT_SET:'bad', DRAFT:'', SUBMITTED:'warn', CHANGES_REQUESTED:'warn', AWAITING_COS:'info', SIGNED:'ok',
+  var TONE = {NOT_SET:'bad', DRAFT:'', SUBMITTED:'warn', CHANGES_REQUESTED:'warn', AWAITING_COS:'info', CHANGE_COS:'info', SIGNED:'ok',
     CHANGE_PROPOSED:'info', REVIEW_OPEN:'info', REVIEW_SUBMITTED:'warn', REVIEWED:'ok'};
   function label(type, st){ return (type==='PF_YEAR' && st==='SIGNED') ? 'Approved \u00b7 locked' : LABEL[st]; }
 
@@ -61,10 +60,10 @@
     BAT:[G('CF-2.1','Run an ASA I\u2013II list with indirect supervision','Complete 10 consecutive lists with no supervisor intervention','Logbook + 2 DOPS'),
          G('CF-2.2','Become confident with neuraxial techniques','25 spinals and 10 epidurals, success rate above 90%','VOP 2.2 + mini-CEX'),
          G('ITA-CRISIS_MANAGEMENT','Manage common emergencies safely','Lead the response in 3 simulated or real crises','Simulation record + CBD')],
-    HAT:[G('ITA-LEADERSHIP','Supervise junior trainees on a list','Supervise 10 lists; positive feedback from 2 juniors','Teaching log + feedback'),
+    HAT:[G('ITA-TEAMWORK','Supervise junior trainees on a list','Supervise 10 lists; positive feedback from 2 juniors','Teaching log + feedback'),
          G('SM-3.9','Build subspecialty depth','Complete the specialty module cases for this rotation','VOP specialty + WBA'),
          G('OTHER','Progress the formal project','Protocol approved by the end of the period','Project tracker')],
-    PFY:[G('ITA-CLINICAL_MANAGEMENT','Prepare for independent practice','Run a full list with consultant remote only, 8 times','Logbook + supervisor report'),
+    PFY:[G('ITA-CLINICAL_SKILLS','Prepare for independent practice','Run a full list with consultant remote only, 8 times','Logbook + supervisor report'),
          G('OTHER','Complete the formal project','Manuscript submitted','Project tracker'),
          G('CF-2.7','Contribute to departmental quality work','Present one audit at the M&M meeting','Meeting minutes')]
   };
@@ -77,7 +76,7 @@
   function P(type, status, stage, x){
     var p = {type:type, status:status, period:Object.assign({}, PER[type]), goals: status==='NOT_SET' ? [] : mk(type, stage),
       version: (status==='SIGNED'||status==='CHANGE_PROPOSED'||status==='AWAITING_COS') ? 1 : 0,
-      notifiedAt:PER[type].start, submittedAt:null, signedBy:null, signedAt:null, cosBy:null, cosAt:null,
+      notifiedAt:PER[type].start, submittedAt:null, signedBy:null, signedAt:null, cosBy:null, cosAt:null, boardInformedAt:null,
       comments:[], proposal:null, versions:[], review:R()};
     return Object.assign(p, x||{});
   }
@@ -115,11 +114,11 @@
     Object.keys(six).forEach(function(id){ plans[id+'|SIX_MONTH'] = six[id]; });
     plans['2021-004|PF_YEAR'] = P('PF_YEAR','AWAITING_COS','PFY',{submittedAt:'2026-10-10', signedBy:'Dr. Winnie Ho', signedAt:'2026-10-14'});
     plans['2021-015|PF_YEAR'] = P('PF_YEAR','SIGNED','PFY',{submittedAt:'2026-01-12', signedBy:'Dr. Albert Chan', signedAt:'2026-01-16', cosBy:'Dr. Albert Chan', cosAt:'2026-01-20'});
-    return {v:2, demoReview:false, plans:plans};
+    return {v:3, demoReview:false, plans:plans};
   }
   function save(s){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
   function load(){
-    try{ var s = JSON.parse(localStorage.getItem(KEY)); if(s && s.v===2) return s; }catch(e){}
+    try{ var s = JSON.parse(localStorage.getItem(KEY)); if(s && s.v===3) return s; }catch(e){}
     var n = seed(); save(n); return n;
   }
   function key(id,type){ return id+'|'+(type||'SIX_MONTH'); }
