@@ -2005,27 +2005,31 @@ function setAsot(ids, asotId, field){
 /* Trainer forms are anonymous to the SOT team: this tab only ever shows counts, never which trainer has or has not returned a form. */
 const ITA_SEED = {'2022-019':'synth','2021-004':'sign','2023-015':'remedial','2024-008':'boe','2024-011':'contested'};   // illustrative in-progress / escalated ITAs
 const FOLLOW = ['remedial','boe','contested'];
-const ITA_LABEL = {notopened:'ITA not initiated', none:'Waiting for trainers', partial:'Waiting for trainers', ready:'Ready to meet', sign:'Awaiting trainee signature', signed:'Signed off', remedial:'Remedial plan', boe:'BOE escalation', contested:'Contested'};
-const ITA_TONE = {notopened:['var(--bg3)','var(--ink2)'], none:['var(--bg3)','var(--ink2)'], partial:['var(--bg3)','var(--ink2)'], ready:['var(--t1b)','var(--t1f)'], sign:['var(--t3b)','var(--t3f)'],
+const ITA_LABEL = {notopened:'ITA not initiated', none:'Waiting for trainers', partial:'Waiting for trainers', waitcontract:'Learning contract not signed', ready:'Ready to meet', sign:'Awaiting trainee signature', signed:'Signed off', remedial:'Remedial plan', boe:'BOE escalation', contested:'Contested'};
+const ITA_TONE = {notopened:['var(--bg3)','var(--ink2)'], none:['var(--bg3)','var(--ink2)'], partial:['var(--bg3)','var(--ink2)'], waitcontract:['var(--bg3)','var(--ink2)'], ready:['var(--t1b)','var(--t1f)'], sign:['var(--t3b)','var(--t3f)'],
                   signed:['var(--t2b)','var(--t2f)'], remedial:['var(--t6b)','var(--t6f)'], boe:['var(--t6b)','var(--t6f)'], contested:['var(--t6b)','var(--t6f)']};
-const ITA_FILL = {none:'var(--c0)', partial:'var(--c0)', ready:'var(--c2)', sign:'var(--c1)', signed:'var(--c3)', follow:'var(--c5)'};
+const ITA_FILL = {none:'var(--c0)', partial:'var(--c0)', waitcontract:'var(--c0)', ready:'var(--c2)', sign:'var(--c1)', signed:'var(--c3)', follow:'var(--c5)'};
 const formsGot = t => INV[t.id] ? INV[t.id].got : 0;
 const EARLY = {};   // 'cycle|traineeId' -> {got, reason, note, by}: SOT/ASOT chose to start below the minimum
 const earlyOf = t => EARLY[ROUND.cycle+'|'+t.id];
+/* The face-to-face cannot be started until the learning contract is signed, even if enough trainer forms are back. */
+const contractSigned = t => ['SIGNED','CHANGE_PROPOSED','AWAITING_COS','CHANGE_COS','REVIEW_OPEN','REVIEW_SUBMITTED','REVIEWED'].includes(pst(t,'SIX_MONTH'));
 function itaState(t){
   if(!ROUND.open) return 'notopened';
   const sd = ROUND.fresh ? null : ITA_SEED[t.id];
   if(FOLLOW.includes(sd)) return sd;
+  if((sd==='sign' || sd==='synth') && !contractSigned(t)) return 'waitcontract';
   if(sd==='sign') return 'sign';
   if(sd==='synth') return 'ready';
   if(itaSigned(t)) return 'signed';
   const g = formsGot(t);
-  if(g<RULES.minForms && earlyOf(t)) return 'ready';
-  return g>=RULES.minForms ? 'ready' : g>0 ? 'partial' : 'none';
+  const haveMin = g>=RULES.minForms || (g<RULES.minForms && earlyOf(t));
+  if(haveMin) return contractSigned(t) ? 'ready' : 'waitcontract';
+  return g>0 ? 'partial' : 'none';
 }
 const statePill = k => `<span class="pill" style="background:${ITA_TONE[k][0]};color:${ITA_TONE[k][1]}">${ITA_LABEL[k]}</span>`;
 /* Unified lifecycle: the front half (learning contract) and back half (ITA) of the same 6-month cycle, as one stage per trainee. */
-const LIFECYCLE_LABEL = {contract:'Contract due', inforce:'In force', feedback:'Feedback call', facetoface:'Face-to-face ready', signed:'Signed off'};
+const LIFECYCLE_LABEL = {contract:'Learning Contract Due', inforce:'In force', feedback:'Feedback call', facetoface:'Face-to-face ready', signed:'Signed off'};
 const LIFECYCLE_DESC  = {contract:'Learning contract not yet signed', inforce:'Contract signed \u00b7 cycle under way', feedback:'Collecting trainer feedback forms', facetoface:'Forms in \u00b7 ready for face-to-face synthesis', signed:'Learning contract + ITA complete'};
 const MODULAR_RE = /ICU|Intensive Care|Pain|HKCH|Children/i;
 const isModular3 = t => MODULAR_RE.test(t.rot.label||'');
@@ -2037,11 +2041,11 @@ function lifecycleStage(t){
   if(formsGot(t) < RULES.minForms && !earlyOf(t)) return 'feedback';
   return 'facetoface';
 }
-const LIFECYCLE_TONE = () => ({contract:ITA_TONE.none, inforce:ITA_TONE.ready, feedback:ITA_TONE.sign, facetoface:ITA_TONE.ready, signed:ITA_TONE.signed});
-function lifecyclePill(t){ const k = lifecycleStage(t), tone = LIFECYCLE_TONE()[k];
-  return `<span class="pill" style="background:${tone[0]};color:${tone[1]}">${LIFECYCLE_LABEL[k]}</span>${isModular3(t)?' <span class="pill info" title="3-month modular cycle: contract due week 2, feedback call at month 2.5, face-to-face at month 3">3-month cycle</span>':''}`;
+const LIFECYCLE_DOT = {contract:'a', inforce:'', feedback:'', facetoface:'g', signed:'g'};   // quiet by default; amber only when the trainee needs the contract signed
+function lifecyclePill(t){ const k = lifecycleStage(t), dot = LIFECYCLE_DOT[k];
+  return `<span class="meta" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink)">${dot?`<i class="dot ${dot}"></i>`:''}${LIFECYCLE_LABEL[k]}</span>${isModular3(t)?' <span class="meta mono" style="font-size:11px" title="3-month modular cycle: contract due week 2, feedback call at month 2.5, face-to-face at month 3">3-month</span>':''}`;
 }
-let itaView = 'overview', itaScope = 'team', itaFilter = 'all', itaQ = '', itaGroup = 'none', itaCollapsed = new Set(), itaSort = {k:'name', d:1};
+let itaView = 'overview', itaScope = 'team', itaFilter = 'all', itaQ = '', itaGroup = 'sot', itaCollapsed = new Set(), itaSort = {k:'name', d:1};
 let asWho = 'winnie', asSet = null, asFilter = 'all', asQ = '';
 const itaRows = () => ptrainees().filter(t=>itaScope==='team' || t.asot===mineId());
 const sotName = id => id ? nameOf(id).replace('Dr. ','') : 'No SOT assigned yet';
@@ -2139,7 +2143,7 @@ function itaOverviewHtml(){
     </div>`;
   const haveMin = rows.filter(t=>formsGot(t)>=min).length, below = rows.filter(t=>formsGot(t)<min), short = below.reduce((a,t)=>a+(min-formsGot(t)),0);
   const stages = [
-    ['contract','Contract due','Learning contract not yet signed','Trainee / SOT',ITA_TONE.none,ITA_FILL.none],
+    ['contract','Learning Contract Due','Learning contract not yet signed','Trainee / SOT',ITA_TONE.none,ITA_FILL.none],
     ['inforce','In force','Contract signed \u00b7 cycle under way','SOT',ITA_TONE.ready,ITA_FILL.ready],
     ['feedback','Feedback call',`Collecting trainer forms (need ${min})`,'Trainers',ITA_TONE.sign,ITA_FILL.sign],
     ['facetoface','Face-to-face ready','Forms in \u00b7 ready for the synthesis meeting','Assigned SOT',ITA_TONE.ready,ITA_FILL.ready],
@@ -2182,6 +2186,10 @@ function itaActionBtn(t,k){
     if(can && t.asot && formsGot(t)>0) return `<button type="button" class="btn sec sm" onclick="openEarly('${t.id}')" title="Fewer than ${RULES.minForms} forms are back. Start the ITA anyway, for example when the deadline is close.">Start anyway</button>`;
     return '<span class="meta">Waiting for forms</span>';
   }
+  if(k==='waitcontract'){
+    return can ? `<button type="button" class="btn sec sm" onclick="itaView='contracts';renderItaRound()" title="The trainee has enough trainer forms, but the face-to-face can&rsquo;t start until the Assigned SOT signs the learning contract.">Open learning contract</button>`
+               : '<span class="meta">Waiting for the learning contract</span>';
+  }
   if(!can) return '<span class="meta">&mdash;</span>';
   const lab = {ready:'Start face-to-face', sign:'Open ITA', signed:'View', remedial:'Open remedial plan', boe:'Open BOE escalation', contested:'View appeal'}[k];
   const cls = FOLLOW.includes(k) ? 'am' : (k==='ready'||k==='sign') ? 'pri' : 'sec';
@@ -2202,7 +2210,7 @@ function itaRowHtml(t){
       <td>${lifecyclePill(t)}</td>
       <td>${itaActionBtn(t,k)}</td></tr>`;
 }
-const ITA_ORD = {none:0, partial:1, ready:2, sign:3, signed:4};
+const ITA_ORD = {none:0, partial:1, waitcontract:2, ready:3, sign:4, signed:5};
 function itaCmp(a,b){
   const byName = lastFirst(a.name).localeCompare(lastFirst(b.name));
   const stg = t => (STAGE_ORDER[stagePrefix(t.stage)]??9)*10 + (parseInt(t.stage.split('-')[1])||0);
@@ -2241,7 +2249,7 @@ function itaCollapseAll(){ const ks = window._itaGrpKeys||[]; const allShut = ks
 function itaListOnly(){
   const body = document.getElementById('itaRows'); if(!body) return;
   const base = itaRows();
-  const chips = [['all','All'],['waiting','Waiting for trainers'],['ready','Ready to meet'],['sign','Awaiting signature'],['signed','Signed off'],['followup','Needs follow-up'],['noasot','No SOT assigned yet']]
+  const chips = [['all','All'],['waiting','Waiting for trainers'],['waitcontract','Learning contract not signed'],['ready','Ready to meet'],['sign','Awaiting signature'],['signed','Signed off'],['followup','Needs follow-up'],['noasot','No SOT assigned yet']]
     .filter(([k])=>!(role==='asst' && k==='noasot'));
   document.getElementById('itaChips').innerHTML = chips.map(([k,l])=>`<button type="button" class="chip ${itaFilter===k?'on':''}" onclick="itaFilter='${k}';itaListOnly()">${l} <b>${base.filter(t=>itaMatch(t,k)).length}</b></button>`).join('');
   const rows = base.filter(t=>itaMatch(t,itaFilter)).filter(t=>!itaQ || (lastFirst(t.name)+' '+t.id).toLowerCase().includes(itaQ))
