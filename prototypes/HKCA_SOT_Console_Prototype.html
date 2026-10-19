@@ -125,6 +125,7 @@
   .btn.am:hover{background:var(--am700)}
   .btn.sm{padding:5px 10px;font-size:12px}
   .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.sec:disabled{opacity:.65;border-style:dashed}
   .btn-row{display:flex;gap:9px;flex-wrap:wrap}
 
   /* ---------- table ---------- */
@@ -229,6 +230,8 @@
   .drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,96vw);background:var(--bg);border-left:1px solid var(--border);
     z-index:130;transform:translateX(102%);transition:transform .26s cubic-bezier(.32,.72,0,1);overflow-y:auto}
   .drawer.on{transform:none}
+  #cDrawer{display:flex;flex-direction:column;overflow-y:hidden}
+  #cDrawer #cdBody{flex:0 1 auto;overflow-y:auto;min-height:0}
   .dr-head{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:16px 20px;
     display:flex;align-items:flex-start;justify-content:space-between;gap:14px;z-index:2}
   .dr-body{padding:18px 20px 60px}
@@ -1355,9 +1358,9 @@
     <button class="btn sec sm" onclick="contractDrawerClose()">Close</button>
   </div>
   <div class="dr-body" id="cdBody"></div>
-  <div class="dr-head" style="position:sticky;bottom:0;top:auto;border-top:1px solid var(--border);border-bottom:none">
+  <div class="dr-head" style="flex:none;border-top:1px solid var(--border);border-bottom:none">
     <span class="meta" id="cdMeta" style="align-self:center"></span>
-    <div class="btn-row"><button class="btn pri" id="cdOk"></button></div>
+    <div class="btn-row"><span id="cdExtra"></span><button class="btn pri" id="cdOk"></button></div>
   </div>
 </aside>
 <div class="bulk" id="lbBulk" role="region" aria-label="Logbook bulk actions">
@@ -1452,7 +1455,7 @@ Thank you.</textarea>
 
 <div class="bulk" id="bulkBar" role="region" aria-label="Bulk actions">
   <span class="bn" id="bulkN"></span>
-  <button class="btn sm" onclick="bulkRemind()">Send reminder</button>
+  <button class="btn sm" onclick="bulkRemind()" title="Reminds the selected trainees about outstanding logbook / WBA entries">Remind: logbook &amp; WBA</button>
   <button class="btn sm" onclick="exportRoster(true)">Export selected</button>
   <select class="ctl" id="bulkAsot" data-need-sot></select>
   <button class="btn sm" onclick="bulkAssign()" data-need-sot>Assign verifier</button>
@@ -2053,8 +2056,9 @@ function lifecycleStage(t){
   return 'facetoface';
 }
 const LIFECYCLE_DOT = {contract:'a', inforce:'', feedback:'', facetoface:'g', signed:'g'};   // quiet by default; amber only when the trainee needs the contract signed
-function lifecyclePill(t){ const k = lifecycleStage(t), dot = LIFECYCLE_DOT[k];
-  return `<span class="meta" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink)">${dot?`<i class="dot ${dot}"></i>`:''}${LIFECYCLE_LABEL[k]}</span>${isModular3(t)?' <span class="meta mono" style="font-size:11px" title="3-month modular cycle: contract due week 2, feedback call at month 2.5, face-to-face at month 3">3-month</span>':''}`;
+function lifecyclePill(t){ const k = lifecycleStage(t), follow = FOLLOW.includes(itaState(t)), dot = follow ? 'r' : LIFECYCLE_DOT[k];
+  const title = follow ? ` title="${ITA_LABEL[itaState(t)]} \u2014 needs follow-up"` : '';
+  return `<span class="meta"${title} style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink)">${dot?`<i class="dot ${dot}"></i>`:''}${LIFECYCLE_LABEL[k]}</span>${isModular3(t)?' <span class="meta mono" style="font-size:11px" title="3-month modular cycle: contract due week 2, feedback call at month 2.5, face-to-face at month 3">3-month</span>':''}`;
 }
 let itaView = 'overview', itaScope = 'team', itaFilter = 'all', itaQ = '', itaGroup = 'sot', itaCollapsed = new Set(), itaSort = {k:'name', d:1};
 let asWho = 'winnie', asSet = null, asFilter = 'all', asQ = '';
@@ -2265,7 +2269,7 @@ function itaListOnly(){
   const base = itaRows();
   const chips = [['all','All'],['waiting','Waiting for trainers'],['waitcontract','Learning Contract Pending'],['ready','Ready to meet'],['sign','Awaiting signature'],['signed','Signed off'],['followup','Needs follow-up'],['noasot','No SOT assigned yet']]
     .filter(([k])=>!(role==='asst' && k==='noasot'));
-  document.getElementById('itaChips').innerHTML = chips.map(([k,l])=>`<button type="button" class="chip ${itaFilter===k?'on':''}" onclick="itaFilter='${k}';itaListOnly()">${l} <b>${base.filter(t=>itaMatch(t,k)).length}</b></button>`).join('');
+  document.getElementById('itaChips').innerHTML = chips.map(([k,l])=>`<button type="button" class="chip ${itaFilter===k?'on':''}" aria-pressed="${itaFilter===k}" onclick="itaFilter='${k}';itaListOnly()">${l} <b>${base.filter(t=>itaMatch(t,k)).length}</b></button>`).join('');
   const rows = base.filter(t=>itaMatch(t,itaFilter)).filter(t=>!itaQ || (lastFirst(t.name)+' '+t.id).toLowerCase().includes(itaQ))
     .sort(itaCmp);
   if(itaGroup!=='sot'){ body.innerHTML = rows.map(itaRowHtml).join('') || '<tr class="empty-row"><td colspan="6">No trainees match.</td></tr>'; return; }
@@ -3440,6 +3444,7 @@ function contractDrawerOpen(cfg){
   document.getElementById('cdEy').textContent = cfg.ey || '';
   document.getElementById('cdTitle').textContent = cfg.title;
   document.getElementById('cdBody').innerHTML = cfg.body;
+  document.getElementById('cdExtra').innerHTML = cfg.extra || '';
   const ok = document.getElementById('cdOk');
   ok.textContent = cfg.ok; ok.className = 'btn ' + (cfg.danger ? 'am' : 'pri'); ok.style.display = cfg.ok ? '' : 'none'; ok.onclick = ()=>cfg.onOk();
   document.getElementById('cdMeta').textContent = '';
@@ -3563,7 +3568,7 @@ function renderGoals(){
   if(planUI.tab!=='all' && !tabs.find(x=>x[0]===planUI.tab)) planUI.tab = 'all';
   document.getElementById('plansEyebrow').textContent = (pf ? 'PF year plan \u00b7 ' : '6-month goals \u00b7 ') + PlansStore.PER[type].label;
   const chipList = [['all','All']].concat(tabs);
-  document.getElementById('goalsTabs').innerHTML = chipList.map(([k,l])=>`<button type="button" class="chip ${planUI.tab===k?'on':''}" onclick="planUI.tab='${k}';renderGoals()">${l} <b>${cnt[k]}</b></button>`).join('') +
+  document.getElementById('goalsTabs').innerHTML = chipList.map(([k,l])=>`<button type="button" class="chip ${planUI.tab===k?'on':''}" aria-pressed="${planUI.tab===k}" onclick="planUI.tab='${k}';renderGoals()">${l} <b>${cnt[k]}</b></button>`).join('') +
     (planUI.tab==='waiting' && role==='sot' ? `<button class="btn pri sm" style="margin-left:8px" ${cnt.waiting?'':'disabled'} onclick="goalsRemindAll()">Remind ${cnt.waiting} trainee${cnt.waiting===1?'':'s'}</button>` : '');
   const st = planUI.tab==='all' ? null : tabs.find(x=>x[0]===planUI.tab)[2];
   const rows = ppl.filter(t=>!st || st.includes(pst(t,type))).sort((a,b)=>goalsCmp(a,b,type));
@@ -3627,10 +3632,10 @@ function planOpen(id,type){
     if(s==='SUBMITTED' && can){ okLabel = pf ? 'Sign off' : 'Sign off & lock'; ok = ()=>planDecide(id,type,'sign'); extra = `<button class="btn sec" onclick="planDecide('${id}','${type}','changes')">Request changes</button>`; canComment = true; needComment = 'changes'; }
     if(s==='SIGNED') body += `<p class="note">${pf?'Approved':'Signed'} ${PlansStore.fmt(p.cosAt||p.signedAt)} by ${E(p.cosBy||p.signedBy)}. Locked. The trainee can propose a change, which the Assigned SOT approves.</p>`;
   }
-  if(canComment) body += `<div class="field" style="margin-top:14px;margin-bottom:6px"><div class="lbl">Comment ${s==='REVIEW_SUBMITTED'?'on the review (shown to the trainee)':'to trainee'} ${needComment?`(required to ${needComment==='back'?'send back':'request changes'})`:'(optional)'}</div><textarea class="ctl" id="gComment"></textarea></div><div class="btn-row">${extra}</div>`;
+  if(canComment) body += `<div class="field" style="margin-top:14px;margin-bottom:6px"><div class="lbl">Comment ${s==='REVIEW_SUBMITTED'?'on the review (shown to the trainee)':'to trainee'} ${needComment?`(required to ${needComment==='back'?'send back':'request changes'})`:'(optional)'}</div><textarea class="ctl" id="gComment"></textarea></div>`;
   if(!can && !(s==='AWAITING_COS' && cos) && ['SUBMITTED','CHANGE_PROPOSED','REVIEW_SUBMITTED'].includes(s))
     body += `<p class="note">${t.asot ? 'Only the Assigned SOT or the SOT can act on this.' : 'Assign an SOT first. Nobody can sign this yet.'}</p>`;
-  contractDrawerOpen({ey:`${lastFirst(t.name)} \u00b7 ${t.stage} \u00b7 ${p.period.label}`, title: pf ? 'PF year plan' : '6-month goals', body, ok:okLabel, onOk:ok});
+  contractDrawerOpen({ey:`${lastFirst(t.name)} \u00b7 ${t.stage} \u00b7 ${p.period.label}`, title: pf ? 'PF year plan' : '6-month goals', body, ok:okLabel, onOk:ok, extra});
 }
 function planDecide(id,type,act){
   const t = ROSTER.find(x=>x.id===id), c = (document.getElementById('gComment')||{value:''}).value.trim(), pf = type==='PF_YEAR', who = actorName();
