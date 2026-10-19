@@ -590,10 +590,11 @@
               <div>
                 <div class="eyebrow">Item-by-item synthesis</div>
                 <div class="h2">What <span id="nWord">four</span> trainers said &rarr; what goes on the form</div>
-                <div class="meta" style="margin-top:4px">Each segment is one trainer&rsquo;s grade. X (unable to assess) is excluded from the spread.</div>
+                <div class="meta" style="margin-top:4px">Each segment is one grade, sized by how many trainers gave it; the number is the count. X (unable to assess) is excluded from the spread.</div>
               </div>
               <span class="pill warn" id="divPill"><span class="dot a"></span>&mdash;</span>
             </div>
+            <p class="note" id="divNote" style="margin:-2px 0 10px"></p>
             <div class="legend-row" style="margin-top:0;margin-bottom:6px" aria-label="Rating scale">
               <span><i class="chipg c1">1</i>Consistently exceeds</span><span><i class="chipg c2">2</i>Occasionally exceeds</span>
               <span><i class="chipg c3">3</i>Usually meets</span><span><i class="chipg c4">4</i>Unsatisfactory</span><span><i class="chipg cx">X</i>Unable to assess</span>
@@ -1036,7 +1037,13 @@ const POOL = [
   {name:'Dr. Henry Cheung', role:'Consultant \u00b7 Paediatric & ENT', contact:false},
   {name:'Dr. Grace Lo', role:'Associate Consultant \u00b7 Obstetric', contact:false},
   {name:'Dr. Victor Ma', role:'Consultant \u00b7 ICU & Perioperative', contact:true},
-  {name:'Dr. Janet Fong', role:'Consultant \u00b7 Orthopaedic & Trauma', contact:false}
+  {name:'Dr. Janet Fong', role:'Consultant \u00b7 Orthopaedic & Trauma', contact:false},
+  {name:'Dr. Wilson Yip', role:'Associate Consultant \u00b7 General Anaesthesia', contact:false},
+  {name:'Dr. Carmen Siu', role:'Consultant \u00b7 Thoracic & Vascular', contact:true},
+  {name:'Dr. Benjamin Lau', role:'Associate Consultant \u00b7 Day Surgery', contact:false},
+  {name:'Dr. Teresa Ho', role:'Consultant \u00b7 Paediatric Anaesthesia', contact:false},
+  {name:'Dr. Alan Fok', role:'Consultant \u00b7 Trauma & Emergency', contact:true},
+  {name:'Dr. Priscilla Tsui', role:'Associate Consultant \u00b7 Regional Anaesthesia', contact:false}
 ];
 const COMMENTS = {
   good:['Reliable, well prepared and good with the team. Ready for more independent lists.','Calm under pressure and communicates clearly with surgeons and nurses.','Keen to teach and to learn. Consistently safe practice on my lists.'],
@@ -1062,7 +1069,15 @@ else ASR.forEach(a=>{ a.contact = (a.id==='LK' || a.id==='RC'); });
 const CONTACT = {};   // relay threads by form id (demo, in memory)
 const gradesFor = c=>ASR.map(a=>a.r[D.find(d=>d.c===c).i]);
 const spreadOf = c=>{ const n=gradesFor(c).filter(g=>g!=='X').map(Number); return n.length?Math.max(...n)-Math.min(...n):0; };
-const isDiv = c=>spreadOf(c)>=2;
+const PANEL_LARGE_N = 5; // panels of 6+ trainer forms use the robust rule below (confirmed 2026-10-19)
+const isDiv = c=>{
+  if(spreadOf(c)<2) return false;
+  if(ASR.length<=PANEL_LARGE_N) return true; // small panel: one outlier is already a meaningful signal
+  const g = gradesFor(c).filter(x=>x!=='X').map(Number), lo=Math.min(...g), hi=Math.max(...g);
+  // larger panel: a single outlier at either end no longer counts as divergence --
+  // needs at least two trainers at each end of the gap, or it's noise, not signal
+  return g.filter(x=>x===lo).length>=2 && g.filter(x=>x===hi).length>=2;
+};
 
 const SYNdef = ()=>{ const items={}; D.forEach(d=>{ const g=ASR.map(a=>a.r[d.i]).filter(x=>x!=='X').map(Number).sort((a,b)=>a-b); items[d.c]= g.length ? String(g[Math.floor((g.length-1)/2)+ (g.length%2===0 && g[g.length/2]-g[g.length/2-1]>0 ? 1:0)]) : '3'; }); const v=Object.values(items).map(Number); return {items, overall:String(Math.max(1,Math.min(4,Math.round(v.reduce((a,b)=>a+b,0)/v.length))))}; };
 const SYN = {
@@ -1181,7 +1196,10 @@ function buildSyn(){
       const num = gs.filter(g=>g!=='X').map(Number), lo=Math.min(...num), hi=Math.max(...num);
       const nx = gs.filter(g=>g==='X').length, div=isDiv(d.c);
       const exs = ASR.map((a,i)=>({a,g:a.r[d.i],t:a.ex[d.c]})).filter(x=>x.t);
-      const seg = sorted.map(g=>`<i class="s${String(g).toLowerCase()}" style="width:${100/sorted.length}%">${g}</i>`).join('');
+      // grouped by grade, not one sliver per trainer -- stays readable at any panel size
+      const counts = {}; sorted.forEach(g=>{ counts[g]=(counts[g]||0)+1; });
+      const seg = ['1','2','3','4','X'].filter(g=>counts[g]).map(g=>
+        `<i class="s${g.toLowerCase()}" style="width:${100*counts[g]/sorted.length}%" title="${counts[g]} of ${sorted.length} trainers graded ${g}">${counts[g]}</i>`).join('');
       return `<div class="syn-row${div?' div':''}" data-code="${d.c}">
         <div><div class="dm"><span class="no">${d.no}</span><span>${esc(d.l)}</span></div>
           <div class="rng"><span>${lo===hi?lo:lo+'\u2013'+hi}${nx?' \u00b7 '+nx+' X':''}</span>${div?'<span class="divergence">\u26A0 spread \u2265 2</span>':''}</div></div>
@@ -1212,6 +1230,10 @@ function buildSyn(){
     const w=$('.why textarea',row); if(w) w.addEventListener('input',e=>{ SYN.reason[c]=e.target.value; $('.why',row).classList.remove('bad'); });
   });
   $('#divPill').innerHTML = `<span class="dot a"></span>${D.filter(d=>isDiv(d.c)).length} items show divergence`;
+  const divNote = document.getElementById('divNote');
+  if(divNote) divNote.textContent = ASR.length>PANEL_LARGE_N
+    ? `Panel of ${ASR.length}: an item counts as divergent only if at least two trainers sit at each end of the gap -- a single outlier among a large panel is not flagged.`
+    : '';
   paintItems(); updateOverall();
 }
 function paintItems(){
