@@ -2005,7 +2005,7 @@ function setAsot(ids, asotId, field){
 /* Trainer forms are anonymous to the SOT team: this tab only ever shows counts, never which trainer has or has not returned a form. */
 const ITA_SEED = {'2022-019':'synth','2021-004':'sign','2023-015':'remedial','2024-008':'boe','2024-011':'contested'};   // illustrative in-progress / escalated ITAs
 const FOLLOW = ['remedial','boe','contested'];
-const ITA_LABEL = {notopened:'ITA not initiated', none:'Waiting for trainers', partial:'Waiting for trainers', waitcontract:'Learning contract not signed', ready:'Ready to meet', sign:'Awaiting trainee signature', signed:'Signed off', remedial:'Remedial plan', boe:'BOE escalation', contested:'Contested'};
+const ITA_LABEL = {notopened:'ITA not initiated', none:'Waiting for trainers', partial:'Waiting for trainers', waitcontract:'Learning Contract Pending', ready:'Ready to meet', sign:'Awaiting trainee signature', signed:'Signed off', remedial:'Remedial plan', boe:'BOE escalation', contested:'Contested'};
 const ITA_TONE = {notopened:['var(--bg3)','var(--ink2)'], none:['var(--bg3)','var(--ink2)'], partial:['var(--bg3)','var(--ink2)'], waitcontract:['var(--bg3)','var(--ink2)'], ready:['var(--t1b)','var(--t1f)'], sign:['var(--t3b)','var(--t3f)'],
                   signed:['var(--t2b)','var(--t2f)'], remedial:['var(--t6b)','var(--t6f)'], boe:['var(--t6b)','var(--t6f)'], contested:['var(--t6b)','var(--t6f)']};
 const ITA_FILL = {none:'var(--c0)', partial:'var(--c0)', waitcontract:'var(--c0)', ready:'var(--c2)', sign:'var(--c1)', signed:'var(--c3)', follow:'var(--c5)'};
@@ -2018,14 +2018,13 @@ function itaState(t){
   if(!ROUND.open) return 'notopened';
   const sd = ROUND.fresh ? null : ITA_SEED[t.id];
   if(FOLLOW.includes(sd)) return sd;
-  if((sd==='sign' || sd==='synth') && !contractSigned(t)) return 'waitcontract';
+  if(itaSigned(t)) return 'signed';
+  if(!contractSigned(t)) return 'waitcontract';
   if(sd==='sign') return 'sign';
   if(sd==='synth') return 'ready';
-  if(itaSigned(t)) return 'signed';
   const g = formsGot(t);
   const haveMin = g>=RULES.minForms || (g<RULES.minForms && earlyOf(t));
-  if(haveMin) return contractSigned(t) ? 'ready' : 'waitcontract';
-  return g>0 ? 'partial' : 'none';
+  return haveMin ? 'ready' : g>0 ? 'partial' : 'none';
 }
 const statePill = k => `<span class="pill" style="background:${ITA_TONE[k][0]};color:${ITA_TONE[k][1]}">${ITA_LABEL[k]}</span>`;
 /* Unified lifecycle: the front half (learning contract) and back half (ITA) of the same 6-month cycle, as one stage per trainee. */
@@ -2187,7 +2186,7 @@ function itaActionBtn(t,k){
     return '<span class="meta">Waiting for forms</span>';
   }
   if(k==='waitcontract'){
-    return can ? `<button type="button" class="btn sec sm" onclick="itaView='contracts';renderItaRound()" title="The trainee has enough trainer forms, but the face-to-face can&rsquo;t start until the Assigned SOT signs the learning contract.">Open learning contract</button>`
+    return can ? `<button type="button" class="btn sec sm" onclick="itaView='contracts';renderItaRound()" title="The face-to-face can&rsquo;t start until the Assigned SOT signs the learning contract. Trainer forms can still be collected in the meantime.">Open learning contract</button>`
                : '<span class="meta">Waiting for the learning contract</span>';
   }
   if(!can) return '<span class="meta">&mdash;</span>';
@@ -2249,7 +2248,7 @@ function itaCollapseAll(){ const ks = window._itaGrpKeys||[]; const allShut = ks
 function itaListOnly(){
   const body = document.getElementById('itaRows'); if(!body) return;
   const base = itaRows();
-  const chips = [['all','All'],['waiting','Waiting for trainers'],['waitcontract','Learning contract not signed'],['ready','Ready to meet'],['sign','Awaiting signature'],['signed','Signed off'],['followup','Needs follow-up'],['noasot','No SOT assigned yet']]
+  const chips = [['all','All'],['waiting','Waiting for trainers'],['waitcontract','Learning Contract Pending'],['ready','Ready to meet'],['sign','Awaiting signature'],['signed','Signed off'],['followup','Needs follow-up'],['noasot','No SOT assigned yet']]
     .filter(([k])=>!(role==='asst' && k==='noasot'));
   document.getElementById('itaChips').innerHTML = chips.map(([k,l])=>`<button type="button" class="chip ${itaFilter===k?'on':''}" onclick="itaFilter='${k}';itaListOnly()">${l} <b>${base.filter(t=>itaMatch(t,k)).length}</b></button>`).join('');
   const rows = base.filter(t=>itaMatch(t,itaFilter)).filter(t=>!itaQ || (lastFirst(t.name)+' '+t.id).toLowerCase().includes(itaQ))
