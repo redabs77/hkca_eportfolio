@@ -16,27 +16,9 @@
   :root{
     --g50:#fafafa; --g100:#f5f5f5; --g200:#e5e5e5; --g300:#d4d4d4; --g400:#a3a3a3;
     --g500:#737373; --g600:#525252; --g700:#404040; --g800:#262626; --g900:#171717; --g950:#0a0a0a;
-    --em500:#10b981; --em600:#059669; --em700:#047857;
-    --rd500:#ef4444; --rd600:#dc2626; --rd700:#b91c1c;
-    --am600:#d97706; --am700:#b45309;
-    --bg:#ffffff; --bg2:var(--g50); --bg3:var(--g100);
-    --surface:#ffffff; --border:var(--g200); --border-sub:var(--g100);
-    --ink:var(--g900); --ink2:var(--g600); --ink3:var(--g500);
-    --focus:var(--em600);
-    /* grade colours: 3 is a PASS, so it is neutral — not amber */
-    --c1:var(--em700); --c1t:rgba(5,150,105,.14);
-    --c2:var(--em700); --c2t:rgba(5,150,105,.08);
-    --c3:var(--g700);  --c3t:rgba(64,64,64,.08);
-    --c4:var(--rd700); --c4t:rgba(220,38,38,.10);
-    --cx:var(--g600);  --cxt:var(--g100);
-  }
-  .dark{
-    --bg:var(--g950); --bg2:var(--g900); --bg3:var(--g800);
-    --surface:#111113; --border:rgba(255,255,255,.10); --border-sub:rgba(255,255,255,.05);
-    --ink:var(--g50); --ink2:var(--g400); --ink3:var(--g500); --focus:var(--em500);
-    --c1:#34d399; --c1t:rgba(52,211,153,.16); --c2:#6ee7b7; --c2t:rgba(52,211,153,.09);
-    --c3:#d4d4d4; --c3t:rgba(255,255,255,.07); --c4:#f87171; --c4t:rgba(248,113,113,.14);
-    --cx:var(--g400); --cxt:var(--g800);
+    --rd600:#dc2626; --rd700:#b91c1c; --rd500:#ef4444;
+    /* grade colours come from hkca-theme.css (--gr1..gr4, --grxbg): one palette across form, synthesis and console */
+    --c1:var(--gr1); --c2:var(--gr2); --c3:var(--gr3); --c4:var(--gr4);
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-padding-top:84px}
@@ -52,7 +34,7 @@
   .top{position:sticky;top:0;z-index:60;background:var(--bg);border-bottom:1px solid var(--border)}
   .top-row{display:flex;align-items:center;justify-content:space-between;gap:16px;height:56px}
   .brand{display:flex;align-items:center;gap:11px;min-width:0}
-  .mark{width:30px;height:30px;border-radius:8px;background:var(--em700);color:#fff;display:grid;place-items:center;
+  .mark{width:30px;height:30px;border-radius:8px;color:#fff;display:grid;place-items:center;
     font-weight:700;font-size:14px;flex:none}
   .brand b{font-size:14px;font-weight:650;letter-spacing:-.01em;display:block;line-height:1.2;white-space:nowrap}
   .brand span{font-size:12px;color:var(--ink3);display:block;line-height:1.2}
@@ -85,21 +67,20 @@
   .scale span{display:inline-flex;align-items:center;gap:7px}
   .chip{font-style:normal;display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:5px;
     font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700}
-  .chip.k1{background:var(--c1t);color:var(--c1)} .chip.k2{background:var(--c2t);color:var(--c2)}
-  .chip.k3{background:var(--c3t);color:var(--c3)} .chip.k4{background:var(--c4t);color:var(--c4)}
-  .chip.kx{background:var(--cxt);color:var(--cx)}
+  .chip.k1{background:var(--gr1);color:var(--gr1f)} .chip.k2{background:var(--gr2);color:var(--gr2f)}
+  .chip.k3{background:var(--gr3);color:var(--gr3f)} .chip.k4{background:var(--gr4);color:var(--gr4f)}
+  .chip.kx{background:var(--grxbg);color:var(--grxf)}
   .privacy{font-size:12px;color:var(--ink3);margin-top:11px;line-height:1.5}
   .privacy b{color:var(--ink2);font-weight:600}
 
   /* ---------- sections ---------- */
-  .sec{margin-top:34px}
+  section.sec{margin-top:34px}
   .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding-bottom:9px;
     border-bottom:1.5px solid var(--ink)}
   .sec-h h2{font-size:15px;font-weight:700;letter-spacing:-.01em}
   .sec-h .sub{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--ink3)}
-  .linkbtn{background:none;border:0;padding:3px 0;font-size:12px;font-weight:600;color:var(--em700);cursor:pointer;
+  .linkbtn{background:none;border:0;padding:3px 0;font-size:12px;font-weight:600;color:var(--acc-t);cursor:pointer;
     text-decoration:underline;text-underline-offset:3px}
-  .dark .linkbtn{color:var(--em500)}
 
   /* ---------- an item ---------- */
   .item{padding:17px 0 18px;border-bottom:1px solid var(--border);scroll-margin-top:84px}
@@ -121,11 +102,11 @@
   .g span{font-size:12px;line-height:1.2;color:var(--ink3);font-weight:500}
   .g:hover{border-color:var(--g400)}
   .g[aria-checked="true"]{border-width:1.5px}
-  .g[data-g="1"][aria-checked="true"]{background:var(--c1t);border-color:var(--c1)} .g[data-g="1"][aria-checked="true"] b,.g[data-g="1"][aria-checked="true"] span{color:var(--c1)}
-  .g[data-g="2"][aria-checked="true"]{background:var(--c2t);border-color:var(--c2)} .g[data-g="2"][aria-checked="true"] b,.g[data-g="2"][aria-checked="true"] span{color:var(--c2)}
-  .g[data-g="3"][aria-checked="true"]{background:var(--c3t);border-color:var(--c3)} .g[data-g="3"][aria-checked="true"] b,.g[data-g="3"][aria-checked="true"] span{color:var(--c3)}
-  .g[data-g="4"][aria-checked="true"]{background:var(--c4t);border-color:var(--c4)} .g[data-g="4"][aria-checked="true"] b,.g[data-g="4"][aria-checked="true"] span{color:var(--c4)}
-  .g[data-g="X"][aria-checked="true"]{background:var(--cxt);border-color:var(--cx);border-style:dashed} .g[data-g="X"][aria-checked="true"] b,.g[data-g="X"][aria-checked="true"] span{color:var(--cx)}
+  .g[data-g="1"][aria-checked="true"]{background:var(--gr1);border-color:var(--gr1)} .g[data-g="1"][aria-checked="true"] b,.g[data-g="1"][aria-checked="true"] span{color:var(--gr1f)}
+  .g[data-g="2"][aria-checked="true"]{background:var(--gr2);border-color:var(--gr2)} .g[data-g="2"][aria-checked="true"] b,.g[data-g="2"][aria-checked="true"] span{color:var(--gr2f)}
+  .g[data-g="3"][aria-checked="true"]{background:var(--gr3);border-color:var(--gr3)} .g[data-g="3"][aria-checked="true"] b,.g[data-g="3"][aria-checked="true"] span{color:var(--gr3f)}
+  .g[data-g="4"][aria-checked="true"]{background:var(--gr4);border-color:var(--gr4)} .g[data-g="4"][aria-checked="true"] b,.g[data-g="4"][aria-checked="true"] span{color:var(--gr4f)}
+  .g[data-g="X"][aria-checked="true"]{background:var(--grxbg);border-color:var(--grxline);border-style:dashed} .g[data-g="X"][aria-checked="true"] b,.g[data-g="X"][aria-checked="true"] span{color:var(--grxf)}
   .g[disabled]{cursor:default;opacity:.7}
   .ex{margin:10px 0 0 32px}
   .ex label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:650;color:var(--ink2);margin-bottom:5px}
@@ -158,9 +139,9 @@
   .ticks .gap{width:9px;flex:none}
   .tick{flex:1;height:26px;border-radius:4px;border:1px solid var(--border);background:var(--surface);cursor:pointer;
     padding:0;min-width:0;position:relative;transition:background .12s}
-  .tick[data-g="1"]{background:var(--c1);border-color:var(--c1)} .tick[data-g="2"]{background:var(--c2);border-color:var(--c2);opacity:.6}
-  .tick[data-g="3"]{background:var(--c3);border-color:var(--c3);opacity:.4} .tick[data-g="4"]{background:var(--c4);border-color:var(--c4)}
-  .tick[data-g="X"]{background:repeating-linear-gradient(45deg,var(--cx) 0 2px,transparent 2px 5px);border-color:var(--cx)}
+  .tick[data-g="1"]{background:var(--gr1);border-color:var(--gr1)} .tick[data-g="2"]{background:var(--gr2);border-color:var(--gr2)}
+  .tick[data-g="3"]{background:var(--gr3);border-color:var(--gr3)} .tick[data-g="4"]{background:var(--gr4);border-color:var(--gr4)}
+  .tick[data-g="X"]{background:var(--grxbg);border-color:var(--grxline)}
   .tick.cur{box-shadow:0 0 0 2px var(--bg2),0 0 0 3.5px var(--ink)}
   .tally{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:16px}
   .tally div{text-align:center;padding:7px 0;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
@@ -170,7 +151,9 @@
   .todo a{color:var(--ink);font-weight:600;text-underline-offset:3px;cursor:pointer}
   .btn{border:0;font-size:13.5px;font-weight:650;padding:0 18px;min-height:44px;border-radius:9px;cursor:pointer;
     display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
-  .btn.pri{background:var(--em700);color:#fff} .btn.pri:hover{background:#065f46}
+  .btn.pri{background:var(--acc);color:#fff} .btn.pri:hover{background:var(--acc-d)}
+  .btn.sm{min-height:36px;padding:0 14px;font-size:13px}
+  .btn.go{background:transparent;color:var(--acc-t);border:1px solid var(--acc)} .btn.go:hover{background:var(--acc-bg)}
   .btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--border)} .btn.sec:hover{background:var(--bg3)}
   .btn:disabled{opacity:.42;cursor:not-allowed}
   .rail .btn{width:100%;margin-top:18px}
@@ -195,7 +178,9 @@
   .sheet .fine{font-size:12px;color:var(--ink3);margin-top:12px;line-height:1.5}
 
   /* ---------- sealed state ---------- */
-  .sealed{margin-top:20px;border:1px solid var(--em600);background:rgba(5,150,105,.06);border-radius:10px;padding:14px 16px}
+  .sealed{margin-top:20px;border:1px solid var(--ok-f);background:var(--ok-bg);border-radius:12px;padding:14px 16px}
+  .sealed.edit{border-color:var(--wn-f);background:var(--wn-bg)}
+  .sealed .bn-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   .sealed b{display:block;font-size:14px;margin-bottom:3px}
   .sealed p{font-size:12.5px;color:var(--ink2);line-height:1.55}
   .sealed .mono{font-size:11.5px;color:var(--ink2);word-break:break-all}
@@ -211,8 +196,8 @@
     .dock .dn small{display:block;font-size:12px;color:var(--ink3);font-weight:500}
     .dock .bar{flex:1;display:flex;gap:2px}
     .dock .bar i{flex:1;height:6px;border-radius:2px;background:var(--border)}
-    .dock .bar i.s1,.dock .bar i.s2{background:var(--c1)} .dock .bar i.s3{background:var(--c3);opacity:.5}
-    .dock .bar i.s4{background:var(--c4)} .dock .bar i.sx{background:var(--cx)}
+    .dock .bar i.s1{background:var(--gr1)} .dock .bar i.s2{background:var(--gr2)} .dock .bar i.s3{background:var(--gr3)}
+    .dock .bar i.s4{background:var(--gr4)} .dock .bar i.sx{background:var(--grxbg)}
     .dock .btn{padding:0 16px}
     .who{display:none}
   }
@@ -228,8 +213,40 @@
   }
   @media (pointer:coarse){.g{min-height:56px}.anchor-btn{min-height:44px}}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+  .closing label.contactopt{font-size:13px;font-weight:400;letter-spacing:0;padding:12px 14px;border:1px solid var(--border);margin-bottom:0}
   .contactopt{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);font-size:13px;line-height:1.5;cursor:pointer}
   .contactopt input{margin-top:3px}
+
+  /* ---------- trainee worklist ---------- */
+  .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink2);text-decoration:none;margin-bottom:12px;min-height:32px}
+  .back:hover{color:var(--ink)}
+  .wl-bar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-top:20px}
+  .wl-search{flex:0 1 240px;min-height:36px;border:1px solid var(--border);border-radius:9px;background:var(--surface);padding:0 12px;font:inherit;font-size:13px;color:var(--ink)}
+  .wl-chips{display:flex;gap:6px;flex-wrap:wrap}
+  .fchip{border:1px solid var(--border);background:var(--surface);border-radius:8px;min-height:36px;padding:0 12px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer}
+  .fchip b{font-family:'JetBrains Mono',monospace;font-size:11.5px;margin-left:5px;color:var(--ink3)}
+  .fchip.on{background:var(--acc);border-color:var(--acc);color:#fff} .fchip.on b{color:#fff}
+  .wl-count{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+  .tbl-scroll{margin-top:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:auto}
+  table.wl{width:100%;border-collapse:collapse;font-size:13px}
+  table.wl th{text-align:left;font-size:12px;font-weight:650;color:var(--ink3);padding:10px 14px;background:var(--bg3);white-space:nowrap}
+  table.wl td{padding:11px 14px;border-top:1px solid var(--border-sub);vertical-align:middle}
+  table.wl td b{font-weight:650;display:block}
+  .wl-sub{font-family:'Inter',sans-serif;display:block;font-size:12px;color:var(--ink3);margin-top:1px}
+  table.wl tr.grp td{background:var(--bg2);padding:9px 14px;font-size:12.5px;color:var(--ink2);border-top:1px solid var(--border)}
+  table.wl tr.grp td b{display:inline;color:var(--ink);margin-right:8px}
+  table.wl td.act,table.wl th.act{text-align:right;width:1%;white-space:nowrap}
+  table.wl tr.empty-row td{text-align:center;color:var(--ink3);padding:26px}
+  .stg{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+  .stg.bat{background:var(--t1b);color:var(--t1f)} .stg.hat{background:var(--t5b);color:var(--t5f)} .stg.pfy{background:var(--t3b);color:var(--t3f)}
+  .st{display:inline-flex;align-items:center;gap:8px;font-size:13px}
+  .st i{width:8px;height:8px;border-radius:50%;background:var(--ink3);flex:none}
+  .st.draft i{background:var(--wn-f)} .st.sub i{background:var(--ok-f)}
+  .st.new{color:var(--ink2)}
+  .muted{color:var(--ink3);font-size:12.5px}
+  .proto{margin-top:26px;padding-top:14px;border-top:1px dashed var(--border);display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--ink3)}
+  .proto label{display:inline-flex;gap:7px;align-items:center;cursor:pointer}
+  @media (max-width:720px){ .wl-count{margin-left:0;flex-basis:100%} .wl-search{flex:1 1 100%} }
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 <link rel="stylesheet" href="hkca-mobile.css">
@@ -242,7 +259,7 @@
     <div class="top-row">
       <div class="brand">
         <div class="mark">H</div>
-        <div><b>HKCA e-Portfolio</b><span>In-Training Assessment &middot; Trainer form</span></div>
+        <div><b>HKCA e-Portfolio</b><span>In-Training Assessment &middot; Trainer</span></div>
       </div>
       <div class="top-right">
         <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode" onclick="toggleTheme()">&#9788;</button>
@@ -254,23 +271,46 @@
 
 <main>
 <div class="wrap">
+
+  <!-- ===== worklist: every department trainee, those you have worked with first ===== -->
+  <section id="view-list" aria-labelledby="wl-h">
+    <h1 class="title" id="wl-h">In-Training Assessments</h1>
+    <p class="lede">Jul &ndash; Dec 2026 round &middot; PWH Anaesthesia. The SOT has invited every department trainer to assess every trainee in the hospital. Trainees you have worked with are listed first.</p>
+    <div class="wl-bar">
+      <input class="wl-search" id="wlQ" type="search" placeholder="Search trainee or stage" aria-label="Search trainees">
+      <div class="wl-chips" id="wlChips" role="group" aria-label="Filter by form status"></div>
+      <span class="wl-count" id="wlCount" role="status"></span>
+    </div>
+    <div class="tbl-scroll"><table class="wl">
+      <thead><tr><th>Trainee</th><th>Stage</th><th>Shared cases</th><th>Your form</th><th class="act">Action</th></tr></thead>
+      <tbody id="wlBody"></tbody>
+    </table></div>
+    <p class="privacy">Your ratings are read by the SOT team without your name unless you tick &ldquo;happy to be contacted&rdquo; on a form. Submitted forms can be edited until the round closes on <span id="closesTxt"></span>.</p>
+    <div class="proto"><span>Prototype</span>
+      <label><input type="checkbox" id="demoClosed"> Show the round as closed</label>
+      <button class="linkbtn" id="resetBtn" type="button">Reset this prototype</button></div>
+  </section>
+
+  <!-- ===== one trainee's 15-item form ===== -->
+  <section id="view-form" class="hidden" aria-label="Rate one trainee">
   <div class="cols">
     <div>
+      <a class="back" href="#/">&larr; All trainees</a>
       <h1 class="title">In-Training Assessment</h1>
       <p class="lede">Rate each of the 15 feedback items for this trainee. The SOT collects feedback from all supervising
         trainers and summarises it for the face-to-face meeting.</p>
 
       <dl class="ctx" aria-label="Assessment details (set by the SOT)">
-        <div><dt>Trainee</dt><dd>Dr. Kelvin Wong</dd></div>
-        <div><dt>Year of training</dt><dd>Year 2 of Higher Training</dd></div>
-        <div><dt>Level</dt><dd>Higher Trainee</dd></div>
+        <div><dt>Trainee</dt><dd id="cx-name">&mdash;</dd></div>
+        <div><dt>Year of training</dt><dd id="cx-year">&mdash;</dd></div>
+        <div><dt>Level</dt><dd id="cx-level">&mdash;</dd></div>
         <div><dt>Assessment period</dt><dd class="mono" style="font-size:12.5px">01 Jul &ndash; 31 Dec 2026</dd></div>
-        <div><dt>Training unit</dt><dd>PWH &middot; Clinical Anaesthesia</dd></div>
+        <div><dt>Training unit</dt><dd id="cx-unit">&mdash;</dd></div>
         <div><dt>Date of assessment</dt><dd class="mono" style="font-size:12.5px" id="today">&mdash;</dd></div>
       </dl>
 
       <div class="frame">
-        <p><b>Rate against what is expected at this trainee&rsquo;s level of experience</b> &mdash; a Higher Trainee in year 2 &mdash;
+        <p><b>Rate against what is expected at this trainee&rsquo;s level of experience</b> &mdash; <span id="cx-short">a trainee</span> &mdash;
           not against a consultant, and not against other trainees.</p>
         <div class="scale" aria-label="Rating scale">
           <span><i class="chip k1">1</i>Consistently exceeds expectation</span>
@@ -325,18 +365,17 @@
         <div><kbd>1</kbd>&ndash;<kbd>4</kbd> <kbd>X</kbd> rate the focused item, then move on</div>
         <div><kbd>&uarr;</kbd> <kbd>&darr;</kbd> change item &nbsp; <kbd>?</kbd> show anchor</div>
       </div>
-      <button class="linkbtn" style="margin-top:18px" id="resetBtn">Reset this prototype</button>
+      <button class="linkbtn" style="margin-top:18px" id="discardRail" hidden>Discard my changes</button>
     </aside>
   </div>
-</div>
-</main>
-
-<!-- mobile dock -->
-<div class="dock" id="dock">
+  <div class="dock" id="dock">
   <div class="dn mono"><span id="dn">0</span> / 15<small>rated</small></div>
   <div class="bar" id="dbar"></div>
   <button class="btn pri" id="reviewBtn2">Review</button>
 </div>
+  </section>
+</div>
+</main>
 
 <div id="live" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
 
@@ -361,17 +400,117 @@ const DOMAINS = [
 ];
 const GR = [['1','Consistently exceeds'],['2','Occasionally exceeds'],['3','Usually meets'],['4','Unsatisfactory'],['X','Unable to assess']];
 const GFULL = {'1':'Consistently exceeds expectation','2':'Occasionally exceeds expectation','3':'Usually meets expectation','4':'Unsatisfactory','X':'Unable to assess'};
-const KEY = 'ita-trainer-draft-v1';
-let S = {r:{}, comments:'', contact:false, sealed:null};          // r[code] = {g, ex}
-try{ const d = JSON.parse(localStorage.getItem(KEY)||'null'); if(d) S = d; }catch(e){}
+const KEY = 'ita-trainer-v2';                       // one record per trainee: {r, comments, contact, sealed, v, editing, snapshot}
+const ROUND_CLOSES = '30 Nov 2026', PERIOD = '01 Jul \u2013 31 Dec 2026';
+/* Department trainees. "shared" = cases this trainer supervised or shared with the trainee in the period (illustrative: in the build it
+   comes from VOP supervisor entries and theatre lists). Trainees with shared >= 1 are listed first, most shared first. */
+const TRAINEES = [
+ {id:'2022-019',name:'Dr. Kelvin Wong',stage:'HAT-2',unit:'PWH \u00b7 Clinical Anaesthesia',shared:23,last:'16 Oct'},
+ {id:'2023-015',name:'Dr. Priya Nair',stage:'HAT-2',unit:'PWH \u00b7 Clinical Anaesthesia',shared:18,last:'15 Oct'},
+ {id:'2024-011',name:'Dr. Sarah Lau',stage:'HAT-1',unit:'PWH \u00b7 Clinical Anaesthesia',shared:14,last:'12 Oct'},
+ {id:'2024-008',name:'Dr. Marcus Yip',stage:'BAT-2',unit:'PWH \u00b7 Clinical Anaesthesia',shared:11,last:'9 Oct'},
+ {id:'2023-018',name:'Dr. Karen Mak',stage:'HAT-1',unit:'PWH \u00b7 Clinical Anaesthesia',shared:9,last:'14 Oct'},
+ {id:'2025-003',name:'Dr. Chloe Cheung',stage:'BAT-1',unit:'PWH \u00b7 Clinical Anaesthesia',shared:6,last:'8 Oct'},
+ {id:'2023-022',name:'Dr. Felix Tam',stage:'BAT-3',unit:'PWH \u00b7 Clinical Anaesthesia',shared:4,last:'2 Oct'},
+ {id:'2021-004',name:'Dr. Jasmine Ho',stage:'PFY',unit:'PWH \u00b7 PFY (3 domains)',shared:2,last:'30 Sep'},
+ {id:'2022-031',name:'Dr. Elena Tsang',stage:'HAT-2',unit:'PWH \u00b7 Cardiac subspecialty',shared:0},
+ {id:'2023-009',name:'Dr. Gordon Shum',stage:'HAT-1',unit:'PWH \u00b7 ICU',shared:0},
+ {id:'2024-019',name:'Dr. David Lam',stage:'BAT-2',unit:'PWH \u00b7 Clinical Anaesthesia',shared:0},
+ {id:'2025-012',name:'Dr. Hannah Koo',stage:'BAT-1',unit:'PWH \u00b7 Clinical Anaesthesia',shared:0},
+ {id:'2024-025',name:'Dr. Ian Chow',stage:'BAT-2',unit:'PWH \u00b7 Clinical Anaesthesia',shared:0}
+];
 const $ = (s,el=document)=>el.querySelector(s), $$ = (s,el=document)=>[...el.querySelectorAll(s)];
 const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const say = m=>{ $('#live').textContent = m; };
-const locked = ()=>!!S.sealed;
+const T = id=>TRAINEES.find(t=>t.id===id);
+const lastName = t=>t.name.replace('Dr. ','').split(' ').pop();
+function lvl(st){
+  const m = /^(BAT|HAT)-(\d)$/.exec(st);
+  if(!m) return {level:'Provisional Fellow', year:'Provisional Fellowship year', short:'a Provisional Fellow'};
+  return m[1]==='BAT' ? {level:'Basic Trainee', year:'Year '+m[2]+' of Basic Training', short:'a Basic Trainee in year '+m[2]}
+                      : {level:'Higher Trainee', year:'Year '+m[2]+' of Higher Training', short:'a Higher Trainee in year '+m[2]};
+}
+const stgCls = st=>st.slice(0,3).toLowerCase();
 
-$('#today').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+/* ---------- stored forms: one per trainee ---------- */
+const fnv = txt=>{ let h=2166136261; for(const ch of txt){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619)>>>0; } return 'fnv1a-'+h.toString(16).padStart(8,'0'); };
+function seedForm(i){            // earlier submissions in the demo; everything else starts blank
+  const r = {}; DOMAINS.forEach((d,k)=>{ const h=(k*7+i*3)%10; r[d.c]={g:h<6?'3':h<8?'2':h<9?'1':'3'}; });
+  return {r, comments:'', contact:i%2===0, sealed:{at:'2026-10-13T09:40:00Z', hash:fnv('seed'+i), v:1}, v:1};
+}
+let DB = {forms:{}, closed:false, seeded:false};
+try{ const d = JSON.parse(localStorage.getItem(KEY)||'null'); if(d) DB = d; }catch(e){}
+if(!DB.seeded){ ['2023-015','2024-011'].forEach((id,i)=>{ DB.forms[id]=seedForm(i+1); }); DB.seeded = true; }
+let cur = null, S = null;
+const saveDB = ()=>{ try{ localStorage.setItem(KEY,JSON.stringify(DB)); }catch(e){} };
+const nRated = f=>f ? DOMAINS.filter(d=>f.r[d.c] && f.r[d.c].g).length : 0;
+function statusOf(id){
+  const f = DB.forms[id];
+  if(f && f.sealed) return 'sub';
+  if(f && (nRated(f) || (f.comments||'').trim())) return 'draft';
+  return 'new';
+}
+const locked = ()=>!!S && !!S.sealed && (!S.editing || DB.closed);
+function ordered(){
+  const pri = TRAINEES.filter(t=>t.shared>0).sort((a,b)=>b.shared-a.shared);
+  const oth = TRAINEES.filter(t=>!t.shared).sort((a,b)=>lastName(a).localeCompare(lastName(b)));
+  return {pri, oth};
+}
 
-/* ---------- render ---------- */
+/* ---------- worklist ---------- */
+const WL = {q:'', f:'all'};
+function rowTR(t){
+  const f = DB.forms[t.id], st = statusOf(t.id), n = nRated(f);
+  const txt = st==='sub' ? (f.editing && !DB.closed ? 'Submitted \u00b7 editing' : 'Submitted') : st==='draft' ? 'In draft \u00b7 '+n+' of 15' : 'Not started';
+  let act;
+  if(st==='sub') act = DB.closed ? `<button class="btn sec sm" data-open="${t.id}">View</button>`
+                                 : `<button class="btn sec sm" data-open="${t.id}" data-edit="1">${f.editing?'Continue editing':'Edit submission'}</button>`;
+  else if(DB.closed) act = '<span class="muted">Round closed</span>';
+  else act = `<button class="btn go sm" data-open="${t.id}">${st==='draft'?'Continue':'Fill in ITA'}</button>`;
+  return `<tr><td><b>${esc(t.name)}</b><span class="wl-sub">${esc(t.unit)}</span></td>
+    <td><span class="stg ${stgCls(t.stage)}">${t.stage}</span></td>
+    <td class="mono">${t.shared||'\u2014'}${t.shared?`<span class="wl-sub">last ${t.last}</span>`:''}</td>
+    <td><span class="st ${st}"><i></i>${txt}</span></td><td class="act">${act}</td></tr>`;
+}
+function renderList(){
+  const q = WL.q.trim().toLowerCase();
+  const rows = TRAINEES.map(t=>({t, st:statusOf(t.id)}));
+  const cnt = {all:rows.length, new:0, draft:0, sub:0}; rows.forEach(r=>cnt[r.st]++);
+  $('#wlChips').innerHTML = [['all','All'],['new','Not started'],['draft','In draft'],['sub','Submitted']]
+    .map(([k,l])=>`<button type="button" class="fchip${WL.f===k?' on':''}" data-f="${k}" aria-pressed="${WL.f===k}">${l}<b>${cnt[k]}</b></button>`).join('');
+  const ok = t=>(WL.f==='all'||statusOf(t.id)===WL.f) && (!q || t.name.toLowerCase().includes(q) || t.stage.toLowerCase().includes(q));
+  const {pri, oth} = ordered(), p = pri.filter(ok), o = oth.filter(ok);
+  let h = '';
+  if(p.length) h += `<tr class="grp"><td colspan="5"><b>You have worked with</b>${p.length} trainee${p.length>1?'s':''} &middot; cases you supervised or shared this period</td></tr>` + p.map(rowTR).join('');
+  if(o.length) h += `<tr class="grp"><td colspan="5"><b>Other department trainees</b>${o.length} trainee${o.length>1?'s':''}</td></tr>` + o.map(rowTR).join('');
+  if(!h) h = '<tr class="empty-row"><td colspan="5">No trainees match.</td></tr>';
+  $('#wlBody').innerHTML = h;
+  $('#wlCount').textContent = cnt.sub+' of '+cnt.all+' submitted';
+  $('#closesTxt').textContent = ROUND_CLOSES;
+  $('#demoClosed').checked = !!DB.closed;
+}
+$('#wlQ').addEventListener('input',e=>{ WL.q = e.target.value; renderList(); });
+$('#wlChips').addEventListener('click',e=>{ const b = e.target.closest('[data-f]'); if(b){ WL.f = b.dataset.f; renderList(); } });
+let pendingEdit = false;
+$('#wlBody').addEventListener('click',e=>{ const b = e.target.closest('[data-open]'); if(b) goForm(b.dataset.open, !!b.dataset.edit); });
+$('#demoClosed').addEventListener('change',e=>{ DB.closed = e.target.checked; saveDB(); renderList(); });
+$('#resetBtn').onclick = ()=>{ localStorage.removeItem(KEY); location.hash = '#/'; location.reload(); };
+function goForm(id, edit){ pendingEdit = !!edit; location.hash = '#/form/'+id; }
+
+/* ---------- routing: #/ = worklist, #/form/<id> = one trainee ---------- */
+function route(){
+  const m = /^#\/form\/(.+)$/.exec(location.hash);
+  if(m && T(m[1])){ openForm(m[1], pendingEdit); pendingEdit = false; } else showList();
+}
+function showList(){
+  cur = null; S = null;
+  $('#view-form').classList.add('hidden'); $('#view-list').classList.remove('hidden');
+  document.title = 'HKCA e-Portfolio \u2014 In-Training Assessments \u00b7 Trainer';
+  renderList(); window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', route);
+
+/* ---------- one trainee's form ---------- */
 function rowHTML(d,i){
   const n = String(i+1).padStart(2,'0');
   return `<article class="item" id="item-${d.c}" data-code="${d.c}">
@@ -389,14 +528,10 @@ function rowHTML(d,i){
   </article>`;
 }
 DOMAINS.forEach((d,i)=>{ d.i=i; });
-$('#list-clin').innerHTML = DOMAINS.filter(d=>d.g==='CLINICAL_PERFORMANCE').map(d=>rowHTML(d,d.i)).join('');
-$('#list-comm').innerHTML = DOMAINS.filter(d=>d.g!=='CLINICAL_PERFORMANCE').map(d=>rowHTML(d,d.i)).join('');
-
 $('#ticks').innerHTML = DOMAINS.map((d,i)=>`${i===9?'<span class="gap"></span>':''}<button class="tick" data-code="${d.c}" aria-label="Item ${i+1}: ${esc(d.l)}" title="${i+1}. ${esc(d.l)}"></button>`).join('');
 $('#dbar').innerHTML = DOMAINS.map(()=>'<i></i>').join('');
 $('#tally').innerHTML = ['1','2','3','4','X'].map(g=>`<div><b class="mono" id="t-${g}">0</b><span>${g}</span></div>`).join('');
 
-/* ---------- state helpers ---------- */
 const grade = c => (S.r[c]||{}).g || null;
 const example = c => ((S.r[c]||{}).ex || '');
 const needsEx = c => grade(c)==='4' && example(c).trim().length < 10;   // only an unsatisfactory rating needs a reason; 1-3 and X are optional
@@ -420,8 +555,6 @@ function focusRow(c){
   target.focus({preventScroll:true});
   row.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
 }
-
-/* ---------- paint one row ---------- */
 function paintRow(c){
   const row = $('#item-'+c), g = grade(c), cur = S.r[c]||{};
   const btns = $$('.g',row);
@@ -458,9 +591,8 @@ function paintRow(c){
     ex.classList.remove('hidden'); add.classList.add('hidden');
   } else { ex.classList.add('hidden'); add.classList.toggle('hidden',locked()); }
 }
-
-/* ---------- rail / progress ---------- */
 function paintRail(){
+  if(!S) return;
   const n = rated();
   $('#pn').textContent = n; $('#dn').textContent = n;
   const cl = DOMAINS.filter(d=>d.g==='CLINICAL_PERFORMANCE' && grade(d.c)).length;
@@ -476,66 +608,125 @@ function paintRail(){
   $('#todo').innerHTML = t;
   $$('#todo a').forEach(a=>a.onclick=()=>jump(a.dataset.jump));
   const ready = !un.length && !ne.length && !locked();
-  [$('#reviewBtn'),$('#reviewBtn2')].forEach(b=>{ b.disabled = !ready; b.textContent = locked()?'Submitted':(b.id==='reviewBtn2'?'Review':'Review & submit'); });
+  const lab = locked() ? 'Submitted' : (S.sealed ? 'Review & resubmit' : 'Review & submit');
+  [$('#reviewBtn'),$('#reviewBtn2')].forEach(b=>{ b.disabled = !ready; b.textContent = b.id==='reviewBtn2' ? (locked()?'Submitted':'Review') : lab; });
+  $('#discardRail').hidden = !(S.editing && !DB.closed);
 }
 function jump(c){ const row=$('#item-'+c); if(!row) return; row.scrollIntoView({block:'center'});
   const ta = $('textarea',row); (needsEx(c)&&ta ? ta : ($('.g[tabindex="0"]',row)||$('.g',row))).focus({preventScroll:true}); }
 $$('#ticks .tick').forEach(t=>t.onclick=()=>jump(t.dataset.code));
 
 function save(){
-  try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){}
-  if(!locked()){ const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); $('#saved').textContent = 'Draft saved on this device \u00b7 '+t; }
+  saveDB();
+  if(S && !locked()){ const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); $('#saved').textContent = (S.editing?'Edits saved on this device \u00b7 ':'Draft saved on this device \u00b7 ')+t; }
 }
 
-/* ---------- wiring: radiogroups, anchors, keys ---------- */
-$$('.item').forEach(row=>{
-  const c = row.dataset.code, btns = $$('.g',row);
-  btns.forEach(b=>{
-    b.addEventListener('click',()=>setGrade(c,b.dataset.g));
-    b.addEventListener('keydown',e=>{
-      const i = btns.indexOf(b), k = e.key;
-      if(k==='ArrowRight'){ e.preventDefault(); const n=btns[(i+1)%5]; n.focus(); setGrade(c,n.dataset.g); }
-      else if(k==='ArrowLeft'){ e.preventDefault(); const n=btns[(i+4)%5]; n.focus(); setGrade(c,n.dataset.g); }
-      else if(k==='ArrowDown'){ e.preventDefault(); const nx=DOMAINS[DOMAINS.findIndex(d=>d.c===c)+1]; if(nx) focusRow(nx.c); }
-      else if(k==='ArrowUp'){ e.preventDefault(); const pv=DOMAINS[DOMAINS.findIndex(d=>d.c===c)-1]; if(pv) focusRow(pv.c); }
-      else if('1234'.includes(k) || k.toLowerCase()==='x'){ e.preventDefault(); setGrade(c,k.toUpperCase(),{focusNext:true}); }
-      else if(k==='?'){ e.preventDefault(); $('.anchor-btn',row).click(); }
+/* rebuild all 15 rows for the open trainee (also wires keys, anchors and examples) */
+function buildForm(){
+  const mk = g=>DOMAINS.filter(d=>g?d.g===g:d.g!=='CLINICAL_PERFORMANCE').map(d=>rowHTML(d,d.i)).join('');
+  $('#list-clin').innerHTML = mk('CLINICAL_PERFORMANCE');
+  $('#list-comm').innerHTML = mk(null);
+  $$('[data-toggle-anchors]').forEach(b=>{ b.textContent='Show all anchors'; });
+  $$('.item').forEach(row=>{
+    const c = row.dataset.code, btns = $$('.g',row);
+    btns.forEach(b=>{
+      b.addEventListener('click',()=>setGrade(c,b.dataset.g));
+      b.addEventListener('keydown',e=>{
+        const i = btns.indexOf(b), k = e.key;
+        if(k==='ArrowRight'){ e.preventDefault(); const n=btns[(i+1)%5]; n.focus(); setGrade(c,n.dataset.g); }
+        else if(k==='ArrowLeft'){ e.preventDefault(); const n=btns[(i+4)%5]; n.focus(); setGrade(c,n.dataset.g); }
+        else if(k==='ArrowDown'){ e.preventDefault(); const nx=DOMAINS[DOMAINS.findIndex(d=>d.c===c)+1]; if(nx) focusRow(nx.c); }
+        else if(k==='ArrowUp'){ e.preventDefault(); const pv=DOMAINS[DOMAINS.findIndex(d=>d.c===c)-1]; if(pv) focusRow(pv.c); }
+        else if('1234'.includes(k) || k.toLowerCase()==='x'){ e.preventDefault(); setGrade(c,k.toUpperCase(),{focusNext:true}); }
+        else if(k==='?'){ e.preventDefault(); $('.anchor-btn',row).click(); }
+      });
     });
+    const ab = $('.anchor-btn',row), an = $('.anchor',row);
+    ab.addEventListener('click',()=>{ const open = ab.getAttribute('aria-expanded')!=='true'; ab.setAttribute('aria-expanded',open); an.classList.toggle('hidden',!open); });
+    $('.addex .linkbtn',row).addEventListener('click',()=>{ S.r[c]=Object.assign(S.r[c]||{}, {exOpen:true}); paintRow(c); $('textarea',row).focus(); });
+    row.addEventListener('focusin',()=>{ $$('#ticks .tick').forEach(t=>t.classList.toggle('cur',t.dataset.code===c)); });
   });
-  const ab = $('.anchor-btn',row), an = $('.anchor',row);
-  ab.addEventListener('click',()=>{ const open = ab.getAttribute('aria-expanded')!=='true'; ab.setAttribute('aria-expanded',open); an.classList.toggle('hidden',!open); });
-  $('.addex .linkbtn',row).addEventListener('click',()=>{ S.r[c]=Object.assign(S.r[c]||{}, {exOpen:true}); paintRow(c); $('textarea',row).focus(); });
-  row.addEventListener('focusin',()=>{ $$('#ticks .tick').forEach(t=>t.classList.toggle('cur',t.dataset.code===c)); });
-});
+  DOMAINS.forEach(d=>paintRow(d.c));
+  $('#comments').value = S.comments||''; $('#contactOk').checked = !!S.contact;
+  $('#comments').disabled = $('#contactOk').disabled = locked();
+}
 $$('[data-toggle-anchors]').forEach(btn=>btn.addEventListener('click',()=>{
   const grp = btn.dataset.toggleAnchors, open = btn.textContent.startsWith('Show');
   DOMAINS.filter(d=>d.g===grp).forEach(d=>{ const row=$('#item-'+d.c); $('.anchor-btn',row).setAttribute('aria-expanded',open); $('.anchor',row).classList.toggle('hidden',!open); });
   btn.textContent = open?'Hide all anchors':'Show all anchors';
 }));
-$('#comments').value = S.comments||'';
-$('#comments').addEventListener('input',e=>{ S.comments=e.target.value; save(); });
-$('#contactOk').checked = !!S.contact;
-$('#contactOk').addEventListener('change',e=>{ S.contact=e.target.checked; save(); });
+$('#comments').addEventListener('input',e=>{ if(S){ S.comments=e.target.value; save(); } });
+$('#contactOk').addEventListener('change',e=>{ if(S){ S.contact=e.target.checked; save(); } });
 
-/* ---------- review & seal ---------- */
+function openForm(id, edit){
+  cur = id;
+  if(!DB.forms[id]) DB.forms[id] = {r:{}, comments:'', contact:false, sealed:null};
+  S = DB.forms[id];
+  const t = T(id), l = lvl(t.stage);
+  $('#cx-name').textContent = t.name; $('#cx-year').textContent = l.year; $('#cx-level').textContent = l.level;
+  $('#cx-unit').textContent = t.unit; $('#cx-short').textContent = l.short;
+  $('#today').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  document.title = 'ITA \u00b7 '+t.name+' \u2014 HKCA e-Portfolio';
+  if(edit && S.sealed && !DB.closed && !S.editing) startEdit(false);
+  $('#view-list').classList.add('hidden'); $('#view-form').classList.remove('hidden');
+  buildForm(); paintBanner(); paintRail();
+  $('#saved').textContent = S.sealed ? (locked()?'Submitted \u2014 read only':'') : (rated()?'Draft restored from this device':'');
+  window.scrollTo(0,0);
+}
+function startEdit(render=true){
+  S.snapshot = JSON.stringify({r:S.r, comments:S.comments, contact:S.contact});
+  S.editing = true; saveDB();
+  if(render){ buildForm(); paintBanner(); paintRail(); }
+}
+function discardEdit(){
+  const o = JSON.parse(S.snapshot); S.r=o.r; S.comments=o.comments; S.contact=o.contact;
+  S.editing = false; delete S.snapshot; saveDB();
+  buildForm(); paintBanner(); paintRail(); $('#saved').textContent = 'Changes discarded \u2014 your earlier submission stands';
+}
+function paintBanner(){
+  const el = $('#sealedBanner');
+  if(!S.sealed){ el.innerHTML = ''; return; }
+  const at = new Date(S.sealed.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const ver = S.sealed.v>1 ? ` (version ${S.sealed.v})` : '';
+  const nx = [...ordered().pri, ...ordered().oth].find(t=>t.id!==cur && statusOf(t.id)!=='sub');
+  if(S.editing && !DB.closed){
+    el.innerHTML = `<div class="sealed edit" role="status"><b>Editing your submitted form</b>
+      <p>The SOT team still sees your earlier submission${ver} until you resubmit.</p>
+      <div class="bn-acts"><button class="btn sec sm" id="discardBtn" type="button">Discard changes</button></div></div>`;
+    $('#discardBtn').onclick = discardEdit; return;
+  }
+  el.innerHTML = `<div class="sealed" role="status"><b>Submitted${ver}</b>
+    <p>The SOT team can read your ratings${S.contact?', with your name (you agreed to be contacted)':', without your name'}. ${DB.closed?'The round has closed, so this form is locked.':'You can edit it until the round closes on '+ROUND_CLOSES+'. Every version is kept in the audit trail.'}<br>
+    <span class="mono">${at} &middot; SHA-256 ${S.sealed.hash.slice(0,12)}&hellip;${S.sealed.hash.slice(-6)}</span></p>
+    <div class="bn-acts">${DB.closed?'':'<button class="btn sec sm" id="editBtn" type="button">Edit submission</button>'}
+      <button class="btn sec sm" id="backBtn" type="button">All trainees</button>
+      ${nx&&!DB.closed?`<button class="btn pri sm" id="nextBtn" type="button">Rate next: ${esc(nx.name)} &rarr;</button>`:''}</div></div>`;
+  const eb = $('#editBtn'); if(eb) eb.onclick = ()=>startEdit();
+  $('#backBtn').onclick = ()=>{ location.hash = '#/'; };
+  const nb = $('#nextBtn'); if(nb) nb.onclick = ()=>goForm(nx.id,false);
+}
+$('#discardRail').onclick = ()=>{ if(S && S.editing) discardEdit(); };
+
+/* ---------- review & submit ---------- */
 function openReview(){
   const ne = DOMAINS.filter(d=>needsEx(d.c));
   if(rated()<15 || ne.length){ const first = DOMAINS.find(d=>!grade(d.c)) || ne[0];
     DOMAINS.filter(d=>!grade(d.c)).forEach(d=>$('#item-'+d.c).classList.add('missing'));
     ne.forEach(d=>{ const ex=$('#item-'+d.c+' .ex'); ex.dataset.touched='1'; ex.classList.add('bad'); });
     jump(first.c); say('Complete all items before submitting.'); return; }
+  const t = T(cur), l = lvl(t.stage);
   const chip = g=>`<i class="chip k${g.toLowerCase()}">${g}</i>`;
   const rows = DOMAINS.map(d=>{ const g=grade(d.c), ex=example(d.c).trim();
     return `<div class="rev-row">${chip(g)}<span class="nm">${esc(d.l)}</span><span class="mono" style="color:var(--ink3);font-size:11px">${String(d.i+1).padStart(2,'0')}</span>${ex&&(g==='4'||g==='1'||g==='2')?`<div class="exq">${esc(ex)}</div>`:''}</div>`; }).join('');
   const el = document.createElement('div'); el.className='scrim'; el.id='scrim';
   el.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-h">
-    <h2 id="sh-h">Review before you submit</h2>
-    <p class="meta">Dr. Kelvin Wong &middot; Higher Trainee year 2 &middot; 01 Jul &ndash; 31 Dec 2026</p>
+    <h2 id="sh-h">Review before you ${S.sealed?'resubmit':'submit'}</h2>
+    <p class="meta">${esc(t.name)} &middot; ${esc(l.level)} &middot; ${esc(l.year)} &middot; ${PERIOD}</p>
     <div class="rev">${rows}</div>
     ${S.comments.trim()?`<p class="meta" style="margin-top:14px"><b>Comments:</b> ${esc(S.comments.trim())}</p>`:''}
     <p class="meta" style="margin-top:10px">${S.contact?'You are <b>happy to be contacted</b> through the portal, and your <b>name is shown</b> to the SOT team with this form.':'You have <b>not</b> asked to be contacted, so your form is <b>anonymous</b> to the SOT team.'}</p>
-    <div class="acts"><button class="btn sec" id="sh-back">Keep editing</button><button class="btn pri" id="sh-go">Submit &amp; seal</button></div>
-    <p class="fine">Once submitted, this form is sealed and cannot be edited. A later correction is recorded as a separate, dated annotation in the audit trail.</p></div>`;
+    <div class="acts"><button class="btn sec" id="sh-back">Keep editing</button><button class="btn pri" id="sh-go">${S.sealed?'Resubmit':'Submit'}</button></div>
+    <p class="fine">You can edit a submitted form until the round closes on ${ROUND_CLOSES}; each version is recorded in the audit trail. After that it is locked.</p></div>`;
   document.body.appendChild(el);
   const close=()=>{ el.remove(); $('#reviewBtn').focus(); };
   $('#sh-back').onclick = close; el.addEventListener('click',e=>{ if(e.target===el) close(); });
@@ -546,36 +737,27 @@ function openReview(){
 async function digest(txt){
   try{ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
        return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
-  catch(e){ let h=2166136261; for(const ch of txt){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619)>>>0; } return 'fnv1a-'+h.toString(16); }
+  catch(e){ return fnv(txt); }
 }
 async function seal(){
   const payload = JSON.stringify({r:S.r, comments:S.comments, contact:!!S.contact});
   const hash = await digest(payload);
-  S.sealed = {at:new Date().toISOString(), hash};
-  save(); lockForm();
+  const v = (S.sealed ? S.sealed.v : 0) + 1;
+  S.v = v; S.sealed = {at:new Date().toISOString(), hash, v};
+  S.editing = false; delete S.snapshot;
+  saveDB(); buildForm(); paintBanner(); paintRail();
+  $('#saved').textContent = 'Submitted \u2014 read only';
   window.scrollTo({top:0,behavior:'smooth'});
-  say('Submission sealed. Thank you.');
-}
-function lockForm(){
-  DOMAINS.forEach(d=>paintRow(d.c));
-  $$('textarea,#comments,#contactOk').forEach(t=>t.disabled=true);
-  $$('.addex').forEach(a=>a.classList.add('hidden'));
-  const at = new Date(S.sealed.at);
-  $('#sealedBanner').innerHTML = `<div class="sealed" role="status"><b>Submitted and sealed</b>
-    <p>The SOT team can now read your ratings, without your name. You can no longer edit this form.<br>
-    <span class="mono">${at.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} &middot; SHA-256 ${S.sealed.hash.slice(0,12)}&hellip;${S.sealed.hash.slice(-6)}</span></p></div>`;
-  $('#saved').textContent = 'Sealed \u2014 read only'; paintRail();
+  say('Submission recorded. Thank you.');
 }
 $('#reviewBtn').onclick = openReview; $('#reviewBtn2').onclick = openReview;
-$('#resetBtn').onclick = ()=>{ localStorage.removeItem(KEY); location.reload(); };
 
 /* ---------- theme ---------- */
 function toggleTheme(){ const d=document.documentElement.classList.toggle('dark'); $('#themeBtn').innerHTML=d?'&#9790;':'&#9788;'; localStorage.setItem('ita-theme',d?'dark':'light'); }
 (function(){ const s=localStorage.getItem('ita-theme'); if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme: dark)').matches)){ document.documentElement.classList.add('dark'); $('#themeBtn').innerHTML='&#9790;'; } })();
 
 /* ---------- init ---------- */
-DOMAINS.forEach(d=>paintRow(d.c)); paintRail();
-if(S.sealed) lockForm(); else if(rated()) $('#saved').textContent='Draft restored from this device';
+route();
 </script>
 </body>
 </html>

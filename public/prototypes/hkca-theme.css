@@ -92,3 +92,38 @@ input[type=checkbox],input[type=radio]{accent-color:var(--acc)}
 }
 .dark :where(a,button,summary,select,input,textarea,[tabindex]):focus-visible{outline-color:var(--acc-t)}
 .tab:focus-visible{outline-offset:-3px}
+
+
+/* ---------- grade palette (Trainer Form, ITA Synthesis, SOT Console) ----------
+   1 forest, 2 mint, 3 slate (a PASS, so neutral never amber), 4 red, X hatched slate.
+   Same fills on rating buttons, grade chips and the stacked distribution bar. */
+:root{
+  --gr1:#065f46; --gr1f:#ffffff;  --gr2:#6ee7b7; --gr2f:#065f46;
+  --gr3:#a8b3c4; --gr3f:#171717;  --gr4:#dc2626; --gr4f:#ffffff;
+  --grxf:#334155; --grxline:#64748b;
+  --grxbg:repeating-linear-gradient(45deg,#cbd5e1 0 3px,#e2e8f0 3px 6px);
+}
+.dark{
+  --gr1:#047857; --gr3:#64748b; --gr3f:#ffffff; --grxf:#e2e8f0; --grxline:#94a3b8;
+  --grxbg:repeating-linear-gradient(45deg,#525252 0 3px,#404040 3px 6px);
+}
+.gradepill.g1,.dark .gradepill.g1{background:var(--gr1);color:var(--gr1f)}
+.gradepill.g2,.dark .gradepill.g2{background:var(--gr2);color:var(--gr2f)}
+.gradepill.g3,.dark .gradepill.g3{background:var(--gr3);color:var(--gr3f)}
+.gradepill.g4,.dark .gradepill.g4{background:var(--gr4);color:var(--gr4f)}
+.gradepill.gx,.dark .gradepill.gx{background:var(--grxbg);color:var(--grxf)}
+.chipg.c1,.dark .chipg.c1{background:var(--gr1);color:var(--gr1f)}
+.chipg.c2,.dark .chipg.c2{background:var(--gr2);color:var(--gr2f)}
+.chipg.c3,.dark .chipg.c3{background:var(--gr3);color:var(--gr3f)}
+.chipg.c4,.dark .chipg.c4{background:var(--gr4);color:var(--gr4f)}
+.chipg.cx,.dark .chipg.cx{background:var(--grxbg);color:var(--grxf)}
+.gbtn.on[data-g="1"],.dark .gbtn.on[data-g="1"]{background:var(--gr1);border-color:var(--gr1);color:var(--gr1f)}
+.gbtn.on[data-g="2"],.dark .gbtn.on[data-g="2"]{background:var(--gr2);border-color:var(--gr2);color:var(--gr2f)}
+.gbtn.on[data-g="3"],.dark .gbtn.on[data-g="3"]{background:var(--gr3);border-color:var(--gr3);color:var(--gr3f)}
+.gbtn.on[data-g="4"],.dark .gbtn.on[data-g="4"]{background:var(--gr4);border-color:var(--gr4);color:var(--gr4f)}
+.gbtn.on[data-g="x"],.dark .gbtn.on[data-g="x"]{background:var(--grxbg);border-color:var(--grxline);border-style:dashed;color:var(--grxf)}
+.stack i.s1,.dark .stack i.s1{background:var(--gr1);color:var(--gr1f)}
+.stack i.s2,.dark .stack i.s2{background:var(--gr2);color:var(--gr2f)}
+.stack i.s3,.dark .stack i.s3{background:var(--gr3);color:var(--gr3f)}
+.stack i.s4,.dark .stack i.s4{background:var(--gr4);color:var(--gr4f)}
+.stack i.sx,.dark .stack i.sx{background:var(--grxbg);color:var(--grxf)}

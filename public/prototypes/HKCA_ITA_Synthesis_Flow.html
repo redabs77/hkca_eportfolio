@@ -189,11 +189,9 @@
     outline:2px solid var(--em600);outline-offset:2px}
   .gbtn.on[data-g="1"]{background:rgba(16,185,129,.18);border-color:var(--em600);color:var(--em700)}
   .gbtn.on[data-g="2"]{background:rgba(16,185,129,.12);border-color:var(--em600);color:var(--em700)}
-  .gbtn.on[data-g="3"]{background:rgba(245,158,11,.18);border-color:var(--am600);color:var(--am700)}
   .gbtn.on[data-g="4"]{background:rgba(239,68,68,.16);border-color:var(--rd600);color:var(--rd700)}
   .gbtn.on[data-g="x"]{background:var(--bg3);border-color:var(--g500);color:var(--ink2)}
   .dark .gbtn.on[data-g="1"],.dark .gbtn.on[data-g="2"]{color:var(--em500)}
-  .dark .gbtn.on[data-g="3"]{color:var(--am500)}
   .dark .gbtn.on[data-g="4"]{color:var(--rd500)}
 
   .grade-legend{border:1px dashed var(--border);border-radius:8px;padding:11px 13px}
@@ -544,7 +542,7 @@
           </div>
           <div class="card card-pad mb">
             <div class="eyebrow">Submission integrity</div>
-            <div class="h3" style="margin-top:6px;margin-bottom:10px">Sealed on receipt</div>
+            <div class="h3" style="margin-top:6px;margin-bottom:10px">Recorded with a hash</div>
             <div class="ledger-preview">
               <div class="lr"><span class="lk">Author</span><span class="lv" id="intWho">Hidden</span></div>
               <div class="lr"><span class="lk">Submitted</span><span class="lv mono" id="intAt">&mdash;</span></div>
@@ -1149,7 +1147,7 @@ function openFlagToAdmin(){
 }
 async function renderAsr(){
   const a = ASR[asrSel];
-  $('#asrTitle').textContent = a.form+(a.contact?' \u2014 sealed on receipt':' \u2014 anonymous, sealed on receipt');
+  $('#asrTitle').textContent = a.form+(a.contact?' \u2014 as submitted':' \u2014 anonymous, as submitted');
   $('#asrWho').textContent = a.form;
   $('#asrEyebrow').textContent = a.contact ? 'Named form' : 'Anonymous form';
   renderContact();

@@ -420,3 +420,9 @@ Working decisions made for items E1–E6 to ensure platform resilience, integrat
 - **Integrated Dashboard & Milestones:**
   - Echocardiography requirements are tracked directly within the Trainee Dashboard and SOT Departmental Overview alongside core subspecialty requirements (Cardiac, Neuro, Paediatric, Obstetric, Regional, ICU).
   - Trainees log echocardiography cases (TTE/TOE) with subspecialty procedural tagging and structured study indications.
+
+
+## I-series addendum (2026-10-22): trainer edits and worklist
+- **Edit until round close.** A submitted trainer form can be edited until the round deadline; each submission is a new hashed version (`ita_assessor_responses` needs a version/supersedes column, and the unique key becomes (`itaSessionId`, `trainerId`, `version`) with one current row). The SOT team sees only the latest submitted version; edits in progress are not visible. Locks at round close.
+- **Trainer worklist.** Trainers see every department trainee, with those they have shared cases with (VOP supervisor entries, theatre lists) listed first. Columns: trainee, stage, shared cases, form status (Not started / In draft / Submitted), action.
+- **Grade palette** is one shared token set (`--gr1..gr4`, `--grxbg` in `hkca-theme.css`): 1 forest, 2 mint, 3 slate (a pass, never amber), 4 red, X hatched slate.
