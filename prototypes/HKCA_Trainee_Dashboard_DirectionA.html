@@ -226,6 +226,92 @@ main{padding:30px 0 70px}
 .gl-demo select{font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--navy)}
 .gl-demo a{color:var(--slate)}
 .gl-ed select{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px;background:var(--surface);color:var(--navy)}
+/* ---------- tab panels, ITA cycle, logbook, courses (design pass 2026-10-22) ---------- */
+.panel[hidden]{display:none}
+.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:6px}
+.banner{border-color:var(--wn-f)} .banner.info{border-color:var(--in-f);border-left-color:var(--in-f);background:linear-gradient(90deg,var(--in-bg),transparent 60%)}
+.banner.ok{border-color:var(--ok-f);border-left-color:var(--ok-f);background:linear-gradient(90deg,var(--ok-bg),transparent 60%)}
+.banner.info h3,.banner.ok h3{color:var(--ink)}
+.chipg{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;flex:none}
+.seg2{display:inline-flex;gap:3px;background:var(--bg3);padding:4px;border-radius:10px}
+.seg2 button{border:0;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink2);padding:7px 15px;border-radius:7px;cursor:pointer;min-height:34px}
+.seg2 button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.ptitle{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.ptitle h2{font-size:21px;font-weight:750;letter-spacing:-.02em} .ptitle p{font-size:13px;color:var(--ink2);margin-top:4px;max-width:640px}
+.qline{font-size:13.5px;color:var(--ink2);margin:0 0 16px} .qline b{color:var(--ink)}
+
+/* ITA cycle */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;list-style:none;margin:6px 0 20px;counter-reset:s}
+.steps li{position:relative;padding-top:30px;font-size:12.5px;font-weight:600;color:var(--ink3);text-align:left;padding-right:10px}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;top:0;left:0;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);
+  display:grid;place-items:center;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.steps li::after{content:"";position:absolute;top:10px;left:30px;right:8px;height:2px;background:var(--border)}
+.steps li:last-child::after{display:none}
+.steps li.done{color:var(--ink2)} .steps li.done::before{content:"\2713";background:var(--acc-bg);border-color:var(--acc);color:var(--acc-t)} .steps li.done::after{background:var(--acc)}
+.steps li.cur{color:var(--ink)} .steps li.cur::before{background:var(--acc);border-color:var(--acc);color:#fff}
+.stepmsg{border:1px solid var(--border);border-radius:12px;background:var(--bg2);padding:14px 16px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.stepmsg b{color:var(--ink)}
+.ledger{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.ledger .lr{display:flex;justify-content:space-between;gap:16px;padding:10px 14px;border-top:1px solid var(--border);font-size:13px}
+.ledger .lr:first-child{border-top:0} .ledger .lk{color:var(--ink2)} .ledger .lv{font-weight:600;text-align:right;display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.tv-grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px 36px;margin-top:18px}
+.tv-sec2 .eyebrow{margin-bottom:8px} .tv-row2{display:flex;gap:10px;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border-sub)}
+.readbox{border:1px solid var(--border);border-radius:10px;background:var(--bg2);padding:12px 14px;font-size:13.5px;line-height:1.6;white-space:pre-wrap}
+.subh{margin-top:24px}
+.field{display:block;margin-top:14px} .field span{display:block;font-size:12.5px;font-weight:650;margin-bottom:6px}
+.field textarea,.field input[type=password],.field input[type=text],.field input[type=date],.field select,.fi{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border);font-family:inherit;font-size:14px;background:var(--surface);color:var(--ink);min-height:40px}
+.field textarea{min-height:92px;resize:vertical;line-height:1.5}
+.sigbox{border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px;background:var(--surface)}
+.sigbox.locked{opacity:.55}
+.receipt{border:1px solid var(--ok-f);background:var(--ok-bg);border-radius:12px;padding:14px 16px;font-size:13.5px}
+.receipt .mono{font-size:12px;color:var(--ink2);word-break:break-all}
+.tbl2{width:100%;border-collapse:collapse;font-size:13px}
+.tbl2 th{text-align:left;font-size:12px;font-weight:650;color:var(--ink3);padding:9px 12px;background:var(--bg3);white-space:nowrap}
+.tbl2 td{padding:11px 12px;border-top:1px solid var(--border-sub);vertical-align:middle}
+.tbl-scroll{border:1px solid var(--border);border-radius:12px;overflow:auto;background:var(--surface)}
+.wl-sub{display:block;font-size:12px;color:var(--ink3)}
+
+/* logbook */
+.lbhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.dgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.dcard{border:1px solid var(--border);border-radius:14px;background:var(--surface);padding:18px 20px}
+.dcard h3{font-size:14.5px;font-weight:700;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.dcard h3 small{font-size:12px;font-weight:600;color:var(--ink3)}
+.irow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(80px,1fr) 92px;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--border-sub);width:100%;
+  background:none;border-left:0;border-right:0;border-bottom:0;font:inherit;color:inherit;text-align:left;cursor:pointer;min-height:44px}
+.irow:first-of-type{border-top:0;margin-top:8px}
+.irow:hover .inm{color:var(--acc-t)} .irow:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+.inm{font-size:13px;font-weight:600;line-height:1.3} .ival{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--ink2);white-space:nowrap;text-align:right}
+.ibar{height:8px;border-radius:4px;background:var(--bg3);position:relative;overflow:hidden}
+.ibar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.ibar i.pend{opacity:.35}
+.c-ok{background:var(--ok-f)} .c-wn{background:#d99a2b} .c-bd{background:var(--bd-f)} .c-in{background:var(--in-f)}
+.st2{display:inline-flex;align-items:center;gap:7px;font-size:13px} .st2 i{width:8px;height:8px;border-radius:50%;background:var(--ink3);flex:none}
+.st2.verified i{background:var(--ok-f)} .st2.pending i{background:var(--wn-f)} .st2.returned i{background:var(--bd-f)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.filters .fi{width:auto;min-width:160px;flex:0 1 220px}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12.5px;color:var(--ink2)}
+.link{background:none;border:0;padding:0;color:var(--acc-t);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* courses & project */
+.projtrack{display:grid;grid-template-columns:repeat(4,1fr);gap:0;list-style:none;margin:14px 0 4px}
+.projtrack li{position:relative;padding-top:28px;font-size:12.5px;font-weight:600;color:var(--ink3);padding-right:8px}
+.projtrack li::before{content:"";position:absolute;top:0;left:0;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface)}
+.projtrack li::after{content:"";position:absolute;top:9px;left:28px;right:6px;height:2px;background:var(--border)} .projtrack li:last-child::after{display:none}
+.projtrack li.done{color:var(--ink2)} .projtrack li.done::before{background:var(--ok-f);border-color:var(--ok-f)} .projtrack li.done::after{background:var(--ok-f)}
+.projtrack li.cur{color:var(--ink)} .projtrack li.cur::before{background:var(--in-f);border-color:var(--in-f)}
+.projtrack li span{display:block;font-weight:500;font-size:12px;color:var(--ink3);font-family:'JetBrains Mono',monospace}
+.flagrow{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-top:1px solid var(--border-sub);font-size:13px}
+.xscrim{position:fixed;inset:0;background:rgba(10,20,40,.55);backdrop-filter:blur(3px);z-index:100;display:grid;place-items:center;padding:20px}
+.xmodal{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:26px;box-shadow:0 12px 36px rgba(0,0,0,.25)}
+.xmodal h3{font-size:18px;font-weight:750} .xmodal .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.two2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){
+  .steps{grid-template-columns:1fr;gap:10px} .steps li{padding:2px 0 2px 34px;min-height:26px} .steps li::after{display:none}
+  .tv-grid2,.dgrid,.two2{grid-template-columns:1fr} .projtrack{grid-template-columns:1fr;gap:10px} .projtrack li{padding:0 0 0 30px;min-height:22px} .projtrack li::after{display:none}
+  .irow{grid-template-columns:1fr auto;row-gap:6px} .irow .ibar{grid-column:1/-1;order:3}
+  .filters .fi{flex:1 1 100%;width:100%}
+}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 <link rel="stylesheet" href="hkca-mobile.css">
@@ -250,38 +336,24 @@ main{padding:30px 0 70px}
         <button class="btn sec sm" onclick="toggleTheme()" id="thBtn">Dark</button>
       </div>
     </div>
-    <div class="tabs">
-      <button class="on">Overview</button>
-      <button>Logbook</button>
-      <button>In-Training Assessments</button>
-      <button>Workplace Assessments</button>
-      <button>Courses &amp; Project</button>
+    <div class="tabs" role="tablist" aria-label="Portfolio sections">
+      <button type="button" role="tab" id="tabbtn-overview" aria-controls="panel-overview" aria-selected="true" data-tab="overview" class="on">Overview</button>
+      <button type="button" role="tab" id="tabbtn-logbook" aria-controls="panel-logbook" aria-selected="false" tabindex="-1" data-tab="logbook">Logbook (VOP)</button>
+      <button type="button" role="tab" id="tabbtn-ita" aria-controls="panel-ita" aria-selected="false" tabindex="-1" data-tab="ita">ITA &amp; Assessments</button>
+      <button type="button" role="tab" id="tabbtn-courses" aria-controls="panel-courses" aria-selected="false" tabindex="-1" data-tab="courses">Courses &amp; Project</button>
+      <button type="button" role="tab" id="tabbtn-wba" aria-controls="panel-wba" aria-selected="false" tabindex="-1" data-tab="wba">Work-based (WBA)</button>
     </div>
   </div>
 </nav>
 
 <main>
   <div class="wrap">
+  <section class="panel" id="panel-overview" role="tabpanel" aria-labelledby="tabbtn-overview">
 
     <div id="goalsMount"></div>
 
-    <!-- action banner -->
-    <div class="banner">
-      <div class="ic">&#9203;</div>
-      <div style="flex:1">
-        <h3>Your in-training assessment needs your self-reflection</h3>
-        <p>
-          The 6-month assessment for your <strong>Prince of Wales Hospital</strong> rotation closes on
-          <strong>31 December 2026</strong> — 18 days away. Your Supervisor of Training has already
-          collected feedback from 4 department trainers. Reflect on how the six months went so the
-          assessment can be signed off.
-        </p>
-        <div class="acts">
-          <button class="btn am" onclick="openReflectionModal()">Add self-reflection</button>
-          <button class="btn sec" onclick="openSotSummaryModal()">View SOT assessment summary</button>
-        </div>
-      </div>
-    </div>
+    <!-- ITA lifecycle banner: follows the ITA stage (see ITA & Assessments tab) -->
+    <div id="itaBanner"></div>
 
     <!-- ===== training progression ===== -->
     <div class="card">
@@ -373,7 +445,7 @@ main{padding:30px 0 70px}
         <div class="lb">Mandatory Courses</div>
         <div class="vl mono">4<em> / 5</em></div>
         <div class="track"><i class="bl" style="width:80%"></i></div>
-        <div class="sb">ECHO-A outstanding — required before Exit Assessment</div>
+        <div class="sb">USRA-E outstanding — required before Exit Assessment</div>
       </div>
     </div>
 
@@ -391,67 +463,7 @@ main{padding:30px 0 70px}
         <span class="pill ok"><span class="dot g"></span>4 of 5 complete</span>
       </div>
 
-      <div class="courselist">
-        <div class="course">
-          <div class="cstat done">&#10003;</div>
-          <div class="cinfo">
-            <div class="cname">EASE</div>
-            <div class="cdesc">Exposure to Anaesthetic Safety &amp; Emergencies</div>
-          </div>
-          <div class="cmeta">
-            <span class="pill ok">Verified</span>
-            <span class="cdate mono">14 Mar 2024</span>
-          </div>
-        </div>
-
-        <div class="course">
-          <div class="cstat done">&#10003;</div>
-          <div class="cinfo">
-            <div class="cname">EMAC</div>
-            <div class="cdesc">Effective Management of Anaesthesia Crisis</div>
-          </div>
-          <div class="cmeta">
-            <span class="pill ok">Verified</span>
-            <span class="cdate mono">02 Sep 2024</span>
-          </div>
-        </div>
-
-        <div class="course">
-          <div class="cstat done">&#10003;</div>
-          <div class="cinfo">
-            <div class="cname">ADAM-A</div>
-            <div class="cdesc">Advanced and Difficult Airway Management for Anaesthetists</div>
-          </div>
-          <div class="cmeta">
-            <span class="pill ok">Verified</span>
-            <span class="cdate mono">18 Jan 2025</span>
-          </div>
-        </div>
-
-        <div class="course">
-          <div class="cstat done">&#10003;</div>
-          <div class="cinfo">
-            <div class="cname">UGRA</div>
-            <div class="cdesc">Ultrasound Guided Regional Anaesthesia</div>
-          </div>
-          <div class="cmeta">
-            <span class="pill ok">Verified</span>
-            <span class="cdate mono">07 Jun 2025</span>
-          </div>
-        </div>
-
-        <div class="course pending">
-          <div class="cstat todo">&#8226;</div>
-          <div class="cinfo">
-            <div class="cname">ECHO-A</div>
-            <div class="cdesc">HKCA Focused Transthoracic Echocardiography</div>
-          </div>
-          <div class="cmeta">
-            <span class="pill warn">Certificate not uploaded</span>
-            <button class="btn am sm">Upload certificate</button>
-          </div>
-        </div>
-      </div>
+      <div id="ovCourses"></div>
 
       <div class="legend">
         <div class="li"><span class="swatch" style="background:var(--green)"></span>Completed and verified by the College</div>
@@ -460,8 +472,8 @@ main{padding:30px 0 70px}
 
       <p class="note">
         Two other items are required before Exit Assessment: your <strong>Formal Project (HKCA-E03)</strong>,
-        currently approved with minor revisions, and your <strong>PFY three-domain plan</strong>.
-        Both are tracked under <em>Courses &amp; Project</em>.
+        protocol approved and manuscript not yet submitted, and your <strong>PFY three-domain plan</strong>.
+        Both are shown under <button type="button" class="link" onclick="showTab('courses')">Courses &amp; Project</button>.
       </p>
     </div>
 
@@ -788,6 +800,25 @@ main{padding:30px 0 70px}
       </div>
     </div>
 
+  </section>
+
+  <!-- ================= Logbook (VOP) ================= -->
+  <section class="panel" id="panel-logbook" role="tabpanel" aria-labelledby="tabbtn-logbook" hidden></section>
+
+  <!-- ================= ITA & Assessments ================= -->
+  <section class="panel" id="panel-ita" role="tabpanel" aria-labelledby="tabbtn-ita" hidden></section>
+
+  <!-- ================= Courses & Project ================= -->
+  <section class="panel" id="panel-courses" role="tabpanel" aria-labelledby="tabbtn-courses" hidden></section>
+
+  <!-- ================= Work-based (WBA): on hold ================= -->
+  <section class="panel" id="panel-wba" role="tabpanel" aria-labelledby="tabbtn-wba" hidden>
+    <div class="card">
+      <div class="eyebrow">Work-based assessments</div>
+      <h2 style="font-size:19px;font-weight:750">Coming later</h2>
+      <p class="qline" style="margin-top:8px">Your DOPS, CEX, CBD and ALMAT results will come from the JCIMED work-based assessment app. This page is not designed yet, because it depends on that connection. Your WBA counts are on the Overview.</p>
+    </div>
+  </section>
   </div>
 </main>
 
@@ -803,64 +834,325 @@ main{padding:30px 0 70px}
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px" id="glActs"></div>
   </div>
 </div>
-<div id="modalReflection" class="hidden" style="position:fixed;inset:0;background:rgba(10,37,64,.65);backdrop-filter:blur(3px);z-index:100;display:grid;place-items:center;padding:20px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:580px;width:100%;padding:28px;box-shadow:0 12px 36px rgba(0,0,0,.25)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h3 style="font-size:18px;font-weight:750">Trainee Self-Reflection</h3>
-      <button onclick="closeModal('modalReflection')" style="background:transparent;border:0;font-size:20px;cursor:pointer;color:var(--slate)">&times;</button>
-    </div>
-    <p style="font-size:13px;color:var(--slate);margin-bottom:18px">
-      Complete your reflection for the Jul&ndash;Dec 2026 cycle at <strong>Prince of Wales Hospital</strong>. This will be reviewed with your SOT during the face-to-face feedback meeting.
-    </p>
-    <div style="display:grid;gap:14px">
-      <div>
-        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">Clinical Strengths &amp; Progress Achieved</label>
-        <textarea style="width:100%;height:80px;padding:10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px" placeholder="Describe clinical domains or cases where you demonstrated independent progress..."></textarea>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">Areas Identified for Growth &amp; Support Needed</label>
-        <textarea style="width:100%;height:80px;padding:10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px" placeholder="Identify specific subspecialties, techniques, or EPA targets for next cycle..."></textarea>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
-      <button class="btn sec sm" onclick="closeModal('modalReflection')">Cancel</button>
-      <button class="btn pri sm" onclick="saveReflection()">Submit Reflection to SOT</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: View SOT Assessment Summary -->
-<div id="modalSotSummary" class="hidden" style="position:fixed;inset:0;background:rgba(10,37,64,.65);backdrop-filter:blur(3px);z-index:100;display:grid;place-items:center;padding:20px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:580px;width:100%;padding:28px;box-shadow:0 12px 36px rgba(0,0,0,.25)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h3 style="font-size:18px;font-weight:750">SOT Assessment Summary (Tier 2)</h3>
-      <button onclick="closeModal('modalSotSummary')" style="background:transparent;border:0;font-size:20px;cursor:pointer;color:var(--slate)">&times;</button>
-    </div>
-    <div style="background:rgba(2,132,199,.08);border:1px solid rgba(2,132,199,.25);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12.5px;color:var(--slate)">
-      <strong>Governance Notice (PRD §5.2):</strong> Individual trainer forms (<span class="mono">ItaAssessorResponse</span>) are anonymous and are read only by your SOT team. They are not shown to you or to the College. This view shows only the summary your Supervisor of Training prepares.
-    </div>
-    <div style="display:grid;gap:12px;font-size:13px">
-      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
-        <span style="color:var(--slate)">Supervising Centre</span>
-        <span style="font-weight:600">Prince of Wales Hospital (NTEC)</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
-        <span style="color:var(--slate)">Trainer Inputs Collated</span>
-        <span class="mono" style="font-weight:600">4 of 4 submitted</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
-        <span style="color:var(--slate)">Current Summative Status</span>
-        <span class="pill warn">Awaiting Trainee Self-Reflection</span>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;margin-top:22px">
-      <button class="btn pri sm" onclick="closeModal('modalSotSummary')">Close</button>
-    </div>
-  </div>
-</div>
+<div id="modalCase" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mcT"></div>
+<div id="modalFlag" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mfT"></div>
 
 <script src="hkca-plans-store.js"></script>
 <script>
+
+/* ============================================================ trainee portfolio: tabs, ITA lifecycle, logbook, courses ============================================================ */
+const TR_NAME = 'Dr. Kelvin Wong', TR_ID = '2022-019', TR_STAGE = 'HAT-2', ASOT_NAME = 'Dr. Albert Chan';
+const X = s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $q = (s,el=document)=>el.querySelector(s), $qa = (s,el=document)=>[...el.querySelectorAll(s)];
+const fnvh = t=>{ let h=2166136261; for(const ch of t){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619)>>>0; } return 'fnv1a-'+h.toString(16).padStart(8,'0'); };
+const MONS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtD = d=>{ d = new Date(d); return String(d.getDate()).padStart(2,'0')+' '+MONS[d.getMonth()]+' '+d.getFullYear(); };
+const lsGet = (k,def)=>{ try{ const v = JSON.parse(localStorage.getItem(k)||'null'); return v==null?def:v; }catch(e){ return def; } };
+const lsSet = (k,v)=>{ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+
+/* ---------- tabs (roving tabindex, Arrow/Home/End, #hash deep link) ---------- */
+const TABS = ['overview','logbook','ita','courses','wba'];
+function showTab(id, opts){
+  if(!TABS.includes(id)) id = 'overview';
+  TABS.forEach(t=>{
+    const on = t===id, b = document.getElementById('tabbtn-'+t), p = document.getElementById('panel-'+t);
+    b.classList.toggle('on', on); b.setAttribute('aria-selected', on); b.tabIndex = on?0:-1; p.hidden = !on;
+  });
+  if(id==='logbook') renderLogbook(); else if(id==='ita') renderIta(); else if(id==='courses') renderCoursesTab();
+  if(!(opts && opts.noHash)) history.replaceState(null,'',id==='overview'?location.pathname+location.search:'#'+id);
+  if(!(opts && opts.keepScroll)) window.scrollTo(0,0);
+}
+$qa('.tabs [role=tab]').forEach(b=>{
+  b.addEventListener('click',()=>showTab(b.dataset.tab));
+  b.addEventListener('keydown',e=>{
+    const i = TABS.indexOf(b.dataset.tab); let n = null;
+    if(e.key==='ArrowRight') n = (i+1)%TABS.length; else if(e.key==='ArrowLeft') n = (i+TABS.length-1)%TABS.length;
+    else if(e.key==='Home') n = 0; else if(e.key==='End') n = TABS.length-1;
+    if(n!==null){ e.preventDefault(); showTab(TABS[n],{keepScroll:true}); document.getElementById('tabbtn-'+TABS[n]).focus(); }
+  });
+});
+
+/* ---------- ITA lifecycle (trainee side). Demo state, separate from the plans store ---------- */
+const ITA_KEY = 'hkca.trainee.ita.v1';
+const ITA_STAGES = [['collecting','Trainers are giving feedback'],['synthesis','SOT is preparing your review'],['meeting','Face-to-face meeting to come'],['reflection','Review done: reflect and sign'],['signed','Signed off']];
+let ITA = lsGet(ITA_KEY, null) || {stage:'reflection', refl:{strengths:'', growth:'', savedAt:null}, signedAt:null, hash:null};
+const itaSave = ()=>lsSet(ITA_KEY, ITA);
+function itaSetStage(v){
+  ITA.stage = v;
+  if(v!=='signed'){ ITA.signedAt = null; ITA.hash = null; }
+  if(v==='signed' && !ITA.signedAt){ ITA.signedAt = new Date().toISOString(); ITA.hash = fnvh('demo-signed'); if(!ITA.refl.savedAt) ITA.refl.savedAt = ITA.signedAt; }
+  if(v!=='reflection' && v!=='signed') ITA.refl.savedAt = null;
+  itaSave(); renderItaBanner(); if(!document.getElementById('panel-ita').hidden) renderIta();
+}
+function itaReset(){ localStorage.removeItem(ITA_KEY); ITA = {stage:'reflection', refl:{strengths:'', growth:'', savedAt:null}, signedAt:null, hash:null}; renderItaBanner(); renderIta(); }
+function itaStageOpts(){ return ITA_STAGES.map(([k,l])=>`<option value="${k}" ${ITA.stage===k?'selected':''}>${l}</option>`).join(''); }
+
+function renderItaBanner(){
+  const el = document.getElementById('itaBanner'); if(!el) return;
+  const per = 'Jul\u2013Dec 2026';
+  const B = {
+    collecting:['info',`Trainers are giving feedback on your ${per} assessment`,'Nothing for you to do yet. Your Assigned SOT will meet you once the feedback is in.','See progress'],
+    synthesis:['info','Your SOT is preparing your assessment review','Trainer feedback is in. Your SOT is writing the summary and will arrange your face-to-face meeting.','See progress'],
+    meeting:['info','Your face-to-face meeting is next','Your SOT will go through your outcome with you. You add your reflection after the meeting.','See progress'],
+    reflection: ITA.refl.savedAt
+      ? ['', 'One step left: sign your ITA','Your reflection is saved. Sign electronically to complete the cycle.','Sign my ITA']
+      : ['', 'Your SOT has completed your ITA review','Review your outcome and add your post-meeting reflection to complete the cycle.','Review outcome and reflect'],
+    signed:['ok',`Your ${per} ITA is signed off`,'Nothing more to do for this cycle.','View my ITA']
+  }[ITA.stage];
+  el.innerHTML = `<div class="banner ${B[0]}"><div style="flex:1"><h3>${B[1]}</h3><p>${B[2]}</p>
+    <div class="acts"><button type="button" class="btn ${B[0]?'sec':'am'}" onclick="showTab('ita')">${B[3]}</button></div></div></div>`;
+}
+
+const ITA_ITEMS = [   // SOT grades as on the face-to-face screen (read-only here); same 15 College items
+ ['C','Patient assessment','2'],['C','Clinical management','3'],['C','Technical skills','4'],['C','Knowledge, ability to apply knowledge, and initiative to learn','3'],
+ ['C','Time management and prioritization','3'],['C','Crisis management','2'],['C','Leadership','3'],['C','Vigilance','2'],['C','Insightfulness','3'],
+ ['T','Communication with patients +/- relatives','2'],['T','Communication with colleagues','2'],['T','Integrity','1'],['T','Teamwork','2'],['T','Respects patient\u2019s right','2'],['T','Professional behaviour','2']];
+const GN = {'1':'Consistently exceeds expectation','2':'Occasionally exceeds expectation','3':'Usually meets expectation','4':'Unsatisfactory'};
+const SOT_SUMMARY = 'Calm and well organised in crises, and communication with patients is a clear strength. Technical skills remain the main development area: arrange supervised block and cardiac TOE exposure before the next cycle. Review progress at month 3.';
+const ITA_HISTORY = [
+ ['Jan \u2013 Jun 2026','PWH \u00b7 Clinical Anaesthesia','3','6.0 months','14 Jul 2026'],
+ ['Jul \u2013 Dec 2025','PWH \u00b7 Intensive Care','2','6.0 months','12 Jan 2026'],
+ ['Jan \u2013 Jun 2025','NDH \u00b7 Clinical Anaesthesia','3','6.0 months','09 Jul 2025'],
+ ['Jul \u2013 Dec 2024','PWH \u00b7 Clinical Anaesthesia','3','6.0 months','15 Jan 2025']];
+const chipG = g=>`<i class="chipg c${String(g).toLowerCase()}">${g}</i>`;
+
+function itaOutcomeHtml(){
+  const rows = gk=>ITA_ITEMS.filter(r=>r[0]===gk).map(r=>`<div class="tv-row2">${chipG(r[2])}<span>${X(r[1])}</span></div>`).join('');
+  let goals = '';
+  try{
+    const p = PS.get(TR_ID,'SIX_MONTH');
+    if(p && p.goals && p.goals.length){
+      goals = `<div class="subh"><div class="eyebrow">Learning contract goals</div>`+p.goals.map((g,i)=>{ const o = g.outcome ? PS.OUTCOMES[g.outcome] : null;
+        return `<div class="readbox" style="margin-top:6px"><b>${i+1}. ${GE(g.text)}</b> &mdash; <span class="pill ${o?o.tone:'warn'}">${o?o.label:'Not yet graded'}</span>${g.sotComment?`<br><span style="color:var(--ink2)">${GE(g.sotComment)}</span>`:''}</div>`; }).join('')+'</div>';
+    }
+  }catch(e){}
+  return `<div class="card"><div class="hd"><div><div class="eyebrow">Your outcome</div><h2>Jul \u2013 Dec 2026 assessment</h2>
+      <p>This is the summary your Assigned SOT prepared. Individual trainer forms are read only by your SOT team and are not shown to you or to the College.</p></div></div>
+    <div class="ledger">
+      <div class="lr"><span class="lk">Overall assessment</span><span class="lv">${chipG('3')} ${GN['3']}</span></div>
+      <div class="lr"><span class="lk">Rotation period</span><span class="lv mono">01 Jul \u2013 31 Dec 2026</span></div>
+      <div class="lr"><span class="lk">Training category</span><span class="lv">Clinical Anaesthesia</span></div>
+      <div class="lr"><span class="lk">Credit on sign-off</span><span class="lv mono">6.0 months</span></div>
+      <div class="lr"><span class="lk">Met with Assigned SOT</span><span class="lv">${ASOT_NAME} \u00b7 <span class="mono">10 Dec 2026</span></span></div>
+    </div>
+    <div class="tv-grid2"><div class="tv-sec2"><div class="eyebrow">Clinical performance</div>${rows('C')}</div><div class="tv-sec2"><div class="eyebrow">Communication, teamwork and interpersonal skills</div>${rows('T')}</div></div>
+    <div class="subh"><div class="eyebrow">Supervisor of Training\u2019s summary and suggestions</div><div class="readbox">${X(SOT_SUMMARY)}</div></div>${goals}</div>`;
+}
+function itaReflectionHtml(){
+  const r = ITA.refl, signed = ITA.stage==='signed', saved = !!r.savedAt;
+  if(signed || saved && !ITA._editRefl){
+    return `<div class="card"><div class="hd"><div><div class="eyebrow">After the meeting</div><h2>My reflection</h2></div>
+      ${signed?'':'<button type="button" class="btn sec sm" onclick="itaEditRefl()">Edit</button>'}</div>
+      <div class="eyebrow">What went well and what I take from the meeting</div><div class="readbox">${X(r.strengths)}</div>
+      <div class="eyebrow" style="margin-top:14px">Where I want to grow and what support I need</div><div class="readbox">${X(r.growth)}</div>
+      <p class="qline" style="margin:12px 0 0;font-size:12.5px">${signed?'Locked with your signature.':'Saved '+fmtD(r.savedAt)+'. You can edit until you sign.'}</p></div>`;
+  }
+  return `<div class="card"><div class="hd"><div><div class="eyebrow">After the meeting</div><h2>My reflection</h2>
+      <p>Add your reflection now that you have met your SOT. It is part of your ITA record and is needed before you sign.</p></div></div>
+    <label class="field"><span>What went well and what I take from the meeting</span><textarea id="rfA" oninput="itaDraft()" placeholder="The feedback you recognise, what surprised you, what you will keep doing.">${X(r.strengths)}</textarea></label>
+    <label class="field"><span>Where I want to grow and what support I need</span><textarea id="rfB" oninput="itaDraft()" placeholder="Specific techniques, subspecialties or exposure for the next cycle, and how your SOT or department can help.">${X(r.growth)}</textarea></label>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap"><button type="button" class="btn pri" id="rfSave" onclick="itaSaveRefl()">Save reflection and continue to signature</button>
+      <span class="qline" style="margin:0;font-size:12.5px" id="rfNote">Both boxes need a few sentences.</span></div></div>`;
+}
+function itaDraft(){ const a = $q('#rfA'), b = $q('#rfB'); if(!a||!b) return; ITA.refl.strengths = a.value; ITA.refl.growth = b.value; itaSave(); }
+function itaEditRefl(){ ITA._editRefl = true; renderIta(); }
+function itaSaveRefl(){
+  itaDraft();
+  if(ITA.refl.strengths.trim().length<15 || ITA.refl.growth.trim().length<15){ const n = $q('#rfNote'); n.textContent = 'Add a few sentences to each box before you continue.'; n.style.color = 'var(--bd-f)'; return; }
+  ITA.refl.savedAt = new Date().toISOString(); delete ITA._editRefl; itaSave(); renderItaBanner(); renderIta();
+  const sg = $q('#sigbox'); if(sg) sg.scrollIntoView({block:'center',behavior:'smooth'});
+}
+function itaSignHtml(){
+  if(ITA.stage==='signed'){
+    return `<div class="card"><div class="eyebrow">Sign-off</div><h2 style="font-size:19px;font-weight:750;margin-bottom:12px">Signed electronically</h2><div class="receipt" role="status"><b>${X(TR_NAME)} signed on ${fmtD(ITA.signedAt)}</b>
+      <p style="margin-top:4px;color:var(--ink2)">This confirms you and your Assigned SOT have met and discussed the assessment. The record is now locked.</p>
+      <div class="mono" style="margin-top:6px">${X(ITA.hash||'')}</div></div></div>`;
+  }
+  const ready = !!ITA.refl.savedAt && !ITA._editRefl;
+  return `<div class="card"><div class="eyebrow">Sign-off</div><h2 style="font-size:19px;font-weight:750">Sign my ITA</h2>
+    <p class="qline" style="margin-top:6px">Signing confirms that you and your Assigned SOT have met and discussed this assessment. If you do not sign, the record stays unsigned and nothing is submitted to the College; raise any concern with the College by email.</p>
+    <div class="sigbox ${ready?'':'locked'}" id="sigbox">
+      <div class="two2"><label class="field" style="margin-top:0"><span>Signing as</span><input class="fi" type="text" value="${X(TR_NAME)} \u00b7 HKCA ${TR_ID}" readonly></label>
+      <label class="field" style="margin-top:0"><span>e-Portfolio password</span><input id="sigPw" type="password" autocomplete="off" ${ready?'':'disabled'} placeholder="${ready?'Enter your password to sign':'Save your reflection first'}"></label></div>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap"><button type="button" class="btn pri" id="sigBtn" ${ready?'':'disabled'} onclick="itaSign()">Sign electronically</button><span class="qline" id="sigNote" style="margin:0;font-size:12.5px"></span></div>
+      <p class="qline" style="margin:12px 0 0;font-size:12px">Prototype: any non-empty entry is accepted. The live system re-checks your e-Portfolio username and password.</p>
+    </div></div>`;
+}
+function itaSign(){
+  const pw = $q('#sigPw'); if(!pw.value){ const n = $q('#sigNote'); n.textContent = 'Enter your password to sign.'; n.style.color = 'var(--bd-f)'; pw.focus(); return; }
+  ITA.stage = 'signed'; ITA.signedAt = new Date().toISOString(); ITA.hash = fnvh(JSON.stringify(ITA.refl)+ITA.signedAt); itaSave(); renderItaBanner(); renderIta();
+  const r = $q('.receipt'); if(r) r.scrollIntoView({block:'center',behavior:'smooth'});
+}
+function renderIta(){
+  const el = document.getElementById('panel-ita'); if(!el) return;
+  const stg = ITA.stage, idx = {collecting:0, synthesis:1, meeting:2, reflection:(ITA.refl.savedAt&&!ITA._editRefl)?4:3, signed:5}[stg];
+  const labels = ['Trainer feedback','SOT synthesis','Face-to-face meeting','Your reflection','Your signature'];
+  const msg = {
+    collecting:'<b>Trainers are giving feedback.</b> Your Assigned SOT has invited the department\u2019s trainers. You do not need to do anything yet.',
+    synthesis:'<b>Feedback is in.</b> Your Assigned SOT is reading it and writing the summary for your face-to-face meeting.',
+    meeting:'<b>Your SOT will meet you face to face</b> to go through the outcome. Your reflection and signature come after the meeting.',
+    reflection: ITA.refl.savedAt&&!ITA._editRefl ? '<b>One step left.</b> Your reflection is saved. Sign electronically to complete this cycle.' : '<b>Your SOT has completed your ITA review.</b> Look through your outcome, then add your reflection and sign to complete the cycle.',
+    signed:'<b>This cycle is complete.</b> Your ITA is signed and locked.'
+  }[stg];
+  const steps = labels.map((l,i)=>`<li class="${i<idx?'done':i===idx?'cur':''}" ${i===idx?'aria-current="step"':''}>${l}</li>`).join('');
+  const hist = `<div class="card"><div class="hd"><div><div class="eyebrow">History</div><h2>Previous cycles</h2></div></div><div class="tbl-scroll"><table class="tbl2"><thead><tr><th>Cycle</th><th>Rotation</th><th>Overall</th><th>Credit</th><th>Signed</th></tr></thead><tbody>${
+    ITA_HISTORY.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td><span style="display:inline-flex;gap:8px;align-items:center">${chipG(r[2])} ${GN[r[2]].replace(' expectation','')}</span></td><td class="mono">${r[3]}</td><td class="mono">${r[4]}</td></tr>`).join('')}</tbody></table></div></div>`;
+  el.innerHTML = `<div class="ptitle"><div><h2>ITA &amp; Assessments</h2><p>Your six-month In-Training Assessment with your Assigned SOT, ${X(ASOT_NAME)}.</p></div></div>
+    <div class="card"><div class="hd"><div><div class="eyebrow">Current cycle</div><h2>Jul \u2013 Dec 2026 \u00b7 Prince of Wales Hospital</h2></div></div>
+      <ol class="steps" aria-label="ITA steps">${steps}</ol><div class="stepmsg" role="status">${msg}</div></div>
+    ${stg==='reflection'||stg==='signed' ? itaOutcomeHtml()+itaReflectionHtml()+itaSignHtml() : ''}
+    ${hist}`;
+}
+
+/* ---------- courses & project: read-only facts from the College record ---------- */
+const COURSES = [
+ {n:'EASE',d:'Exposure to Anaesthetic Safety & Emergencies',done:'14 Mar 2024'},
+ {n:'EMAC',d:'Effective Management of Anaesthesia Crisis',done:'02 Sep 2024'},
+ {n:'ADAM-A',d:'Advanced and Difficult Airway Management for Anaesthetists',done:'18 Jan 2025'},
+ {n:'ECHO-A',d:'HKCA Focused Transthoracic Echocardiography',done:'07 Jun 2025'},
+ {n:'USRA-E',d:'Ultrasound-guided Regional Anaesthesia',done:null}];
+function courseListHtml(){
+  return '<div class="courselist">'+COURSES.map(c=>c.done
+    ? `<div class="course"><div class="cstat done">&#10003;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill ok">Verified</span><span class="cdate mono">${c.done}</span></div></div>`
+    : `<div class="course pending"><div class="cstat todo">&#8226;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill warn">Certificate not uploaded</span><button type="button" class="btn am sm" onclick="uploadCert('${c.n}')">Upload certificate</button></div></div>`).join('')+'</div>';
+}
+function uploadCert(n){ const b = event.currentTarget; b.textContent = 'Sent to College Admin'; b.disabled = true; b.className = 'btn sec sm'; }
+const FLAG_KEY = 'hkca.trainee.flags.v1';
+function renderCoursesTab(){
+  const el = document.getElementById('panel-courses'), flags = lsGet(FLAG_KEY, []);
+  const steps = [['Protocol submitted','12 Feb 2026','done'],['Protocol approved','30 Apr 2026','done'],['Manuscript submitted','','cur'],['Manuscript approved','','']];
+  el.innerHTML = `<div class="ptitle"><div><h2>Courses &amp; Project</h2><p>These come from your College record. You cannot edit them here. If something looks wrong, flag it to College Admin.</p></div>
+      <button type="button" class="btn sec" onclick="openFlag()">Flag a discrepancy with College Admin</button></div>
+    <div class="card"><div class="hd"><div><div class="eyebrow">Mandatory courses</div><h2>Course completion</h2>
+        <p>All five must be complete before you apply for Exit Assessment.</p></div><span class="pill ${COURSES.every(c=>c.done)?'ok':''}">${COURSES.filter(c=>c.done).length} of 5 complete</span></div>${courseListHtml()}</div>
+    <div class="card"><div class="hd"><div><div class="eyebrow">Formal project (HKCA-E03)</div><h2>Project progress</h2></div><span class="pill info"><span class="dot b"></span>Protocol approved</span></div>
+      <ol class="projtrack" aria-label="Formal project stages">${steps.map(([l,d,c])=>`<li class="${c}" ${c==='cur'?'aria-current="step"':''}>${l}<span>${d||'\u2014'}</span></li>`).join('')}</ol>
+      <p class="qline" style="margin:12px 0 0;font-size:12.5px">Next: submit your manuscript.</p></div>
+    ${flags.length?`<div class="card"><div class="hd"><div><div class="eyebrow">Your flags</div><h2>Sent to College Admin</h2></div></div>${flags.map(f=>`<div class="flagrow"><div><b>${X(f.about)}</b><span class="wl-sub">${X(f.text)}</span></div><span class="mono" style="font-size:12px;color:var(--ink3);white-space:nowrap">${f.at} \u00b7 awaiting reply</span></div>`).join('')}</div>`:''}`;
+}
+function openModalX(id, html){ const m = document.getElementById(id); m.innerHTML = html; m.classList.remove('hidden'); m._ret = document.activeElement; const f = m.querySelector('select,input,textarea,button'); if(f) f.focus(); }
+function closeX(id){ const m = document.getElementById(id); m.classList.add('hidden'); m.innerHTML=''; if(m._ret && m._ret.focus) m._ret.focus(); }
+function openFlag(){
+  openModalX('modalFlag', `<div class="xmodal"><div class="eyebrow">Flag to College Admin</div><h3 id="mfT">Report a record issue</h3>
+    <p class="qline" style="margin:6px 0 0;font-size:13px">Courses and formal project status come from the College record and cannot be changed by you or your SOT. Describe what looks wrong and College Admin will check it.</p>
+    <label class="field"><span>What is it about?</span><select id="flAbout">${COURSES.map(c=>`<option>${c.n}</option>`).join('')}<option>Formal project</option><option>Something else</option></select></label>
+    <label class="field"><span>What looks wrong?</span><textarea id="flText" placeholder="e.g. I completed USRA-E in March; the certificate was emailed to the College on 2 April."></textarea></label>
+    <p class="qline" id="flErr" style="margin:6px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
+    <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalFlag')">Cancel</button><button type="button" class="btn pri" onclick="sendFlag()">Send to College Admin</button></div></div>`);
+}
+function sendFlag(){
+  const t = $q('#flText').value.trim(); if(t.length<10){ $q('#flErr').textContent = 'Say briefly what looks wrong.'; return; }
+  const f = lsGet(FLAG_KEY, []); f.unshift({about:$q('#flAbout').value, text:t, at:fmtD(new Date())}); lsSet(FLAG_KEY, f);
+  closeX('modalFlag'); renderCoursesTab();
+}
+
+/* ---------- logbook (VOP): same curriculum tables and seeded generator as the SOT Console ---------- */
+const VOP_DOMS = [
+ {dom:'CF-2.1',kind:'CF',name:'General Anaesthesia and Sedation',short:'2.1 GA & sedation',items:[{id:'tiva',name:'TIVA',bt:10,cum:50},{id:'mac',name:'MAC / Sedation',bt:10,cum:50},{id:'cvc',name:'Central venous cannulation',bt:10,cum:50},{id:'art',name:'Arterial cannulation',bt:10,cum:50}]},
+ {dom:'CF-2.2',kind:'CF',name:'Regional Anaesthesia',short:'2.2 Regional',items:[{id:'spinal',name:'Spinal block',bt:50,cum:100},{id:'epid',name:'Epidural / CSE (non-obstetric)',bt:null,cum:15},{id:'plex',name:'Major plexus / peripheral nerve block',bt:null,cum:50}]},
+ {dom:'CF-2.3',kind:'CF',name:'Airway Management',short:'2.3 Airway',items:[{id:'sga',name:'Supraglottic device insertion',bt:50,cum:null},{id:'dl',name:'Direct laryngoscopy & intubation',bt:50,cum:null},{id:'vl',name:'Video laryngoscopy & intubation',bt:10,cum:20},{id:'fob',name:'Fibreoptic intubation',bt:3,cum:10}]},
+ {dom:'CF-2.4',kind:'CF',name:'Acute Pain Management',short:'2.4 Acute pain',items:[{id:'pca',name:'Postop IV PCA',bt:10,cum:80},{id:'neur',name:'Postop central neuraxial analgesia',bt:5,cum:20},{id:'pcs',name:'Any acute pain modality (post-CS obstetric)',bt:null,cum:20}]},
+ {dom:'SM-3.1',kind:'SM',name:'General Surgery / Urology / Gynaecology / Endoscopic',short:'3.1 Surgery',items:[{id:'elec',name:'Elective cases',cum:100},{id:'emerg',name:'Emergency cases',cum:100}]},
+ {dom:'SM-3.2',kind:'SM',name:'Head & Neck / ENT',short:'3.2 ENT',items:[{id:'airs',name:'Airway surgery',cum:30},{id:'hn',name:'H&N / ENT (not otherwise specified)',cum:30}]},
+ {dom:'SM-3.3',kind:'SM',name:'Orthopaedic Surgery',short:'3.3 Ortho',items:[{id:'hip',name:'Hip fracture',cum:30},{id:'joint',name:'Major joint replacement',cum:20},{id:'cspine',name:'Cervical spine surgery',cum:5},{id:'ortho',name:'Other orthopaedic',cum:100}]},
+ {dom:'SM-3.4',kind:'SM',name:'Paediatric Anaesthesia',short:'3.4 Paeds',items:[{id:'paed',name:'Age 8 years or under',cum:100}]},
+ {dom:'SM-3.5',kind:'SM',name:'Obstetric Anaesthesia and Analgesia',short:'3.5 Obstetric',items:[{id:'csga',name:'Caesarean section under GA',cum:10},{id:'csreg',name:'Caesarean section under regional',cum:50},{id:'lab',name:'Labour epidural',cum:30}]},
+ {dom:'SM-3.6',kind:'SM',name:'Neuroanaesthesia',short:'3.6 Neuro',items:[{id:'inr',name:'Interventional neuro-radiological procedures',cum:5},{id:'nsx',name:'Neurosurgical procedures',cum:50}]},
+ {dom:'SM-3.7',kind:'SM',name:'Ophthalmic Anaesthesia',short:'3.7 Eye',items:[{id:'eye',name:'Ophthalmic surgery',cum:20}]},
+ {dom:'SM-3.8',kind:'SM',name:'Anaesthesia Outside Operating Theatre',short:'3.8 Outside OT',items:[{id:'oot',name:'Anaesthesia outside theatre',cum:20}]},
+ {dom:'SM-3.9',kind:'SM',name:'Cardiac Surgery and Interventional Cardiology',short:'3.9 Cardiac',items:[{id:'cpb',name:'Cardiac surgery with CPB',cum:10},{id:'card',name:'Other cardiac / interventional cardiology',cum:10}]},
+ {dom:'SM-3.10',kind:'SM',name:'Thoracic Surgery',short:'3.10 Thoracic',items:[{id:'thor',name:'Thoracic surgery',cum:30}]},
+ {dom:'SM-3.11',kind:'SM',name:'Vascular Surgery',short:'3.11 Vascular',items:[{id:'vasc',name:'Vascular surgery',cum:20}]}
+];
+const VOP_OPS = {spinal:['Caesarean section','TURP','Inguinal hernia repair','Knee arthroscopy','Hip hemiarthroplasty'],epid:['Laparotomy','Open nephrectomy'],plex:['ORIF forearm','Shoulder arthroscopy','Carpal tunnel release'],tiva:['Lap cholecystectomy','Thyroidectomy','Tonsillectomy'],mac:['Cataract surgery','Colonoscopy','Cystoscopy'],cvc:['Whipple procedure','Liver resection'],art:['Major abdominal surgery','AAA repair'],sga:['Day-case hernia repair','Cystoscopy','Hysteroscopy'],dl:['Appendicectomy','Laparotomy','Mastectomy'],vl:['Thyroidectomy','Neck dissection'],fob:['Awake intubation, cervical spine'],pca:['Total knee replacement','Colectomy'],neur:['Laparotomy with epidural'],pcs:['Caesarean section'],elec:['Hysterectomy','Cholecystectomy','TURP'],emerg:['Perforated viscus','Appendicectomy','Ectopic pregnancy'],airs:['Tonsillectomy','Microlaryngoscopy'],hn:['Parotidectomy','Neck dissection'],hip:['Hip hemiarthroplasty','DHS fixation'],joint:['Total knee replacement','Total hip replacement'],cspine:['ACDF'],ortho:['ORIF ankle','Arthroscopy'],paed:['Inguinal hernia repair, child','Adenotonsillectomy, child','Circumcision, child'],csga:['Category 1 caesarean section'],csreg:['Elective caesarean section'],lab:['Labour epidural'],inr:['Aneurysm coiling'],nsx:['Craniotomy','Burr hole'],eye:['Vitrectomy','Strabismus surgery'],oot:['MRI sedation','Endoscopy suite'],cpb:['CABG','Aortic valve replacement'],card:['TAVI','Ablation'],thor:['VATS lobectomy'],vasc:['Femoral-popliteal bypass','Carotid endarterectomy'],oth:['General anaesthesia, various']};
+function vopTarget(it,d,stage){ if(d.kind==='SM') return it.cum; if(/^BAT/.test(stage)) return it.bt; return it.cum!=null ? it.cum : it.bt; }
+function vopHash(s){ let h = 2166136261; String(s).split('').forEach(c=>{ h ^= c.charCodeAt(0); h = Math.imul(h,16777619); }); return h>>>0; }
+function vopRng(seed){ let a = seed>>>0; return ()=>{ a |= 0; a = a+0x6D2B79F5|0; let t = Math.imul(a^a>>>15,1|a); t = t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+const LB_NOW = new Date(2026,9,17), LB_DAY = 864e5, LB_HOSP = {PWH:'Prince of Wales Hospital',NDH:'North District Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital'};
+const LB_EXTRA = 'hkca.trainee.vop.extra.v1';
+let LB_CACHE = null;
+function lbCases(){
+  if(!LB_CACHE){
+    const rnd = vopRng(vopHash(TR_ID)), months = 57, t0 = LB_NOW.getTime() - months*30.4375*LB_DAY, SHORT = {plex:4, fob:3}, plan = [];
+    VOP_DOMS.forEach(d=>d.items.forEach(it=>{
+      let c; if(d.kind==='CF'){ const tg = vopTarget(it,d,TR_STAGE); c = tg - (SHORT[it.id]||0) + (SHORT[it.id] ? 0 : Math.max(3, Math.round(tg*rnd()*.4))); } else c = Math.round(it.cum*(.25+rnd()*.6));
+      plan.push([d,it,c]); }));
+    const out = []; let n = 0;
+    plan.forEach(([d,it,c])=>{ for(let i=0;i<c;i++){ const ops = VOP_OPS[it.id]||['General anaesthesia, various'], r = rnd();
+      out.push({id:'C'+(++n), ms:t0+rnd()*(LB_NOW.getTime()-t0), hosp: r<.78?'PWH':(r<.92?'NDH':'AHNH'), dom:d.dom, item:it.id, itemName:it.name, op:ops[Math.floor(rnd()*ops.length)], asa:[1,1,2,2,2,3,3,4][Math.floor(rnd()*8)], sup:1+Math.floor(rnd()*3)+(rnd()<.4?1:0), status:'verified'}); } });
+    out.sort((a,b)=>b.ms-a.ms);
+    let k = 0; out.forEach(c=>{ c.date = c.ms; if(c.item==='plex'||c.item==='fob'||k>=7) return; c.status = k===6 ? 'returned' : 'pending'; k++; });
+    LB_CACHE = out;
+  }
+  return lsGet(LB_EXTRA,[]).map(c=>Object.assign({},c)).concat(LB_CACHE).sort((a,b)=>b.date-a.date);
+}
+const LBU = {view:'progress', dom:'', item:'', status:'', q:'', page:1};
+function lbProgress(cs){
+  const cnt = {}; cs.forEach(c=>{ const k = c.dom+'|'+c.item, o = cnt[k]||(cnt[k]={v:0,p:0}); if(c.status==='verified') o.v++; else o.p++; });
+  return VOP_DOMS.map(d=>({d, items:d.items.map(it=>{ const o = cnt[d.dom+'|'+it.id]||{v:0,p:0}; return {it, v:o.v, p:o.p, tg:vopTarget(it,d,TR_STAGE)}; })}));
+}
+function lbItemRow(r, kind){
+  const {it,v,p,tg} = r, pct = tg ? v/tg : null;
+  const cls = kind==='SM' ? 'c-in' : (tg==null ? 'c-in' : pct>=1 ? 'c-ok' : pct>=.7 ? 'c-wn' : 'c-bd');
+  const vw = tg ? Math.min(100, v/tg*100) : 0, pw = tg ? Math.min(100-vw, p/tg*100) : 0;
+  const val = tg ? `${v} / ${tg}${p?` <span title="waiting for your verifier">+${p}</span>`:''}` : `${v}${p?` +${p}`:''} <span style="color:var(--ink3)">no minimum</span>`;
+  return `<button type="button" class="irow" onclick="lbDrill('${it.id}')" aria-label="${X(it.name)}: ${v} verified${tg?' of '+tg:''}. Show cases"><span class="inm">${X(it.name)}</span><span class="ibar"><i class="${cls}" style="width:${vw}%"></i><i class="${cls} pend" style="left:${vw}%;width:${pw}%"></i></span><span class="ival">${val}</span></button>`;
+}
+function lbDrill(item){ const d = VOP_DOMS.find(d=>d.items.some(i=>i.id===item)); LBU.view = 'cases'; LBU.dom = d?d.dom:''; LBU.item = item; LBU.status = ''; LBU.q = ''; LBU.page = 1; renderLogbook(); }
+function lbSet(k,v){ LBU[k] = v; if(k==='dom') LBU.item = ''; if(k!=='page') LBU.page = 1; renderLogbook(); if(k==='q'){ const i = $q('#lbQ'); if(i){ i.focus(); i.setSelectionRange(v.length,v.length); } } }
+function renderLogbook(){
+  const el = document.getElementById('panel-logbook'), cs = lbCases();
+  const capped = lbProgress(cs).filter(x=>x.d.kind==='CF').reduce((a,x)=>a+x.items.reduce((b,i)=>b+Math.min(i.v,i.tg||0),0),0), ver = cs.filter(c=>c.status==='verified').length, pend = cs.filter(c=>c.status==='pending').length, ret = cs.filter(c=>c.status==='returned').length;
+  const head = `<div class="ptitle"><div><h2>Logbook (VOP)</h2><p>Your case log against the curriculum minimums for ${TR_STAGE}. Only verified cases count toward progress.</p></div><button type="button" class="btn pri" onclick="openCase()">Log a case</button></div>
+    <p class="qline"><b>${capped} of 615</b> clinical fundamentals minimum met &middot; ${ver} verified cases in all &middot; ${pend} waiting for your logbook verifier${ret?` &middot; <button type="button" class="link" onclick="LBU.view='cases';LBU.status='returned';LBU.dom='';LBU.item='';renderLogbook()">${ret} returned to you</button>`:''}</p>
+    <div class="lbhead"><div class="seg2" role="group" aria-label="Logbook view"><button type="button" class="${LBU.view==='progress'?'on':''}" aria-pressed="${LBU.view==='progress'}" onclick="LBU.view='progress';renderLogbook()">Progress</button><button type="button" class="${LBU.view==='cases'?'on':''}" aria-pressed="${LBU.view==='cases'}" onclick="LBU.view='cases';LBU.dom='';LBU.item='';renderLogbook()">All cases</button></div></div>`;
+  let body = '';
+  if(LBU.view==='progress'){
+    const P = lbProgress(cs), cf = P.filter(x=>x.d.kind==='CF'), sm = P.filter(x=>x.d.kind==='SM');
+    body = `<div class="eyebrow">Clinical fundamentals &middot; against the Higher Training minimum</div>
+      <div class="dgrid" style="margin-bottom:26px">${cf.map(x=>{ const w = x.items.filter(i=>i.tg!=null), met = w.filter(i=>i.v>=i.tg).length;
+        return `<div class="dcard"><h3><span>${x.d.dom} &middot; ${X(x.d.name)}</span><small>${met} of ${w.length} met</small></h3>${x.items.map(i=>lbItemRow(i,'CF')).join('')}</div>`; }).join('')}</div>
+      <div class="eyebrow">Specialty modules &middot; needed by Exit Assessment, so shown as progress, not a shortfall</div>
+      <div class="dgrid">${sm.map(x=>`<div class="dcard"><h3><span>${x.d.dom} &middot; ${X(x.d.name)}</span></h3>${x.items.map(i=>lbItemRow(i,'SM')).join('')}</div>`).join('')}</div>`;
+  } else {
+    const q = LBU.q.trim().toLowerCase();
+    let rows = cs.filter(c=>(!LBU.dom||c.dom===LBU.dom)&&(!LBU.item||c.item===LBU.item)&&(!LBU.status||c.status===LBU.status)&&(!q||(c.op+' '+c.itemName).toLowerCase().includes(q)));
+    const PS_ = 25, pages = Math.max(1,Math.ceil(rows.length/PS_)); LBU.page = Math.min(LBU.page,pages); const sl = rows.slice((LBU.page-1)*PS_, LBU.page*PS_);
+    const doms = VOP_DOMS.map(d=>`<option value="${d.dom}" ${LBU.dom===d.dom?'selected':''}>${d.dom} ${X(d.short.replace(/^[\d.]+ /,''))}</option>`).join('');
+    const items = LBU.dom ? VOP_DOMS.find(d=>d.dom===LBU.dom).items.map(i=>`<option value="${i.id}" ${LBU.item===i.id?'selected':''}>${X(i.name)}</option>`).join('') : '';
+    const stl = {verified:'Verified',pending:'Waiting for verifier',returned:'Returned to you'};
+    body = `<div class="filters"><input class="fi" id="lbQ" type="search" placeholder="Search operation or procedure" aria-label="Search cases" value="${X(LBU.q)}" oninput="lbSet('q',this.value)">
+      <select class="fi" aria-label="Requirement" onchange="lbSet('dom',this.value)"><option value="">All requirements</option>${doms}</select>
+      ${items?`<select class="fi" aria-label="Procedure type" onchange="lbSet('item',this.value)"><option value="">All procedure types</option>${items}</select>`:''}
+      <select class="fi" aria-label="Status" onchange="lbSet('status',this.value)"><option value="">Any status</option>${Object.keys(stl).map(k=>`<option value="${k}" ${LBU.status===k?'selected':''}>${stl[k]}</option>`).join('')}</select>
+      ${LBU.dom||LBU.item||LBU.status||LBU.q?`<button type="button" class="link" onclick="LBU.dom='';LBU.item='';LBU.status='';LBU.q='';LBU.page=1;renderLogbook()">Clear filters</button>`:''}</div>
+      <div class="tbl-scroll"><table class="tbl2"><thead><tr><th>Date</th><th>Hospital</th><th>Operation</th><th>Requirement</th><th>ASA</th><th>Supervision</th><th>Status</th></tr></thead><tbody>${
+        sl.length ? sl.map(c=>`<tr><td class="mono">${fmtD(c.date)}</td><td>${c.hosp}</td><td>${X(c.op)}</td><td>${c.dom}<span class="wl-sub">${X(c.itemName)}</span></td><td class="mono">${c.asa}</td><td class="mono">Level ${c.sup}</td><td><span class="st2 ${c.status}"><i></i>${stl[c.status]}</span></td></tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--ink3);padding:26px">No cases match.</td></tr>'}</tbody></table></div>
+      <div class="pager"><span>${rows.length} case${rows.length===1?'':'s'}</span><span><button type="button" class="btn sec sm" ${LBU.page<=1?'disabled':''} onclick="lbSet('page',${LBU.page-1})">Previous</button> <span class="mono" style="margin:0 8px">${LBU.page} / ${pages}</span> <button type="button" class="btn sec sm" ${LBU.page>=pages?'disabled':''} onclick="lbSet('page',${LBU.page+1})">Next</button></span></div>`;
+  }
+  el.innerHTML = head + body;
+}
+function openCase(){
+  const opts = VOP_DOMS.map(d=>`<optgroup label="${d.dom} ${X(d.name)}">${d.items.map(i=>`<option value="${d.dom}|${i.id}">${X(i.name)}</option>`).join('')}</optgroup>`).join('');
+  openModalX('modalCase', `<div class="xmodal"><div class="eyebrow">New case</div><h3 id="mcT">Log a case</h3>
+    <p class="qline" style="margin:6px 0 0;font-size:13px">Your logbook verifier will check it. It counts toward progress once verified.</p>
+    <div class="two2"><label class="field"><span>Date</span><input id="lcDate" type="date" value="2026-10-17" max="2026-10-17"></label>
+    <label class="field"><span>Hospital</span><select id="lcHosp">${Object.keys(LB_HOSP).map(k=>`<option value="${k}">${LB_HOSP[k]}</option>`).join('')}</select></label></div>
+    <label class="field"><span>Requirement</span><select id="lcItem">${opts}</select></label>
+    <label class="field"><span>Operation</span><input id="lcOp" type="text" placeholder="e.g. Laparoscopic cholecystectomy"></label>
+    <div class="two2"><label class="field"><span>ASA class</span><select id="lcAsa">${[1,2,3,4,5].map(n=>`<option>${n}</option>`).join('')}</select></label>
+    <label class="field"><span>Supervision level</span><select id="lcSup">${[1,2,3,4].map(n=>`<option>${n}</option>`).join('')}</select></label></div>
+    <p class="qline" id="lcErr" style="margin:6px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
+    <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalCase')">Cancel</button><button type="button" class="btn pri" onclick="saveCase()">Add to logbook</button></div></div>`);
+}
+function saveCase(){
+  const op = $q('#lcOp').value.trim(); if(!op){ $q('#lcErr').textContent = 'Say which operation it was.'; return; }
+  const [dom,item] = $q('#lcItem').value.split('|'), d = VOP_DOMS.find(x=>x.dom===dom), it = d.items.find(x=>x.id===item), dt = new Date($q('#lcDate').value+'T09:00:00');
+  const ex = lsGet(LB_EXTRA,[]); ex.unshift({id:'N'+Date.now(), date:dt.getTime(), ms:dt.getTime(), hosp:$q('#lcHosp').value, dom, item, itemName:it.name, op, asa:+$q('#lcAsa').value, sup:+$q('#lcSup').value, status:'pending'}); lsSet(LB_EXTRA, ex);
+  closeX('modalCase'); LBU.view = 'cases'; LBU.dom = ''; LBU.item = ''; LBU.status = 'pending'; LBU.q = ''; LBU.page = 1; renderLogbook();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ ['modalCase','modalFlag'].forEach(id=>{ const m = document.getElementById(id); if(m && !m.classList.contains('hidden')) closeX(id); }); } });
 
 /* ===== learning plans: 6-month goals (= the Learning Contract for the 6-month ITA cycle) + PF year plan (kept isolated) ===== */
 const PS = PlansStore, GE = PS.esc;
@@ -938,6 +1230,7 @@ function renderGoalsMount(){
   m.innerHTML = who + glPlanCard('SIX_MONTH') + (info.pf ? glPlanCard('PF_YEAR') : '') +
     `<div class="gl-demo">Demo controls: view as <select aria-label="View plans as" onchange="glWho(this.value)">${opts}</select>
       <label><input type="checkbox" ${PS.demoReview()?'checked':''} onchange="glReviewWindow(this.checked)"> Show the end-of-period review window (3 Dec)</label>
+      <label>ITA stage <select aria-label="ITA stage for this demo" onchange="itaSetStage(this.value)">${itaStageOpts()}</select></label>
       <a href="#" onclick="glReset();return false">Reset demo data</a></div>`;
 }
 function glWho(id){ GL_ID = id; renderGoalsMount(); }
@@ -1007,27 +1300,13 @@ function glSave(kind){
   });
   closeModal('modalGoals'); renderGoalsMount();
 }
-function glReset(){ PS.reset(); renderGoalsMount(); }
+function glReset(){ PS.reset(); itaReset(); renderGoalsMount(); }
 window.addEventListener('storage', e=>{ if(e.key===PS.KEY) renderGoalsMount(); });
 renderGoalsMount();
-function openReflectionModal(){
-  const m=document.getElementById('modalReflection');
-  m.classList.remove('hidden');
-  m.style.display='grid';
-}
-function openSotSummaryModal(){
-  const m=document.getElementById('modalSotSummary');
-  m.classList.remove('hidden');
-  m.style.display='grid';
-}
 function closeModal(id){
   const m=document.getElementById(id);
   m.classList.add('hidden');
   m.style.display='none';
-}
-function saveReflection(){
-  alert('Self-reflection submitted successfully. Your SOT will review this during your face-to-face feedback meeting.');
-  closeModal('modalReflection');
 }
 /* chart option switcher */
 document.querySelectorAll('#optbar button').forEach(b=>{
@@ -1038,13 +1317,11 @@ document.querySelectorAll('#optbar button').forEach(b=>{
     ['1','2','3'].forEach(n=>document.getElementById('opt'+n).classList.toggle('hidden',n!==o));
   };
 });
-/* tabs */
-document.querySelectorAll('.tabs button').forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-  };
-});
+/* init: ITA banner, shared course list, deep-linked tab */
+renderItaBanner();
+document.getElementById('ovCourses').innerHTML = courseListHtml();
+showTab(location.hash.slice(1) || 'overview', {noHash:true, keepScroll:true});
+window.addEventListener('hashchange', ()=>showTab(location.hash.slice(1)||'overview', {noHash:true}));
 /* theme */
 function toggleTheme(){
   const d=document.documentElement.classList.toggle('dark');
