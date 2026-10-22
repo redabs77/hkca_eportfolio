@@ -1,8 +1,8 @@
 ---
 type: prd
 project: "[[HKCA Portfolio Revamp]]"
-version: "1.2.0"
-date: 2026-10-19
+version: "1.3.0"
+date: 2026-10-22
 status: approved_for_implementation
 stakeholders:
   - "Dr. Albert Chan (Chief of Service / Project Lead)"
@@ -10,7 +10,7 @@ stakeholders:
   - "Tina Huang / Engineering Team"
 ---
 
-# Master Product Requirements Document (PRD v1.2)
+# Master Product Requirements Document (PRD v1.3)
 ## Next-Generation HKCA Electronic Portfolio & Vocational Training System
 
 ---
@@ -225,6 +225,19 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
   * Evaluates volume velocity per eligible clinical anaesthesia month:
     $$\text{Velocity} = \frac{\text{Total Logged Cases}}{\text{Accredited Months (Excluding ICU \& Extended Leave)}}$$
   * Automatically suspends caseload alerts while trainees complete mandatory ICU blocks.
+* **3.8 Trainee Logbook View (Trainee Dashboard, "Logbook (VOP)" tab):**
+  * **Progress view:** CF-2.1 to 2.4 against the stage minimum (green/amber/rose), SM-3.1 to 3.11 as neutral progress against exit requirements. Approved cases are solid; waiting, under-review and revision-requested cases are the lighter segment. Only `approved` cases count. The headline is the capped CF total (for example 608 of 615), not a raw case count. Selecting an item opens its cases.
+  * **All cases view:** one row per case with date, hospital, operation and surgical diagnosis, requirement, technique, ASA, supervision level and status; search, requirement, procedure-type, status and source filters (`All`, `Needs classification`, `Imported from old logbook`, `Logged here`, `Logged over 2 years late`).
+  * **Case detail:** every legacy field is visible: case reference, date, hospital, training level at entry, requirement and CF domain flags, surgical diagnosis, technique, up to six regional blocks, duration, ASA, patient age, supervision, remarks, and the full verification trail (logged, imported, each verifier action with who, role, date and note).
+  * **Log a case:** date, hospital, primary operation, surgical diagnosis, curriculum requirement, technique (multi-select), up to six regional blocks, ASA, supervision level, duration, patient age, remarks. Training level is added automatically. **No patient name, HKID or hospital number is collected**; each case gets a synthetic `case_ref`.
+  * **Entry checks:** a probable duplicate (same trainee, date, hospital, ASA, age and operation) warns and needs a second confirmation; a case more than 2 years old saves but is flagged `is_accredited = false` and says so at once.
+  * **Verification states shown to the trainee:** Approved, Waiting for verifier, Under review, Revision requested, Rejected. A `revision_requested` case can be edited and resubmitted; it returns to Waiting. Rejected cases are kept and never count.
+* **3.9 Legacy Logbook Import and Merge:**
+  * Every legacy `patient2` row is imported with its approval status, approver, approval date and notes preserved (Migration Plan §6.8). Patient HKID, date of birth and sex are not imported.
+  * **Classification:** legacy free-text claims are normalised to descriptor codes (2.1 to 2.4, 3.1 to 3.11). A row whose claim cannot be matched is still imported but has `needs_classification = true`, does not count toward any requirement, and appears on the trainee's logbook with a "Classify" action. Once the trainee classifies it, it returns to `pending` for the verifier to confirm (`classified_by = trainee`).
+  * **Merge:** the import is idempotent on `(legacy_tid, legacy_pid)`, so it can be re-run for the delta right up to cutover. It never overwrites or deletes a live case. A legacy case that looks like a hand-entered one is imported and the pair goes to a review list.
+  * **Reconciliation gate:** rows in = imported + quarantined, and the cutover is blocked until per-trainee approved counts match legacy exactly (§7, CI parity suite).
+  * **Notice to the trainee:** the logbook states how many cases came from the previous e-logbook, the import date, and how many need classification.
 
 ---
 
@@ -258,6 +271,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 
 * **6.1 Formal Projects (HKCA-E03):** 2-stage submission (Protocol $\rightarrow$ Manuscript) with double-blind reviewer interface and 30-day automated timer with admin reassignment.
 * **6.2 Real-Time Exam Gating:** High-stakes eligibility checks querying live base tables ($<5\text{ms}$) followed by SOT digital endorsement.
+* **6.3 Progression Record (Trainee Dashboard, Overview):** a dated record of each stage the trainee has moved through and each exam passed: start of Basic Training, Intermediate Examination passed, move to Higher Training, each HAT year, Final Fellowship Examination passed, start of the Provisional Fellowship Year, Exit Assessment and Fellowship. Dates come from the College record (`training_stage_history` and `exam_results`) and are read-only for the trainee. Stages and exams not yet reached show "Not yet". The Final Fellowship Examination row agrees with the Next Gate card. Exam passes arrive by the Secretariat ingestion stream (§5.7) and are stored per attempt, so a trainee who passed on a second attempt shows the passing attempt's date and the attempt number.
 
 ---
 
@@ -334,6 +348,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 3. **Data Provenance:** Every migrated record carries `legacy_table`, `legacy_pk`, and `migrated_at` timestamps.
 4. **Learning-Contract Gate Exemption (Albert directive 2026-10-19):** The §2.2 contract-signing gate applies only to trainees who start training under the curriculum review that introduces it. All migrated/legacy trainees default to gate-exempt (`learning_contract_gate_required = false`) &mdash; they never trained under this rule, and applying it retroactively would newly block in-flight trainees on the day of cutover.
 5. **No Legacy Logbook Verifier Data to Migrate:** The legacy system (`patient2.approved_by`) had no persistent verifier assignment &mdash; any SOT/Assistant SOT could sign off any trainee's case, recorded per-case as free text with no foreign key. The new ongoing Logbook Verifier role (§3.1) starts with an empty `logbook_verifier_assignments` table at cutover; every trainee needs a fresh initial assignment or sits in the unassigned pool.
+6. **Legacy Logbook Import (`patient2`):** imported by `domain/vop/legacyImport.ts` as specified in Migration Plan §6.8. Requirements: idempotent re-run, quarantine of rows with no matching trainee or no case date, no patient identifiers carried over, approval states and approver preserved, 2-year-rule anomalies flagged rather than dropped, and a per-trainee approved-count reconciliation to legacy before cutover. Unclassifiable rows are imported as `needs_classification` and resolved by the trainee, not discarded.
 
 ---
 
@@ -345,6 +360,8 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 | **§5.1 (Ledger & Rotations)** | M2, M3, H5, F5, Albert Rotations Directives | `accredited_time_ledger`, Bilateral Handshake, ICU 11-Unit Filter |
 | **§5.2 (2-Tier ITA & Goals)** | M1, M6, H1, H8, I1, Albert ITA/Goals Directives | 15-Item Form, Voluntary Trainer Forms, Learning Plans (6-month goals, PF year plan), Assigned SOT, ASOT Final Sign-Off |
 | **§5.3 (PWA Logbook & VOP)** | H5, U2, U3, U4, Albert VOP Directives | Mobile PWA, Hospital-Only Scoping, Milestone Reopening, Cohort Heatmap |
+| **§5.3.8 to 5.3.9 (Trainee Logbook, Legacy Import)** | Albert directive 2026-10-22; Legacy EPS Schema Audit §5 | Case detail and entry with legacy fields, 5-state verification, `domain/vop/legacyImport.ts`, `tests/domain/run_vop_import_tests.ts` |
+| **§5.6.3 (Progression Record)** | Albert directive 2026-10-22 | `training_stage_history`, `exam_results` |
 | **§5.4 (WBA & iWBA)** | E2, Albert Directive | OAuth2 SSO, Background Polling Daemon |
 | **§5.5 (SOT Console)** | H2, Direction B, Albert HRM Directives | HRM Dashboard, Unified Denominator, Essential Columns Preset |
 | **§5.6 (Gatekeeping & Exams)** | E1, E6 | Live Base Table Queries, 30-Day Project Timer |

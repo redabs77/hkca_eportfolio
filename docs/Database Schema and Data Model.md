@@ -711,6 +711,26 @@ CREATE TABLE exam_results (
 CREATE INDEX idx_exams_trainee ON exam_results(trainee_id, exam_type);
 ```
 
+### `training_stage_history` (added 2026-10-22: Trainee Dashboard progression record)
+
+Append-only log of every stage a trainee enters, so the dashboard can show *when* they moved up, not only where they are now. `trainee_profiles.current_stage` and the `bat_/hat_/pfy_ _start_date` columns stay as the fast read path and are written from this table.
+
+```sql
+CREATE TABLE training_stage_history (
+  id              SERIAL PRIMARY KEY,
+  trainee_id      INTEGER NOT NULL REFERENCES trainee_profiles(id) ON DELETE RESTRICT,
+  stage           TEXT NOT NULL,        -- BAT-1 .. BAT-3, HAT-1, HAT-2 .., PFY, EXIT, FELLOW (codes from curriculum_editions)
+  effective_date  DATE NOT NULL,
+  recorded_by     INTEGER REFERENCES users(id),
+  source          TEXT NOT NULL,        -- app | secretariat_csv | legacy_backfill
+  note            TEXT,
+  created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (trainee_id, stage)
+);
+```
+
+Exam passes use `exam_results` as above (one row per attempt; the dashboard shows the passing attempt). Backfill: BAT/HAT/PFY start dates from `trainee_profiles` (legacy `atp_portfolio`), exam dates from `examination_intermediate_passing_date` and `examination_final_passing_date`. The legacy exam dates are `varchar`, so unparseable values go to quarantine and the trainee's record shows "Not yet" until the Secretariat corrects them. HAT year steps (HAT-2 and later) are derived from the HAT start date when no explicit date exists, and marked `source = 'legacy_backfill'`.
+
 ### `mandatory_courses`
 
 ```sql
@@ -1082,10 +1102,16 @@ CREATE TABLE volume_of_practice (
   trainee_id        INTEGER NOT NULL REFERENCES trainee_profiles(id),
   hospital_id       INTEGER REFERENCES hospitals(id),
 
+  case_ref          TEXT NOT NULL UNIQUE, -- synthetic reference; replaces patient identity
+
   -- case
   case_date         DATE NOT NULL,
   duration_hours    NUMERIC(4,2),
   asa_class         SMALLINT,
+  patient_age       SMALLINT,             -- retained as clinical context; HKID, DOB and sex are dropped
+  training_stage_at_entry TEXT,           -- legacy level_training / stage when logged (snapshot)
+  trainee_notes     TEXT,                 -- legacy remark
+  dedupe_key        TEXT NOT NULL,        -- hash of trainee, date, hospital, ASA, age, operation
   surgical_diagnosis TEXT,
   primary_operation TEXT,
   anaesthetic_technique TEXT[],
@@ -1095,13 +1121,16 @@ CREATE TABLE volume_of_practice (
   vop_category      TEXT NOT NULL,        -- clinical_fundamentals | specialty_module
   descriptor_code   TEXT NOT NULL,        -- e.g. "2.2", "3.5" — FK to curriculum_descriptors
   cf_domain_flags   TEXT[],               -- 2.1 / 2.2 / 2.3 / 2.4
-  classified_by     TEXT NOT NULL,        -- trainee | sot_corrected | classifier
+  classified_by     TEXT NOT NULL,        -- trainee | sot_corrected | classifier | migrated
+  needs_classification BOOLEAN NOT NULL DEFAULT false, -- imported row whose free-text claim matched no descriptor; counts toward nothing until set
   classification_confidence NUMERIC(4,3),
   classifier_diverged BOOLEAN DEFAULT false,
 
   -- verification (was: approved_*)
-  verification_status TEXT NOT NULL DEFAULT 'pending',
+  verification_status TEXT NOT NULL DEFAULT 'pending', -- pending | under_review | revision_requested | approved | rejected
   verified_by       INTEGER REFERENCES users(id),
+  verified_by_name  TEXT,                 -- legacy approved_by is free text; kept when no users match
+  verified_by_role  TEXT,                 -- sot | assistant_sot
   verified_at       TIMESTAMP,
   verification_notes TEXT,
 
@@ -1109,12 +1138,23 @@ CREATE TABLE volume_of_practice (
   logged_date       DATE NOT NULL DEFAULT CURRENT_DATE,
   is_within_2yr_window BOOLEAN GENERATED ALWAYS AS
                     (logged_date <= case_date + INTERVAL '2 years') STORED,
+  legacy_window_anomaly BOOLEAN NOT NULL DEFAULT false, -- imported row outside the window although the legacy app enforced it
+  is_accredited     BOOLEAN NOT NULL DEFAULT true,      -- counts toward progress when approved
 
   -- provenance
   legacy_pid        INTEGER,
   legacy_tid        TEXT,
   migrated_at       TIMESTAMP,
   UNIQUE (legacy_pid, legacy_tid)
+);
+
+CREATE TABLE vop_verification_events (   -- full transition history; the columns above hold the current state
+  id SERIAL PRIMARY KEY,
+  vop_id INTEGER NOT NULL REFERENCES volume_of_practice(id) ON DELETE RESTRICT,
+  from_status TEXT, to_status TEXT NOT NULL,
+  actor_name TEXT, actor_role TEXT, note TEXT,
+  occurred_at TIMESTAMP NOT NULL,
+  source TEXT NOT NULL                  -- app | legacy_import (one synthetic event per imported row, dated approved_date)
 );
 
 CREATE TABLE case_blocks (          -- normalises block1..block6

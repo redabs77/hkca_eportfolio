@@ -229,6 +229,33 @@ main{padding:30px 0 70px}
 /* theme icon button: same as the other prototypes */
 .icon-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--surface);border-radius:7px;display:inline-grid;place-items:center;cursor:pointer;color:var(--ink2);font-size:15px;line-height:1;padding:0}
 .icon-btn:hover{background:var(--bg3)} .icon-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* logbook detail, imported-case notice, form repeater */
+.lbnote{border:1px solid var(--border);background:var(--bg2);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--ink2);margin:0 0 16px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.lbnote b{color:var(--ink)}
+.rowlink{background:none;border:0;padding:0;font:inherit;font-weight:600;color:var(--ink);text-align:left;cursor:pointer}
+.rowlink:hover{color:var(--acc-t);text-decoration:underline} .rowlink:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--bg3);color:var(--ink2);margin-left:6px;white-space:nowrap}
+.tag.wn{background:var(--wn-bg);color:var(--wn-f)}
+.st2.under_review i{background:var(--in-f)} .st2.revision_requested i{background:var(--bd-f)} .st2.rejected i{background:var(--ink3)} .st2.approved i{background:var(--ok-f)}
+.det{display:grid;grid-template-columns:150px 1fr;gap:8px 16px;font-size:13px;margin-top:14px} .det dt{color:var(--ink3)} .det dd{font-weight:550;word-break:break-word}
+.vtrail{list-style:none;margin:8px 0 0;border-left:2px solid var(--border);padding-left:14px;display:grid;gap:10px;font-size:13px} .vtrail li span{display:block;font-size:12px;color:var(--ink3)}
+.xmodal.wide{max-width:680px}
+.chk2{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:2px} .chk2 label{display:flex;gap:7px;align-items:center;font-size:13.5px;min-height:34px;cursor:pointer}
+.brow{display:flex;gap:8px;margin-bottom:8px} .brow .fi{flex:1}
+.hint{font-size:12px;color:var(--ink3);margin-top:6px}
+.msgbox{border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px;border:1px solid var(--wn-f);background:var(--wn-bg);color:var(--ink)}
+/* milestones */
+.mstones{list-style:none;margin:6px 0 0;display:grid}
+.mstones li{display:grid;grid-template-columns:22px 1fr auto;gap:0 14px;position:relative;padding:0 0 18px}
+.mstones li:last-child{padding-bottom:0}
+.mstones li::before{content:"";position:absolute;left:10px;top:22px;bottom:0;width:2px;background:var(--border)} .mstones li:last-child::before{display:none}
+.mstones .mk2{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);background:var(--surface);margin-top:1px}
+.mstones li.done .mk2{background:var(--ok-f);border-color:var(--ok-f)} .mstones li.done::before{background:var(--ok-f)}
+.mstones li.cur .mk2{background:var(--acc);border-color:var(--acc)}
+.mstones .mt{font-weight:650;font-size:14px} .mstones .ms{font-size:12.5px;color:var(--ink3);margin-top:2px}
+.mstones .md{font-family:'JetBrains Mono',monospace;font-size:12.5px;text-align:right;white-space:nowrap;color:var(--ink2)} .mstones li.todo .mt{color:var(--ink2);font-weight:600}
+@media(max-width:760px){.det{grid-template-columns:1fr}.mstones li{grid-template-columns:22px 1fr}.mstones .md{grid-column:2;text-align:left}}
 /* ---------- tab panels, ITA cycle, logbook, courses (design pass 2026-10-22) ---------- */
 .panel[hidden]{display:none}
 .tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:6px}
@@ -262,7 +289,7 @@ main{padding:30px 0 70px}
 .readbox{border:1px solid var(--border);border-radius:10px;background:var(--bg2);padding:12px 14px;font-size:13.5px;line-height:1.6;white-space:pre-wrap}
 .subh{margin-top:24px}
 .field{display:block;margin-top:14px} .field span{display:block;font-size:12.5px;font-weight:650;margin-bottom:6px}
-.field textarea,.field input[type=password],.field input[type=text],.field input[type=date],.field select,.fi{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border);font-family:inherit;font-size:14px;background:var(--surface);color:var(--ink);min-height:40px}
+.field textarea,.field input[type=password],.field input[type=text],.field input[type=date],.field input[type=number],.field input[type=search],.field select,.fi{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border);font-family:inherit;font-size:14px;background:var(--surface);color:var(--ink);min-height:40px}
 .field textarea{min-height:92px;resize:vertical;line-height:1.5}
 .sigbox{border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px;background:var(--surface)}
 .sigbox.locked{opacity:.55}
@@ -746,6 +773,19 @@ main{padding:30px 0 70px}
 
     </div>
 
+    <!-- ===== progression record: stages and exams ===== -->
+    <div class="card">
+      <div class="hd">
+        <div>
+          <div class="eyebrow">Progression record</div>
+          <h2>Stages and exams</h2>
+          <p>When you passed each exam and moved up a stage of training. These dates come from your College training record.</p>
+        </div>
+        <span class="pill info"><span class="dot b"></span>Now in HAT-2</span>
+      </div>
+      <ol class="mstones" id="ovMilestones" aria-label="Training milestones"></ol>
+    </div>
+
     <!-- ===== current rotation + gates ===== -->
     <div class="two">
       <div class="card" style="margin-bottom:0">
@@ -838,6 +878,7 @@ main{padding:30px 0 70px}
   </div>
 </div>
 <div id="modalCase" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mcT"></div>
+<div id="modalCaseDetail" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mdT"></div>
 <div id="modalFlag" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mfT"></div>
 
 <script src="hkca-plans-store.js"></script>
@@ -1072,44 +1113,87 @@ function vopTarget(it,d,stage){ if(d.kind==='SM') return it.cum; if(/^BAT/.test(
 function vopHash(s){ let h = 2166136261; String(s).split('').forEach(c=>{ h ^= c.charCodeAt(0); h = Math.imul(h,16777619); }); return h>>>0; }
 function vopRng(seed){ let a = seed>>>0; return ()=>{ a |= 0; a = a+0x6D2B79F5|0; let t = Math.imul(a^a>>>15,1|a); t = t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 
-const LB_NOW = new Date(2026,9,17), LB_DAY = 864e5, LB_HOSP = {PWH:'Prince of Wales Hospital',NDH:'North District Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital'};
-const LB_EXTRA = 'hkca.trainee.vop.extra.v1';
+const LB_NOW = new Date(2026,9,17), LB_DAY = 864e5, LB_CUT = new Date(2026,8,30).getTime(), LB_IMPORT_DATE = '30 Sep 2026';
+const LB_HOSP = {PWH:'Prince of Wales Hospital',NDH:'North District Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital'};
+const LB_TECH = ['GA','Spinal','Epidural','CSE','Sedation/MAC','Regional','Local'];
+const LB_EXTRA = 'hkca.trainee.vop.extra.v2', LB_OVR = 'hkca.trainee.vop.ovr.v2';
+const LB_ST = {approved:'Approved', pending:'Waiting for verifier', under_review:'Under review', revision_requested:'Revision requested', rejected:'Rejected'};
+const LB_VER = [['Dr. Albert Chan','SOT'],['Dr. Winnie Ho','Assistant SOT']];
+const LB_DX = ['Gallstones','Inguinal hernia','Osteoarthritis of knee','Fracture neck of femur','Benign prostatic hyperplasia','Thyroid nodule','Uterine fibroids','Acute appendicitis','Cataract','Breast carcinoma','Rotator cuff tear','Bowel obstruction','Tonsillitis, recurrent','Fracture distal radius'];
+const LB_BLK = {spinal:['Spinal L3/4, hyperbaric bupivacaine'], epid:['Epidural T10/11, catheter'], plex:['Interscalene block','Supraclavicular block','Femoral nerve block','Adductor canal block','Ankle block']};
+const LB_DXMAP = [[/caesarean|labour/i,'Pregnancy, delivery'],[/turp/i,'Benign prostatic hyperplasia'],[/hernia/i,'Inguinal hernia'],[/knee arthro|arthroscopy$/i,'Meniscal tear'],[/hemiarthro|dhs/i,'Fracture neck of femur'],[/laparotomy|perforated|abdominal/i,'Acute abdomen'],
+  [/nephrect/i,'Renal tumour'],[/orif forearm/i,'Fracture of forearm'],[/shoulder/i,'Rotator cuff tear'],[/carpal/i,'Carpal tunnel syndrome'],[/cholecyst/i,'Gallstones'],[/thyroid/i,'Thyroid nodule'],[/tonsil/i,'Recurrent tonsillitis'],
+  [/cataract|vitrect|strabismus/i,'Eye disease'],[/colonoscopy|endoscopy|colectomy/i,'Bowel disease'],[/cystoscopy/i,'Haematuria'],[/whipple|liver/i,'Hepatobiliary tumour'],[/aaa/i,'Abdominal aortic aneurysm'],[/hysteroscopy|hysterectomy/i,'Uterine fibroids'],
+  [/appendic/i,'Acute appendicitis'],[/mastectomy/i,'Breast carcinoma'],[/neck dissection|parotid|microlaryng/i,'Head and neck tumour'],[/awake intub/i,'Cervical spine instability'],[/knee replacement|hip replacement/i,'Osteoarthritis'],[/ectopic/i,'Ectopic pregnancy'],
+  [/acdf/i,'Cervical spondylosis'],[/orif ankle/i,'Fracture of ankle'],[/circumcision/i,'Phimosis'],[/aneurysm coiling/i,'Intracranial aneurysm'],[/craniotomy|burr/i,'Intracranial lesion'],[/mri/i,'Imaging under sedation'],[/cabg/i,'Coronary artery disease'],
+  [/aortic valve|tavi/i,'Aortic stenosis'],[/ablation/i,'Arrhythmia'],[/vats/i,'Lung cancer'],[/femoral-pop/i,'Peripheral arterial disease'],[/carotid/i,'Carotid stenosis']];
+const lbDx = op=>{ const m = LB_DXMAP.find(([re])=>re.test(op)); return m?m[1]:'As per operation'; };
+const lbStageAt = ms=>{ const y = new Date(ms).getFullYear(); return y<2025 ? 'BAT-'+Math.max(1,y-2021) : y===2025 ? 'HAT-1' : 'HAT-2'; };
+const lbRef = id=>'VOP-'+vopHash('case'+id).toString(16).toUpperCase().padStart(8,'0');
 let LB_CACHE = null;
 function lbCases(){
   if(!LB_CACHE){
-    const rnd = vopRng(vopHash(TR_ID)), months = 57, t0 = LB_NOW.getTime() - months*30.4375*LB_DAY, SHORT = {plex:4, fob:3}, plan = [];
+    const rnd = vopRng(vopHash(TR_ID)), months = 57, t0 = LB_NOW.getTime() - months*30.4375*LB_DAY, SHORT = {plex:4, fob:3}, plan = [], pick = a=>a[Math.floor(rnd()*a.length)];
     VOP_DOMS.forEach(d=>d.items.forEach(it=>{
       let c; if(d.kind==='CF'){ const tg = vopTarget(it,d,TR_STAGE); c = tg - (SHORT[it.id]||0) + (SHORT[it.id] ? 0 : Math.max(3, Math.round(tg*rnd()*.4))); } else c = Math.round(it.cum*(.25+rnd()*.6));
       plan.push([d,it,c]); }));
     const out = []; let n = 0;
-    plan.forEach(([d,it,c])=>{ for(let i=0;i<c;i++){ const ops = VOP_OPS[it.id]||['General anaesthesia, various'], r = rnd();
-      out.push({id:'C'+(++n), ms:t0+rnd()*(LB_NOW.getTime()-t0), hosp: r<.78?'PWH':(r<.92?'NDH':'AHNH'), dom:d.dom, item:it.id, itemName:it.name, op:ops[Math.floor(rnd()*ops.length)], asa:[1,1,2,2,2,3,3,4][Math.floor(rnd()*8)], sup:1+Math.floor(rnd()*3)+(rnd()<.4?1:0), status:'verified'}); } });
-    out.sort((a,b)=>b.ms-a.ms);
-    let k = 0; out.forEach(c=>{ c.date = c.ms; if(c.item==='plex'||c.item==='fob'||k>=7) return; c.status = k===6 ? 'returned' : 'pending'; k++; });
+    plan.forEach(([d,it,c])=>{ for(let i=0;i<c;i++){ const ops = VOP_OPS[it.id]||['General anaesthesia, various'], r = rnd(), ms = t0+rnd()*(LB_NOW.getTime()-t0), tech = (LB_BLK[it.id]?[LB_TECH[{spinal:1,epid:2}[it.id]||5]]:[it.id==='mac'?'Sedation/MAC':'GA']);
+      if(!LB_BLK[it.id] && rnd()<.18) tech.push('Regional');
+      out.push({id:'C'+(++n), date:ms, hosp: r<.78?'PWH':(r<.92?'NDH':'AHNH'), dom:d.dom, item:it.id, itemName:it.name, op:pick(ops), dx:'', hours:Math.round((1+rnd()*5)*2)/2,
+        age:18+Math.floor(rnd()*70), asa:[1,1,2,2,2,3,3,4][Math.floor(rnd()*8)], sup:1+Math.floor(rnd()*3)+(rnd()<.4?1:0), tech, blocks:(LB_BLK[it.id]&&it.id!=='plex')||it.id==='plex' ? [pick(LB_BLK[it.id])] : [],
+        remark: rnd()<.07 ? 'Good teaching case' : '', level:lbStageAt(ms), flags:d.kind==='CF'?[d.dom.replace('CF-','')]:[], status:'approved', win:true}); } });
+    out.forEach(c=>{ c.dx = lbDx(c.op); });
+    out.sort((a,b)=>b.date-a.date);
+    let k = 0;
+    out.forEach(c=>{ c.src = c.date<=LB_CUT ? 'legacy' : 'new'; c.logged = c.date + Math.floor(rnd()*4)*LB_DAY; c.ref = lbRef(c.id);
+      if(c.item!=='plex' && c.item!=='fob'){
+        if(k<6) c.status='pending'; else if(k===6) c.status='under_review'; else if(k===7){ c.status='revision_requested'; c.vnote='Please add the diagnosis and check the ASA class.'; c.ver=LB_VER[0]; c.vdate=c.logged+3*LB_DAY; }
+        else if(k===25||k===60){ c.status='rejected'; c.vnote='Does not meet the case definition for this requirement.'; c.ver=LB_VER[1]; c.vdate=c.logged+5*LB_DAY; }
+        k++; }
+      if(c.status==='approved'){ c.ver = rnd()<.8?LB_VER[0]:LB_VER[1]; c.vdate = c.logged+Math.floor(1+rnd()*20)*LB_DAY; }
+      if(c.status==='pending'||c.status==='under_review'){ c.ver = LB_VER[0]; }
+    });
+    // legacy cases whose free-text claim could not be matched to a curriculum requirement: imported, but they do not count until classified
+    const claims = ['GA / sedation (various)','Regional - other','airway ?','special case','GA misc','Block (unspecified)','sedation','pain round','GA'];
+    claims.forEach((cl,i)=>{ const ms = t0 + rnd()*(LB_CUT-t0); out.push({id:'U'+i, ref:lbRef('U'+i), date:ms, logged:ms+LB_DAY, hosp:'PWH', dom:null, item:null, itemName:'', claimed:cl, op:pick(['Laparotomy','Total knee replacement','Lap cholecystectomy','Mastectomy']), dx:'', hours:Math.round((1+rnd()*4)*2)/2,
+      age:30+Math.floor(rnd()*50), asa:2, sup:2, tech:['GA'], blocks:[], remark:'', level:lbStageAt(ms), flags:[], status:'approved', win:true, ver:LB_VER[0], vdate:ms+4*LB_DAY, src:'legacy'}); });
+    // approved legacy cases that were logged more than two years after the procedure (credit kept from the old logbook)
+    out.filter(c=>c.src==='legacy' && c.status==='approved' && c.item).slice(300,303).forEach(c=>{ c.win = false; c.logged = c.date + 800*LB_DAY; c.vdate = c.logged + 6*LB_DAY; });
+    out.forEach(c=>{ if(!c.dx) c.dx = lbDx(c.op); });
+    out.sort((a,b)=>b.date-a.date);
     LB_CACHE = out;
   }
-  return lsGet(LB_EXTRA,[]).map(c=>Object.assign({},c)).concat(LB_CACHE).sort((a,b)=>b.date-a.date);
+  const ovr = lsGet(LB_OVR,{});
+  return lsGet(LB_EXTRA,[]).concat(LB_CACHE.map(c=>ovr[c.id]?Object.assign({},c,ovr[c.id]):c)).sort((a,b)=>b.date-a.date);
 }
-const LBU = {view:'progress', dom:'', item:'', status:'', q:'', page:1};
+const lbCounted = c=>c.status==='approved' && !!c.item;
+const LBU = {view:'progress', dom:'', item:'', status:'', show:'', q:'', page:1};
 function lbProgress(cs){
-  const cnt = {}; cs.forEach(c=>{ const k = c.dom+'|'+c.item, o = cnt[k]||(cnt[k]={v:0,p:0}); if(c.status==='verified') o.v++; else o.p++; });
+  const cnt = {}; cs.forEach(c=>{ if(!c.item) return; const k = c.dom+'|'+c.item, o = cnt[k]||(cnt[k]={v:0,p:0}); if(lbCounted(c)) o.v++; else if(c.status==='pending'||c.status==='under_review'||c.status==='revision_requested') o.p++; });
   return VOP_DOMS.map(d=>({d, items:d.items.map(it=>{ const o = cnt[d.dom+'|'+it.id]||{v:0,p:0}; return {it, v:o.v, p:o.p, tg:vopTarget(it,d,TR_STAGE)}; })}));
 }
 function lbItemRow(r, kind){
   const {it,v,p,tg} = r, pct = tg ? v/tg : null;
   const cls = kind==='SM' ? 'c-in' : (tg==null ? 'c-in' : pct>=1 ? 'c-ok' : pct>=.7 ? 'c-wn' : 'c-bd');
   const vw = tg ? Math.min(100, v/tg*100) : 0, pw = tg ? Math.min(100-vw, p/tg*100) : 0;
-  const val = tg ? `${v} / ${tg}${p?` <span title="waiting for your verifier">+${p}</span>`:''}` : `${v}${p?` +${p}`:''} <span style="color:var(--ink3)">no minimum</span>`;
-  return `<button type="button" class="irow" onclick="lbDrill('${it.id}')" aria-label="${X(it.name)}: ${v} verified${tg?' of '+tg:''}. Show cases"><span class="inm">${X(it.name)}</span><span class="ibar"><i class="${cls}" style="width:${vw}%"></i><i class="${cls} pend" style="left:${vw}%;width:${pw}%"></i></span><span class="ival">${val}</span></button>`;
+  const val = tg ? `${v} / ${tg}${p?` <span title="not yet approved">+${p}</span>`:''}` : `${v}${p?` +${p}`:''} <span style="color:var(--ink3)">no minimum</span>`;
+  return `<button type="button" class="irow" onclick="lbDrill('${it.id}')" aria-label="${X(it.name)}: ${v} approved${tg?' of '+tg:''}. Show cases"><span class="inm">${X(it.name)}</span><span class="ibar"><i class="${cls}" style="width:${vw}%"></i><i class="${cls} pend" style="left:${vw}%;width:${pw}%"></i></span><span class="ival">${val}</span></button>`;
 }
-function lbDrill(item){ const d = VOP_DOMS.find(d=>d.items.some(i=>i.id===item)); LBU.view = 'cases'; LBU.dom = d?d.dom:''; LBU.item = item; LBU.status = ''; LBU.q = ''; LBU.page = 1; renderLogbook(); }
+function lbDrill(item){ const d = VOP_DOMS.find(d=>d.items.some(i=>i.id===item)); LBU.view = 'cases'; LBU.dom = d?d.dom:''; LBU.item = item; LBU.status = ''; LBU.show = ''; LBU.q = ''; LBU.page = 1; renderLogbook(); }
+function lbGo(patch){ Object.assign(LBU,{view:'cases',dom:'',item:'',status:'',show:'',q:'',page:1},patch); renderLogbook(); }
 function lbSet(k,v){ LBU[k] = v; if(k==='dom') LBU.item = ''; if(k!=='page') LBU.page = 1; renderLogbook(); if(k==='q'){ const i = $q('#lbQ'); if(i){ i.focus(); i.setSelectionRange(v.length,v.length); } } }
+const lbReqCell = c=> c.item ? `${c.dom}<span class="wl-sub">${X(c.itemName)}</span>` : `<span class="tag wn">Needs classification</span><span class="wl-sub">You wrote: ${X(c.claimed||'')}</span>`;
 function renderLogbook(){
   const el = document.getElementById('panel-logbook'), cs = lbCases();
-  const capped = lbProgress(cs).filter(x=>x.d.kind==='CF').reduce((a,x)=>a+x.items.reduce((b,i)=>b+Math.min(i.v,i.tg||0),0),0), ver = cs.filter(c=>c.status==='verified').length, pend = cs.filter(c=>c.status==='pending').length, ret = cs.filter(c=>c.status==='returned').length;
-  const head = `<div class="ptitle"><div><h2>Logbook (VOP)</h2><p>Your case log against the curriculum minimums for ${TR_STAGE}. Only verified cases count toward progress.</p></div><button type="button" class="btn pri" onclick="openCase()">Log a case</button></div>
-    <p class="qline"><b>${capped} of 615</b> clinical fundamentals minimum met &middot; ${ver} verified cases in all &middot; ${pend} waiting for your logbook verifier${ret?` &middot; <button type="button" class="link" onclick="LBU.view='cases';LBU.status='returned';LBU.dom='';LBU.item='';renderLogbook()">${ret} returned to you</button>`:''}</p>
-    <div class="lbhead"><div class="seg2" role="group" aria-label="Logbook view"><button type="button" class="${LBU.view==='progress'?'on':''}" aria-pressed="${LBU.view==='progress'}" onclick="LBU.view='progress';renderLogbook()">Progress</button><button type="button" class="${LBU.view==='cases'?'on':''}" aria-pressed="${LBU.view==='cases'}" onclick="LBU.view='cases';LBU.dom='';LBU.item='';renderLogbook()">All cases</button></div></div>`;
+  const capped = lbProgress(cs).filter(x=>x.d.kind==='CF').reduce((a,x)=>a+x.items.reduce((b,i)=>b+Math.min(i.v,i.tg||0),0),0);
+  const cnt = st=>cs.filter(c=>c.status===st).length, appr = cs.filter(lbCounted).length, pend = cnt('pending')+cnt('under_review'), rev = cnt('revision_requested');
+  const legacy = cs.filter(c=>c.src==='legacy'), uncl = cs.filter(c=>!c.item).length, late = cs.filter(c=>c.win===false).length;
+  const head = `<div class="ptitle"><div><h2>Logbook (VOP)</h2><p>Your case log against the curriculum minimums for ${TR_STAGE}. Only approved cases count toward progress.</p></div><button type="button" class="btn pri" onclick="openCase()">Log a case</button></div>
+    <p class="qline"><b>${capped} of 615</b> clinical fundamentals minimum met &middot; ${appr} approved cases in all &middot; ${pend} waiting for your verifier${rev?` &middot; <button type="button" class="link" onclick="lbGo({status:'revision_requested'})">${rev} need${rev===1?'s':''} your revision</button>`:''}</p>
+    <div class="lbnote"><span><b>${legacy.length} cases</b> came from your previous e-logbook, imported on ${LB_IMPORT_DATE}. Approvals, verifier notes and dates were kept as they were.${uncl?` <b>${uncl}</b> could not be matched to a curriculum requirement and do not count until you classify them.`:''}</span>
+      <span style="display:flex;gap:14px;flex-wrap:wrap">${uncl?`<button type="button" class="link" onclick="lbGo({show:'unclassified'})">Classify ${uncl} case${uncl===1?'':'s'}</button>`:''}<button type="button" class="link" onclick="lbGo({show:'legacy'})">Show imported cases</button></span></div>
+    <div class="lbhead"><div class="seg2" role="group" aria-label="Logbook view"><button type="button" class="${LBU.view==='progress'?'on':''}" aria-pressed="${LBU.view==='progress'}" onclick="LBU.view='progress';renderLogbook()">Progress</button><button type="button" class="${LBU.view==='cases'?'on':''}" aria-pressed="${LBU.view==='cases'}" onclick="lbGo({})">All cases</button></div></div>`;
   let body = '';
   if(LBU.view==='progress'){
     const P = lbProgress(cs), cf = P.filter(x=>x.d.kind==='CF'), sm = P.filter(x=>x.d.kind==='SM');
@@ -1120,42 +1204,109 @@ function renderLogbook(){
       <div class="dgrid">${sm.map(x=>`<div class="dcard"><h3><span>${x.d.dom} &middot; ${X(x.d.name)}</span></h3>${x.items.map(i=>lbItemRow(i,'SM')).join('')}</div>`).join('')}</div>`;
   } else {
     const q = LBU.q.trim().toLowerCase();
-    let rows = cs.filter(c=>(!LBU.dom||c.dom===LBU.dom)&&(!LBU.item||c.item===LBU.item)&&(!LBU.status||c.status===LBU.status)&&(!q||(c.op+' '+c.itemName).toLowerCase().includes(q)));
+    const showF = {'':()=>true, unclassified:c=>!c.item, legacy:c=>c.src==='legacy', new:c=>c.src==='new', late:c=>c.win===false}[LBU.show];
+    let rows = cs.filter(c=>(!LBU.dom||c.dom===LBU.dom)&&(!LBU.item||c.item===LBU.item)&&(!LBU.status||c.status===LBU.status)&&showF(c)&&(!q||(c.op+' '+c.dx+' '+c.itemName+' '+c.ref).toLowerCase().includes(q)));
     const PS_ = 25, pages = Math.max(1,Math.ceil(rows.length/PS_)); LBU.page = Math.min(LBU.page,pages); const sl = rows.slice((LBU.page-1)*PS_, LBU.page*PS_);
     const doms = VOP_DOMS.map(d=>`<option value="${d.dom}" ${LBU.dom===d.dom?'selected':''}>${d.dom} ${X(d.short.replace(/^[\d.]+ /,''))}</option>`).join('');
     const items = LBU.dom ? VOP_DOMS.find(d=>d.dom===LBU.dom).items.map(i=>`<option value="${i.id}" ${LBU.item===i.id?'selected':''}>${X(i.name)}</option>`).join('') : '';
-    const stl = {verified:'Verified',pending:'Waiting for verifier',returned:'Returned to you'};
-    body = `<div class="filters"><input class="fi" id="lbQ" type="search" placeholder="Search operation or procedure" aria-label="Search cases" value="${X(LBU.q)}" oninput="lbSet('q',this.value)">
+    const shows = {'':'All cases', unclassified:`Needs classification (${uncl})`, legacy:`Imported from old logbook (${legacy.length})`, new:'Logged here', late:`Logged over 2 years late (${late})`};
+    body = `<div class="filters"><input class="fi" id="lbQ" type="search" placeholder="Search operation, diagnosis or case ref" aria-label="Search cases" value="${X(LBU.q)}" oninput="lbSet('q',this.value)">
       <select class="fi" aria-label="Requirement" onchange="lbSet('dom',this.value)"><option value="">All requirements</option>${doms}</select>
       ${items?`<select class="fi" aria-label="Procedure type" onchange="lbSet('item',this.value)"><option value="">All procedure types</option>${items}</select>`:''}
-      <select class="fi" aria-label="Status" onchange="lbSet('status',this.value)"><option value="">Any status</option>${Object.keys(stl).map(k=>`<option value="${k}" ${LBU.status===k?'selected':''}>${stl[k]}</option>`).join('')}</select>
-      ${LBU.dom||LBU.item||LBU.status||LBU.q?`<button type="button" class="link" onclick="LBU.dom='';LBU.item='';LBU.status='';LBU.q='';LBU.page=1;renderLogbook()">Clear filters</button>`:''}</div>
-      <div class="tbl-scroll"><table class="tbl2"><thead><tr><th>Date</th><th>Hospital</th><th>Operation</th><th>Requirement</th><th>ASA</th><th>Supervision</th><th>Status</th></tr></thead><tbody>${
-        sl.length ? sl.map(c=>`<tr><td class="mono">${fmtD(c.date)}</td><td>${c.hosp}</td><td>${X(c.op)}</td><td>${c.dom}<span class="wl-sub">${X(c.itemName)}</span></td><td class="mono">${c.asa}</td><td class="mono">Level ${c.sup}</td><td><span class="st2 ${c.status}"><i></i>${stl[c.status]}</span></td></tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--ink3);padding:26px">No cases match.</td></tr>'}</tbody></table></div>
+      <select class="fi" aria-label="Status" onchange="lbSet('status',this.value)"><option value="">Any status</option>${Object.keys(LB_ST).map(k=>`<option value="${k}" ${LBU.status===k?'selected':''}>${LB_ST[k]}</option>`).join('')}</select>
+      <select class="fi" aria-label="Show" onchange="lbSet('show',this.value)">${Object.keys(shows).map(k=>`<option value="${k}" ${LBU.show===k?'selected':''}>${shows[k]}</option>`).join('')}</select>
+      ${LBU.dom||LBU.item||LBU.status||LBU.q||LBU.show?`<button type="button" class="link" onclick="lbGo({})">Clear filters</button>`:''}</div>
+      <div class="tbl-scroll"><table class="tbl2"><thead><tr><th>Date</th><th>Hospital</th><th>Operation</th><th>Requirement</th><th>Technique</th><th>ASA</th><th>Supervision</th><th>Status</th></tr></thead><tbody>${
+        sl.length ? sl.map(c=>`<tr><td class="mono">${fmtD(c.date)}</td><td>${c.hosp}</td><td><button type="button" class="rowlink" onclick="openCaseDetail('${c.id}')">${X(c.op)}</button><span class="wl-sub">${X(c.dx||'No diagnosis recorded')}</span></td><td>${lbReqCell(c)}</td><td>${X((c.tech||[]).join(', '))}</td><td class="mono">${c.asa||'\u2014'}</td><td class="mono">${c.sup?'Level '+c.sup:'\u2014'}</td><td><span class="st2 ${c.status}"><i></i>${LB_ST[c.status]}</span></td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--ink3);padding:26px">No cases match.</td></tr>'}</tbody></table></div>
       <div class="pager"><span>${rows.length} case${rows.length===1?'':'s'}</span><span><button type="button" class="btn sec sm" ${LBU.page<=1?'disabled':''} onclick="lbSet('page',${LBU.page-1})">Previous</button> <span class="mono" style="margin:0 8px">${LBU.page} / ${pages}</span> <button type="button" class="btn sec sm" ${LBU.page>=pages?'disabled':''} onclick="lbSet('page',${LBU.page+1})">Next</button></span></div>`;
   }
   el.innerHTML = head + body;
 }
-function openCase(){
-  const opts = VOP_DOMS.map(d=>`<optgroup label="${d.dom} ${X(d.name)}">${d.items.map(i=>`<option value="${d.dom}|${i.id}">${X(i.name)}</option>`).join('')}</optgroup>`).join('');
-  openModalX('modalCase', `<div class="xmodal"><div class="eyebrow">New case</div><h3 id="mcT">Log a case</h3>
-    <p class="qline" style="margin:6px 0 0;font-size:13px">Your logbook verifier will check it. It counts toward progress once verified.</p>
-    <div class="two2"><label class="field"><span>Date</span><input id="lcDate" type="date" value="2026-10-17" max="2026-10-17"></label>
-    <label class="field"><span>Hospital</span><select id="lcHosp">${Object.keys(LB_HOSP).map(k=>`<option value="${k}">${LB_HOSP[k]}</option>`).join('')}</select></label></div>
-    <label class="field"><span>Requirement</span><select id="lcItem">${opts}</select></label>
-    <label class="field"><span>Operation</span><input id="lcOp" type="text" placeholder="e.g. Laparoscopic cholecystectomy"></label>
-    <div class="two2"><label class="field"><span>ASA class</span><select id="lcAsa">${[1,2,3,4,5].map(n=>`<option>${n}</option>`).join('')}</select></label>
-    <label class="field"><span>Supervision level</span><select id="lcSup">${[1,2,3,4].map(n=>`<option>${n}</option>`).join('')}</select></label></div>
-    <p class="qline" id="lcErr" style="margin:6px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
-    <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalCase')">Cancel</button><button type="button" class="btn pri" onclick="saveCase()">Add to logbook</button></div></div>`);
+
+/* ---------- case detail: every field, the verification trail, and where the case came from ---------- */
+function openCaseDetail(id){
+  const c = lbCases().find(x=>x.id===id); if(!c) return;
+  const trail = [`<li><b>Logged</b> by you<span>${fmtD(c.logged||c.date)}</span></li>`];
+  if(c.src==='legacy') trail.push(`<li><b>Imported</b> from your previous e-logbook<span>${LB_IMPORT_DATE}</span></li>`);
+  if(c.status!=='pending' && c.ver) trail.push(`<li><b>${LB_ST[c.status]}</b> by ${X(c.ver[0])} (${c.ver[1]})<span>${c.vdate?fmtD(c.vdate):''}</span>${c.vnote?`<span style="color:var(--ink2)">&ldquo;${X(c.vnote)}&rdquo;</span>`:''}</li>`);
+  else trail.push(`<li><b>Waiting for</b> ${c.ver?X(c.ver[0])+' ('+c.ver[1]+')':'your logbook verifier'}<span>Not yet reviewed</span></li>`);
+  const fix = c.status==='revision_requested' ? `<button type="button" class="btn pri" onclick="closeX('modalCaseDetail');openCase('${c.id}')">Edit and resubmit</button>` : '';
+  const classify = !c.item ? `<div class="msgbox"><b>This case does not count yet.</b> Your old logbook entry said &ldquo;${X(c.claimed||'')}&rdquo;, which could not be matched to a curriculum requirement. Choose the right one and your verifier will confirm it.
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><select class="fi" id="clsSel" style="flex:1;min-width:200px">${reqOptions()}</select><button type="button" class="btn pri" onclick="classifyCase('${c.id}')">Save classification</button></div></div>` : '';
+  openModalX('modalCaseDetail', `<div class="xmodal wide"><div class="eyebrow">Case ${c.ref}</div><h3 id="mdT">${X(c.op)}</h3>
+    <div style="margin-top:8px"><span class="st2 ${c.status}"><i></i>${LB_ST[c.status]}</span>${c.src==='legacy'?'<span class="tag">Imported</span>':''}${c.win===false?'<span class="tag wn">Logged over 2 years late</span>':''}</div>
+    ${classify}
+    <dl class="det"><dt>Date of case</dt><dd class="mono">${fmtD(c.date)}</dd><dt>Hospital</dt><dd>${LB_HOSP[c.hosp]||c.hosp}</dd><dt>Training level then</dt><dd>${X(c.level||'\u2014')}</dd>
+      <dt>Requirement</dt><dd>${c.item?`${c.dom} &middot; ${X(c.itemName)}`:'Not classified yet'}</dd>${c.flags&&c.flags.length?`<dt>Fundamentals domains</dt><dd>${c.flags.map(f=>'CF-'+f).join(', ')}</dd>`:''}
+      <dt>Surgical diagnosis</dt><dd>${X(c.dx||'\u2014')}</dd><dt>Technique</dt><dd>${X((c.tech||[]).join(', ')||'\u2014')}</dd>
+      <dt>Regional blocks</dt><dd>${c.blocks&&c.blocks.length?c.blocks.map(b=>X(b)).join('<br>'):'None recorded'}</dd><dt>Duration</dt><dd>${c.hours?c.hours+' hours':'\u2014'}</dd>
+      <dt>ASA class</dt><dd>${c.asa||'\u2014'}</dd><dt>Patient age</dt><dd>${c.age?c.age+' years':'\u2014'}</dd><dt>Supervision</dt><dd>${c.sup?'Level '+c.sup:'\u2014'}</dd><dt>Remarks</dt><dd>${X(c.remark||'\u2014')}</dd></dl>
+    ${c.win===false?'<p class="hint">This case was logged more than two years after it was done. The old logbook already approved it, so it keeps its credit. New late cases are saved but do not count.</p>':''}
+    <div class="eyebrow" style="margin-top:20px">Verification</div><ul class="vtrail">${trail.join('')}</ul>
+    <p class="hint" style="margin-top:14px">No patient name, HKID or hospital number is stored. The case reference above is the only identifier.</p>
+    <div class="acts">${fix}<button type="button" class="btn sec" onclick="closeX('modalCaseDetail')">Close</button></div></div>`);
 }
-function saveCase(){
-  const op = $q('#lcOp').value.trim(); if(!op){ $q('#lcErr').textContent = 'Say which operation it was.'; return; }
+function reqOptions(){ return VOP_DOMS.map(d=>`<optgroup label="${d.dom} ${X(d.name)}">${d.items.map(i=>`<option value="${d.dom}|${i.id}">${X(i.name)}</option>`).join('')}</optgroup>`).join(''); }
+function lbPatch(id, patch){ const o = lsGet(LB_OVR,{}); o[id] = Object.assign(o[id]||{}, patch); lsSet(LB_OVR, o); }
+function classifyCase(id){
+  const [dom,item] = $q('#clsSel').value.split('|'), d = VOP_DOMS.find(x=>x.dom===dom), it = d.items.find(x=>x.id===item);
+  lbPatch(id, {dom, item, itemName:it.name, flags:d.kind==='CF'?[dom.replace('CF-','')]:[], status:'pending', ver:LB_VER[0], vdate:null, vnote:'You classified this case after the import. Please confirm.'});
+  closeX('modalCaseDetail'); renderLogbook();
+}
+
+/* ---------- log a case (legacy fields, minus patient identity) ---------- */
+function openCase(editId){
+  LB_FORCE = false;
+  const old = editId ? lbCases().find(x=>x.id===editId) : null, v = old || {date:new Date(2026,9,17).getTime(), hosp:'PWH', asa:2, sup:2, tech:[], blocks:[], hours:'', age:'', dx:'', op:'', remark:''};
+  const iso = new Date(v.date); const isoS = iso.getFullYear()+'-'+String(iso.getMonth()+1).padStart(2,'0')+'-'+String(iso.getDate()).padStart(2,'0');
+  const opts = VOP_DOMS.map(d=>`<optgroup label="${d.dom} ${X(d.name)}">${d.items.map(i=>`<option value="${d.dom}|${i.id}" ${old&&old.item===i.id?'selected':''}>${X(i.name)}</option>`).join('')}</optgroup>`).join('');
+  openModalX('modalCase', `<div class="xmodal wide"><div class="eyebrow">${old?'Edit and resubmit':'New case'}</div><h3 id="mcT">${old?'Update this case':'Log a case'}</h3>
+    <p class="qline" style="margin:6px 0 0;font-size:13px">${old?'Your verifier asked for a change. Update the case and send it back.':'Your logbook verifier will check it. It counts toward progress once approved.'} <b>Do not enter a patient name, HKID or hospital number.</b></p>
+    <div class="two2"><label class="field"><span>Date of case</span><input id="lcDate" type="date" value="${isoS}" max="2026-10-17"></label>
+    <label class="field"><span>Hospital</span><select id="lcHosp">${Object.keys(LB_HOSP).map(k=>`<option value="${k}" ${v.hosp===k?'selected':''}>${LB_HOSP[k]}</option>`).join('')}</select></label></div>
+    <label class="field"><span>Primary operation</span><input id="lcOp" type="text" value="${X(v.op)}" placeholder="e.g. Laparoscopic cholecystectomy"></label>
+    <label class="field"><span>Surgical diagnosis</span><input id="lcDx" type="text" value="${X(v.dx)}" placeholder="e.g. Gallstones"></label>
+    <label class="field"><span>Curriculum requirement</span><select id="lcItem">${opts}</select></label>
+    <div class="field"><span>Anaesthetic technique</span><div class="chk2" id="lcTech">${LB_TECH.map(t=>`<label><input type="checkbox" value="${t}" ${(v.tech||[]).includes(t)?'checked':''}> ${t}</label>`).join('')}</div></div>
+    <div class="field"><span>Regional blocks <small style="font-weight:500;color:var(--ink3)">(up to 6)</small></span><div id="lcBlocks"></div><button type="button" class="btn sec sm" id="lcAddBlk" onclick="addBlk()">Add a block</button></div>
+    <div class="two2"><label class="field"><span>ASA class</span><select id="lcAsa">${[1,2,3,4,5].map(n=>`<option ${v.asa===n?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label class="field"><span>Supervision level</span><select id="lcSup">${[1,2,3,4].map(n=>`<option ${v.sup===n?'selected':''}>${n}</option>`).join('')}</select></label></div>
+    <div class="two2"><label class="field"><span>Duration (hours)</span><input id="lcHrs" type="number" min="0" max="24" step="0.5" value="${v.hours||''}"></label>
+    <label class="field"><span>Patient age (years)</span><input id="lcAge" type="number" min="0" max="120" value="${v.age||''}"></label></div>
+    <p class="hint">Your training level, ${TR_STAGE}, is added automatically.</p>
+    <label class="field"><span>Remarks <small style="font-weight:500;color:var(--ink3)">(optional)</small></span><textarea id="lcRem" style="min-height:64px">${X(v.remark||'')}</textarea></label>
+    <div id="lcMsg" role="alert"></div>
+    <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalCase')">Cancel</button><button type="button" class="btn pri" id="lcSave" onclick="saveCase('${editId||''}')">${old?'Resubmit':'Add to logbook'}</button></div></div>`);
+  (v.blocks||[]).forEach(b=>addBlk(b));
+  if(old){ const sel = $q('#lcItem'); if(!old.item) sel.selectedIndex = 0; }
+}
+function addBlk(val){
+  const box = $q('#lcBlocks'); if(box.children.length>=6) return;
+  const r = document.createElement('div'); r.className = 'brow';
+  r.innerHTML = `<input class="fi" type="text" aria-label="Block ${box.children.length+1}" placeholder="Site and technique, e.g. Interscalene, single shot" value="${X(typeof val==='string'?val:'')}"><button type="button" class="btn sec sm" aria-label="Remove block" onclick="this.parentNode.remove();$q('#lcAddBlk').disabled=false">Remove</button>`;
+  box.appendChild(r); $q('#lcAddBlk').disabled = box.children.length>=6;
+}
+let LB_FORCE = false;
+function saveCase(editId){
+  const msg = $q('#lcMsg'), op = $q('#lcOp').value.trim(), dx = $q('#lcDx').value.trim();
+  const fail = t=>{ msg.className = 'msgbox'; msg.textContent = t; };
+  if(!op) return fail('Say which operation it was.');
+  const tech = $qa('#lcTech input:checked').map(i=>i.value); if(!tech.length) return fail('Choose at least one anaesthetic technique.');
   const [dom,item] = $q('#lcItem').value.split('|'), d = VOP_DOMS.find(x=>x.dom===dom), it = d.items.find(x=>x.id===item), dt = new Date($q('#lcDate').value+'T09:00:00');
-  const ex = lsGet(LB_EXTRA,[]); ex.unshift({id:'N'+Date.now(), date:dt.getTime(), ms:dt.getTime(), hosp:$q('#lcHosp').value, dom, item, itemName:it.name, op, asa:+$q('#lcAsa').value, sup:+$q('#lcSup').value, status:'pending'}); lsSet(LB_EXTRA, ex);
-  closeX('modalCase'); LBU.view = 'cases'; LBU.dom = ''; LBU.item = ''; LBU.status = 'pending'; LBU.q = ''; LBU.page = 1; renderLogbook();
+  if(isNaN(dt)) return fail('Choose the date of the case.');
+  const late = (LB_NOW - dt) > 2*365.25*LB_DAY;
+  const hosp = $q('#lcHosp').value, asa = +$q('#lcAsa').value, age = +$q('#lcAge').value||null;
+  const key = x=>[fmtD(x.date),x.hosp,x.asa,x.age||'',(x.op||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()].join('|');
+  const dup = lbCases().find(x=>x.id!==editId && key(x)===key({date:dt.getTime(),hosp,asa,age,op}));
+  if(dup && !LB_FORCE){ LB_FORCE = true; msg.className = 'msgbox'; msg.innerHTML = `This looks like a case you already have (${dup.ref}, ${fmtD(dup.date)}). If it is a different patient, press the button again to add it.`; $q('#lcSave').textContent = 'Add anyway'; return; }
+  LB_FORCE = false;
+  const rec = {date:dt.getTime(), logged:LB_NOW.getTime(), hosp, op, dx, dom, item, itemName:it.name, tech, blocks:$qa('#lcBlocks input').map(i=>i.value.trim()).filter(Boolean), asa, sup:+$q('#lcSup').value, hours:+$q('#lcHrs').value||null, age,
+    remark:$q('#lcRem').value.trim(), level:TR_STAGE, flags:d.kind==='CF'?[dom.replace('CF-','')]:[], status:'pending', ver:LB_VER[0], vnote:'', src:'new', win:!late};
+  if(editId) lbPatch(editId, Object.assign(rec,{vdate:null})); else { const ex = lsGet(LB_EXTRA,[]); const id = 'N'+Date.now(); ex.unshift(Object.assign({id, ref:lbRef(id)}, rec)); lsSet(LB_EXTRA, ex); }
+  closeX('modalCase'); LBU.view = 'cases'; LBU.dom = ''; LBU.item = ''; LBU.status = ''; LBU.show = ''; LBU.q = ''; LBU.page = 1; renderLogbook();
+  if(late){ const n = document.createElement('div'); n.className='lbnote'; n.setAttribute('role','status'); n.innerHTML = '<span><b>Saved, but it will not count.</b> It was done more than two years ago, so it is kept in your log without credit.</span>'; document.getElementById('panel-logbook').prepend(n); }
 }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ ['modalCase','modalFlag'].forEach(id=>{ const m = document.getElementById(id); if(m && !m.classList.contains('hidden')) closeX(id); }); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ ['modalCase','modalFlag','modalCaseDetail'].forEach(id=>{ const m = document.getElementById(id); if(m && !m.classList.contains('hidden')) closeX(id); }); } });
 
 /* ===== learning plans: 6-month goals (= the Learning Contract for the 6-month ITA cycle) + PF year plan (kept isolated) ===== */
 const PS = PlansStore, GE = PS.esc;
@@ -1320,7 +1471,22 @@ document.querySelectorAll('#optbar button').forEach(b=>{
     ['1','2','3'].forEach(n=>document.getElementById('opt'+n).classList.toggle('hidden',n!==o));
   };
 });
+
+/* ---------- progression record: stage moves and exam passes ---------- */
+const MILESTONES = [
+  {k:'stage', t:'Started Basic Training (BAT)', date:'2022-01-03', sub:'Training record opened, BAT-1'},
+  {k:'exam',  t:'Intermediate Examination', date:'2024-11-22', sub:'Passed, 1st attempt. Needed before Higher Training.'},
+  {k:'stage', t:'Moved up to Higher Training (HAT)', date:'2025-01-01', sub:'BAT completed. HAT-1 from this date.'},
+  {k:'stage', t:'Moved up to HAT-2', date:'2026-01-01', sub:'Current stage', cur:true},
+  {k:'exam',  t:'Final Fellowship Examination', date:null, sub:'Not yet sat. Needed before the Provisional Fellowship Year.'},
+  {k:'stage', t:'Provisional Fellowship Year (PFY)', date:null, sub:'Starts when every Next Gate item is met.'},
+  {k:'stage', t:'Exit Assessment and Fellowship', date:null, sub:'After the PFY, courses, formal project and VOP are complete.'}];
+function renderMilestones(){
+  const el = document.getElementById('ovMilestones'); if(!el) return;
+  el.innerHTML = MILESTONES.map(m=>`<li class="${m.date?(m.cur?'cur':'done'):'todo'}"><span class="mk2" aria-hidden="true"></span><div><div class="mt">${X(m.t)}</div><div class="ms">${X(m.sub)}</div></div><div class="md">${m.date?fmtD(m.date+'T00:00:00'):'Not yet'}</div></li>`).join('');
+}
 /* init: ITA banner, shared course list, deep-linked tab */
+renderMilestones();
 renderItaBanner();
 document.getElementById('ovCourses').innerHTML = courseListHtml();
 showTab(location.hash.slice(1) || 'overview', {noHash:true, keepScroll:true});

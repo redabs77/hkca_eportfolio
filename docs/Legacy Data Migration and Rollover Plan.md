@@ -202,6 +202,30 @@ Confirmed: **enforced in the legacy application.** Migration must therefore trus
 `date_entry` / `start_date` relationship rather than recomputing it, and flag any rows where
 `date_entry > start_date + 2 years` as a legacy anomaly rather than silently accepting or rejecting them.
 
+### 6.8 Legacy logbook import and merge procedure (`patient2` -> `volume_of_practice`)
+
+Implemented as pure functions in `domain/vop/legacyImport.ts` and covered by `tests/domain/run_vop_import_tests.ts` (run with `npm run test:domain`). The ETL job reads rows, calls `importLegacy`, writes the result, then calls `mergeIntoLedger`.
+
+**Can the legacy data be brought in and merged? Yes, with three conditions the College must confirm from the real dump.** The mechanics are built and tested on representative messy rows. The vocabularies are not knowable from the schema, so they are assumptions until checked:
+
+| # | Assumption | How to settle it |
+|---|---|---|
+| A1 | `approved_status` values map to `pending / approved / revision_requested / rejected` (numeric 0/1/2/3 or words). Unknown values import as `pending` and are counted in the report. | `SELECT approved_status, COUNT(*) FROM patient2 GROUP BY 1;` |
+| A2 | The free-text claim fields can be matched to descriptor codes by pattern. The alias table in the module is a starting point only. Rows that match nothing import as `needs_classification`. | `SELECT DISTINCT module_claimed, specialty_module_claimed, procedure_claimed, mode_anaesthesia FROM patient2;` then extend `CLASSIFICATION_ALIASES` and `TECHNIQUE_ALIASES` until the unmatched share is acceptable to the College. |
+| A3 | Legacy-approved cases outside the 2-year window keep their credit (default) or not (`grandfatherApproved: false`). Decision for Dr. Chan and the Board. | Count them from the anomaly report. |
+
+**Steps**
+1. **Trainee map.** Build `legacy tid -> trainee_id` from the migrated `trainee_profiles`. Scope is the active cohort (PRD §7). A row whose `tid` is not in the map is quarantined as `orphan_trainee`.
+2. **Row transform.** Dates parsed from ISO or `DD/MM/YYYY` (MySQL zero dates become null; a row with no usable case date is quarantined as `no_case_date`). Hospital normalised to a code; technique split into a controlled list; `block1..6` into ordered blocks; `level_training` kept as the entry-time snapshot; pain-session flags kept aside (Phase 2).
+3. **Patient identity.** `hkid`, `date_birth` and `sex` are never copied, not even into the quarantine record. `age` and `asa` are kept. The new `case_ref` is `VOP-` plus a hash of `tid#pid`.
+4. **Approval.** Status, approver name, approval date and notes are preserved. `verified_by_role` is resolved from the users table by name where possible and left null otherwise. One synthetic `vop_verification_events` row is written per imported row.
+5. **Classification.** Order of evidence: an explicit code in the text (`2.2`), then the alias table (specific before general, so "caesarean under spinal" is 3.5, not 2.2), then a single CF flag as a last resort. Anything else sets `needs_classification`. Those cases are shown to the trainee, count toward nothing, and return to `pending` once the trainee classifies them.
+6. **2-year rule.** The legacy application enforced it (§6.7), so rows outside the window are anomalies. They are flagged `legacy_window_anomaly` and reported, and their credit follows A3. They are never dropped silently.
+7. **Merge.** Idempotent on `(legacy_tid, legacy_pid)`: re-running adds nothing, so the job can be repeated for the delta up to cutover. Nothing live is overwritten or deleted. If a legacy case has the same `dedupe_key` as a hand-entered live case, both are kept and the pair is listed for review.
+8. **Reconciliation gate.** The report must balance (`rows in = imported + quarantined`), and per-trainee counts of approved cases by descriptor must equal legacy before cutover (PRD §7 parity suite). Quarantined and `needs_classification` counts go to the College before cutover.
+
+**What the trainee sees after import:** their legacy cases appear in the new logbook tagged "Imported", with approvals, verifier notes and dates unchanged, a one-line notice with the import date, and a "Classify" list for the rows that need it.
+
 ---
 
 ## 7. Rollback & Parallel Running

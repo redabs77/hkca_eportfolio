@@ -14,7 +14,7 @@
     "prisma:generate": "prisma generate --schema db/schema/schema.prisma",
     "prisma:format": "prisma format --schema db/schema/schema.prisma",
     "seed": "node scripts/test_seed.mjs",
-    "test:domain": "node tests/domain/run_domain_tests.ts",
+    "test:domain": "node tests/domain/run_domain_tests.ts && node tests/domain/run_vop_import_tests.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
