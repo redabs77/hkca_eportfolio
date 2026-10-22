@@ -42,6 +42,8 @@
   --t1b:rgba(143,182,245,.16); --t1f:#a9c6f8; --t2b:rgba(134,211,172,.15); --t2f:#8fdcb4;
   --t3b:rgba(169,156,240,.17); --t3f:#c4b9f7; --t4b:rgba(245,197,122,.15); --t4f:#f5c57a;
   --t5b:rgba(127,208,198,.15); --t5f:#86d8cf; --t6b:rgba(242,160,174,.15); --t6f:#f5a9b6;
+  /* bridge must be re-declared here: var() is resolved where declared, so the :root copy stays light */
+  --page:var(--bg2); --navy:var(--ink); --navy-l:var(--ink2); --slate:var(--ink2); --teal:var(--acc); --green:var(--ok-f);
 }
 
 /* ---------- brand surfaces (same look in every prototype) ---------- */

@@ -226,6 +226,9 @@ main{padding:30px 0 70px}
 .gl-demo select{font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--navy)}
 .gl-demo a{color:var(--slate)}
 .gl-ed select{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px;background:var(--surface);color:var(--navy)}
+/* theme icon button: same as the other prototypes */
+.icon-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--surface);border-radius:7px;display:inline-grid;place-items:center;cursor:pointer;color:var(--ink2);font-size:15px;line-height:1;padding:0}
+.icon-btn:hover{background:var(--bg3)} .icon-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 /* ---------- tab panels, ITA cycle, logbook, courses (design pass 2026-10-22) ---------- */
 .panel[hidden]{display:none}
 .tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:6px}
@@ -333,7 +336,7 @@ main{padding:30px 0 70px}
         <span class="pill info"><span class="dot b"></span>HAT-2</span>
         <span class="pill ok"><span class="dot g"></span>Prince of Wales Hospital</span>
         <span class="pill">Dr. Kelvin Wong</span>
-        <button class="btn sec sm" onclick="toggleTheme()" id="thBtn">Dark</button>
+        <button type="button" class="icon-btn" onclick="toggleTheme()" id="thBtn" aria-label="Toggle dark mode" title="Toggle theme">&#9788;</button>
       </div>
     </div>
     <div class="tabs" role="tablist" aria-label="Portfolio sections">
@@ -1325,14 +1328,14 @@ window.addEventListener('hashchange', ()=>showTab(location.hash.slice(1)||'overv
 /* theme */
 function toggleTheme(){
   const d=document.documentElement.classList.toggle('dark');
-  document.getElementById('thBtn').textContent=d?'Light':'Dark';
+  document.getElementById('thBtn').innerHTML=d?'&#9790;':'&#9788;';
   localStorage.setItem('trainee-theme',d?'dark':'light');
 }
 (function(){
   const s=localStorage.getItem('trainee-theme');
   if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme: dark)').matches)){
     document.documentElement.classList.add('dark');
-    document.getElementById('thBtn').textContent='Light';
+    document.getElementById('thBtn').innerHTML='&#9790;';
   }
 })();
 </script>
