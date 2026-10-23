@@ -15,7 +15,7 @@ Dear colleagues,
 Thank you for the 20 October API update. The batch endpoint, the backfill summary and `iwba_user_id` are what we asked for, and we are building against them now.
 
 **1. Curriculum mapping (attached CSV)**
-The attached file lists every HKCA workplace-based assessment requirement: 53 rows, 63 assessments plus 3 multi-source feedback, by curriculum code (CF-2.1 to 2.7, SM-3.1 to 3.13, PFY, ECHO-TTE, MSF), modality, and the stage in which it is required (BT, HT, PFY, either, any, or by Exit Assessment). Two corrections to your current configuration: "Transducer set-up and troubleshooting" is CF-2.1, required once in Basic Training only (not Higher Training x3); and CEX/CBD items are needed in every CF and SM domain, together with ALMAT and MSF, none of which exist yet.
+The attached file lists every HKCA workplace-based assessment requirement: 53 rows, 63 assessments plus 3 multi-source feedback, by curriculum code (CF-2.1 to 2.7, SM-3.1 to 3.13, PFY, ECHO-WBA, MSF), modality, and the stage in which it is required (BAT, HAT, PFY, either, any, or by Exit Assessment). Two corrections to your current configuration: "Transducer set-up and troubleshooting" is CF-2.1, required once in Basic Training (BAT) only (not Higher Training x3); and CEX/CBD items are needed in every CF and SM domain, together with ALMAT and MSF, none of which exist yet.
 Could you tell us how the code will come back in the API? Our preference is a new `curriculum_code` on each summary and detail item (for example `CF-2.1`), with `procedure.code` as a stable item code from the CSV. We work out the trainee's stage from the assessment date ourselves, unless iWBA already records it.
 
 **2. Modalities**

@@ -489,7 +489,7 @@ CREATE TABLE wbas (
   iwba_status           TEXT,             -- completed | failed | in_progress | unverified
   workflow_outcome      TEXT,             -- DOPS only: COMPLETE | FAIL | null while in progress
   iwba_updated_at       TIMESTAMPTZ,      -- source updated_at, used for the sync cursor
-  curriculum_code       TEXT,             -- CF-2.x | SM-3.x | PFY | MSF | ECHO-TTE (from the mapping)
+  curriculum_code       TEXT,             -- CF-2.x | SM-3.x | PFY | MSF | ECHO-WBA (from the mapping)
   procedure_code        TEXT,             -- iWBA procedure.code, kept as received
   procedure_name        TEXT,
   entrustment_level     SMALLINT,         -- EPA only (reserved)
