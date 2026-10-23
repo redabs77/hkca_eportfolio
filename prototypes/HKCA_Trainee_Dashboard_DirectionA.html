@@ -256,6 +256,61 @@ main{padding:30px 0 70px}
 .mstones .mt{font-weight:650;font-size:14px} .mstones .ms{font-size:12.5px;color:var(--ink3);margin-top:2px}
 .mstones .md{font-family:'JetBrains Mono',monospace;font-size:12.5px;text-align:right;white-space:nowrap;color:var(--ink2)} .mstones li.todo .mt{color:var(--ink2);font-weight:600}
 @media(max-width:760px){.det{grid-template-columns:1fr}.mstones li{grid-template-columns:22px 1fr}.mstones .md{grid-column:2;text-align:left}}
+
+/* ---------- overview v2: next steps, stage path, gate checklist, folds ---------- */
+.ns{border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:20px;overflow:hidden}
+.ns .hd2{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px 12px}
+.ns .hd2 h2{font-size:17px;font-weight:750}
+.nsr{display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-items:center;padding:13px 20px;border-top:1px solid var(--border-sub);min-height:60px}
+.nsr .t{font-size:14px;font-weight:650} .nsr .s{font-size:12.5px;color:var(--ink3);margin-top:2px}
+.nsr.first{background:linear-gradient(90deg,var(--acc-bg),transparent 55%);border-left:3px solid var(--acc);padding-left:17px}
+.nsw{padding:11px 20px;border-top:1px solid var(--border-sub);font-size:12.5px;color:var(--ink3);background:var(--bg2)}
+.nsw b{color:var(--ink2);font-weight:600}
+.ns details>summary{padding:11px 20px;border-top:1px solid var(--border-sub);font-size:13px;font-weight:600;color:var(--acc-t);cursor:pointer;list-style:none}
+.ns details>summary::-webkit-details-marker{display:none}
+.ns .done{padding:6px 20px 20px;font-size:14px;color:var(--ink2)}
+.fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::after{content:"+";font-size:18px;font-weight:500;color:var(--ink3);margin-left:auto;width:22px;text-align:center}
+.fold[open]>summary::after{content:"\2212"}
+.fold>summary:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:8px}
+.fold .fs-t{font-size:14px;font-weight:700} .fold .fs-v{font-size:12.5px;color:var(--ink2)}
+.fold.outer{border:1px solid var(--border);border-radius:14px;background:var(--surface);padding:15px 20px;margin-bottom:20px}
+.fold.outer[open]>summary{margin-bottom:14px}
+.fold.outer>.card{border:0;box-shadow:none;padding:0;margin:0}
+.fold.inner{border-top:1px solid var(--border-sub);margin-top:6px;padding-top:14px}
+.fold.inner[open]>summary{margin-bottom:4px}
+.stepper{list-style:none;display:grid;grid-template-columns:repeat(7,1fr);margin:18px 0 18px}
+.stepper li{position:relative;padding-top:30px;padding-right:14px;font-size:12.5px;color:var(--ink3)}
+.stepper li::after{content:"";position:absolute;top:10px;left:26px;right:6px;height:2px;background:var(--border)} .stepper li:last-child::after{display:none}
+.stepper .mk3{position:absolute;top:0;left:0;width:20px;height:20px;border:2px solid var(--border);background:var(--surface);border-radius:50%}
+.stepper li.exam .mk3{border-radius:4px;transform:rotate(45deg) scale(.8)}
+.stepper .n{display:block;font-weight:650;color:var(--ink2);font-size:13px;line-height:1.3} .stepper .d{display:block;font-family:'JetBrains Mono',monospace;font-size:12px;margin-top:2px}
+.stepper li.done .mk3{background:var(--ok-f);border-color:var(--ok-f)} .stepper li.done::after{background:var(--ok-f)}
+.stepper li.cur .mk3{background:var(--acc);border-color:var(--acc);box-shadow:0 0 0 4px var(--acc-bg)} .stepper li.cur .n{color:var(--ink)}
+.gate{list-style:none;display:grid;margin-top:6px}
+.grow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(90px,1fr) minmax(120px,auto);gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--border-sub);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;font:inherit;color:inherit;text-align:left;min-height:48px}
+button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.grow:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+.gate li:first-child .grow{border-top:0}
+.gl2{font-size:13.5px;font-weight:600} .gl2 small{display:block;font-size:12px;font-weight:500;color:var(--ink3);margin-top:1px}
+.gst{font-size:12.5px;font-weight:650;text-align:right;display:inline-flex;gap:7px;align-items:center;justify-content:flex-end}
+.gst i{width:8px;height:8px;border-radius:50%;flex:none}
+.gst.ok i{background:var(--ok-f)} .gst.wn i{background:var(--wn-f)} .gst.bd i{background:var(--bd-f)} .gst.in i{background:var(--in-f)}
+.ibar{display:block;height:6px;border-radius:99px;background:var(--border);overflow:hidden} .ibar i{display:block;height:100%;border-radius:inherit}
+.gsub{margin:16px 0 4px;padding-top:14px;border-top:1px solid var(--border)}
+.demobar{position:fixed;right:14px;bottom:14px;z-index:70;font-size:12.5px}
+.demobar>summary{list-style:none;cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-weight:600;color:var(--ink2);box-shadow:var(--shadow-md);width:max-content;margin-left:auto}
+.demobar>summary::-webkit-details-marker{display:none}
+.demobar[open]>summary{margin-bottom:8px}
+.demobar #demoBody{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:var(--shadow-md);display:grid;gap:10px;max-width:340px}
+.demobar label{display:grid;gap:4px;font-size:12px;color:var(--ink2)} .demobar select{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit}
+@media(max-width:760px){
+  .stepper{grid-template-columns:1fr;gap:12px} .stepper li{padding:2px 0 2px 34px;min-height:24px;padding-right:0} .stepper li::after{display:none}
+  .stepper .n,.stepper .d{display:inline} .stepper .d{margin-left:8px}
+  .grow{grid-template-columns:1fr auto;row-gap:6px} .grow .ibar{grid-column:1/-1;order:3}
+  .nsr{grid-template-columns:1fr} .nsr .btn{justify-self:start}
+  .fold .fs-v{order:3;flex-basis:100%}
+}
 /* ---------- tab panels, ITA cycle, logbook, courses (design pass 2026-10-22) ---------- */
 .panel[hidden]{display:none}
 .tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:6px}
@@ -379,23 +434,22 @@ main{padding:30px 0 70px}
 <main>
   <div class="wrap">
   <section class="panel" id="panel-overview" role="tabpanel" aria-labelledby="tabbtn-overview">
+    <!-- 1. what needs me (single list; replaces the two banners) -->
+    <div id="nextSteps"></div>
 
-    <div id="goalsMount"></div>
-
-    <!-- ITA lifecycle banner: follows the ITA stage (see ITA & Assessments tab) -->
-    <div id="itaBanner"></div>
-
-    <!-- ===== training progression ===== -->
+    <!-- 2. where I am: stage path with exam passes; time in training is one line that expands -->
     <div class="card">
       <div class="hd">
         <div>
-          <div class="eyebrow">Curriculum Progress</div>
-          <h2>Where I Am</h2>
-          <p>Progress is measured against the curriculum minimums for your stage, not against elapsed time.</p>
+          <div class="eyebrow">Progress</div>
+          <h2>Where I am</h2>
         </div>
         <span class="pill ok"><span class="dot g"></span>All ITAs satisfactory</span>
       </div>
-
+      <ol class="stepper" id="ovStepper" aria-label="Training stages and exams"></ol>
+      <details class="fold inner" id="timeFold">
+        <summary><span class="fs-t">Time in training</span><span class="fs-v mono">42 of 72 months &middot; on track</span></summary>
+        <p class="qline" style="margin:12px 0 4px">Progress is measured against the curriculum minimums for your stage, not against elapsed time.</p>
       <div class="hero">
         <div class="dial">
           <svg width="170" height="170" viewBox="0 0 170 170">
@@ -438,78 +492,16 @@ main{padding:30px 0 70px}
           </p>
         </div>
       </div>
+
+      </details>
     </div>
 
-    <!-- ===== curriculum counters ===== -->
-    <div class="stats mb20">
-      <div class="stat">
-        <div class="rule"></div>
-        <div class="lb">Clinical Fundamentals WBA</div>
-        <div class="vl mono">20<em> / 29</em></div>
-        <div class="track"><i style="width:69%"></i></div>
-        <div class="sb">9 more needed before you can progress from Higher Training</div>
-      </div>
-      <div class="stat">
-        <div class="rule bl"></div>
-        <div class="lb">Specialty Modules WBA</div>
-        <div class="vl mono">12<em> / 31</em></div>
-        <div class="track"><i class="bl" style="width:39%"></i></div>
-        <div class="sb">Needed before Exit Assessment, not before PFY</div>
-      </div>
-      <div class="stat">
-        <div class="rule"></div>
-        <div class="lb">Volume of Practice</div>
-        <div class="vl mono">608<em> / 615</em></div>
-        <div class="track"><i style="width:99%"></i></div>
-        <div class="sb">7 cases from the Higher Training requirement</div>
-      </div>
-      <div class="stat">
-        <div class="rule am"></div>
-        <div class="lb">Multi-Source Feedback</div>
-        <div class="vl mono">1<em> / 3</em></div>
-        <div class="track"><i class="am" style="width:33%"></i></div>
-        <div class="sb">Stage 2 of 3 &middot; BAT completed, HAT due before PFY, 3rd in PFY</div>
-      </div>
-      <div class="stat">
-        <div class="rule pu"></div>
-        <div class="lb">Mandatory Courses</div>
-        <div class="vl mono">4<em> / 5</em></div>
-        <div class="track"><i class="bl" style="width:80%"></i></div>
-        <div class="sb">USRA-E outstanding — required before Exit Assessment</div>
-      </div>
-    </div>
+    <!-- 3. next gate: the five items that block Provisional Fellowship, then what is needed later -->
+    <div id="gateCard"></div>
 
-    <!-- ===== mandatory courses detail ===== -->
-    <div class="card">
-      <div class="hd">
-        <div>
-          <div class="eyebrow">Mandatory Courses</div>
-          <h2>Course Completion</h2>
-          <p>
-            All five courses must be completed before you can apply for Exit Assessment. They can be
-            taken at any point during training, so there is no penalty for finishing them early.
-          </p>
-        </div>
-        <span class="pill ok"><span class="dot g"></span>4 of 5 complete</span>
-      </div>
-
-      <div id="ovCourses"></div>
-
-      <div class="legend">
-        <div class="li"><span class="swatch" style="background:var(--green)"></span>Completed and verified by the College</div>
-        <div class="li"><span class="swatch" style="background:var(--am)"></span>Outstanding — action needed from you</div>
-      </div>
-
-      <p class="note">
-        Two other items are required before Exit Assessment: your <strong>Formal Project (HKCA-E03)</strong>,
-        protocol approved and manuscript not yet submitted, and your <strong>PFY three-domain plan</strong>.
-        Both are shown under <button type="button" class="link" onclick="showTab('courses')">Courses &amp; Project</button>.
-      </p>
-    </div>
-
-    <!-- ============================================================
-         PERCENTILE COMPARISON — three display options
-         ============================================================ -->
+    <!-- 4. comparison is available, not in the way -->
+    <details class="fold outer" id="peerFold">
+      <summary><span class="fs-t">How I compare</span><span class="fs-v mono">VOP 62nd &middot; CF WBA 54th &middot; SM WBA 31st &middot; MSF 48th percentile</span></summary>
     <div class="card">
       <div class="hd">
         <div>
@@ -772,76 +764,7 @@ main{padding:30px 0 70px}
       </div>
 
     </div>
-
-    <!-- ===== progression record: stages and exams ===== -->
-    <div class="card">
-      <div class="hd">
-        <div>
-          <div class="eyebrow">Progression record</div>
-          <h2>Stages and exams</h2>
-          <p>When you passed each exam and moved up a stage of training. These dates come from your College training record.</p>
-        </div>
-        <span class="pill info"><span class="dot b"></span>Now in HAT-2</span>
-      </div>
-      <ol class="mstones" id="ovMilestones" aria-label="Training milestones"></ol>
-    </div>
-
-    <!-- ===== current rotation + gates ===== -->
-    <div class="two">
-      <div class="card" style="margin-bottom:0">
-        <div class="hd" style="margin-bottom:14px">
-          <div>
-            <div class="eyebrow">Current Rotation</div>
-            <h2 style="font-size:16px">PWH &middot; Clinical Anaesthesia</h2>
-          </div>
-          <span class="pill info">Declared at ITA start</span>
-        </div>
-        <dl style="display:grid;grid-template-columns:auto 1fr;gap:9px 16px;font-size:12.5px">
-          <dt style="color:var(--slate)">Period</dt><dd class="mono" style="font-weight:600;text-align:right">01 Jul &ndash; 31 Dec 2026</dd>
-          <dt style="color:var(--slate)">Training type</dt><dd style="font-weight:600;text-align:right">Clinical Anaesthesia</dd>
-          <dt style="color:var(--slate)">Credited on sign-off</dt><dd style="font-weight:600;text-align:right">6 months &rarr; Clinical Anaesthesia</dd>
-        </dl>
-        <p class="note">
-          When your SOT signs off a satisfactory ITA, these 6 months are credited to Clinical
-          Anaesthesia automatically. You do not need to log the training period yourself.
-        </p>
-      </div>
-
-      <div class="card" style="margin-bottom:0">
-        <div class="hd" style="margin-bottom:14px">
-          <div>
-            <div class="eyebrow">Next Gate</div>
-            <h2 style="font-size:16px">Higher Training &rarr; Provisional Fellowship</h2>
-          </div>
-        </div>
-        <div style="display:grid;gap:11px;font-size:12.5px">
-          <div style="display:flex;justify-content:space-between;gap:12px">
-            <span><span class="dot g" style="display:inline-block;margin-right:7px"></span>Accredited training time</span>
-            <span class="mono" style="font-weight:700;color:#067a68">Met</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;gap:12px">
-            <span><span class="dot a" style="display:inline-block;margin-right:7px"></span>Clinical Fundamentals WBA (9 short)</span>
-            <span class="mono" style="font-weight:700;color:#92400e">In progress</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;gap:12px">
-            <span><span class="dot a" style="display:inline-block;margin-right:7px"></span>Volume of Practice (7 short)</span>
-            <span class="mono" style="font-weight:700;color:#92400e">Nearly met</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;gap:12px">
-            <span><span class="dot a" style="display:inline-block;margin-right:7px"></span>Multi-Source Feedback (1 of 3 total &middot; 2nd due for PFY)</span>
-            <span class="mono" style="font-weight:700;color:#92400e">HAT MSF pending</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;gap:12px">
-            <span><span class="dot r" style="display:inline-block;margin-right:7px"></span>Final Fellowship Examination</span>
-            <span class="mono" style="font-weight:700;color:#991b1b">Not yet</span>
-          </div>
-        </div>
-        <p class="note">
-          You cannot enter the Provisional Fellowship Year until all five are complete.
-          Your SOT can arrange the MSF and help plan the remaining WBA.
-        </p>
-      </div>
-    </div>
+    </details>
 
   </section>
 
@@ -877,6 +800,7 @@ main{padding:30px 0 70px}
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px" id="glActs"></div>
   </div>
 </div>
+<details class="demobar" id="demoBar"><summary>Demo controls</summary><div id="demoBody"></div></details>
 <div id="modalCase" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mcT"></div>
 <div id="modalCaseDetail" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mdT"></div>
 <div id="modalFlag" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mfT"></div>
@@ -902,7 +826,7 @@ function showTab(id, opts){
     const on = t===id, b = document.getElementById('tabbtn-'+t), p = document.getElementById('panel-'+t);
     b.classList.toggle('on', on); b.setAttribute('aria-selected', on); b.tabIndex = on?0:-1; p.hidden = !on;
   });
-  if(id==='logbook') renderLogbook(); else if(id==='ita') renderIta(); else if(id==='courses') renderCoursesTab();
+  if(id==='overview') renderOverview(); else if(id==='logbook') renderLogbook(); else if(id==='ita') renderIta(); else if(id==='courses') renderCoursesTab();
   if(!(opts && opts.noHash)) history.replaceState(null,'',id==='overview'?location.pathname+location.search:'#'+id);
   if(!(opts && opts.keepScroll)) window.scrollTo(0,0);
 }
@@ -915,6 +839,90 @@ $qa('.tabs [role=tab]').forEach(b=>{
     if(n!==null){ e.preventDefault(); showTab(TABS[n],{keepScroll:true}); document.getElementById('tabbtn-'+TABS[n]).focus(); }
   });
 });
+
+
+/* ---------- overview v2 ---------- */
+const CERT_KEY = 'hkca.trainee.cert.v1';
+const certSent = ()=>lsGet(CERT_KEY, []);
+let NS_ACT = [];
+function nsItems(){
+  const it = [], wait = [], info = GL_PEOPLE[GL_ID];
+  if(ITA.stage==='reflection'){
+    const saved = ITA.refl.savedAt && !ITA._editRefl;
+    it.push({r:1, t: saved ? 'Sign your Jul \u2013 Dec ITA' : 'Review your ITA outcome and add your reflection', s: saved ? 'Your reflection is saved. Signing completes the cycle.' : 'Your SOT has completed your review.', cta: saved ? 'Sign my ITA' : 'Review and reflect', act:()=>showTab('ita')});
+  } else if(ITA.stage!=='signed'){
+    wait.push({collecting:'Trainers are giving feedback on your ITA', synthesis:'Your SOT is preparing your ITA review', meeting:'Your face-to-face ITA meeting is next'}[ITA.stage]);
+  }
+  ['SIX_MONTH'].concat(info.pf?['PF_YEAR']:[]).forEach(type=>{
+    const p = PS.get(GL_ID, type) || PS.blank(type), st = PS.eff(p), pf = type==='PF_YEAR', nm = pf?'PF year plan':'6-month goals';
+    if(st==='NOT_SET'||st==='DRAFT') it.push({r:2, t: st==='DRAFT' ? 'Finish your '+nm : 'Set your '+nm+' for '+p.period.label, s:'Due '+glDue(p,14), cta: st==='DRAFT'?'Continue draft':'Set goals', act:()=>{ glEdit(type,'set'); }});
+    else if(st==='CHANGES_REQUESTED'){ const l = p.comments[p.comments.length-1]; it.push({r:2, t:'Your SOT asked for changes to your '+nm, s: l?l.text:'', cta:'Edit and resubmit', act:()=>glEdit(type,'set')}); }
+    else if(st==='REVIEW_OPEN') it.push({r:2, t:'Review how you got on with your '+nm, s:'Send it to your SOT before '+PS.fmt(p.period.end), cta:'Write review', act:()=>glEdit(type,'review')});
+    else if(st==='SUBMITTED'||st==='AWAITING_COS'||st==='CHANGE_PROPOSED'||st==='CHANGE_COS'||st==='REVIEW_SUBMITTED') wait.push('Your '+nm+' are with '+(st==='AWAITING_COS'||st==='CHANGE_COS'?'the Chief of Service':'your SOT'));
+  });
+  const cs = lbCases(), rev = cs.filter(c=>c.status==='revision_requested').length, unc = cs.filter(c=>!c.item).length;
+  if(rev) it.push({r:3, t: rev+(rev===1?' logbook case needs':' logbook cases need')+' your revision', s:'Your verifier asked for a change.', cta:'Open', act:()=>{ showTab('logbook'); lbGo({status:'revision_requested'}); }});
+  const sent = certSent(); COURSES.filter(c=>!c.done).forEach(c=>{ if(sent.includes(c.n)) wait.push('College Admin is checking your '+c.n+' certificate'); else it.push({r:4, t:'Upload your '+c.n+' certificate', s:'Needed before Exit Assessment.', cta:'Upload', act:()=>{ showTab('courses'); }}); });
+  if(unc) it.push({r:5, t: unc+' imported logbook case'+(unc===1?'':'s')+' need a requirement', s:'They do not count until you classify them.', cta:'Classify', act:()=>{ showTab('logbook'); lbGo({show:'unclassified'}); }});
+  it.sort((a,b)=>a.r-b.r); return {it, wait};
+}
+function renderNextSteps(){
+  const el = document.getElementById('nextSteps'); if(!el) return;
+  const {it, wait} = nsItems(); NS_ACT = it.map(x=>x.act);
+  const row = (x,i)=>`<div class="nsr ${i===0?'first':''}"><div><div class="t">${X(x.t)}</div>${x.s?`<div class="s">${X(x.s)}</div>`:''}</div><button type="button" class="btn ${i===0?'pri':'sec'} sm" onclick="NS_ACT[${i}]()">${X(x.cta)}</button></div>`;
+  const top = it.slice(0,3), more = it.slice(3);
+  el.innerHTML = `<div class="ns" role="region" aria-label="Next steps"><div class="hd2"><h2>Next steps</h2>${it.length?`<span class="pill ${it.length?'warn':'ok'}">${it.length} for you</span>`:'<span class="pill ok"><span class="dot g"></span>Up to date</span>'}</div>
+    ${it.length ? top.map(row).join('') : '<p class="done">Nothing needs you right now.</p>'}
+    ${more.length?`<details><summary>${more.length} more</summary>${more.map((x,i)=>row(x,i+3)).join('')}</details>`:''}
+    ${wait.length?`<div class="nsw"><b>Waiting on others:</b> ${wait.map(X).join(' &middot; ')}</div>`:''}</div>`;
+}
+function renderItaBanner(){ renderNextSteps(); }
+
+const STEPS = [
+  {n:'Basic Training', d:'2022-01-03', k:'stage', tip:'Started BAT-1'},
+  {n:'Intermediate exam', d:'2024-11-22', k:'exam', tip:'Passed on the 1st attempt'},
+  {n:'HAT-1', d:'2025-01-01', k:'stage', tip:'Moved up to Higher Training'},
+  {n:'HAT-2', d:'2026-01-01', k:'stage', cur:true, tip:'Current stage'},
+  {n:'Final Fellowship exam', d:null, k:'exam', tip:'Needed before the Provisional Fellowship Year'},
+  {n:'PFY', d:null, k:'stage', tip:'Provisional Fellowship Year'},
+  {n:'Exit', d:null, k:'stage', tip:'Exit Assessment and Fellowship'}];
+function renderStepper(){
+  const el = document.getElementById('ovStepper'); if(!el) return;
+  el.innerHTML = STEPS.map(m=>`<li class="${m.k} ${m.d?(m.cur?'cur':'done'):''}" title="${X(m.tip)}" ${m.cur?'aria-current="step"':''}><span class="mk3" aria-hidden="true"></span><span class="n">${X(m.n)}</span><span class="d">${m.d?fmtD(m.d+'T00:00:00'):'Not yet'}</span></li>`).join('');
+}
+function renderGate(){
+  const el = document.getElementById('gateCard'); if(!el) return;
+  const cs = lbCases(), capped = lbProgress(cs).filter(x=>x.d.kind==='CF').reduce((a,x)=>a+x.items.reduce((b,i)=>b+Math.min(i.v,i.tg||0),0),0), vopShort = 615-capped;
+  const cdone = COURSES.filter(c=>c.done).length, miss = COURSES.filter(c=>!c.done).map(c=>c.n).join(', ');
+  const A = [
+    {l:'Accredited training time', sub:'', st:'ok', stt:'Met'},
+    {l:'Clinical Fundamentals WBA', sub:'20 of 29 \u00b7 9 short', pct:69, st:'wn', stt:'In progress'},
+    {l:'Volume of Practice', sub:`${capped} of 615 \u00b7 ${vopShort} short`, pct:capped/615*100, st:vopShort<=0?'ok':'wn', stt:vopShort<=0?'Met':'Nearly met', go:'logbook'},
+    {l:'Multi-source feedback', sub:'1 of 3 \u00b7 2nd due for PFY', pct:33, st:'wn', stt:'HAT MSF pending'},
+    {l:'Final Fellowship Examination', sub:'', st:'bd', stt:'Not yet'}];
+  const B = [
+    {l:'Specialty Modules WBA', sub:'12 of 31', pct:39, st:'in', stt:'In progress'},
+    {l:'Mandatory courses', sub:`${cdone} of 5${miss?' \u00b7 '+miss+' outstanding':''}`, pct:cdone/5*100, st:cdone===5?'ok':'wn', stt:cdone===5?'Complete':'1 to do', go:'courses'},
+    {l:'Formal Project (HKCA-E03)', sub:'Protocol approved \u00b7 manuscript not yet submitted', st:'in', stt:'In progress', go:'courses'}];
+  const row = r=>{ const inner = `<span class="gl2">${X(r.l)}${r.sub?`<small>${X(r.sub)}</small>`:''}</span><span class="ibar" ${r.pct==null?'style="visibility:hidden"':''}><i class="${r.st==='ok'?'c-ok':r.st==='wn'?'c-wn':r.st==='bd'?'c-bd':'c-in'}" style="width:${Math.min(100,r.pct||0)}%"></i></span><span class="gst ${r.st}"><i></i>${X(r.stt)}</span>`;
+    return `<li>${r.go?`<button type="button" class="grow" onclick="showTab('${r.go}')" aria-label="${X(r.l)}: ${X(r.stt)}. Open details">${inner}</button>`:`<div class="grow">${inner}</div>`}</li>`; };
+  const met = A.filter(r=>r.st==='ok').length;
+  el.innerHTML = `<div class="card"><div class="hd"><div><div class="eyebrow">Next gate</div><h2>Higher Training &rarr; Provisional Fellowship</h2></div><span class="pill">${met} of 5 met</span></div>
+    <ul class="gate" aria-label="Provisional Fellowship requirements">${A.map(row).join('')}</ul>
+    <p class="note" style="margin-top:10px">You cannot enter the Provisional Fellowship Year until all five are complete. Your SOT can arrange the MSF and help plan the remaining WBA.</p>
+    <div class="gsub"><div class="eyebrow" style="margin-bottom:2px">Needed later, before Exit Assessment</div><ul class="gate">${B.map(row).join('')}</ul></div></div>`;
+}
+function renderDemo(){
+  const el = document.getElementById('demoBody'); if(!el) return;
+  const opts = Object.keys(GL_PEOPLE).map(id=>`<option value="${id}" ${id===GL_ID?'selected':''}>${GE(GL_PEOPLE[id].name)} \u00b7 ${GL_PEOPLE[id].stage}</option>`).join('');
+  el.innerHTML = `<label>View plans as<select aria-label="View plans as" onchange="glWho(this.value)">${opts}</select></label>
+    <label>ITA stage<select aria-label="ITA stage for this demo" onchange="itaSetStage(this.value)">${itaStageOpts()}</select></label>
+    <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${PS.demoReview()?'checked':''} onchange="glReviewWindow(this.checked)"> Show the end-of-period review window (3 Dec)</label>
+    <a href="#" class="link" onclick="glReset();return false">Reset demo data</a>`;
+}
+function renderOverview(){ renderNextSteps(); renderStepper(); renderGate(); }
+const FOLDS = {peerFold:'hkca.trainee.fold.peer', timeFold:'hkca.trainee.fold.time'};
+function initFolds(){ Object.keys(FOLDS).forEach(id=>{ const d = document.getElementById(id); if(!d) return; d.open = !!lsGet(FOLDS[id], false); d.addEventListener('toggle',()=>lsSet(FOLDS[id], d.open)); }); }
 
 /* ---------- ITA lifecycle (trainee side). Demo state, separate from the plans store ---------- */
 const ITA_KEY = 'hkca.trainee.ita.v1';
@@ -930,22 +938,6 @@ function itaSetStage(v){
 }
 function itaReset(){ localStorage.removeItem(ITA_KEY); ITA = {stage:'reflection', refl:{strengths:'', growth:'', savedAt:null}, signedAt:null, hash:null}; renderItaBanner(); renderIta(); }
 function itaStageOpts(){ return ITA_STAGES.map(([k,l])=>`<option value="${k}" ${ITA.stage===k?'selected':''}>${l}</option>`).join(''); }
-
-function renderItaBanner(){
-  const el = document.getElementById('itaBanner'); if(!el) return;
-  const per = 'Jul\u2013Dec 2026';
-  const B = {
-    collecting:['info',`Trainers are giving feedback on your ${per} assessment`,'Nothing for you to do yet. Your Assigned SOT will meet you once the feedback is in.','See progress'],
-    synthesis:['info','Your SOT is preparing your assessment review','Trainer feedback is in. Your SOT is writing the summary and will arrange your face-to-face meeting.','See progress'],
-    meeting:['info','Your face-to-face meeting is next','Your SOT will go through your outcome with you. You add your reflection after the meeting.','See progress'],
-    reflection: ITA.refl.savedAt
-      ? ['', 'One step left: sign your ITA','Your reflection is saved. Sign electronically to complete the cycle.','Sign my ITA']
-      : ['', 'Your SOT has completed your ITA review','Review your outcome and add your post-meeting reflection to complete the cycle.','Review outcome and reflect'],
-    signed:['ok',`Your ${per} ITA is signed off`,'Nothing more to do for this cycle.','View my ITA']
-  }[ITA.stage];
-  el.innerHTML = `<div class="banner ${B[0]}"><div style="flex:1"><h3>${B[1]}</h3><p>${B[2]}</p>
-    <div class="acts"><button type="button" class="btn ${B[0]?'sec':'am'}" onclick="showTab('ita')">${B[3]}</button></div></div></div>`;
-}
 
 const ITA_ITEMS = [   // SOT grades as on the face-to-face screen (read-only here); same 15 College items
  ['C','Patient assessment','2'],['C','Clinical management','3'],['C','Technical skills','4'],['C','Knowledge, ability to apply knowledge, and initiative to learn','3'],
@@ -1043,9 +1035,12 @@ function renderIta(){
     ITA_HISTORY.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td><span style="display:inline-flex;gap:8px;align-items:center">${chipG(r[2])} ${GN[r[2]].replace(' expectation','')}</span></td><td class="mono">${r[3]}</td><td class="mono">${r[4]}</td></tr>`).join('')}</tbody></table></div></div>`;
   el.innerHTML = `<div class="ptitle"><div><h2>ITA &amp; Assessments</h2><p>Your six-month In-Training Assessment with your Assigned SOT, ${X(ASOT_NAME)}.</p></div></div>
     <div class="card"><div class="hd"><div><div class="eyebrow">Current cycle</div><h2>Jul \u2013 Dec 2026 \u00b7 Prince of Wales Hospital</h2></div></div>
-      <ol class="steps" aria-label="ITA steps">${steps}</ol><div class="stepmsg" role="status">${msg}</div></div>
+      <ol class="steps" aria-label="ITA steps">${steps}</ol><div class="stepmsg" role="status">${msg}</div>
+      ${stg==='reflection'||stg==='signed' ? '' : `<div class="ledger" style="margin-top:16px"><div class="lr"><span class="lk">Period</span><span class="lv mono">01 Jul \u2013 31 Dec 2026</span></div><div class="lr"><span class="lk">Rotation declared at ITA start</span><span class="lv">PWH \u00b7 Clinical Anaesthesia</span></div><div class="lr"><span class="lk">Credited on sign-off</span><span class="lv">6 months \u2192 Clinical Anaesthesia, added automatically</span></div></div>`}</div>
     ${stg==='reflection'||stg==='signed' ? itaOutcomeHtml()+itaReflectionHtml()+itaSignHtml() : ''}
+    <div id="goalsMount"></div>
     ${hist}`;
+  renderGoalsMount();
 }
 
 /* ---------- courses & project: read-only facts from the College record ---------- */
@@ -1060,7 +1055,7 @@ function courseListHtml(){
     ? `<div class="course"><div class="cstat done">&#10003;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill ok">Verified</span><span class="cdate mono">${c.done}</span></div></div>`
     : `<div class="course pending"><div class="cstat todo">&#8226;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill warn">Certificate not uploaded</span><button type="button" class="btn am sm" onclick="uploadCert('${c.n}')">Upload certificate</button></div></div>`).join('')+'</div>';
 }
-function uploadCert(n){ const b = event.currentTarget; b.textContent = 'Sent to College Admin'; b.disabled = true; b.className = 'btn sec sm'; }
+function uploadCert(n){ const b = event.currentTarget; b.textContent = 'Sent to College Admin'; b.disabled = true; b.className = 'btn sec sm'; const l = certSent(); if(!l.includes(n)){ l.push(n); lsSet(CERT_KEY, l); } }
 const FLAG_KEY = 'hkca.trainee.flags.v1';
 function renderCoursesTab(){
   const el = document.getElementById('panel-courses'), flags = lsGet(FLAG_KEY, []);
@@ -1377,15 +1372,13 @@ function glPlanCard(type){
     <p>${pf?'Clinical, management and education. Signed by your Assigned SOT, then approved by the Chief of Service.':`Signed by your Assigned SOT, ${sot}. This is the front half of your 6-month ITA cycle: goal achievement is graded at the ITA face-to-face meeting, alongside your trainer ratings.`}</p></div>${pills[st]||''}</div>${callout}${glList(p, st==='REVIEW_SUBMITTED'||st==='REVIEWED')}${summary}${comment}${foot}</div>`;
 }
 function renderGoalsMount(){
-  const m = document.getElementById('goalsMount'); if(!m) return;
-  const info = GL_PEOPLE[GL_ID];
-  const who = GL_ID==='2022-019' ? '' : `<div class="gl-who">Demo view: showing the plans of <b>${GE(info.name)}</b> &middot; ${info.stage}</div>`;
-  const opts = Object.keys(GL_PEOPLE).map(id=>`<option value="${id}" ${id===GL_ID?'selected':''}>${GE(GL_PEOPLE[id].name)} \u00b7 ${GL_PEOPLE[id].stage}</option>`).join('');
-  m.innerHTML = who + glPlanCard('SIX_MONTH') + (info.pf ? glPlanCard('PF_YEAR') : '') +
-    `<div class="gl-demo">Demo controls: view as <select aria-label="View plans as" onchange="glWho(this.value)">${opts}</select>
-      <label><input type="checkbox" ${PS.demoReview()?'checked':''} onchange="glReviewWindow(this.checked)"> Show the end-of-period review window (3 Dec)</label>
-      <label>ITA stage <select aria-label="ITA stage for this demo" onchange="itaSetStage(this.value)">${itaStageOpts()}</select></label>
-      <a href="#" onclick="glReset();return false">Reset demo data</a></div>`;
+  const m = document.getElementById('goalsMount');
+  if(m){
+    const info = GL_PEOPLE[GL_ID];
+    const who = GL_ID==='2022-019' ? '' : `<div class="gl-who">Demo view: showing the plans of <b>${GE(info.name)}</b> &middot; ${info.stage}</div>`;
+    m.innerHTML = who + glPlanCard('SIX_MONTH') + (info.pf ? glPlanCard('PF_YEAR') : '');
+  }
+  renderDemo(); renderNextSteps();
 }
 function glWho(id){ GL_ID = id; renderGoalsMount(); }
 function glReviewWindow(on){ PS.setDemoReview(on); renderGoalsMount(); }
@@ -1454,7 +1447,7 @@ function glSave(kind){
   });
   closeModal('modalGoals'); renderGoalsMount();
 }
-function glReset(){ PS.reset(); itaReset(); renderGoalsMount(); }
+function glReset(){ PS.reset(); itaReset(); localStorage.removeItem(CERT_KEY); renderGoalsMount(); renderOverview(); }
 window.addEventListener('storage', e=>{ if(e.key===PS.KEY) renderGoalsMount(); });
 renderGoalsMount();
 function closeModal(id){
@@ -1472,23 +1465,9 @@ document.querySelectorAll('#optbar button').forEach(b=>{
   };
 });
 
-/* ---------- progression record: stage moves and exam passes ---------- */
-const MILESTONES = [
-  {k:'stage', t:'Started Basic Training (BAT)', date:'2022-01-03', sub:'Training record opened, BAT-1'},
-  {k:'exam',  t:'Intermediate Examination', date:'2024-11-22', sub:'Passed, 1st attempt. Needed before Higher Training.'},
-  {k:'stage', t:'Moved up to Higher Training (HAT)', date:'2025-01-01', sub:'BAT completed. HAT-1 from this date.'},
-  {k:'stage', t:'Moved up to HAT-2', date:'2026-01-01', sub:'Current stage', cur:true},
-  {k:'exam',  t:'Final Fellowship Examination', date:null, sub:'Not yet sat. Needed before the Provisional Fellowship Year.'},
-  {k:'stage', t:'Provisional Fellowship Year (PFY)', date:null, sub:'Starts when every Next Gate item is met.'},
-  {k:'stage', t:'Exit Assessment and Fellowship', date:null, sub:'After the PFY, courses, formal project and VOP are complete.'}];
-function renderMilestones(){
-  const el = document.getElementById('ovMilestones'); if(!el) return;
-  el.innerHTML = MILESTONES.map(m=>`<li class="${m.date?(m.cur?'cur':'done'):'todo'}"><span class="mk2" aria-hidden="true"></span><div><div class="mt">${X(m.t)}</div><div class="ms">${X(m.sub)}</div></div><div class="md">${m.date?fmtD(m.date+'T00:00:00'):'Not yet'}</div></li>`).join('');
-}
 /* init: ITA banner, shared course list, deep-linked tab */
-renderMilestones();
-renderItaBanner();
-document.getElementById('ovCourses').innerHTML = courseListHtml();
+renderOverview();
+initFolds();
 showTab(location.hash.slice(1) || 'overview', {noHash:true, keepScroll:true});
 window.addEventListener('hashchange', ()=>showTab(location.hash.slice(1)||'overview', {noHash:true}));
 /* theme */

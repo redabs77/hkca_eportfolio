@@ -1,8 +1,8 @@
 ---
 type: prd
 project: "[[HKCA Portfolio Revamp]]"
-version: "1.3.0"
-date: 2026-10-22
+version: "1.3.1"
+date: 2026-10-23
 status: approved_for_implementation
 stakeholders:
   - "Dr. Albert Chan (Chief of Service / Project Lead)"
@@ -271,6 +271,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 
 * **6.1 Formal Projects (HKCA-E03):** 2-stage submission (Protocol $\rightarrow$ Manuscript) with double-blind reviewer interface and 30-day automated timer with admin reassignment.
 * **6.2 Real-Time Exam Gating:** High-stakes eligibility checks querying live base tables ($<5\text{ms}$) followed by SOT digital endorsement.
+* **6.4 Trainee Overview Structure (Trainee Dashboard, Overview):** the Overview answers one question, "what do I need to do next?", and holds four blocks only: (1) **Next steps**, one list of up to 3 items ordered by urgency with one primary action, the rest behind "N more", and a muted "waiting on others" line (ITA reflection or signature, learning goals, logbook revisions, certificate uploads, imported cases to classify); (2) **Where I am**, the stage path with exam passes (see 6.3) and a one-line "Time in training" that expands to the breakdown; (3) **Next gate**, the five Provisional Fellowship requirements as a checklist with counts and status words (not colour alone), then the requirements needed later before Exit Assessment, each row linking to its tab; (4) **How I compare**, collapsed by default with its headline percentiles visible. Courses, rotation and the learning-goals card live in their own tabs (Courses & Project; ITA & Assessments). Folded state is remembered per trainee.
 * **6.3 Progression Record (Trainee Dashboard, Overview):** a dated record of each stage the trainee has moved through and each exam passed: start of Basic Training, Intermediate Examination passed, move to Higher Training, each HAT year, Final Fellowship Examination passed, start of the Provisional Fellowship Year, Exit Assessment and Fellowship. Dates come from the College record (`training_stage_history` and `exam_results`) and are read-only for the trainee. Stages and exams not yet reached show "Not yet". The Final Fellowship Examination row agrees with the Next Gate card. Exam passes arrive by the Secretariat ingestion stream (§5.7) and are stored per attempt, so a trainee who passed on a second attempt shows the passing attempt's date and the attempt number.
 
 ---
