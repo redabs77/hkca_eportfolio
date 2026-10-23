@@ -1069,7 +1069,7 @@ const COURSES = [
  {n:'EMAC',d:'Effective Management of Anaesthesia Crisis',done:'02 Sep 2024'},
  {n:'ADAM-A',d:'Advanced and Difficult Airway Management for Anaesthetists',done:'18 Jan 2025'},
  {n:'ECHO-A',d:'HKCA Focused Transthoracic Echocardiography',done:'07 Jun 2025'},
- {n:'USRA-E',d:'Ultrasound-guided Regional Anaesthesia',done:null}];
+ {n:'UGRA',d:'Ultrasound-guided Regional Anaesthesia',done:null}];
 function courseListHtml(){
   return '<div class="courselist">'+COURSES.map(c=>c.done
     ? `<div class="course"><div class="cstat done">&#10003;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill ok">Verified</span><span class="cdate mono">${c.done}</span></div></div>`
@@ -1095,7 +1095,7 @@ function openFlag(){
   openModalX('modalFlag', `<div class="xmodal"><div class="eyebrow">Flag to College Admin</div><h3 id="mfT">Report a record issue</h3>
     <p class="qline" style="margin:6px 0 0;font-size:13px">Courses and formal project status come from the College record and cannot be changed by you or your SOT. Describe what looks wrong and College Admin will check it.</p>
     <label class="field"><span>What is it about?</span><select id="flAbout">${COURSES.map(c=>`<option>${c.n}</option>`).join('')}<option>Formal project</option><option>Something else</option></select></label>
-    <label class="field"><span>What looks wrong?</span><textarea id="flText" placeholder="e.g. I completed USRA-E in March; the certificate was emailed to the College on 2 April."></textarea></label>
+    <label class="field"><span>What looks wrong?</span><textarea id="flText" placeholder="e.g. I completed UGRA in March; the certificate was emailed to the College on 2 April."></textarea></label>
     <p class="qline" id="flErr" style="margin:6px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
     <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalFlag')">Cancel</button><button type="button" class="btn pri" onclick="sendFlag()">Send to College Admin</button></div></div>`);
 }

@@ -279,7 +279,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 ### Feature 7: Administrative Bulk Ingestion Engine (S1, P0)
 
 * **7.1 Purpose:** Enables College Secretariat staff to batch-import external events and historical records without manual record-by-record entry.
-* **7.2 Ingestion Streams:** Mandatory course completions (EASE, EMAC, ADAM-A, ECHO-A, USRA-E), Fellowship examination results (Intermediate / Final pass lists), cohort rotation allocations, and accredited training centre capacity updates.
+* **7.2 Ingestion Streams:** Mandatory course completions (EASE, EMAC, ADAM-A, ECHO-A, UGRA), Fellowship examination results (Intermediate / Final pass lists), cohort rotation allocations, and accredited training centre capacity updates.
 * **7.3 Architecture & Validation:**
   - Client-side CSV/Excel parsing and schema validation against active trainee identifiers.
   - Interactive dry-run docket displaying matched trainees, unregistered records, and diff previews.
@@ -297,7 +297,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
   3. *Volume of Practice Compliance Audit:* Verification of 218 BT cases, 615 HT cases, and subspecialty module quotas.
   4. *Multi-Source Feedback (MSF) Dossier:* Consolidated summaries of 3-stage MSF evaluations.
   5. *Longitudinal ITA Ladder:* Full chronological sequence of summative 15-item ITAs.
-  6. *Mandatory Course Certificates:* Attested completion records for EASE, ADAM-A, EMAC, ECHO-A, and USRA-E.
+  6. *Mandatory Course Certificates:* Attested completion records for EASE, ADAM-A, EMAC, ECHO-A, and UGRA.
   7. *Formal Project Completion Sign-Off:* Approved protocol and manuscript records.
   8. *Examination Passing Records:* Intermediate and Final HKCA Fellowship examination attestations.
 * **8.3 Export Formats:** Standardized high-craft College PDF dossier and secure digital verification view for Board adjudicators.

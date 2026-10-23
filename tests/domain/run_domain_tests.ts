@@ -176,7 +176,7 @@ assert.equal(ITA_DOMAINS.length, 15, "College form has exactly 15 feedback items
 assert.equal(ITA_DOMAINS.filter((d) => d.group === "CLINICAL_PERFORMANCE").length, 9);
 assert.equal(ITA_DOMAINS.filter((d) => d.group === "COMMUNICATION_TEAMWORK_INTERPERSONAL").length, 6);
 assert.equal(new Set(ITA_DOMAINS.map((d) => d.code)).size, 15, "domain codes unique");
-assert.deepEqual([...ITA_COMPULSORY_COURSES], ["EASE", "ADAM-A", "EMAC", "ECHO-A", "USRA-E"]);
+assert.deepEqual([...ITA_COMPULSORY_COURSES], ["EASE", "ADAM-A", "EMAC", "ECHO-A", "UGRA"]);
 
 const full = (g: any) => Object.fromEntries(ITA_DOMAINS.map((d) => [d.code, { grade: g }]));
 assert.equal(ItaOverallAssessment.validateTrainerSubmission(full("X")).missing.length, 0, "X is a valid answer");

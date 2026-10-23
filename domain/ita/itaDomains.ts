@@ -93,7 +93,7 @@ export const ITA_DOMAINS: readonly ItaDomain[] = [
 ] as const;
 
 /** College compulsory courses recorded in the SOT-only section of the form. */
-export const ITA_COMPULSORY_COURSES = ["EASE", "ADAM-A", "EMAC", "ECHO-A", "USRA-E"] as const;
+export const ITA_COMPULSORY_COURSES = ["EASE", "ADAM-A", "EMAC", "ECHO-A", "UGRA"] as const;
 
 /** "Overall assessment is unsatisfactory if, but not limited to, >= 4 of the 15 items are unsatisfactory." */
 export const ITA_UNSATISFACTORY_ITEM_THRESHOLD = 4;
