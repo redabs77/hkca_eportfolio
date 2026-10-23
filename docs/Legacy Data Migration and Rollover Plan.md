@@ -193,7 +193,7 @@ that predates this project**. Flag it to the College regardless of migration dec
 ### 6.6 Approval states
 Confirmed: `approved_status` **includes revision states**, and `approved_by` may be either an SOT or an
 Assistant SOT. Target model must therefore support:
-- `verification_status`: `pending` | `under_review` | `revision_requested` | `approved` | `rejected`
+- `verification_status`: `pending` | `under_review` | `revision_requested` | `approved` | `rejected` (the trainee logbook shows `pending` and `under_review` together as "Waiting for verifier"; legacy rows never map to `under_review`)
 - `verified_by` + `verified_by_role` (`sot` | `assistant_sot`)
 - Full transition history, not just current state
 

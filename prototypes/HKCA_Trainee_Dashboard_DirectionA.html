@@ -237,7 +237,7 @@ main{padding:30px 0 70px}
 .rowlink:hover{color:var(--acc-t);text-decoration:underline} .rowlink:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
 .tag{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--bg3);color:var(--ink2);margin-left:6px;white-space:nowrap}
 .tag.wn{background:var(--wn-bg);color:var(--wn-f)}
-.st2.under_review i{background:var(--in-f)} .st2.revision_requested i{background:var(--bd-f)} .st2.rejected i{background:var(--ink3)} .st2.approved i{background:var(--ok-f)}
+.st2.revision_requested i{background:var(--bd-f)} .st2.rejected i{background:var(--ink3)} .st2.approved i{background:var(--ok-f)}
 .det{display:grid;grid-template-columns:150px 1fr;gap:8px 16px;font-size:13px;margin-top:14px} .det dt{color:var(--ink3)} .det dd{font-weight:550;word-break:break-word}
 .vtrail{list-style:none;margin:8px 0 0;border-left:2px solid var(--border);padding-left:14px;display:grid;gap:10px;font-size:13px} .vtrail li span{display:block;font-size:12px;color:var(--ink3)}
 .xmodal.wide{max-width:680px}
@@ -1132,7 +1132,7 @@ const LB_NOW = new Date(2026,9,17), LB_DAY = 864e5, LB_CUT = new Date(2026,8,30)
 const LB_HOSP = {PWH:'Prince of Wales Hospital',NDH:'North District Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital'};
 const LB_TECH = ['GA','Spinal','Epidural','CSE','Sedation/MAC','Regional','Local'];
 const LB_EXTRA = 'hkca.trainee.vop.extra.v2', LB_OVR = 'hkca.trainee.vop.ovr.v2';
-const LB_ST = {approved:'Approved', pending:'Waiting for verifier', under_review:'Under review', revision_requested:'Revision requested', rejected:'Rejected'};
+const LB_ST = {approved:'Approved', pending:'Waiting for verifier', revision_requested:'Revision requested', rejected:'Rejected'};
 const LB_VER = [['Dr. Albert Chan','SOT'],['Dr. Winnie Ho','Assistant SOT']];
 const LB_DX = ['Gallstones','Inguinal hernia','Osteoarthritis of knee','Fracture neck of femur','Benign prostatic hyperplasia','Thyroid nodule','Uterine fibroids','Acute appendicitis','Cataract','Breast carcinoma','Rotator cuff tear','Bowel obstruction','Tonsillitis, recurrent','Fracture distal radius'];
 const LB_BLK = {spinal:['Spinal L3/4, hyperbaric bupivacaine'], epid:['Epidural T10/11, catheter'], plex:['Interscalene block','Supraclavicular block','Femoral nerve block','Adductor canal block','Ankle block']};
@@ -1163,11 +1163,11 @@ function lbCases(){
     let k = 0;
     out.forEach(c=>{ c.src = c.date<=LB_CUT ? 'legacy' : 'new'; c.logged = c.date + Math.floor(rnd()*4)*LB_DAY; c.ref = lbRef(c.id);
       if(c.item!=='plex' && c.item!=='fob'){
-        if(k<6) c.status='pending'; else if(k===6) c.status='under_review'; else if(k===7){ c.status='revision_requested'; c.vnote='Please add the diagnosis and check the ASA class.'; c.ver=LB_VER[0]; c.vdate=c.logged+3*LB_DAY; }
+        if(k<7) c.status='pending'; else if(k===7){ c.status='revision_requested'; c.vnote='Please add the diagnosis and check the ASA class.'; c.ver=LB_VER[0]; c.vdate=c.logged+3*LB_DAY; }
         else if(k===25||k===60){ c.status='rejected'; c.vnote='Does not meet the case definition for this requirement.'; c.ver=LB_VER[1]; c.vdate=c.logged+5*LB_DAY; }
         k++; }
       if(c.status==='approved'){ c.ver = rnd()<.8?LB_VER[0]:LB_VER[1]; c.vdate = c.logged+Math.floor(1+rnd()*20)*LB_DAY; }
-      if(c.status==='pending'||c.status==='under_review'){ c.ver = LB_VER[0]; }
+      if(c.status==='pending'){ c.ver = LB_VER[0]; }
     });
     // legacy cases whose free-text claim could not be matched to a curriculum requirement: imported, but they do not count until classified
     const claims = ['GA / sedation (various)','Regional - other','airway ?','special case','GA misc','Block (unspecified)','sedation','pain round','GA'];
@@ -1185,7 +1185,7 @@ function lbCases(){
 const lbCounted = c=>c.status==='approved' && !!c.item;
 const LBU = {view:'progress', dom:'', item:'', status:'', show:'', q:'', page:1};
 function lbProgress(cs){
-  const cnt = {}; cs.forEach(c=>{ if(!c.item) return; const k = c.dom+'|'+c.item, o = cnt[k]||(cnt[k]={v:0,p:0}); if(lbCounted(c)) o.v++; else if(c.status==='pending'||c.status==='under_review'||c.status==='revision_requested') o.p++; });
+  const cnt = {}; cs.forEach(c=>{ if(!c.item) return; const k = c.dom+'|'+c.item, o = cnt[k]||(cnt[k]={v:0,p:0}); if(lbCounted(c)) o.v++; else if(c.status==='pending'||c.status==='revision_requested') o.p++; });
   return VOP_DOMS.map(d=>({d, items:d.items.map(it=>{ const o = cnt[d.dom+'|'+it.id]||{v:0,p:0}; return {it, v:o.v, p:o.p, tg:vopTarget(it,d,TR_STAGE)}; })}));
 }
 function lbItemRow(r, kind){
@@ -1202,7 +1202,7 @@ const lbReqCell = c=> c.item ? `${c.dom}<span class="wl-sub">${X(c.itemName)}</s
 function renderLogbook(){
   const el = document.getElementById('panel-logbook'), cs = lbCases();
   const capped = lbProgress(cs).filter(x=>x.d.kind==='CF').reduce((a,x)=>a+x.items.reduce((b,i)=>b+Math.min(i.v,i.tg||0),0),0);
-  const cnt = st=>cs.filter(c=>c.status===st).length, appr = cs.filter(lbCounted).length, pend = cnt('pending')+cnt('under_review'), rev = cnt('revision_requested');
+  const cnt = st=>cs.filter(c=>c.status===st).length, appr = cs.filter(lbCounted).length, pend = cnt('pending'), rev = cnt('revision_requested');
   const legacy = cs.filter(c=>c.src==='legacy'), uncl = cs.filter(c=>!c.item).length, late = cs.filter(c=>c.win===false).length;
   const head = `<div class="ptitle"><div><h2>Logbook (VOP)</h2><p>Your case log against the curriculum minimums for ${TR_STAGE}. Only approved cases count toward progress.</p></div><button type="button" class="btn pri" onclick="openCase()">Log a case</button></div>
     <p class="qline"><b>${capped} of 615</b> clinical fundamentals minimum met &middot; ${appr} approved cases in all &middot; ${pend} waiting for your verifier${rev?` &middot; <button type="button" class="link" onclick="lbGo({status:'revision_requested'})">${rev} need${rev===1?'s':''} your revision</button>`:''}</p>
