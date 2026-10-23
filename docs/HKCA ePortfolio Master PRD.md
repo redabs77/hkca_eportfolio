@@ -1,8 +1,10 @@
 ---
 type: prd
 project: "[[HKCA Portfolio Revamp]]"
-version: "1.3.1"
+version: "1.4.0"
 date: 2026-10-23
+aliases:
+  - "HKCA ePortfolio Master PRD v1.0"
 status: approved_for_implementation
 stakeholders:
   - "Dr. Albert Chan (Chief of Service / Project Lead)"
@@ -10,8 +12,22 @@ stakeholders:
   - "Tina Huang / Engineering Team"
 ---
 
-# Master Product Requirements Document (PRD v1.3)
+# Master Product Requirements Document
 ## Next-Generation HKCA Electronic Portfolio & Vocational Training System
+
+## Revision history
+
+The version number is in the front matter above. Every release is tagged in git (`prd-vX.Y.Z`), so any earlier version can be read exactly as it was, for example `git show prd-v1.2.0:"docs/HKCA ePortfolio Master PRD v1.0.md"` (the file was renamed after v1.3.1; tags up to v1.3.1 use the old file name). Rule: raise the minor number when a feature, rule or data model changes; raise the patch number for wording or layout only. Add a row here in the same commit as the change.
+
+| Version | Date | Tag | What changed |
+|---|---|---|---|
+| 1.4.0 | 2026-10-23 | `prd-v1.4.0` | Formal project number, title and dated submission record (§6.1); trainee logbook shows four states, "under review" merged into "waiting for verifier" (§3.8); course name corrected to UGRA; iWBA read API refresh 2026-10-20: modalities, sync algorithm, identity linking, curriculum mapping, backfill (§4.1 to 4.5). WBA and iWBA sync build on hold (see §4). |
+| 1.3.1 | 2026-10-23 | `prd-v1.3.1` | Trainee Overview restructured into five blocks; stage path BAT, exam, HAT, exam, PF, Exit; Exit requirements panel (§6.3, §6.4). |
+| 1.3.0 | 2026-10-22 | `prd-v1.3.0` | Trainee logbook with legacy fields, case detail, imported-case classification (§3.8); legacy logbook import and merge (§3.9, Migration Plan §6.8); progression record (§6.3). |
+| 1.2.0 | 2026-10-19 | `prd-v1.2.0` | Learning plans separated from ITAs (6-month goals, PF year plan), Chief of Service role, appraisal decisions (goal-achievement link, contract gate, logbook verifier entity). |
+| 1.1.0 | 2026-10-17 | `prd-v1.1.0` | SOT dashboard, bilateral rotations, VOP analytics, role handover, S1 to S4. |
+| 1.0.0 | 2026-10-01 | `prd-v1.0.0` | First complete PRD. |
+
 
 ---
 
@@ -242,6 +258,8 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 ---
 
 ### Feature 4: Workplace-Based Assessments (WBA) & HKAM iWBA Linkage (P0)
+
+> **Status (2026-10-23): build on hold at Dr. Chan's direction.** WBA and iWBA syncing are paused while the prototypes and PRD are finalised. The specification below stays current and the JCIMED questions sent on 2026-10-23 remain open. The trainee WBA tab shows "on hold".
 
 * **4.1 Supported Modalities:** CEX (shown to users as Mini-CEX), CBD, DOPS, ALMAT and MSF are in use. EPA is reserved in the schema for possible future adoption. **PBA and ACR will not be used.** The iWBA enum still lists them, so an assessment with any modality outside the six values is quarantined to `wba_sync_conflicts`, never mapped by guess.
 * **4.2 SSO & Asynchronous Sync (JCIMED Compliant, spec refreshed 2026-10-20):**

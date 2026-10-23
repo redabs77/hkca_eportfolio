@@ -3,7 +3,7 @@
 // Master Prisma Database Schema — PostgreSQL Engine
 // Version: 1.0.0
 // Date: 2026-10-01
-// Governing Document: HKCA ePortfolio Master PRD v1.0
+// Governing Document: HKCA ePortfolio Master PRD
 // =============================================================================
 
 generator client {

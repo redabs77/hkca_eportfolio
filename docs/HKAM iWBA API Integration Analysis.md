@@ -2,7 +2,7 @@
 type: technical_spec
 project: "[[HKCA Portfolio Revamp]]"
 created: 2026-10-01
-status: in_discussion
+status: on_hold_2026-10-23_awaiting_JCIMED_reply
 source_doc: "[[iWBA ePortfolio read API (Draft Version refreshed 20261020).pdf]]"
 updated: 2026-10-23
 endpoint: "https://wba.zlightinno.com"
