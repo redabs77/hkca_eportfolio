@@ -296,6 +296,8 @@ button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.gr
 .gst{font-size:12.5px;font-weight:650;text-align:right;display:inline-flex;gap:7px;align-items:center;justify-content:flex-end}
 .gst i{width:8px;height:8px;border-radius:50%;flex:none}
 .gst.ok i{background:var(--ok-f)} .gst.wn i{background:var(--wn-f)} .gst.bd i{background:var(--bd-f)} .gst.in i{background:var(--in-f)}
+.ledger.prec .lr{display:grid;grid-template-columns:110px minmax(0,1.2fr) minmax(0,1.6fr);gap:14px;justify-content:start;align-items:center} .prec .pd{font-size:12.5px;color:var(--ink2)} .prec .pe{display:flex;gap:9px;align-items:center;font-size:13.5px} .prec .pe i{width:9px;height:9px;border-radius:50%;flex:none;background:var(--border)} .prec .pn{font-size:13px;color:var(--ink2);text-align:left} .prec .lr>span{justify-content:flex-start;text-align:left;display:flex;align-items:center} .prec .pe i.c-ok{background:var(--ok-f)} .prec .pe i.c-wn{background:#d99a2b} .prec .pe i.c-in{background:var(--in-f)} .prec .lr.todo{color:var(--ink3)} .prec .lr.todo .pe b{font-weight:600}
+.xtitle{font-size:12px;color:var(--ink2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .xgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px}
 .xt{display:grid;gap:9px;align-content:start;text-align:left;padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);font:inherit;color:inherit;cursor:pointer;min-height:132px}
 .xt:hover{border-color:var(--acc);background:var(--acc-bg)} .xt:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -315,6 +317,7 @@ button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.gr
 .demobar label{display:grid;gap:4px;font-size:12px;color:var(--ink2)} .demobar select{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit}
 @media(max-width:760px){
   .xgrid{grid-template-columns:1fr} .xt{min-height:0}
+  .ledger.prec .lr{grid-template-columns:1fr;gap:3px}
   .stepper{grid-template-columns:1fr;gap:12px} .stepper li{padding:2px 0 2px 34px;min-height:24px;padding-right:0} .stepper li::after{display:none}
   .stepper .n,.stepper .d{display:inline} .stepper .d{margin-left:8px}
   .grow{grid-template-columns:1fr auto;row-gap:6px} .grow .ibar{grid-column:1/-1;order:3}
@@ -918,7 +921,15 @@ function renderGate(){
     <p class="note" style="margin-top:10px">You cannot enter the Provisional Fellowship Year until all five are complete. Your SOT can arrange the MSF and help plan the remaining WBA.</p>
 </div>`;
 }
-const PROJ_STEPS = [['Protocol submitted','12 Feb 2026','done'],['Protocol approved','30 Apr 2026','done'],['Manuscript submitted','','cur'],['Manuscript approved','','']];
+const PROJECT = {no:'FP-2026-0173', title:'Postoperative delirium after hip fracture surgery under spinal versus general anaesthesia: a retrospective cohort study', type:'Observational study', site:'Prince of Wales Hospital',
+  events:[
+    {d:'2026-02-12', e:'Protocol submitted', n:'Version 1', k:'sub'},
+    {d:'2026-03-09', e:'Revision requested', n:'Minor revisions from the reviewers', k:'rev'},
+    {d:'2026-03-20', e:'Protocol resubmitted', n:'Version 2', k:'sub'},
+    {d:'2026-04-18', e:'Protocol approved', n:'Approved by the College', k:'ok'}]};
+const pjFmt = d=>d?fmtD(d+'T00:00:00'):'';
+const pjFirst = e=>{ const x = PROJECT.events.find(v=>v.e===e); return x?pjFmt(x.d):''; };
+const PROJ_STEPS = [['Protocol submitted',pjFirst('Protocol submitted'),'done'],['Protocol approved',pjFirst('Protocol approved'),'done'],['Manuscript submitted','','cur'],['Manuscript approved','','']];
 function renderExit(){
   const el = document.getElementById('exitCard'); if(!el) return;
   const done = COURSES.filter(c=>c.done), open = COURSES.filter(c=>!c.done), sent = certSent();
@@ -928,7 +939,7 @@ function renderExit(){
   const t = (cls, go, label, big, mid, foot, st)=>`<button type="button" class="xt" onclick="${go}" aria-label="${X(label)}: ${X(big)}. Open details"><span class="xl">${X(label)}</span><span class="xb mono">${big}</span>${mid}<span class="xf ${st}"><i></i>${X(foot)}</span></button>`;
   el.innerHTML = `<div class="card xcard"><div class="hd"><div><div class="eyebrow">Needed before Exit Assessment</div><h2>Exit requirements</h2></div></div><div class="xgrid">
     ${t('c',"showTab('courses')",'Mandatory courses', `${done.length} of ${COURSES.length}`, `<span class="xchips">${chips}</span>`, open.length ? open.map(c=>c.n).join(', ')+(sent.includes(open[0].n)?' with College Admin':' outstanding') : 'All complete', open.length?'wn':'ok')}
-    ${t('p',"showTab('courses')",'Formal Project (HKCA-E03)', `${nDone} of ${PROJ_STEPS.length}`, `<span class="xdots" aria-hidden="true">${dots}</span>`, cur?'Next: '+cur[0].toLowerCase():'Complete', cur?'in':'ok')}
+    ${t('p',"showTab('courses')",'Formal Project (HKCA-E03)', `${nDone} of ${PROJ_STEPS.length}`, `<span class="xdots" aria-hidden="true">${dots}</span><span class="xtitle"><b class="mono">${X(PROJECT.no)}</b> &middot; ${X(PROJECT.title)}</span>`, cur?'Next: '+cur[0].toLowerCase():'Complete', cur?'in':'ok')}
     ${t('w',"showTab('wba')",'Specialty Modules WBA', '12 of 31', '<span class="ibar"><i class="c-in" style="width:39%"></i></span>', 'In progress', 'in')}
   </div></div>`;
 }
@@ -1084,9 +1095,13 @@ function renderCoursesTab(){
       <button type="button" class="btn sec" onclick="openFlag()">Flag a discrepancy with College Admin</button></div>
     <div class="card"><div class="hd"><div><div class="eyebrow">Mandatory courses</div><h2>Course completion</h2>
         <p>All five must be complete before you apply for Exit Assessment.</p></div><span class="pill ${COURSES.every(c=>c.done)?'ok':''}">${COURSES.filter(c=>c.done).length} of 5 complete</span></div>${courseListHtml()}</div>
-    <div class="card"><div class="hd"><div><div class="eyebrow">Formal project (HKCA-E03)</div><h2>Project progress</h2></div><span class="pill info"><span class="dot b"></span>Protocol approved</span></div>
+    <div class="card"><div class="hd"><div><div class="eyebrow">Formal project (HKCA-E03)</div><h2 style="max-width:62ch">${X(PROJECT.title)}</h2>
+        <p class="qline" style="margin:6px 0 0"><span class="mono" style="font-weight:700;color:var(--ink)">Project no. ${X(PROJECT.no)}</span> &middot; ${X(PROJECT.type)} &middot; ${X(PROJECT.site)}</p></div><span class="pill info"><span class="dot b"></span>Protocol approved</span></div>
       <ol class="projtrack" aria-label="Formal project stages">${steps.map(([l,d,c])=>`<li class="${c}" ${c==='cur'?'aria-current="step"':''}>${l}<span>${d||'\u2014'}</span></li>`).join('')}</ol>
-      <p class="qline" style="margin:12px 0 0;font-size:12.5px">Next: submit your manuscript.</p></div>
+      <div class="eyebrow" style="margin:18px 0 6px">Submission record</div>
+      <div class="ledger prec" role="table" aria-label="Project submissions and approvals">${PROJECT.events.map(v=>`<div class="lr" role="row"><span class="pd mono" role="cell">${pjFmt(v.d)}</span><span class="pe" role="cell"><i class="${v.k==='ok'?'c-ok':v.k==='rev'?'c-wn':'c-in'}"></i><b>${X(v.e)}</b></span><span class="pn" role="cell">${X(v.n)}</span></div>`).join('')}
+        <div class="lr todo" role="row"><span class="pd mono" role="cell">\u2014</span><span class="pe" role="cell"><i></i><b>Manuscript submitted</b></span><span class="pn" role="cell">Next step. Not yet submitted.</span></div></div>
+      <p class="qline" style="margin:12px 0 0;font-size:12.5px">This record comes from the College. Reviewers are not named. If a date or title looks wrong, flag it to College Admin.</p></div>
     ${flags.length?`<div class="card"><div class="hd"><div><div class="eyebrow">Your flags</div><h2>Sent to College Admin</h2></div></div>${flags.map(f=>`<div class="flagrow"><div><b>${X(f.about)}</b><span class="wl-sub">${X(f.text)}</span></div><span class="mono" style="font-size:12px;color:var(--ink3);white-space:nowrap">${f.at} \u00b7 awaiting reply</span></div>`).join('')}</div>`:''}`;
 }
 function openModalX(id, html){ const m = document.getElementById(id); m.innerHTML = html; m.classList.remove('hidden'); m._ret = document.activeElement; const f = m.querySelector('select,input,textarea,button'); if(f) f.focus(); }

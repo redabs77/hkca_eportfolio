@@ -202,6 +202,10 @@ Confirmed: **enforced in the legacy application.** Migration must therefore trus
 `date_entry` / `start_date` relationship rather than recomputing it, and flag any rows where
 `date_entry > start_date + 2 years` as a legacy anomaly rather than silently accepting or rejecting them.
 
+### 6.7b Formal project mapping (`atp_portfolio.formal_project_*`)
+
+Legacy holds five flat columns: `formal_project_title`, `formal_project_project_number`, `formal_project_date_of_approval`, `formal_project_verified_by_admin` (plus a code). They map to `formal_projects.title`, `project_number`, `final_approval_date` and the admin verification. **No submission history exists in the legacy system.** Each migrated project gets one `formal_project_events` row, `source = 'legacy_backfill'`: `manuscript_approved` dated `formal_project_date_of_approval` (or `protocol_approved` if the legacy record is only a protocol approval; the College must confirm which the field means). Earlier submissions and revisions show as absent, and the trainee-facing page says so. A missing or duplicate project number goes to the quarantine list for College Admin.
+
 ### 6.8 Legacy logbook import and merge procedure (`patient2` -> `volume_of_practice`)
 
 Implemented as pure functions in `domain/vop/legacyImport.ts` and covered by `tests/domain/run_vop_import_tests.ts` (run with `npm run test:domain`). The ETL job reads rows, calls `importLegacy`, writes the result, then calls `mergeIntoLedger`.

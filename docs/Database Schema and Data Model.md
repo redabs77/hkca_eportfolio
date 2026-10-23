@@ -764,7 +764,8 @@ CREATE TABLE formal_projects (
   id                        SERIAL PRIMARY KEY,
   trainee_id                INTEGER REFERENCES trainee_profiles(id) ON DELETE CASCADE,
   
-  project_code              TEXT DEFAULT 'HKCA-E03',
+  project_code              TEXT DEFAULT 'HKCA-E03',   -- the requirement code, the same for every trainee
+  project_number            TEXT UNIQUE,               -- College-issued formal project number (legacy formal_project_project_number)
   project_type              TEXT,            -- case_report, meta_analysis, observational, qip, rct
   
   title                     TEXT NOT NULL,
@@ -803,6 +804,21 @@ CREATE TABLE formal_projects (
 );
 
 CREATE INDEX idx_formal_projects_trainee ON formal_projects(trainee_id);
+
+-- Append-only track record of submissions and approvals, shown to the trainee as the "Submission record".
+CREATE TABLE formal_project_events (
+  id           SERIAL PRIMARY KEY,
+  project_id   INTEGER NOT NULL REFERENCES formal_projects(id) ON DELETE RESTRICT,
+  event_type   TEXT NOT NULL,   -- protocol_submitted | revision_requested | protocol_resubmitted | protocol_approved
+                                -- | manuscript_submitted | manuscript_revision_requested | manuscript_resubmitted | manuscript_approved
+  event_date   DATE NOT NULL,
+  version_no   SMALLINT,        -- 1 for the first submission, 2 for the first resubmission, ...
+  outcome_note TEXT,            -- trainee-visible summary, for example 'Minor revisions'. Never names a blinded reviewer.
+  recorded_by  INTEGER REFERENCES users(id),   -- College Admin or the workflow; null when migrated
+  source       TEXT NOT NULL,   -- app | admin | legacy_backfill
+  created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_fpe_project ON formal_project_events(project_id, event_date);
 CREATE INDEX idx_formal_projects_status ON formal_projects(status);
 ```
 
