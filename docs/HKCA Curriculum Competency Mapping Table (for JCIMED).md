@@ -2,12 +2,16 @@
 type: technical_spec
 project: "[[HKCA Portfolio Revamp]]"
 created: 2026-10-07
-status: draft_pending_review
+status: reviewed_2026-10-23_pending_albert_signoff
 source_doc: "HKCA-E01 Anaesthesia Training Curriculum (Dec 2017) — Section 2/3 and Appendices 1 & 3, verified direct from source PDF"
 recipient: JCIMED / zlightinno WBA development team
 ---
 
 # HKCA Curriculum Competency Mapping Table — for JCIMED iWBA Integration
+
+> **Outbound pack (2026-10-23).** This note is HKCA's internal source of truth: it contains VOP minimums, internal names and a third-party reference that JCIMED does not need. **Send JCIMED the clean pack instead:** `HKCA iWBA Curriculum Items for JCIMED.csv` (53 rows, WBA only) plus the covering email in `JCIMED Email Draft 2026-10-23.md`. The CSV adds up to 63 assessments (CF 29, SM 31, PFY 2, Echo 1) plus 3 MSF, which matches the 66 in the UCH guide, and CF 29 and SM 31 match the trainee dashboard.
+>
+> **Stage names.** This note uses the curriculum's `BT` / `HT` / `PFY`. Our own schema and screens use `BAT` / `HAT` / `PFY`. They are the same stages (BT = BAT, HT = HAT). The CSV uses `BT` / `HT`; HKCA translates on import.
 
 ## Purpose
 JCIMED's current iWBA "Curriculum Items" admin config (reviewed 2026-10-06, screenshot `upload_20261006_101256_1.jpg`)
@@ -96,7 +100,7 @@ Source: HKCA-E01 Appendix 3, §2.1.
 | `DOPS` | Direct Observation of Procedural Skills | Yes — discrete procedures, see tables above |
 | `ALMAT` | Anaesthesia List Management Assessment Tool | Yes — PFY only (×1) |
 | `EPA` | Entrustable Professional Activity | **Not currently used by HKCA** — HKCA-E01 does not itemize EPA requirements in Appendix 3 (CEX/CBD/DOPS/ALMAT only). Reserved in the modality enum for possible future adoption; do not ask JCIMED to build EPA curriculum items yet. |
-| `MSF` | Multi-Source Feedback | Yes — 1 required College-wide |
+| `MSF` | Multi-Source Feedback | Yes — 3 required in total, one in each of BT, HT and PFY (see §2) |
 
 **`PBA` and `ACR` are explicitly excluded** — not part of the HKCA WBA toolset. Do not configure iWBA items against
 these modalities for HKCA trainees.
@@ -119,6 +123,8 @@ these modalities for HKCA trainees.
 - [x] PBA/ACR confirmed excluded from HKCA's WBA toolset (2026-10-07, Albert).
 - [x] WBA counts (CEX/CBD/DOPS/ALMAT) cross-checked against the live legacy EPS requirement tree (2026-10-07) — MSF corrected to 3× (one per stage); Echo Curriculum DOPS ×1 added as a confirmed-separate item.
 - [x] Echo Curriculum confirmed (2026-10-07, Albert): TTE, any training stage (not stage-locked).
+- [x] Re-checked 2026-10-23: fixed the MSF row in §3 (it said 1 College-wide; correct is 3, one per stage); counts re-added from the CSV (63 assessments + 3 MSF = 66, CF 29, SM 31).
+- [x] Echo Curriculum needs a code outside CF/SM: proposed `ECHO-TTE` (not `ECHO-A`, which is the course). PFY items use `PFY`; MSF uses `MSF`. JCIMED to confirm.
 - [ ] Get Albert's final sign-off on wording before sending to JCIMED.
 
 ---

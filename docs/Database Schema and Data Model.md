@@ -459,7 +459,7 @@ CREATE TABLE wbas (
   trainee_id            INTEGER REFERENCES trainee_profiles(id) ON DELETE CASCADE,
   
   -- WBA type
-  wba_type              TEXT NOT NULL,    -- CEX, CBD, DOPS, ALMAT, MSF
+  wba_type              TEXT NOT NULL,    -- CEX, CBD, DOPS, ALMAT, MSF in use; EPA reserved. PBA and ACR are never stored (quarantined).
   
   -- Category classification
   wba_category          TEXT NOT NULL,    -- clinical_fundamentals, specialty_modules
@@ -484,19 +484,66 @@ CREATE TABLE wbas (
   feedback_given        TEXT,
   learning_points       TEXT,
   
-  -- JCIMED integration
-  jcimed_sync_id        TEXT UNIQUE,      -- External WBA ID from JCIMED
-  jcimed_last_sync      TIMESTAMP,
+  -- iWBA integration (read API refreshed 2026-10-20). jcimed_sync_id was renamed iwba_assessment_id.
+  iwba_assessment_id    UUID UNIQUE,      -- iWBA assessment id; the upsert key
+  iwba_status           TEXT,             -- completed | failed | in_progress | unverified
+  workflow_outcome      TEXT,             -- DOPS only: COMPLETE | FAIL | null while in progress
+  iwba_updated_at       TIMESTAMPTZ,      -- source updated_at, used for the sync cursor
+  curriculum_code       TEXT,             -- CF-2.x | SM-3.x | PFY | MSF | ECHO-TTE (from the mapping)
+  procedure_code        TEXT,             -- iWBA procedure.code, kept as received
+  procedure_name        TEXT,
+  entrustment_level     SMALLINT,         -- EPA only (reserved)
+  hospital_snapshot     TEXT,
+  ward_snapshot         TEXT,
+  trainee_iwba_user_id  UUID NOT NULL,    -- always present in the API; links to wba_iwba_links
+  trainer_iwba_user_id  UUID,
+  trainer_hkam_id       TEXT,
+  trainer_name_snapshot TEXT,             -- immutable; the live user record can change later
+  timeline              JSONB,            -- immutable snapshot of timeline[] (steps and answers). Empty array allowed.
+  iwba_last_sync        TIMESTAMPTZ,
   
   -- Metadata
   created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- trainee_id is nullable on purpose: an unlinked assessment is held with trainee_id NULL until College Admin links the person.
+CREATE INDEX idx_wbas_iwba_user ON wbas(trainee_iwba_user_id);
 CREATE INDEX idx_wbas_trainee ON wbas(trainee_id);
 CREATE INDEX idx_wbas_type_category ON wbas(wba_type, wba_category);
 CREATE INDEX idx_wbas_date ON wbas(date_performed);
 CREATE INDEX idx_wbas_stage ON wbas(training_stage);
+```
+
+### `wba_iwba_links`, `wba_sync_state`, `wba_sync_conflicts`
+
+The iWBA API returns no email, MCHK or college trainee number, so a person is linked once and the link is stored.
+
+```sql
+CREATE TABLE wba_iwba_links (
+  iwba_user_id   UUID PRIMARY KEY,          -- iWBA users.id, stable
+  user_id        TEXT REFERENCES users(id), -- the HKCA person (trainee or trainer)
+  hkam_id        TEXT,                      -- eHKAM SSO account id; not the HKAM Fellow ID; may start null
+  link_method    TEXT NOT NULL,             -- sso_hkam_id | admin_confirmed | admin_csv
+  confirmed_by   INTEGER REFERENCES users(id),
+  confirmed_at   TIMESTAMPTZ,
+  created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE wba_sync_state (            -- one row per college token and endpoint
+  endpoint       TEXT PRIMARY KEY,         -- summary | backfill
+  cursor_updated_at TIMESTAMPTZ,           -- advanced only after a full traversal succeeds
+  last_run_at    TIMESTAMPTZ, last_status TEXT, last_error TEXT
+);
+
+CREATE TABLE wba_sync_conflicts (
+  id             SERIAL PRIMARY KEY,
+  iwba_assessment_id UUID,
+  reason         TEXT NOT NULL,            -- unknown_modality | unlinked_trainee | unmapped_procedure | field_conflict | not_found
+  raw_payload    JSONB NOT NULL,
+  detected_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  resolved_by    INTEGER REFERENCES users(id), resolved_at TIMESTAMPTZ, resolution_note TEXT
+);
 ```
 
 ### `wba_progress_summary` (Materialized View)

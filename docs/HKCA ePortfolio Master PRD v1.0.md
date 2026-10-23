@@ -243,11 +243,17 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 
 ### Feature 4: Workplace-Based Assessments (WBA) & HKAM iWBA Linkage (P0)
 
-* **4.1 Supported Modalities:** Mini-CEX, DOPS, CBD, ALMAT, EPA, and MSF.
-* **4.2 SSO & Asynchronous Sync (JCIMED Compliant):**
-  * Deep-link initiation pre-populating HKAM ID, supervisor ID, and descriptor codes via OAuth2 SSO.
-  * Decoupled ingestion daemon querying `/api/v1/eportfolio/summary` using sliding 90-day time slices.
-  * Idempotent upserts on `(jcimed_wba_id, assessment_type)` with immutable snapshots of assessor metadata. Conflicting records quarantine to `wba_sync_conflicts`.
+* **4.1 Supported Modalities:** CEX (shown to users as Mini-CEX), CBD, DOPS, ALMAT and MSF are in use. EPA is reserved in the schema for possible future adoption. **PBA and ACR will not be used.** The iWBA enum still lists them, so an assessment with any modality outside the six values is quarantined to `wba_sync_conflicts`, never mapped by guess.
+* **4.2 SSO & Asynchronous Sync (JCIMED Compliant, spec refreshed 2026-10-20):**
+  * Deep-link initiation pre-populating HKAM ID, supervisor ID and descriptor codes via OAuth2 SSO.
+  * Decoupled pull-only ingestion daemon (the API has no webhooks). Each cycle: (1) read the stored cursor; (2) page `GET /summary?updated_since=<cursor minus a 5-minute overlap>` with `has_more` until exhausted; (3) fetch full records with `POST /assessments/batch` in groups of up to 50; (4) upsert idempotently; (5) only then advance the cursor to the highest `updated_at` seen. The overlap and idempotent upserts are there because the spec does not define result ordering.
+  * A cursor older than 90 days (for example after downtime) is caught up with explicit `updated_before` slices of at most 90 days. The initial historical load uses `GET /backfill/summary`, which has no 90-day cap but is switched on by JCIMED per token for a limited window; ask for it before rollover.
+  * Respect 60 requests/min and 10/s per token: on 429, wait for `Retry-After` and retry with backoff. The base URL and token come from configuration and the secret store, never from code or the repository, because the development URL may change at HKAM production cutover.
+  * Idempotent upserts on `iwba_assessment_id` (the iWBA UUID) with immutable snapshots of the trainee, trainer, hospital and `timeline`. Records that cannot be linked, carry an unknown modality or conflict with an existing record go to `wba_sync_conflicts` with the raw payload.
+  * Tolerate nulls: trainer name, hospital, ward, procedure and timeline can all be null or empty, especially in backfilled history.
+* **4.3 Identity Resolution:** The API provides `iwba_user_id` (stable, always present) and `hkam_id` (null until HKAM SSO sign-in), and **no email, MCHK or college trainee number**. Matching is therefore a one-time link, not a lookup on every record: (1) a stored link in `wba_iwba_links` wins; (2) otherwise `hkam_id` against a user who signed in through SSO; (3) otherwise the assessment is held as unlinked and College Admin sees a queue with name and hospital suggestions and confirms the link once; (4) alternatively College Admin uploads a CSV of `iwba_user_id` and HKCA trainee number. Unlinked assessments are kept and attached automatically when the link is made. Name alone never creates a link.
+* **4.4 Curriculum Mapping:** Assessments are classified to a curriculum code (`CF-2.x`, `SM-3.x`, `PFY`, `MSF`, `ECHO-TTE`) from the code JCIMED returns once the mapping pack is adopted. Until then the code is derived from `procedure.code` through a College-maintained mapping table, and unmapped items are listed for College Admin. The trainee's stage at the time of an assessment is derived from the assessment date and `training_stage_history`, not trusted from the source. Legacy stage names (BT/HT) are translated to BAT/HAT.
+* **4.5 Deleted or Voided Assessments:** The API gives no deletion signal, so an assessment that disappears from iWBA is not removed here. Reconciliation is by periodic full-window comparison, and treatment of voided records is pending JCIMED's answer.
 
 ---
 
