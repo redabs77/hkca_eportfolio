@@ -296,6 +296,15 @@ button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.gr
 .gst{font-size:12.5px;font-weight:650;text-align:right;display:inline-flex;gap:7px;align-items:center;justify-content:flex-end}
 .gst i{width:8px;height:8px;border-radius:50%;flex:none}
 .gst.ok i{background:var(--ok-f)} .gst.wn i{background:var(--wn-f)} .gst.bd i{background:var(--bd-f)} .gst.in i{background:var(--in-f)}
+.xgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px}
+.xt{display:grid;gap:9px;align-content:start;text-align:left;padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);font:inherit;color:inherit;cursor:pointer;min-height:132px}
+.xt:hover{border-color:var(--acc);background:var(--acc-bg)} .xt:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.xl{font-size:12.5px;font-weight:650;color:var(--ink2)} .xb{font-size:22px;font-weight:700;color:var(--ink);line-height:1.1}
+.xchips{display:flex;flex-wrap:wrap;gap:4px} .xchip{font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:999px;border:1px solid var(--border);color:var(--ink3)} .xchip.on{background:var(--ok-b);border-color:transparent;color:var(--ok-t)}
+.xdots{display:flex;gap:6px;align-items:center} .xdots i{flex:1;height:6px;border-radius:99px;background:var(--border)} .xdots i.done{background:var(--ok-f)} .xdots i.cur{background:var(--acc)}
+.xf{font-size:12.5px;font-weight:650;display:flex;gap:7px;align-items:center;margin-top:auto} .xf i{width:8px;height:8px;border-radius:50%;flex:none}
+.xf.ok i{background:var(--ok-f)} .xf.wn i{background:var(--wn-f)} .xf.in i{background:var(--in-f)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ibar{display:block;height:6px;border-radius:99px;background:var(--border);overflow:hidden} .ibar i{display:block;height:100%;border-radius:inherit}
 .gsub{margin:16px 0 4px;padding-top:14px;border-top:1px solid var(--border)}
 .demobar{position:fixed;right:14px;bottom:14px;z-index:70;font-size:12.5px}
@@ -305,6 +314,7 @@ button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.gr
 .demobar #demoBody{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:var(--shadow-md);display:grid;gap:10px;max-width:340px}
 .demobar label{display:grid;gap:4px;font-size:12px;color:var(--ink2)} .demobar select{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit}
 @media(max-width:760px){
+  .xgrid{grid-template-columns:1fr} .xt{min-height:0}
   .stepper{grid-template-columns:1fr;gap:12px} .stepper li{padding:2px 0 2px 34px;min-height:24px;padding-right:0} .stepper li::after{display:none}
   .stepper .n,.stepper .d{display:inline} .stepper .d{margin-left:8px}
   .grow{grid-template-columns:1fr auto;row-gap:6px} .grow .ibar{grid-column:1/-1;order:3}
@@ -498,6 +508,7 @@ button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.gr
 
     <!-- 3. next gate: the five items that block Provisional Fellowship, then what is needed later -->
     <div id="gateCard"></div>
+    <div id="exitCard"></div>
 
     <!-- 4. comparison is available, not in the way -->
     <details class="fold outer" id="peerFold">
@@ -899,17 +910,27 @@ function renderGate(){
     {l:'Volume of Practice', sub:`${capped} of 615 \u00b7 ${vopShort} short`, pct:capped/615*100, st:vopShort<=0?'ok':'wn', stt:vopShort<=0?'Met':'Nearly met', go:'logbook'},
     {l:'Multi-source feedback', sub:'1 of 3 \u00b7 2nd due for PFY', pct:33, st:'wn', stt:'HAT MSF pending'},
     {l:'Final Fellowship Examination', sub:'', st:'bd', stt:'Not yet'}];
-  const B = [
-    {l:'Specialty Modules WBA', sub:'12 of 31', pct:39, st:'in', stt:'In progress'},
-    {l:'Mandatory courses', sub:`${cdone} of 5${miss?' \u00b7 '+miss+' outstanding':''}`, pct:cdone/5*100, st:cdone===5?'ok':'wn', stt:cdone===5?'Complete':'1 to do', go:'courses'},
-    {l:'Formal Project (HKCA-E03)', sub:'Protocol approved \u00b7 manuscript not yet submitted', st:'in', stt:'In progress', go:'courses'}];
   const row = r=>{ const inner = `<span class="gl2">${X(r.l)}${r.sub?`<small>${X(r.sub)}</small>`:''}</span><span class="ibar" ${r.pct==null?'style="visibility:hidden"':''}><i class="${r.st==='ok'?'c-ok':r.st==='wn'?'c-wn':r.st==='bd'?'c-bd':'c-in'}" style="width:${Math.min(100,r.pct||0)}%"></i></span><span class="gst ${r.st}"><i></i>${X(r.stt)}</span>`;
     return `<li>${r.go?`<button type="button" class="grow" onclick="showTab('${r.go}')" aria-label="${X(r.l)}: ${X(r.stt)}. Open details">${inner}</button>`:`<div class="grow">${inner}</div>`}</li>`; };
   const met = A.filter(r=>r.st==='ok').length;
   el.innerHTML = `<div class="card"><div class="hd"><div><div class="eyebrow">Next gate</div><h2>Higher Training &rarr; Provisional Fellowship</h2></div><span class="pill">${met} of 5 met</span></div>
     <ul class="gate" aria-label="Provisional Fellowship requirements">${A.map(row).join('')}</ul>
     <p class="note" style="margin-top:10px">You cannot enter the Provisional Fellowship Year until all five are complete. Your SOT can arrange the MSF and help plan the remaining WBA.</p>
-    <div class="gsub"><div class="eyebrow" style="margin-bottom:2px">Needed later, before Exit Assessment</div><ul class="gate">${B.map(row).join('')}</ul></div></div>`;
+</div>`;
+}
+const PROJ_STEPS = [['Protocol submitted','12 Feb 2026','done'],['Protocol approved','30 Apr 2026','done'],['Manuscript submitted','','cur'],['Manuscript approved','','']];
+function renderExit(){
+  const el = document.getElementById('exitCard'); if(!el) return;
+  const done = COURSES.filter(c=>c.done), open = COURSES.filter(c=>!c.done), sent = certSent();
+  const chips = COURSES.map(c=>`<span class="xchip ${c.done?'on':''}"><span aria-hidden="true">${c.done?'\u2713':'\u25cb'}</span> ${X(c.n)}<span class="sr"> ${c.done?'complete':'not complete'}</span></span>`).join('');
+  const cur = PROJ_STEPS.find(x=>x[2]==='cur'), nDone = PROJ_STEPS.filter(x=>x[2]==='done').length;
+  const dots = PROJ_STEPS.map(x=>`<i class="${x[2]}" title="${X(x[0])}"></i>`).join('');
+  const t = (cls, go, label, big, mid, foot, st)=>`<button type="button" class="xt" onclick="${go}" aria-label="${X(label)}: ${X(big)}. Open details"><span class="xl">${X(label)}</span><span class="xb mono">${big}</span>${mid}<span class="xf ${st}"><i></i>${X(foot)}</span></button>`;
+  el.innerHTML = `<div class="card xcard"><div class="hd"><div><div class="eyebrow">Needed before Exit Assessment</div><h2>Exit requirements</h2></div></div><div class="xgrid">
+    ${t('c',"showTab('courses')",'Mandatory courses', `${done.length} of ${COURSES.length}`, `<span class="xchips">${chips}</span>`, open.length ? open.map(c=>c.n).join(', ')+(sent.includes(open[0].n)?' with College Admin':' outstanding') : 'All complete', open.length?'wn':'ok')}
+    ${t('p',"showTab('courses')",'Formal Project (HKCA-E03)', `${nDone} of ${PROJ_STEPS.length}`, `<span class="xdots" aria-hidden="true">${dots}</span>`, cur?'Next: '+cur[0].toLowerCase():'Complete', cur?'in':'ok')}
+    ${t('w',"showTab('wba')",'Specialty Modules WBA', '12 of 31', '<span class="ibar"><i class="c-in" style="width:39%"></i></span>', 'In progress', 'in')}
+  </div></div>`;
 }
 function renderDemo(){
   const el = document.getElementById('demoBody'); if(!el) return;
@@ -919,7 +940,7 @@ function renderDemo(){
     <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${PS.demoReview()?'checked':''} onchange="glReviewWindow(this.checked)"> Show the end-of-period review window (3 Dec)</label>
     <a href="#" class="link" onclick="glReset();return false">Reset demo data</a>`;
 }
-function renderOverview(){ renderNextSteps(); renderStepper(); renderGate(); }
+function renderOverview(){ renderNextSteps(); renderStepper(); renderGate(); renderExit(); }
 const FOLDS = {peerFold:'hkca.trainee.fold.peer', timeFold:'hkca.trainee.fold.time'};
 function initFolds(){ Object.keys(FOLDS).forEach(id=>{ const d = document.getElementById(id); if(!d) return; d.open = !!lsGet(FOLDS[id], false); d.addEventListener('toggle',()=>lsSet(FOLDS[id], d.open)); }); }
 
@@ -1058,7 +1079,7 @@ function uploadCert(n){ const b = event.currentTarget; b.textContent = 'Sent to 
 const FLAG_KEY = 'hkca.trainee.flags.v1';
 function renderCoursesTab(){
   const el = document.getElementById('panel-courses'), flags = lsGet(FLAG_KEY, []);
-  const steps = [['Protocol submitted','12 Feb 2026','done'],['Protocol approved','30 Apr 2026','done'],['Manuscript submitted','','cur'],['Manuscript approved','','']];
+  const steps = PROJ_STEPS;
   el.innerHTML = `<div class="ptitle"><div><h2>Courses &amp; Project</h2><p>These come from your College record. You cannot edit them here. If something looks wrong, flag it to College Admin.</p></div>
       <button type="button" class="btn sec" onclick="openFlag()">Flag a discrepancy with College Admin</button></div>
     <div class="card"><div class="hd"><div><div class="eyebrow">Mandatory courses</div><h2>Course completion</h2>
