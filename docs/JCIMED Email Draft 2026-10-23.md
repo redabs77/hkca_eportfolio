@@ -1,7 +1,7 @@
 ---
 type: draft_email
 project: "[[HKCA Portfolio Revamp]]"
-status: draft_not_sent
+status: sent_2026-10-23
 ---
 
 # Draft email to JCIMED / zlightinno (not sent)

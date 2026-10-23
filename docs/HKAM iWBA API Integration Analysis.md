@@ -94,11 +94,11 @@ HKCA uses `CEX`, `CBD`, `DOPS`, `ALMAT`, `MSF`. `EPA` is reserved. **There will 
 ### 5.4 Open questions for JCIMED (status)
 | # | Question | Status |
 |---|---|---|
-| 1 | Curriculum codes: how will `CF-2.x` / `SM-3.x` / stage come back in responses? | Mapping pack ready, not yet sent |
+| 1 | Curriculum codes: how will `CF-2.x` / `SM-3.x` / stage come back in responses? | **Sent 2026-10-23** with the CSV; awaiting reply |
 | 2 | PBA and ACR | Closed: not used. Ask JCIMED only to confirm none will appear in HKCA data. |
-| 3 | Can a college-supplied external ID (HKCA trainee number) be stored on the iWBA user and returned? | To ask |
-| 4 | How are voided or deleted assessments signalled? (There is no tombstone.) | Albert not sure; to ask |
-| 5 | What does `unverified` mean? | Albert not sure; to ask |
-| 6 | When is backfill enabled on our token, and for how long? | To ask |
-| 7 | Result ordering and `updated_at` ties while paging | Added 2026-10-23 |
-| 8 | MSF: one summary row per respondent or per assessment? | Added 2026-10-23 |
+| 3 | Can a college-supplied external ID (HKCA trainee number) be stored on the iWBA user and returned? | Sent 2026-10-23; awaiting reply |
+| 4 | How are voided or deleted assessments signalled? (There is no tombstone.) | Sent 2026-10-23; awaiting reply |
+| 5 | What does `unverified` mean? | Sent 2026-10-23; awaiting reply |
+| 6 | When is backfill enabled on our token, and for how long? | Sent 2026-10-23; awaiting reply |
+| 7 | Result ordering and `updated_at` ties while paging | Sent 2026-10-23; awaiting reply |
+| 8 | MSF: one summary row per respondent or per assessment? | Sent 2026-10-23; awaiting reply |

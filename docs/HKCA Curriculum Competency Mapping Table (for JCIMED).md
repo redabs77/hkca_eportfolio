@@ -125,7 +125,7 @@ these modalities for HKCA trainees.
 - [x] Echo Curriculum confirmed (2026-10-07, Albert): TTE, any training stage (not stage-locked).
 - [x] Re-checked 2026-10-23: fixed the MSF row in §3 (it said 1 College-wide; correct is 3, one per stage); counts re-added from the CSV (63 assessments + 3 MSF = 66, CF 29, SM 31).
 - [x] Echo Curriculum needs a code outside CF/SM: proposed `ECHO-WBA` (not `ECHO-A`, which is the course). PFY items use `PFY`; MSF uses `MSF`. JCIMED to confirm.
-- [ ] Get Albert's final sign-off on wording before sending to JCIMED.
+- [x] Albert signed off and sent the pack and email to JCIMED on 2026-10-23.
 
 ---
 
