@@ -150,9 +150,8 @@ evidence yet. Migration must create the rotation as `in_progress` so the ITA can
 new system and the credit applied automatically. Do not create it as a completed historical record.
 
 ### 6.2 In-flight ITAs
-Any ITA begun but not signed off at cutover must migrate in its **actual workflow state**
-(`pending_trainer_feedback` / `sot_assessment` / `trainee_review`), not as complete. Trainer
-invitations in `atp_ita_assessor` map to `ita_assessors` with their response state.
+Any ITA begun but not signed off at cutover must migrate in its **actual workflow state**, not as complete. Trainer
+invitations in `atp_ita_assessor` map to `ita_assessors` with their response state. Legacy has no status column (see 6.9, item 3): the state is derived from flags, and legacy has no trainee sign-off step, so a legacy ITA never maps to `awaiting signature`.
 
 ### 6.3 Passwords
 Legacy passwords are in `user.password`. Whether hashed or not, **do not migrate them.** Instead:
@@ -191,8 +190,7 @@ detection. This already goes beyond what the curriculum requires.
 that predates this project**. Flag it to the College regardless of migration decisions.
 
 ### 6.6 Approval states
-Confirmed: `approved_status` **includes revision states**, and `approved_by` may be either an SOT or an
-Assistant SOT. Target model must therefore support:
+**Corrected 2026-10-24 from the legacy source code** (`hkcalog/sot_waiting.php`, `list.inc.php`): legacy `approved_status` holds only **NULL (outstanding), `A` (Checked) or `R` (Rejected)**. There was never a revision-requested or under-review state. A rejected case is not locked, so `R` was likely used as "returned for revision" (inference from the code); the importer maps it to `rejected`, and the trainee can edit it and resubmit. A verifier could also *de-approve* a case (reset to NULL, clearing approver, date and notes) with no history kept. `approved_by` stores the approver's user `tid`, and any SOT or admin type could approve (types seen in code: `hospital_sot`, `cluster_sot`, `hospital_sot_pain`, `hospital_sot_icu`, `hospital_sot_assist`, `hospital`, `none`). The earlier note that legacy "includes revision states" was an assumption and was wrong. The target model still supports the richer states for new entries:
 - `verification_status`: `pending` | `under_review` | `revision_requested` | `approved` | `rejected` (the trainee logbook shows `pending` and `under_review` together as "Waiting for verifier"; legacy rows never map to `under_review`)
 - `verified_by` + `verified_by_role` (`sot` | `assistant_sot`)
 - Full transition history, not just current state
@@ -210,12 +208,12 @@ Legacy holds five flat columns: `formal_project_title`, `formal_project_project_
 
 Implemented as pure functions in `domain/vop/legacyImport.ts` and covered by `tests/domain/run_vop_import_tests.ts` (run with `npm run test:domain`). The ETL job reads rows, calls `importLegacy`, writes the result, then calls `mergeIntoLedger`.
 
-**Can the legacy data be brought in and merged? Yes, with three conditions the College must confirm from the real dump.** The mechanics are built and tested on representative messy rows. The vocabularies are not knowable from the schema, so they are assumptions until checked:
+**Can the legacy data be brought in and merged? Yes, with the conditions below, which the College must confirm from the real data.** The mechanics are built and tested on representative messy rows. Vocabularies were checked against the legacy PHP source on 2026-10-24 (it supplies the allowed values, not the row counts, so the real-data checks are still pending):
 
 | # | Assumption | How to settle it |
 |---|---|---|
-| A1 | `approved_status` values map to `pending / approved / revision_requested / rejected` (numeric 0/1/2/3 or words). Unknown values import as `pending` and are counted in the report. | `SELECT approved_status, COUNT(*) FROM patient2 GROUP BY 1;` |
-| A2 | The free-text claim fields can be matched to descriptor codes by pattern. The alias table in the module is a starting point only. Rows that match nothing import as `needs_classification`. | `SELECT DISTINCT module_claimed, specialty_module_claimed, procedure_claimed, mode_anaesthesia FROM patient2;` then extend `CLASSIFICATION_ALIASES` and `TECHNIQUE_ALIASES` until the unmatched share is acceptable to the College. |
+| A1 | **Settled from the legacy code (2026-10-24):** `approved_status` is NULL / `A` / `R` only (see 6.6). The importer maps `A` to approved, `R` to rejected, NULL to pending; anything else imports as pending and is counted. Real data only needs to confirm no other values exist. | `SELECT approved_status, COUNT(*) FROM patient2 GROUP BY 1;` (in the College request of 2026-10-24) |
+| A2 | **Narrowed (2026-10-24):** `specialty_module_claimed` is a closed 21-value dropdown and maps exactly to SM-3.1 to 3.12 (`SPECIALTY_MODULE_EXACT`). The four Clinical Fundamentals columns store the ticked checkbox labels as text, so any non-empty value claims that CF domain. What remains uncertain is rows entered under the older module list (`module_claimed`: "O&T", "Obs Anae", "Gen Sur/Urology/Gyn", ...), which have no exact SM code and import as `needs_classification` unless the College supplies a mapping. | `SELECT DISTINCT module_claimed, specialty_module_claimed, procedure_claimed, mode_anaesthesia FROM patient2;` then extend `CLASSIFICATION_ALIASES` and `TECHNIQUE_ALIASES` until the unmatched share is acceptable to the College. |
 | A3 | Legacy-approved cases outside the 2-year window keep their credit (default) or not (`grandfatherApproved: false`). Decision for Dr. Chan and the Board. | Count them from the anomaly report. |
 
 **Steps**
@@ -229,6 +227,26 @@ Implemented as pure functions in `domain/vop/legacyImport.ts` and covered by `te
 8. **Reconciliation gate.** The report must balance (`rows in = imported + quarantined`), and per-trainee counts of approved cases by descriptor must equal legacy before cutover (PRD §7 parity suite). Quarantined and `needs_classification` counts go to the College before cutover.
 
 **What the trainee sees after import:** their legacy cases appear in the new logbook tagged "Imported", with approvals, verifier notes and dates unchanged, a one-line notice with the import date, and a "Classify" list for the rows that need it.
+
+---
+
+### 6.9 Findings from the legacy source code (2026-10-24)
+
+Source: the College's legacy PHP package (`hkca eps/`, `hkcalog/`). It contains code and structure files only, **no row data**. Detail and evidence: Obsidian `Legacy Source Code Findings 2026-10-24`.
+
+1. **Course slots.** `atp_portfolio` has dedicated columns for EASE (`training_course_ease*`) and EMAC (`training_course_emac*`). All other courses sit in numbered slots whose names exist only as labels in `portfolio.php`: `other1` ADAM-A, `other2` FTTE course (Echo-A workshop), `other3` UGRA, `other10` FTTE online tutorials and case reviews, `other11` BASIC, `other12` ACLS, `other13` Trauma, `other14` Advanced Airway, `other15` Echocardiography. Slots 4 to 9 have no label (confirmation requested from the College). Proposed import rule: EASE, EMAC, ADAM-A, ECHO-A (from `other2`) and UGRA become `mandatory_courses` rows with the codes in the schema; the remaining labelled slots are kept as non-mandatory course records, not counted toward exit requirements. Proposed, for College confirmation: `other10` (online tutorials) is kept as its own record and is not treated as the Echo-A workshop.
+2. **ITA items.** Fifteen graded items: `assessment_1a..1g`, `2a..2g`, `3a`. Column `3b` exists but no form, summary or print page uses it; ignore it on import and report if it holds data. Grades are 1 to 4 and X (4 = unsatisfactory).
+3. **ITA state is derived, not stored.** There is no status column. `atp_mita.mita_complete = 'Yes'` marks assessor responses complete; invitation fields `sent`, `resent`, `send_at_midnight` (`Yes` / `Fail`) on `atp_ita_assessor` show invitation progress; a row in `atp_ita` (with `fill_in_by_trainer = 'Yes'`) is the SOT assessment. Proposed mapping for in-flight ITAs: no `mita_complete` and no SOT row = waiting for trainers; SOT row present = SOT assessment done. Legacy has no trainee counter-signature, so none maps to awaiting signature or signed off in the new sense; completed legacy ITAs import as historical records.
+4. **Reminders.** Legacy sent one automatic reminder after 7 days (`cron1.php` for ITA assessors; `cron_cex.php` for WBA requests sent after 2024-04-25). The new design uses manual SOT reminders; this is a deliberate change.
+5. **WBA rows (`atp_cex`).** Form types CEX, CbD, DOPS, ALMAT (ITA and Logbook rows exist in other tables). Lifecycle flags: `fill_in_by_trainer`, `verified_by_trainee`, `admin_unverified`; `flag = 'y'` means "encouraged to repeat". Legacy WBAs cannot be linked to iWBA records; import read-only as history if the College wants them, otherwise leave them in the archive.
+6. **Exam applications.** `atp_reg_exam.application_status` is Processing, Success, Fail, Withdraw or Cancel. Only Success and Fail become `exam_results`; the others are applications, not results, and are not imported as results. Exams: Intermediate, Final (Anaesthesiology), Final (Intensive Care).
+7. **Rotations** (`atp_training_experience`): types Anaes, Pain, ICU, Others; two-step verification (`verified_by_sot`, then `verified_by_hkca_admin`). Import the SOT and admin verification as separate flags.
+8. **ICU** is a parallel track in the legacy data (ICU trainee type, ICU final exam, ICU tutorial attendance, ICU commencement dates). Scope for the first release is to be confirmed by the College.
+9. **`hkca_log`** (about 1.9 million page-view rows with IP addresses) is not migrated; archive outside the new system.
+10. **Cluster codes.** The `cluster` table uses HKE, HKW, KCC, KEC, KWC, NTE, NTW, OTHER; the logbook form dropdown uses KC, KE, KW. Map both spellings. One hospital value, `DCA, QMH`, contains a comma and must be handled as a single token, not split.
+11. **Passwords and identity.** EPS logins use `crypt(hkid, key)`, so passwords are derived from the HKID; this confirms 6.3 (do not migrate passwords; force reset on first sign-in). Staff and patient HKIDs are encrypted or stored in the legacy database and are not carried across (6.4, 6.5).
+12. **Locking.** The legacy "already approved" lock tests for `Y` while approval writes `A`, so approved logbook cases may still have been editable after approval. Not proven without data; the import preserves approval fields as recorded and the reconciliation report should compare counts, not assume immutability.
+13. **Code and database versions.** The code refers to tables `atp_study` and `cair_login_log` that are not in the 30 September structure file, and `readme14_all_table.txt` is an older structure snapshot. Treat the 30 September file as the live structure and ask the College to confirm.
 
 ---
 

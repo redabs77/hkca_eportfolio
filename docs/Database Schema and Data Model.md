@@ -747,7 +747,7 @@ CREATE TABLE exam_results (
   
   exam_type             TEXT NOT NULL,    -- intermediate, final, exit
   exam_date             DATE NOT NULL,
-  result                TEXT NOT NULL,    -- pass, fail
+  result                TEXT NOT NULL,    -- pass, fail. Legacy `atp_reg_exam` rows with Processing / Withdraw / Cancel are applications, not results, and are not imported here (Migration Plan 6.9, item 6)
   score                 TEXT,
   
   attempt_number        INTEGER DEFAULT 1,
@@ -785,7 +785,7 @@ CREATE TABLE mandatory_courses (
   id                    SERIAL PRIMARY KEY,
   trainee_id            INTEGER REFERENCES trainee_profiles(id) ON DELETE CASCADE,
   
-  course_code           TEXT NOT NULL,    -- EASE, EMAC, ADAM-A, UGRA, ECHO-A
+  course_code           TEXT NOT NULL,    -- EASE, EMAC, ADAM-A, UGRA, ECHO-A. Legacy source: EASE/EMAC own columns; ADAM-A = training_course_other1, ECHO-A = other2 (FTTE Echo-A workshop), UGRA = other3 (Migration Plan 6.9, item 1)
   course_name           TEXT NOT NULL,
   
   completion_date       DATE,

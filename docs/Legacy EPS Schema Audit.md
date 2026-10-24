@@ -242,6 +242,7 @@ in the SOT console prototype — it is a refinement of an existing workflow, not
 **Confirmed by Dr. Albert Chan (2026-09-30):**
 - `approved_by` may be **either an SOT or an Assistant SOT**
 - `approved_status` **includes revision states** (not binary approve/reject)
+  - **Code check 2026-10-24:** the stored values are only NULL (outstanding), `A` (Checked) and `R` (Rejected). The code does not lock a rejected case, so `R` was likely used as the "returned for revision" state (inference from the code, not confirmed by data). No separate revision or under-review value exists. See Migration Plan 6.6 and 6.9.
 
 **Consequence for the target model:** `verification_status` must be a state machine
 (`pending | under_review | revision_requested | approved | rejected`), plus `verified_by_role`, plus
