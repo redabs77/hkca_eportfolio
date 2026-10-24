@@ -81,10 +81,16 @@ export function parseLegacyDate(s?: string | null): string | null {
 
 const num = (v: unknown): number | null => { if (v === null || v === undefined || v === "") return null; const n = Number(String(v).replace(/[^\d.\-]/g, "")); return Number.isFinite(n) ? n : null; };
 const txt = (v: unknown): string | null => { const t = v === null || v === undefined ? "" : String(v).trim(); return t ? t : null; };
+/** CF columns (general_anaesthesia_and_sedation etc.) store the ticked checkbox labels as text, so any non-empty value means the domain was claimed. */
+const cfClaimed = (v: unknown) => { const t = String(v ?? "").trim().toLowerCase(); return t !== "" && t !== "0" && t !== "n" && t !== "no" && t !== "false"; };
 const flag = (v: unknown) => { const t = String(v ?? "").trim().toLowerCase(); return t === "1" || t === "y" || t === "yes" || t === "true" || t === "x"; };
 
 export function normaliseStatus(raw?: string | null): { status: VerificationStatus; known: boolean } {
   const t = String(raw ?? "").trim().toLowerCase();
+  // Confirmed from the legacy source (hkcalog/sot_waiting.php, list.inc.php): NULL = outstanding, 'A' = Checked, 'R' = Rejected.
+  // There is no revision-requested or under-review state in legacy data. The other spellings below are defensive only.
+  if (t === "a") return { status: "approved", known: true };
+  if (t === "r") return { status: "rejected", known: true };
   if (t === "" || t === "0" || /^(pending|submitted|new|waiting)/.test(t)) return { status: "pending", known: true };
   if (t === "1" || /^(approved?|verified|accepted|y)$/.test(t)) return { status: "approved", known: true };
   if (/^(revis|amend|return|resubmit|2$)/.test(t)) return { status: "revision_requested", known: true };
@@ -109,13 +115,24 @@ export const CLASSIFICATION_ALIASES: [RegExp, string][] = [
   [/\bpca\b|acute pain|analgesi/i, "2.4"],
   [/\btiva\b|\bmac\b|sedation|general anaesth|\bga\b|central venous|arterial/i, "2.1"]];
 
+/** Exact stored values of patient2.specialty_module_claimed (the dropdown in the legacy logbook form) -> SM code. SM-3.12 Pain is Phase 2 (not tracked). */
+export const SPECIALTY_MODULE_EXACT: Record<string, string> = {
+  "Gen Sur / Uro / Gyn (elective)": "3.1", "Gen Sur / Uro / Gyn (emergency)": "3.1",
+  "H&N / ENT (airway procedure)": "3.2", "H&N / ENT (others)": "3.2",
+  "Ortho (hip fracture)": "3.3", "Ortho (major joint replacement)": "3.3", "Ortho (C-spine surgery)": "3.3", "Ortho (others)": "3.3",
+  "Paed (<= 8)": "3.4", "OBS (CS under GA)": "3.5", "OBS (CS under RA)": "3.5", "OBS (EA for labour pain)": "3.5",
+  "NS (interventional neuroradiology)": "3.6", "NS (others)": "3.6", "Eye": "3.7", "Remote anaes": "3.8",
+  "Cardiac (with CPB)": "3.9", "Cardiac (interventional cardi)": "3.9", "Thoracic": "3.10", "Vascular": "3.11", "Pain": "3.12"};
+
 export function normaliseClassification(r: LegacyPatient2Row) {
   const flags = ([["2.1", r.general_anaesthesia_and_sedation], ["2.2", r.regional_anaesthesia], ["2.3", r.airway_management], ["2.4", r.acute_pain_management]] as [string, unknown][])
-    .filter(([, v]) => flag(v)).map(([k]) => k);
+    .filter(([, v]) => cfClaimed(v)).map(([k]) => k);
   const claim = [r.procedure_claimed, r.specialty_module_claimed, r.module_claimed].map(txt).filter(Boolean) as string[];
   const direct = claim.map(c => c.match(/(?:^|\D)(2\.[1-4]|3\.(?:[1-9]|1[0-3]))(?:\D|$)/)).find(Boolean);
   let code: string | null = null, basis: "code" | "alias" | "flags" | null = null;
+  const exact = r.specialty_module_claimed ? SPECIALTY_MODULE_EXACT[String(r.specialty_module_claimed).trim()] : undefined;
   if (direct) { code = direct[1]; basis = "code"; }
+  else if (exact) { code = exact; basis = "alias"; }
   else { for (const c of claim) { const a = CLASSIFICATION_ALIASES.find(([re]) => re.test(c)); if (a) { code = a[1]; basis = "alias"; break; } } }
   if (!code && flags.length === 1) { code = flags[0]; basis = "flags"; }
   const category = code ? (code.startsWith("2.") ? "clinical_fundamentals" as const : "specialty_module" as const) : null;

@@ -15,6 +15,12 @@ assert.equal(normaliseStatus("1").status, "approved");
 assert.equal(normaliseStatus("Approved").status, "approved");
 assert.equal(normaliseStatus("revision").status, "revision_requested");
 assert.equal(normaliseStatus("").status, "pending");
+assert.deepEqual(normaliseStatus("A"), { status: "approved", known: true }, "legacy 'A' = Checked");
+assert.deepEqual(normaliseStatus("R"), { status: "rejected", known: true }, "legacy 'R' = Rejected");
+assert.deepEqual(normaliseStatus(null), { status: "pending", known: true }, "legacy NULL = outstanding");
+assert.equal(normaliseClassification({ specialty_module_claimed: "OBS (CS under RA)" } as LegacyPatient2Row).code, "3.5", "exact legacy dropdown value");
+assert.equal(normaliseClassification({ specialty_module_claimed: "Cardiac (interventional cardi)" } as LegacyPatient2Row).code, "3.9");
+assert.equal(normaliseClassification({ regional_anaesthesia: "Spinal;Major plexus block or peripheral nerve block" } as LegacyPatient2Row).code, "2.2", "CF columns hold checkbox text, not 1/0");
 assert.deepEqual(normaliseStatus("???"), { status: "pending", known: false }, "unknown status falls back to pending and is reported");
 
 // --- classification (A2)
