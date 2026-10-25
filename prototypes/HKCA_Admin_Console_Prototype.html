@@ -570,7 +570,7 @@ function dkDo(){
 /* recognition */
 const RSTATE={gate:['Request access','info'],waiting:['With applicant','mute'],docs:['Check documents','warn'],to:['With Training Officer','mute'],board:['Needs Board decision','warn'],approved:['Approved, credit to execute','info'],done:['Credit executed','ok']};
 const srcTxt=r=>r.origin.kind==='overseas'?'Anaesthesia training overseas: '+r.origin.where:'Other specialty: '+r.origin.spec+', '+r.origin.where;
-const DOCREQ={overseas:['Letter of training from the previous training body','Logbook or case summary','Certificate of completion, or latest year-level certificate'],specialty:['Letter or certificate from the specialty training body','Record of posts held, with dates','Case or logbook summary, if kept']};
+const DOCREQ=['Letter or certificate from the previous training body','Record of posts held, with dates','Logbook or case summary'];
 const reasonOf=r=>r.origin.kind==='overseas'?'RETROSPECTIVE_OVERSEAS_RECOGNITION':'RETROSPECTIVE_SPECIALTY_TRANSFER';
 const rtr=(r,who,ev,note)=>{r.trail.push({d:TODAY,who,ev,note:note||''})};
 const rtrailHtml=r=>`<div class="sect">Decision trail</div><div class="rtrail">${r.trail.map(x=>`<div class="rt-d">${fmtS(x.d)}</div><div><b>${esc(x.ev)}</b> <span class="meta">${esc(x.who)}</span>${x.note?`<div class="meta">${esc(x.note)}</div>`:''}</div>`).join('')}</div>`;
@@ -578,7 +578,7 @@ const monthFields=(p,v,ro)=>`<div style="display:grid;grid-template-columns:1fr 
 const readM=p=>({CA:+$('#'+p+'CA').value||0,ICU:+$('#'+p+'ICU').value||0,EL:+$('#'+p+'EL').value||0,cases:+$('#'+p+'CS').value||0});
 const recReq=r=>r.req?`<div class="sect">Requested by the applicant</div><dl class="kv"><dt>Clinical anaesthesia</dt><dd>${r.req.CA} months</dd><dt>Intensive care</dt><dd>${r.req.ICU} months</dd><dt>Elective</dt><dd>${r.req.EL} months</dd><dt>Logbook cases</dt><dd>${r.req.cases}</dd></dl>`:'';
 function recDocs(r,edit){
-  const req=DOCREQ[r.origin.kind];
+  const req=DOCREQ;
   return `<div class="sect">Documents</div>${req.map((n,i)=>edit?`<label class="chk ${r.rc[i]?'done':''}"><input type="checkbox" data-c="recRc" data-id="${r.id}" data-i="${i}" ${r.rc[i]?'checked':''}><span>${n}<small>Received and readable</small></span></label>`:`<div class="chk ${r.rc[i]?'done':''}" style="cursor:default"><span>${n}${r.rc[i]?'':'<small>Not received</small>'}</span></div>`).join('')}<p class="meta"><button class="linkbtn" data-a="toast" data-m="Opens the uploaded documents (demo)">View uploaded documents</button></p>`;
 }
 function vRecog(){
