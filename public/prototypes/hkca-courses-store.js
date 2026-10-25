@@ -3,7 +3,7 @@
    applies and withdraws. Both pages use this one store, so a change on one side shows on the other.
    Illustrative only; production reads the database. Demo date is fixed at 24 Oct 2026. */
 (function(){
-  var KEY='hkca.courses.v1', VER=1, TODAY='2026-10-24';
+  var KEY='hkca.courses.v1', VER=2, TODAY='2026-10-24';
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var MAND=['EASE','EMAC','ADAMA','ECHOA','UGRA'];
   var STAGE_COURSES={BAT:['BSC','IMV','RTB'],HAT:['HTC','CRASH','RTC'],PFY:[]};
@@ -22,11 +22,11 @@
         ['HKCA-2022-006','2026-08-10','Accepted'],['HKCA-2022-010','2026-08-11','Accepted'],['HKCA-2022-013','2026-08-12','Accepted'],['HKCA-2023-017','2026-08-14','Accepted'],['HKCA-2023-004','2026-08-20','Accepted'],['HKCA-2023-015','2026-08-22','Accepted']]},
       {id:'UGRA-1205',course:'UGRA',date:'2026-12-05',venue:'',format:'Face-to-face',feeM:0,feeN:0,seats:10,opens:'2026-10-12',closes:'2026-11-20',coord:'',apps:[
         ['HKCA-2021-003','2026-10-15','Requested'],['HKCA-2021-009','2026-10-18','Requested'],['HKCA-2022-006','2026-10-20','Requested']]},
-      {id:'RTB-1102',course:'RTB',date:'2026-11-02',end:'2026-11-13',venue:'Function Rooms 1\u20133, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:6500,feeN:13000,seats:50,opens:'2026-09-01',closes:'2026-10-20',coord:'Dr FOK King Tak Douglas',apps:[
+      {id:'RTB-1102',course:'RTB',date:'2026-11-02',end:'2026-11-13',venue:'Function Rooms 1\u20133, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:6500,feeN:13000,seats:50,rank:'fcfs',opens:'2026-09-01',closes:'2026-10-20',coord:'Dr FOK King Tak Douglas',apps:[
         ['HKCA-2023-022','2026-09-10','Accepted'],['HKCA-2024-019','2026-09-12','Accepted'],['HKCA-2024-027','2026-09-18','Accepted'],['HKCA-2024-008','2026-10-02','Waitlisted'],['HKCA-2024-023','2026-10-15','Requested']]},
       {id:'IMV-1212',course:'IMV',date:'2026-12-12',venue:'PACU, 4/F, Block D, Queen Elizabeth Hospital',format:'Face-to-face',feeM:1500,feeN:1500,seats:null,opens:'2026-10-01',closes:'2026-11-25',coord:'Dr TAM Suet Yee Zoey, Dr CHAN Kai Wai Kevin, Dr LEE Tien Seng Bryan',apps:[
         ['HKCA-2025-009','2026-10-02','Requested'],['HKCA-2025-004','2026-10-03','Requested'],['HKCA-2024-019','2026-10-06','Requested'],['HKCA-2024-023','2026-10-08','Requested'],['HKCA-2023-022','2026-10-10','Requested'],['HKCA-2024-027','2026-10-12','Requested']]},
-      {id:'RTC-1116',course:'RTC',date:'2026-11-16',end:'2026-11-21',venue:'Function Rooms 1\u20132, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:5500,feeN:11000,seats:50,opens:'2026-09-15',closes:'2026-11-02',coord:'Dr FOK King Tak Douglas',apps:[
+      {id:'RTC-1116',course:'RTC',date:'2026-11-16',end:'2026-11-21',venue:'Function Rooms 1\u20132, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:5500,feeN:11000,seats:50,rank:'fcfs',opens:'2026-09-15',closes:'2026-11-02',coord:'Dr FOK King Tak Douglas',apps:[
         ['HKCA-2022-013','2026-10-01','Requested'],['HKCA-2023-017','2026-10-03','Requested'],['HKCA-2022-006','2026-10-05','Requested'],['HKCA-2022-010','2026-10-08','Requested'],['HKCA-2023-004','2026-10-12','Requested']]},
       {id:'BSC-0425',course:'BSC',date:'2027-04-25',end:'2027-07-25',venue:'Seminar Room 113-115, 1/F, School of General Nursing, Queen Elizabeth Hospital',format:'Online and face-to-face',feeM:2000,feeN:4000,seats:null,opens:'2027-03-01',closes:'2027-04-14',coord:'Dr TAM Suet Yee Zoey',apps:[]}
     
@@ -59,8 +59,8 @@
   function event(s,type,id,rid){s.seq=(s.seq||0)+1;s.events=(s.events||[]).concat([{seq:s.seq,type:type,id:id,round:rid,d:TODAY}]).slice(-60);}
   window.HKC={KEY:KEY,TODAY:TODAY,MAND:MAND,NAMES:NAMES,SHORT:SHORT,STAGE_LABEL:STAGE_LABEL,
     seedRounds:seedRounds,get:load,reset:function(){try{localStorage.removeItem(KEY);}catch(e){}},
-    setRounds:function(rounds){var s=load();s.rounds=rounds;put(s);},
-    setDone:function(map){var s=load();s.done=map;put(s);},
+    setRounds:function(rounds){var s=load();if(JSON.stringify(s.rounds)===JSON.stringify(rounds))return;s.rounds=rounds;put(s);},
+    setDone:function(map){var s=load();if(JSON.stringify(s.done)===JSON.stringify(map))return;s.done=map;put(s);},
     rState:rState,fmt:fmt,fmtS:fmtS,daysTo:daysTo,feeText:feeText,dates:dates,hk:hk,appOf:appOf,relevant:relevant,
     doneList:function(id){return (load().done[id])||[];},
     doneDate:function(id,k){var s=load();var r=s.rounds.filter(function(x){return x.course===k&&(x.attended||[]).indexOf(id)>=0;})[0];return (r&&r.recorded)||((BASE_ON[id]||{})[k])||null;},

@@ -194,6 +194,60 @@ details.fold .in{padding:0 18px 14px}
 table.dk{table-layout:fixed}
 @media(max-width:1000px){.hm,.split{grid-template-columns:1fr}.kv{grid-template-columns:120px 1fr}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* phone layout (the console is built for a laptop, this keeps it readable on a phone) */
+@media(max-width:720px){
+  html,body{overflow-x:hidden}
+  .wrap{padding:0 14px}
+  .top-row{gap:8px;padding:9px 0}
+  .brand{gap:9px;min-width:0}
+  .brand h1{font-size:13.5px;white-space:nowrap}
+  .brand p{display:none}
+  .top-right{gap:7px}
+  .top-right .btn{padding:6px 10px;font-size:12px;white-space:nowrap}
+  .who{border-left:0;padding-left:0}.who .nm,.who .rl{display:none}
+  .tab{padding:12px 12px 11px}
+  .seg{display:flex;width:100%}.seg button{flex:1 1 auto;justify-content:center;padding:7px 10px}
+  .toolbar>*{max-width:100%}
+  .q-h{flex-wrap:wrap;gap:8px}
+  .q-h .btn-row{flex-wrap:wrap;gap:8px}
+  .kv{grid-template-columns:100px 1fr}
+  .split>*{min-width:0}
+  /* Training Progression: each trainee becomes a stacked card instead of four squeezed columns */
+  table.dk,table.dk tbody,table.dk tr,table.dk td{display:block}
+  table.dk colgroup{display:none}
+  table.dk tr{display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:8px;padding:12px 14px;border-bottom:1px solid var(--border-sub)}
+  table.dk tr:last-child{border-bottom:0}
+  table.dk td{border:0!important;padding:0!important;width:auto!important;grid-column:2;min-width:0}
+  table.dk td:first-child{grid-column:1;grid-row:1}
+  table.dk td:nth-child(2){grid-row:1}
+  table.dk td:nth-child(3){margin-top:6px}
+  table.dk td:nth-child(4){margin-top:8px}
+  table.dk .crit{display:flex;flex-wrap:wrap;gap:5px}
+  table.dk .cell-sub{overflow-wrap:anywhere}
+  /* applicant list: name and request date on one line, priority below, decision full width */
+  table.stk thead{display:none}
+  table.stk,table.stk tbody,table.stk tr,table.stk td{display:block}
+  table.stk tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 14px;border-bottom:1px solid var(--border-sub)}
+  table.stk td{border:0!important;padding:0!important;min-width:0}
+  table.stk td:nth-child(1){grid-column:1;grid-row:1}
+  table.stk td:nth-child(2){grid-column:1/-1;grid-row:2}
+  table.stk td:nth-child(3){grid-column:2;grid-row:1;text-align:right;white-space:nowrap}
+  table.stk td:nth-child(3)::before{content:'Requested '}
+  table.stk td:nth-child(4){grid-column:1/-1;grid-row:3;margin-top:6px}
+  table.stk select{width:100%}
+  /* every other list: one card per row, with the column heading as a small label */
+  .tbl-scroll>table:not(.dk):not(.stk),.tbl-scroll>table:not(.dk):not(.stk) tbody,.tbl-scroll>table:not(.dk):not(.stk) tr{display:block}
+  .tbl-scroll>table:not(.dk):not(.stk) thead{display:none}
+  .tbl-scroll>table:not(.dk):not(.stk) tr{padding:12px 14px;border-bottom:1px solid var(--border-sub)}
+  .tbl-scroll>table:not(.dk):not(.stk) tr:last-child{border-bottom:0}
+  .tbl-scroll>table:not(.dk):not(.stk) td{display:block;position:relative;border:0!important;padding:4px 0 4px 100px!important;width:auto!important;min-width:0;min-height:26px}
+  .tbl-scroll>table:not(.dk):not(.stk) td::before{content:attr(data-l);position:absolute;left:0;top:7px;width:90px;font-size:11px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);line-height:1.25}
+  .tbl-scroll>table:not(.dk):not(.stk) td:first-child,.tbl-scroll>table:not(.dk):not(.stk) td[data-l=""]{padding-left:0!important}
+  .tbl-scroll>table:not(.dk):not(.stk) td:first-child::before,.tbl-scroll>table:not(.dk):not(.stk) td[data-l=""]::before{content:none}
+  .tbl-scroll>table:not(.dk):not(.stk) td:empty{display:none}
+  .tbl-scroll>table:not(.dk):not(.stk) td[colspan]{display:block}
+  .tbl-scroll>table:not(.dk):not(.stk) td[colspan]::before{content:none}
+}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 </head>
@@ -421,7 +475,7 @@ function vHome(){
   if(c.link)q.push({col:'--acc',t:plural(c.link,'person','people')+' to link in iWBA',w:'Assessments from these people cannot reach a portfolio until you confirm who they are.',go:['wba','link'],b:'Link people'});
   if(c.intake)q.push({col:'--t1f',t:plural(c.intake,'membership application')+' to vet',w:'Oldest has waited '+ago(days(oldest,TODAY))+'. Three checks, then the account opens.',go:['trainees','intake'],b:'Open applications'});
   if(c.recogAct){const rp=[];const nn=k=>S.recog.filter(r=>r.state===k).length;if(nn('gate'))rp.push(nn('gate')+' to enable');if(nn('docs'))rp.push(nn('docs')+' with documents to check');if(nn('board'))rp.push(nn('board')+' for the Board decision');if(nn('approved'))rp.push(nn('approved')+' approved, credit to execute');q.push({col:'--t1f',t:plural(c.recogAct,'retrospective recognition request')+' need you',w:rp.join(', ')+'.',go:['trainees','recog'],b:'Open requests'})}
-  if(c.triage)q.push({col:'--t4f',t:plural(c.triage,'course request')+' to triage',w:'Across '+plural(c.rounds,'round')+'. Priority and request time are already ordered for you.',go:['courses','seats'],b:'Allocate seats'});
+  if(c.triage)q.push({col:'--t4f',t:plural(c.triage,'course request')+' to triage',w:'Across '+plural(c.rounds,'round')+'. '+((n=>n?plural(n,'round')+(n===1?' has':' have')+' more applications than places. ':'')(S.rounds.filter(r=>overBy(r)>0).length))+'Applications are already ranked for you.',go:['courses','seats'],b:'Allocate seats'});
   if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects','dispatch'],b:'Dispatch'});
   if(c.pend)q.push({col:'--t2f',t:'SOT appointment to enter',w:'The Board endorsed the replacement at '+S.pendingAppt[0].hosp+'. Record the appointment before the current term ends.',go:['centres','appts'],b:'Open appointments'});
   if(c.unm)q.push({col:'--acc',t:plural(c.unm,'iWBA item')+' not mapped',w:'These assessments are held back until each is matched to a curriculum code.',go:['wba','unmapped'],b:'Map items'});
@@ -700,6 +754,7 @@ function aboutToProgress(t,key){
 const wlBefore=(r,id)=>S.rounds.some(x=>x.course===r.course&&x.id!==r.id&&x.date<r.date&&x.apps.some(a=>a[0]===id&&a[2]==='Waitlisted'));
 function appInfo(r,a){
   const t=T(a[0]);const wl=wlBefore(r,a[0]);const pg=t?aboutToProgress(t,r.course):null;
+  if(r.rank==='fcfs')return {lvl:wl?'h':'n',why:wl?['Waitlisted for an earlier round']:[],score:wl?100:0,wl,pg:null};
   const ix=r.course==='IMV'&&S.exCands.some(x=>x.id===a[0]&&x.exam==='Intermediate');
   let lvl='n',base='';if(isMand(r.course)){const p=prio(a[0],r.course);lvl=p[0];base=p[1]}
   if(wl||pg||ix)lvl='h';
@@ -707,8 +762,10 @@ function appInfo(r,a){
   const score=(wl?100:0)+(ix?80:0)+(pg?50:0)+{h:30,m:20,n:15,l:10}[lvl];
   return {lvl,why,score,wl,pg};
 }
-function sortedApps(r){return r.apps.map((a,i)=>Object.assign({i,id:a[0],req:a[1],st:a[2],wd:a[3]&&a[3].wd},{p:appInfo(r,a)})).sort((a,b)=>(a.st==='Withdrawn')-(b.st==='Withdrawn')||b.p.score-a.p.score||(a.req>b.req?1:-1))}
+function sortedApps(r){return r.apps.map((a,i)=>Object.assign({i,id:a[0],req:a[1],st:a[2],wd:a[3]&&a[3].wd},{p:appInfo(r,a)})).sort((a,b)=>(a.st==='Withdrawn')-(b.st==='Withdrawn')||b.p.score-a.p.score||(a.req>b.req?1:a.req<b.req?-1:a.i-b.i))}
 const applied=r=>r.apps.filter(a=>a[2]!=='Withdrawn').length;
+const live=r=>r.apps.filter(a=>a[2]!=='Withdrawn'&&a[2]!=='Rejected').length;
+const overBy=r=>r.seats&&['open','closed'].includes(rState(r))?Math.max(0,live(r)-r.seats):0;
 const accepted=r=>r.apps.filter(a=>a[2]==='Accepted').length;
 const seatTxt=r=>r.seats?accepted(r)+' of '+r.seats+' seats':accepted(r)+' accepted, no seat limit';
 function vCourses(){
@@ -735,11 +792,11 @@ function vRounds(){
     <td>${fmt(r.date)}${r.end?` <span class="cell-sub" style="display:inline">to ${fmt(r.end)}</span>`:''}${r.venue?`<div class="cell-sub">${esc(r.venue)}</div>`:''}</td>
     <td>${rPill(r)}<div class="cell-sub">${fmtS(r.opens)} to ${fmtS(r.closes)}</div></td>
     <td>${feeCell(r)}</td>
-    <td>${s==='scheduled'?'<span class="meta">Not open yet</span>':`${applied(r)} applied<div class="cell-sub">${esc(seatTxt(r))}${u&&['open','closed'].includes(s)?', '+u+' to decide':''}</div>`}</td>
+    <td>${s==='scheduled'?'<span class="meta">Not open yet</span>':`${applied(r)} applied<div class="cell-sub">${esc(seatTxt(r))}${u&&['open','closed'].includes(s)?', '+u+' to decide':''}</div>${overBy(r)?`<div style="margin-top:5px"><span class="pill warn">${live(r)} for ${r.seats} places</span></div>`:''}`}</td>
     <td>${act(r)}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No rounds match.</div></td></tr>'}</tbody></table></div></div>`;
 }
 function roundForm(r){
-  const v=r||{course:'',date:'',end:'',venue:'',format:'Face-to-face',feeM:'',feeN:'',seats:'',opens:'',closes:'',coord:''};
+  const v=r||{course:'',date:'',end:'',venue:'',format:'Face-to-face',feeM:'',feeN:'',seats:'',opens:'',closes:'',coord:'',rank:'priority'};
   const opt=k=>`<option value="${k}" ${v.course===k?'selected':''}>${esc(COURSES[k])}${CNAME[k]!==COURSES[k]&&k.length<=5&&isMand(k)?' ('+CNAME[k]+')':''}</option>`;
   const g2='display:grid;grid-template-columns:1fr 1fr;gap:12px';
   return `<div class="fld"><label for="rfCourse">Course</label>${r?`<input type="text" id="rfCourse" value="${esc(COURSES[r.course])}" disabled>`:`<select id="rfCourse" data-c="rfCourse"><option value="">Choose a course</option><optgroup label="Mandatory">${MAND.map(opt).join('')}</optgroup><optgroup label="Other courses">${Object.keys(COURSES).filter(k=>!isMand(k)).map(opt).join('')}</optgroup></select>`}</div>
@@ -749,6 +806,7 @@ function roundForm(r){
   <div style="${g2}"><div class="fld"><label for="rfFeeM">Fee, HKCA member (HK$)</label><input type="number" id="rfFeeM" min="0" value="${v.feeM==null?'':v.feeM}"></div><div class="fld"><label for="rfFeeN">Fee, non-member (HK$)</label><input type="number" id="rfFeeN" min="0" value="${v.feeN==null?'':v.feeN}"></div></div>
   <p class="meta" style="margin:-4px 0 14px">Enter 0 for no charge. Mandatory courses are not charged at present; set a fee here if that changes.</p>
   <div style="${g2}"><div class="fld"><label for="rfOpens">Registration opens</label><input type="date" id="rfOpens" value="${v.opens||''}"></div><div class="fld"><label for="rfCloses">Registration closes (deadline)</label><input type="date" id="rfCloses" value="${v.closes||''}"></div></div>
+  <div class="fld"><label for="rfRank">Rank applications by</label><select id="rfRank"><option value="priority" ${v.rank!=='fcfs'?'selected':''}>Priority, then request time</option><option value="fcfs" ${v.rank==='fcfs'?'selected':''}>First come, first served</option></select><p class="meta" style="margin:5px 0 0">You still decide every place. This only sets the order of the suggestion, and you are flagged when applications exceed the places.</p></div>
   <div class="fld"><label for="rfCoord">Coordinators</label><input type="text" id="rfCoord" value="${esc(v.coord||'')}" placeholder="Optional"></div>`;
 }
 function regBox(r){
@@ -773,14 +831,14 @@ function saveRound(id){
   if(closes>date){toast('The deadline must be on or before the first day of the course.');return}
   if(seats!==''&&(+seats<1||!Number.isInteger(+seats))){toast('Seats must be a whole number, or blank for no limit.');return}
   if(r&&seats!==''&&+seats<accepted(r)){toast(accepted(r)+' trainees are already accepted. Seats cannot go below that.');return}
-  const v={date,end:end||undefined,venue:g('rfVenue'),format:$('#rfFormat').value,feeM:+feeM,feeN:+feeN,seats:seats===''?null:+seats,opens,closes,coord:g('rfCoord')};
+  const v={date,end:end||undefined,venue:g('rfVenue'),format:$('#rfFormat').value,feeM:+feeM,feeN:+feeN,seats:seats===''?null:+seats,opens,closes,coord:g('rfCoord'),rank:$('#rfRank').value};
   if(!r){
     let nid=course+'-'+date.slice(5,7)+date.slice(8),n=2;const base=nid;while(S.rounds.find(x=>x.id===nid))nid=base+'-'+n++;
     S.rounds.push(Object.assign({id:nid,course,apps:[]},v));
     logAct('Course round created',`${CNAME[course]} ${fmt(date)}: registration ${fmtS(opens)} to ${fmtS(closes)}, ${feeLine({feeM:+feeM,feeN:+feeN})}`);
     closeDrawer();ui.rdF='All';ui.rdS='All';render();toast(CNAME[course]+' round created.');return;
   }
-  const lab={date:'date',end:'last day',venue:'venue',format:'format',feeM:'member fee',feeN:'non-member fee',seats:'seats',opens:'opening date',closes:'deadline',coord:'coordinators'};
+  const lab={date:'date',end:'last day',venue:'venue',format:'format',feeM:'member fee',feeN:'non-member fee',seats:'seats',opens:'opening date',closes:'deadline',coord:'coordinators',rank:'ranking'};
   const ch=Object.keys(v).filter(k=>String(v[k]==null?'':v[k])!==String(r[k]==null?'':r[k])).map(k=>lab[k]);
   Object.assign(r,v);if(v.end===undefined)delete r.end;
   if(ch.length)logAct('Course round updated',`${CNAME[r.course]} ${fmt(r.date)}: changed ${ch.join(', ')}`);
@@ -810,9 +868,10 @@ function vSeats(){
   if(!ui.round||!open.find(r=>r.id===ui.round))ui.round=open[0].id;
   const r=open.find(x=>x.id===ui.round);
   const over=r.seats&&accepted(r)>r.seats;const full=r.seats&&accepted(r)>=r.seats;const und=undecided(r);
-  return `<div class="split"><div class="card">${open.map(o=>`<button class="round ${o.id===r.id?'on':''}" data-a="pickRound" data-id="${o.id}"><b>${esc(CNAME[o.course])}</b> <span class="meta">${fmt(o.date)}</span><div class="meta" style="margin-top:2px">${esc(seatTxt(o))} &middot; ${undecided(o)} undecided</div>${o.seats?`<div class="seatbar"><i class="${accepted(o)>=o.seats?'full':''}" style="width:${Math.min(100,accepted(o)/o.seats*100)}%"></i></div>`:''}</button>`).join('')}</div>
+  return `<div class="split"><div class="card">${open.map(o=>`<button class="round ${o.id===r.id?'on':''}" data-a="pickRound" data-id="${o.id}"><b>${esc(CNAME[o.course])}</b> <span class="meta">${fmt(o.date)}</span><div class="meta" style="margin-top:2px">${esc(seatTxt(o))} &middot; ${undecided(o)} undecided${overBy(o)?` &middot; <b style="color:var(--wn-f)">${live(o)} for ${o.seats}</b>`:''}</div>${o.seats?`<div class="seatbar"><i class="${accepted(o)>=o.seats?'full':''}" style="width:${Math.min(100,accepted(o)/o.seats*100)}%"></i></div>`:''}</button>`).join('')}</div>
   <div class="card"><div class="q-h"><div><div class="h3">${esc(COURSES[r.course])}</div><div class="meta">${fmt(r.date)}${r.end?' to '+fmt(r.end):''} &middot; ${esc(seatTxt(r))}${r.feeM==null?'':' &middot; '+feeLine(r)}</div><div style="margin-top:6px">${rPill(r)}</div></div><button class="btn sec sm" data-a="suggestSeats" ${und?'':'disabled'}>Review a suggestion</button></div>
-  <div class="tbl-scroll"><table><thead><tr><th>Trainee</th><th>Priority</th><th>Requested</th><th>Decision</th></tr></thead><tbody>${r.apps.length?sortedApps(r).map(a=>{const t=T(a.id);return `<tr><td><div class="cell-name">${esc(t?t.name:a.id)}</div><div class="cell-sub">${t?stg(t.stage)+' '+t.hosp:''}</div></td><td><span class="${PR[a.p.lvl][1]}">${PR[a.p.lvl][0]}</span>${a.st==='Withdrawn'?'':a.p.why.map(w=>`<div class="cell-sub">${esc(w)}</div>`).join('')}</td><td class="meta">${fmtS(a.req)}</td><td>${a.st==='Withdrawn'?`<span class="meta">Withdrawn by the trainee${a.wd?', '+fmtS(a.wd):''}</span>`:`<select data-c="setApp" data-i="${a.i}" aria-label="Decision for ${esc(t?t.name:a.id)}"><option value="Requested" ${a.st==='Requested'?'selected':''}>Not decided</option><option ${a.st==='Accepted'?'selected':''}>Accepted</option><option ${a.st==='Waitlisted'?'selected':''}>Waitlisted</option><option ${a.st==='Rejected'?'selected':''}>Rejected</option></select>`}</td></tr>`}).join(''):'<tr><td colspan="4"><div class="empty">No applications yet.</div></td></tr>'}</tbody></table></div>
+  ${overBy(r)?`<div class="note warn" style="margin:12px 20px 0"><b>${live(r)} applications for ${r.seats} places.</b> ${r.rank==='fcfs'?'The suggestion ranks first come, first served (anyone waitlisted last time first).':'The suggestion ranks by priority, then request time.'} You decide who is accepted, waitlisted or rejected.</div>`:''}
+  <div class="tbl-scroll"><table class="stk"><thead><tr><th>Trainee</th><th>Priority</th><th>Requested</th><th>Decision</th></tr></thead><tbody>${r.apps.length?sortedApps(r).map(a=>{const t=T(a.id);return `<tr><td><div class="cell-name">${esc(t?t.name:a.id)}</div><div class="cell-sub">${t?stg(t.stage)+' '+t.hosp:''}</div></td><td><span class="${PR[a.p.lvl][1]}">${PR[a.p.lvl][0]}</span>${a.st==='Withdrawn'?'':a.p.why.map(w=>`<div class="cell-sub">${esc(w)}</div>`).join('')}</td><td class="meta">${fmtS(a.req)}</td><td>${a.st==='Withdrawn'?`<span class="meta">Withdrawn by the trainee${a.wd?', '+fmtS(a.wd):''}</span>`:`<select data-c="setApp" data-i="${a.i}" aria-label="Decision for ${esc(t?t.name:a.id)}"><option value="Requested" ${a.st==='Requested'?'selected':''}>Not decided</option><option ${a.st==='Accepted'?'selected':''}>Accepted</option><option ${a.st==='Waitlisted'?'selected':''}>Waitlisted</option><option ${a.st==='Rejected'?'selected':''}>Rejected</option></select>`}</td></tr>`}).join(''):'<tr><td colspan="4"><div class="empty">No applications yet.</div></td></tr>'}</tbody></table></div>
   <div class="q-wait">${over?`<b>${accepted(r)} accepted for ${r.seats} seats.</b> You can keep this, or change a decision.`:full?'All seats are taken. You can still accept more, waitlist or reject.':'Waitlisted trainees are tagged as priority when the next round of this course opens.'}</div></div></div>`;
 }
 function suggestPlan(r){
@@ -823,7 +882,7 @@ function suggestSeats(){
   const r=S.rounds.find(x=>x.id===ui.round);const p=suggestPlan(r);
   if(!p.acc.length&&!p.wl.length){toast('Nobody is waiting for a decision.');return}
   const li=a=>{const t=T(a.id);return `<li><b>${esc(t?t.name:a.id)}</b> <span class="meta">${a.p.why.length?esc(a.p.why[0]):'No special priority'}</span></li>`};
-  openModal(`<h3>Suggested decisions</h3><p class="meta" style="margin:6px 0 12px">Ordered by priority, then by request time. Nothing changes until you apply, and you can still change any row afterwards. Rejections are never suggested.</p>
+  openModal(`<h3>Suggested decisions</h3><p class="meta" style="margin:6px 0 12px">${r.rank==='fcfs'?'Ordered first come, first served, with anyone waitlisted last time first.':'Ordered by priority, then by request time.'} Nothing changes until you apply, and you can still change any row afterwards. Rejections are never suggested.</p>
   <div class="sect" style="margin-top:0">Would accept (${p.acc.length})</div><ul style="margin:6px 0 12px 18px;font-size:13px;display:grid;gap:4px">${p.acc.map(li).join('')||'<li class="meta">None</li>'}</ul>
   <div class="sect" style="margin-top:0">Would waitlist (${p.wl.length})</div><ul style="margin:6px 0 4px 18px;font-size:13px;display:grid;gap:4px">${p.wl.map(li).join('')||'<li class="meta">None</li>'}</ul>
   <div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="applySuggest">Apply this suggestion</button></div>`);
@@ -1061,10 +1120,11 @@ function openLog(){
 const TABS=[['home','Home'],['trainees','Trainees'],['courses','Courses'],['exams','Exams'],['projects','Formal projects'],['centres','Centres and SOTs'],['wba','iWBA sync']];
 function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct,courses:c.triage,projects:c.pjDispatch+c.pjOver+c.pjIn,centres:c.pend+c.accSoon,wba:c.link+c.unm}[k]||0}
 const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,projects:vProjects,centres:vCentres,wba:vWba};
+function labelTables(){document.querySelectorAll('#app table').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(h=>h.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.dataset.l===undefined&&hs[i]!==undefined)td.dataset.l=hs[i]}))})}
 function render(){
   const y=window.scrollY;
   $('#tabs').innerHTML=ui.role==='to'?toTab():TABS.map(([k,l])=>{const b=tabBadge(k);return `<button class="tab ${ui.tab===k?'on':''}" role="tab" aria-selected="${ui.tab===k}" data-a="go" data-t="${k}" tabindex="${ui.tab===k?0:-1}">${l}${b?` <span class="cnt hot">${b}</span>`:''}</button>`}).join('');
-  $('#app').innerHTML=(ui.role==='to'?vTO:VIEWS[ui.tab])();roleChrome();save();
+  $('#app').innerHTML=(ui.role==='to'?vTO:VIEWS[ui.tab])();roleChrome();labelTables();save();
   history.replaceState(null,'','#'+ui.tab+(ui.tab!=='home'&&ui.sub[ui.tab]?'/'+ui.sub[ui.tab]:''));
   document.title='HKCA e-Portfolio · '+TABS.find(t=>t[0]===ui.tab)[1]+' (Secretariat prototype)';
   window.scrollTo(0,y);
@@ -1098,7 +1158,7 @@ document.addEventListener('change',ev=>{
   else if(c==='role'){ui.role=e.value;closeDrawer();$('#demoPop').classList.remove('on');window.scrollTo(0,0);render()}
   else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
   else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);const a=r.apps[+e.dataset.i];a[2]=e.value;if(e.value!=='Requested'){const t=T(a[0]);logAct('Course decision',`${t?t.name:a[0]}: ${e.value} for ${CNAME[r.course]} ${fmt(r.date)}${e.value==='Accepted'?'. Notice of acceptance queued by email':''}`)}save();render()}
-  else if(c==='rfCourse'){if(isMand(e.value))['rfFeeM','rfFeeN'].forEach(i=>{if($('#'+i).value==='')$('#'+i).value=0})}
+  else if(c==='rfCourse'){$('#rfRank').value=['RTB','RTC'].includes(e.value)?'fcfs':'priority';if(isMand(e.value))['rfFeeM','rfFeeN'].forEach(i=>{if($('#'+i).value==='')$('#'+i).value=0})}
   else if(c==='rdS'){ui.rdS=e.value;render()}
   else if(c==='cn'){ui.cn=e.value;ui.sheetOut=null;render()}
   else if(c==='warnOn'){ui.sheetOut.rows[+e.dataset.i].on=e.checked;render()}
