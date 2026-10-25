@@ -1455,11 +1455,13 @@ Conflict rule: a reviewer whose current or parent hospital equals the trainee's 
 
 **Migration 5 (2026-10-25) updated the tables above in place** (courses, applications, formal project reviews, recognition decision date) and added the tables in section 13.
 
-### Rosters
+### Trainer list update (rosters)
+
+Every January and July the SOT of each department confirms the department's trainer list (Dr. Chan, 2026-10-25; this replaces the June and December round). One `roster_rounds` row per round and one `roster_attestations` row per department. The Admin side (rounds, who confirmed, changes reported, mark reviewed) is built in the prototype; the SOT-side screen is a later build. No migration: the period is free text.
 
 ```sql
 CREATE TABLE roster_rounds (
-  id SERIAL PRIMARY KEY, period TEXT NOT NULL UNIQUE,    -- e.g. '2026-06', '2026-12'
+  id SERIAL PRIMARY KEY, period TEXT NOT NULL UNIQUE,    -- January and July rounds, e.g. '2026-07', '2027-01'
   opens_on DATE NOT NULL, closes_on DATE NOT NULL
 );
 CREATE TABLE roster_attestations (
@@ -1467,7 +1469,7 @@ CREATE TABLE roster_attestations (
   round_id INTEGER NOT NULL REFERENCES roster_rounds(id),
   hospital_id INTEGER NOT NULL REFERENCES hospitals(id),
   confirmed_by TEXT REFERENCES users(id), confirmed_at TIMESTAMP,
-  changes_json JSONB,                         -- reported transfers and departures
+  changes_json JSONB,                         -- trainer list changes reported by the SOT: joined, left, moved to another hospital
   reviewed_by TEXT REFERENCES users(id), reviewed_at TIMESTAMP,
   UNIQUE (round_id, hospital_id)
 );

@@ -1743,7 +1743,7 @@ model CourseRequest {
 
 model RosterRound {
   id       String   @id @default(uuid())
-  period   String   @unique // e.g. 2026-06, 2026-12
+  period   String   @unique // January and July rounds, e.g. 2026-07, 2027-01
   opensOn  DateTime @db.Date
   closesOn DateTime @db.Date
 
@@ -1756,7 +1756,7 @@ model RosterAttestation {
   hospitalId    String
   confirmedById String?
   confirmedAt   DateTime?
-  changesJson   Json? // reported transfers and departures
+  changesJson   Json? // trainer list changes: joined, left, moved to another hospital
   reviewedById  String?
   reviewedAt    DateTime?
 
