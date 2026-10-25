@@ -413,7 +413,7 @@ function logAct(a,d){const t=new Date().toTimeString().slice(0,5);const prev=S.l
 
 function pjSeedCases(){
   const L=(d,part,a,det,who)=>({d,part,a,det:det||'',who:who||'Secretariat'});
-  const P=o=>Object.assign({round:1,rev:[],team:false,appeal:null,final:false},o);
+  const P=o=>Object.assign({round:1,rev:[],appeal:null,final:false},o);
   const R=(a,rec,d)=>d?{a,in:true,rec,d}:{a,in:false};
   const mk=(id,title,trainee,type,protocol,manuscript)=>({id,title,trainee,type,sot:true,protocol,manuscript,log:[]});
   const O=[
@@ -445,6 +445,7 @@ function pjSeedCases(){
       if(p.appeal)c.log.push(L(p.appeal.d,N,'Appeal received','Point-by-point reply to the reviewers'));
     });
   });
+  O.forEach(c=>['protocol','manuscript'].forEach(k=>{const p=c[k];if(!p||p.state!=='review')return;const rd=addDays(p.due,-14);if(rd>TODAY)return;p.rev.forEach((r,i)=>{if(r.in)return;r.rem=rd;c.log.push(L(rd,k==='protocol'?'Protocol':'Manuscript','Reminder sent to reviewer '+(i+1),'14 days before the deadline of '+fmt(p.due),'System'))})}));
   return O;
 }
 /* ============ derived: docket, counts ============ */
@@ -511,7 +512,7 @@ function vHome(){
   if(c.unm)q.push({col:'--acc',t:plural(c.unm,'iWBA item')+' not mapped',w:'These assessments are held back until each is matched to a curriculum code.',go:['wba','unmapped'],b:'Map items'});
   const waiting=[];
   const wRecog=S.recog.filter(r=>r.state==='waiting').length;if(wRecog)waiting.push(plural(wRecog,'retrospective recognition request')+' with the applicant');const wTo=S.recog.filter(r=>r.state==='to').length;if(wTo)waiting.push(plural(wTo,'retrospective recognition request')+' with the Training Officer');
-  const wRev=pjEvery().filter(e=>e.p.state==='review'&&!e.p.team&&e.p.due>=TODAY).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
+  const wRev=pjEvery().filter(e=>e.p.state==='review'&&!pjOverdue(e.p)).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
   waiting.push('JCIMED: '+S.jcimed.length+' questions sent 23 Oct');
   const dk=c.dkReady+c.dkAttn;
   const calR=S.rounds.filter(r=>['open','closed'].includes(rState(r))).sort((a,b)=>a.date>b.date?1:-1).slice(0,2).map(r=>[fmtS(r.date),CNAME[r.course]+' round',seatTxt(r)+(rState(r)==='open'?'. Registration closes '+fmtS(r.closes):'. Registration closed')]);
@@ -1290,7 +1291,8 @@ const PK={prot:'protocol',man:'manuscript'},PN={prot:'Protocol',man:'Manuscript'
 const addMonths=(i,n)=>{const d=D(i),t=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+n,1)),dim=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0)).getUTCDate();t.setUTCDate(Math.min(d.getUTCDate(),dim));return iso(t)};
 const pjCase=id=>S.projects.find(x=>x.id===id);
 const pjAct=p=>p.state!=='approved'&&!(p.state==='rejected'&&p.final);
-const pjOverdue=p=>p.state==='review'&&!p.team&&p.due<TODAY;
+const pjOverdue=p=>p.state==='review'&&p.due<TODAY&&p.rev.some(r=>!r.in&&!r.team);
+const pjRemDate=p=>addDays(p.due,-14);
 function pjEvery(){const o=[];S.projects.forEach(c=>['prot','man'].forEach(k=>{const p=c[PK[k]];if(p)o.push({c,k,p})}));return o}
 const pjParts=k=>pjEvery().filter(e=>e.k===k);
 const pjUnder=()=>S.projects.filter(c=>c.protocol&&c.protocol.state==='approved'&&!c.manuscript);
@@ -1302,7 +1304,7 @@ function pjWhere(e){
   if(p.paper)return dt('Accepted paper, '+fmtS(p.at),'ok');
   switch(p.state){
     case 'dispatch':return dt('Reviewers not chosen','none');
-    case 'review':{if(p.team)return dt('With the Formal Project Team','info');const d=days(TODAY,p.due),w=p.rev.filter(r=>!r.in).length;return d<0?dt(plural(w,'review')+' '+(-d)+' days overdue','bad'):dt(plural(w,'review')+' due '+fmtS(p.due)+', '+d+' days left','info')}
+    case 'review':{const out=p.rev.filter(r=>!r.in),mine=out.filter(r=>!r.team),tm=out.length-mine.length;if(!mine.length)return dt('Formal Project Team reviewing '+plural(tm,'missing report'),'info');const d=days(TODAY,p.due),w=mine.length;return d<0?dt(plural(w,'review')+' '+(-d)+' days overdue'+(tm?', '+tm+' with the Team':''),'bad'):dt(plural(w,'review')+' due '+fmtS(p.due)+', '+d+' days left','info')}
     case 'reviewsIn':{const same=p.rev[0].rec===p.rev[1].rec;return dt(same?'Reviewers agree: '+p.rev[0].rec:'Reviewers differ','' +(same?'ok':'warn'))}
     case 'revision':return dt('Revision requested '+fmtS(p.decD)+', with the trainee','warn');
     case 'appeal':return dt('Appeal received '+fmtS(p.appeal.d),'info');
@@ -1358,14 +1360,26 @@ function partBlock(c,k){
     const el=eligible(c),ex=S.assessors.filter(a=>a.hosp===t.hosp);
     h+=`<div class="sect">Choose two reviewers</div><div id="pickList">${el.map(a=>`<label class="chk"><input type="checkbox" data-c="pick" value="${a.id}"><span>${esc(a.name)}<small>${a.hosp}</small></span></label>`).join('')}</div>${ex.length?`<details class="fold"><summary>${plural(ex.length,'assessor')} excluded</summary><div class="in meta">${ex.map(a=>esc(a.name)+', '+a.hosp).join('<br>')}<br>Same hospital as the trainee.</div></details>`:''}<p class="note">Both reviewers get two months from today, to ${fmt(addMonths(TODAY,2))}.</p><button class="btn pri" id="dispBtn" data-a="pjDispatch" data-id="${id}" data-k="${k}" disabled>Send to reviewers</button>`;
   }else if(p.state==='review'){
-    const od=pjOverdue(p);
-    h+=`<div class="sect">Reviewers</div>${p.rev.map((r,i)=>{const a=S.assessors.find(x=>x.id===r.a);return `<div class="chk" style="cursor:default;display:block"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>${esc(a.name)}<small>${a.hosp}</small></span>${r.in?`<b>${esc(r.rec)}</b>`:dt(od?'Overdue':'Not yet',od?'bad':'none')}</div>${r.in||p.team?'':`<div class="btn-row" style="margin-top:8px"><select id="rv${k}${i}" aria-label="Recommendation of reviewer ${i+1}">${REC.map(x=>`<option>${x}</option>`).join('')}</select><button class="btn sec sm" data-a="pjRecRev" data-id="${id}" data-k="${k}" data-i="${i}">Record review</button></div>`}</div>`}).join('')}`;
-    if(p.team)h+=`<p class="note">With the Formal Project Team since the review period ended. Record the Team\u2019s decision.</p>${decisionForm(id,k,'Revision and resubmission')}`;
-    else if(od)h+=`<p class="note warn">The two months to ${fmt(p.due)} have passed. After two months the Formal Project Team handles the review.</p><button class="btn pri" data-a="pjTeam" data-id="${id}" data-k="${k}">Hand to the Formal Project Team</button>`;
-    else h+=`<p class="note">Due ${fmt(p.due)}. A reminder goes to each reviewer who has not finished, 14 days before.</p>`;
+    const pastDue=p.due<TODAY,od=pjOverdue(p),rd=pjRemDate(p);
+    h+=`<div class="sect">Reviewers</div>${p.rev.map((r,i)=>{
+      const a=S.assessors.find(x=>x.id===r.a);
+      const stat=r.in?`<b>${esc(r.rec)}${r.by==='Team'?' (Formal Project Team)':''}${r.late?' (late report, accepted)':''}</b>`:r.team?dt('With the Team','info'):dt(pastDue?'Overdue':'Not yet',pastDue?'bad':'none');
+      const rem=r.in?'':`<div class="meta" style="margin-top:6px">${rd<=TODAY?'Reminder sent '+fmt(rd)+', 14 days before the deadline':'Reminder goes '+fmt(rd)+', 14 days before the deadline'}</div>`;
+      const sel=(pre,lbl)=>`<select id="${pre}${k}${i}" aria-label="${lbl}">${REC.map(x=>`<option>${x}</option>`).join('')}</select>`;
+      let act='';
+      if(!r.in){
+        const late=`<details class="fold" style="margin-top:8px"><summary>Accept a late report (exceptional circumstances)</summary><div class="in"><p class="meta" style="margin:0 0 8px">A late report is ignored unless there are exceptional circumstances. The Secretariat can override.</p><div class="btn-row">${sel('lr','Recommendation in the late report')}</div><div class="fld" style="margin:8px 0"><label for="lw${k}${i}">Reason for the override</label><input type="text" id="lw${k}${i}" placeholder="Exceptional circumstances"></div><button class="btn sec sm" data-a="pjLate" data-id="${id}" data-k="${k}" data-i="${i}">Accept late report</button></div></details>`;
+        if(r.team)act=`<div class="btn-row" style="margin-top:8px">${sel('tv','Recommendation of the Formal Project Team')}<button class="btn pri sm" data-a="pjTeamRev" data-id="${id}" data-k="${k}" data-i="${i}">Record Team review</button></div>${late}`;
+        else if(pastDue)act=`<div class="btn-row" style="margin-top:8px"><button class="btn pri sm" data-a="pjTeam" data-id="${id}" data-k="${k}" data-i="${i}">Hand to the Formal Project Team</button></div>${late}`;
+        else act=`<div class="btn-row" style="margin-top:8px">${sel('rv','Recommendation of reviewer '+(i+1))}<button class="btn sec sm" data-a="pjRecRev" data-id="${id}" data-k="${k}" data-i="${i}">Record review</button></div>`;
+      }
+      return `<div class="chk" style="cursor:default;display:block"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>${esc(a.name)}<small>${a.hosp}</small></span>${stat}</div>${rem}${act}</div>`}).join('')}`;
+    if(od)h+=`<p class="note warn">The two months to ${fmt(p.due)} have passed. After two months the Formal Project Team handles the review of any report still missing; a review that is already in stands. A late report is ignored unless there are exceptional circumstances.</p>`;
+    else if(pastDue)h+=`<p class="note">The Formal Project Team is reviewing the missing report. The reviews already in stand.</p>`;
+    else h+=`<p class="note">Due ${fmt(p.due)}. A reminder goes to each reviewer who has not finished on ${fmt(rd)}, 14 days before.</p>`;
   }else if(p.state==='reviewsIn'){
     const same=p.rev[0].rec===p.rev[1].rec;
-    h+=`<div class="sect">Reviews</div>${p.rev.map((r,i)=>`<div class="chk" style="cursor:default;justify-content:space-between"><span>Reviewer ${i+1}<small>Name hidden from the trainee</small></span><b>${esc(r.rec)}</b></div>`).join('')}<div class="sect">Decision</div>${same?'':'<p class="note warn">The reviewers differ. The Formal Project Team decides.</p>'}${decisionForm(id,k,same?p.rev[0].rec:'Revision and resubmission')}`;
+    h+=`<div class="sect">Reviews</div>${p.rev.map((r,i)=>`<div class="chk" style="cursor:default;justify-content:space-between"><span>Reviewer ${i+1}<small>Name hidden from the trainee</small></span><b>${esc(r.rec)}${r.by==='Team'?' (Formal Project Team)':''}${r.late?' (late report, accepted)':''}</b></div>`).join('')}<div class="sect">Decision</div>${same?'':'<p class="note warn">The reviewers differ. The Formal Project Team decides.</p>'}${decisionForm(id,k,same?p.rev[0].rec:'Revision and resubmission')}`;
   }else if(p.state==='revision'){
     h+=`<p class="note">Revision requested ${fmt(p.decD)}. The trainee revises and resubmits. Changes to an approved protocol also need resubmission.</p><p class="note">On resubmission the same reviewers get two months from that day, to ${fmt(addMonths(TODAY,2))} if recorded today.</p><button class="btn pri" data-a="pjResub" data-id="${id}" data-k="${k}">Record resubmission</button>`;
   }else if(p.state==='appeal'){
@@ -1386,9 +1400,12 @@ function openCase(id){
   openDrawer(c.id,c.title.length>56?c.title.slice(0,54)+'\u2026':c.title,info+partBlock(c,'prot')+partBlock(c,'man')+tlh,'');
 }
 function pjRefresh(id,msg){openCase(id);render();if(msg)toast(msg)}
-function pjDispatch(id,k){const c=pjCase(id),p=c[PK[k]],ids=ui.pick;p.state='review';p.disp=TODAY;p.due=addMonths(TODAY,2);p.team=false;p.rev=ids.map(a=>({a,in:false}));pjLog(c,PN[k],'Reviewers assigned',ids.join(' and ')+'; review due '+fmt(p.due));logAct('Reviewers assigned',`${c.id} ${PN[k].toLowerCase()}: ${ids.join(' and ')}, due ${fmt(p.due)}`);ui.pjFilter='review';pjRefresh(id,'Sent to two reviewers. Due '+fmtS(p.due)+'.')}
-function pjRecRev(id,k,i){const c=pjCase(id),p=c[PK[k]],r=p.rev[i],rec=$('#rv'+k+i).value;r.in=true;r.rec=rec;r.d=TODAY;pjLog(c,PN[k],'Review in','Reviewer '+(i+1)+' recommends: '+rec,'Reviewer');logAct('Project review recorded',`${c.id} ${PN[k].toLowerCase()}: reviewer ${i+1}, ${rec}`);if(p.rev.every(x=>x.in))p.state='reviewsIn';pjRefresh(id,p.state==='reviewsIn'?'Both reviews are in.':'Review recorded.')}
-function pjTeam(id,k){const c=pjCase(id),p=c[PK[k]];p.team=true;pjLog(c,PN[k],'Handed to the Formal Project Team','No review within two months');logAct('Project handed to the Formal Project Team',`${c.id} ${PN[k].toLowerCase()}: review period ended ${fmt(p.due)}`);pjRefresh(id,'Handed to the Formal Project Team.')}
+function pjDispatch(id,k){const c=pjCase(id),p=c[PK[k]],ids=ui.pick;p.state='review';p.disp=TODAY;p.due=addMonths(TODAY,2);p.rev=ids.map(a=>({a,in:false}));pjLog(c,PN[k],'Reviewers assigned',ids.join(' and ')+'; review due '+fmt(p.due));logAct('Reviewers assigned',`${c.id} ${PN[k].toLowerCase()}: ${ids.join(' and ')}, due ${fmt(p.due)}`);ui.pjFilter='review';pjRefresh(id,'Sent to two reviewers. Due '+fmtS(p.due)+'.')}
+function pjRecRev(id,k,i){const c=pjCase(id),p=c[PK[k]],r=p.rev[i],rec=$('#rv'+k+i).value;r.in=true;r.rec=rec;r.d=TODAY;pjLog(c,PN[k],'Review in','Reviewer '+(i+1)+' recommends: '+rec,'Reviewer');logAct('Project review recorded',`${c.id} ${PN[k].toLowerCase()}: reviewer ${i+1}, ${rec}`);pjAfterRev(id,k,'Review recorded.')}
+function pjAfterRev(id,k,msg){const p=pjCase(id)[PK[k]];if(p.rev.every(x=>x.in))p.state='reviewsIn';pjRefresh(id,p.state==='reviewsIn'?'All reviews are in. Record the decision.':msg)}
+function pjTeam(id,k,i){const c=pjCase(id),p=c[PK[k]],r=p.rev[i];r.team=true;r.tD=TODAY;pjLog(c,PN[k],'Review handed to the Formal Project Team','Reviewer '+(i+1)+': no report within two months (due '+fmt(p.due)+')');logAct('Review handed to the Formal Project Team',`${c.id} ${PN[k].toLowerCase()}: reviewer ${i+1}, due ${fmt(p.due)}`);pjRefresh(id,'Handed to the Formal Project Team. The review already in stands.')}
+function pjTeamRev(id,k,i){const c=pjCase(id),p=c[PK[k]],r=p.rev[i],rec=$('#tv'+k+i).value;r.in=true;r.rec=rec;r.by='Team';r.d=TODAY;pjLog(c,PN[k],'Review in','Formal Project Team review (replacing reviewer '+(i+1)+'): '+rec,'Formal Project Team');logAct('Project review recorded',`${c.id} ${PN[k].toLowerCase()}: Formal Project Team, ${rec}`);pjAfterRev(id,k,'Team review recorded.')}
+function pjLate(id,k,i){const c=pjCase(id),p=c[PK[k]],r=p.rev[i],rec=$('#lr'+k+i).value,why=$('#lw'+k+i).value.trim();if(why.length<5){toast('Give the exceptional circumstances for the override.');return}r.in=true;r.rec=rec;r.late=true;r.lateWhy=why;r.d=TODAY;pjLog(c,PN[k],'Late report accepted, exceptional circumstances','Reviewer '+(i+1)+' recommends: '+rec+'. Reason: '+why,'Secretariat (override)');logAct('Late project review accepted',`${c.id} ${PN[k].toLowerCase()}: reviewer ${i+1}, ${rec}. ${why}`);pjAfterRev(id,k,'Late report accepted.')}
 function pjDecide(id,k){
   const c=pjCase(id),p=c[PK[k]],N=PN[k],res=$('#pjOut'+k).value,note=$('#pjNote'+k).value.trim();
   const who=p.state==='appeal'?'Formal Project Team, on appeal':'Formal Project Team';
@@ -1399,10 +1416,10 @@ function pjDecide(id,k){
   if(res==='Approved'&&k==='prot')ui.pjFilter='approved';
   pjRefresh(id,N+': '+res.toLowerCase()+'.');
 }
-function pjResub(id,k){const c=pjCase(id),p=c[PK[k]];p.state='review';p.round=(p.round||1)+1;p.disp=TODAY;p.due=addMonths(TODAY,2);p.team=false;p.rev=p.rev.map(r=>({a:r.a,in:false}));pjLog(c,PN[k],'Resubmitted','Same reviewers; due '+fmt(p.due));logAct('Project resubmitted',`${c.id} ${PN[k].toLowerCase()}: due ${fmt(p.due)}`);ui.pjFilter='review';pjRefresh(id,'Resubmission recorded. Due '+fmtS(p.due)+'.')}
+function pjResub(id,k){const c=pjCase(id),p=c[PK[k]];p.state='review';p.round=(p.round||1)+1;p.disp=TODAY;p.due=addMonths(TODAY,2);p.rev=p.rev.map(r=>({a:r.a,in:false}));pjLog(c,PN[k],'Resubmitted','Same reviewers; due '+fmt(p.due));logAct('Project resubmitted',`${c.id} ${PN[k].toLowerCase()}: due ${fmt(p.due)}`);ui.pjFilter='review';pjRefresh(id,'Resubmission recorded. Due '+fmtS(p.due)+'.')}
 function pjAppeal(id,k){const c=pjCase(id),p=c[PK[k]];p.appeal={d:TODAY};p.state='appeal';pjLog(c,PN[k],'Appeal received','Point-by-point reply to the reviewers');logAct('Project appeal received',`${c.id} ${PN[k].toLowerCase()}`);ui.pjFilter='appeal';pjRefresh(id,'Appeal recorded.')}
 function pjNoAppeal(id,k){const c=pjCase(id),p=c[PK[k]];p.final=true;pjLog(c,PN[k],'Closed without appeal','The rejection stands');logAct('Project closed without appeal',`${c.id} ${PN[k].toLowerCase()}`);pjRefresh(id,'Closed without appeal.')}
-function pjManSub(id){const c=pjCase(id);c.manuscript={state:'dispatch',sub:TODAY,round:1,rev:[],team:false,appeal:null,final:false};pjLog(c,'Manuscript','Submitted','Recorded by the Secretariat');logAct('Manuscript submitted',`${c.id}: ${T(c.trainee).name}`);ui.sub.projects='man';ui.pjFilter='dispatch';pjRefresh(id,'Manuscript recorded. Choose reviewers.')}
+function pjManSub(id){const c=pjCase(id);c.manuscript={state:'dispatch',sub:TODAY,round:1,rev:[],appeal:null,final:false};pjLog(c,'Manuscript','Submitted','Recorded by the Secretariat');logAct('Manuscript submitted',`${c.id}: ${T(c.trainee).name}`);ui.sub.projects='man';ui.pjFilter='dispatch';pjRefresh(id,'Manuscript recorded. Choose reviewers.')}
 const pjTrainees=()=>S.trainees.filter(t=>t.status==='Active');
 const pjTrSel=()=>`<div class="fld"><label for="pjTr">Trainee</label><select id="pjTr">${pjTrainees().map(t=>`<option value="${t.id}">${esc(t.name)}, ${t.hosp}</option>`).join('')}</select></div>`;
 const pjTypeSel=()=>`<div class="fld"><label for="pjTy">Project type</label><select id="pjTy">${PJ_TYPES.map(x=>`<option>${x}</option>`).join('')}</select></div><p class="note">Narrative reviews and case reports are not eligible, whether or not they are published.</p>`;
@@ -1412,7 +1429,7 @@ function pjSaveNew(){
   const id=$('#pjTr').value,ti=$('#pjTi').value.trim(),ty=$('#pjTy').value,e=$('#pjErr');
   const err=ti.length<8?'Enter the project title.':!$('#pjSot').checked?'The SOT must sign off the submission before it is recorded.':'';
   if(err){e.textContent=err;e.hidden=false;return}
-  const c={id:pjNextId(),title:ti,trainee:id,type:ty,sot:true,protocol:{state:'dispatch',sub:TODAY,round:1,rev:[],team:false,appeal:null,final:false},manuscript:null,log:[]};
+  const c={id:pjNextId(),title:ti,trainee:id,type:ty,sot:true,protocol:{state:'dispatch',sub:TODAY,round:1,rev:[],appeal:null,final:false},manuscript:null,log:[]};
   pjLog(c,'Protocol','Submitted','Recorded by the Secretariat; SOT signed off');S.projects.push(c);logAct('Protocol recorded',`${c.id}: ${T(id).name}, ${ty}`);
   ui.sub.projects='prot';ui.pjFilter='dispatch';closeDrawer();render();toast('Protocol recorded. Choose reviewers.');
 }
@@ -1421,7 +1438,7 @@ function pjSavePaper(){
   const id=$('#pjTr').value,ti=$('#pjTi').value.trim(),ty=$('#pjTy').value,jo=$('#pjJo').value.trim(),da=$('#pjDa').value,au=$('#pjAu').value,e=$('#pjErr');
   const err=ti.length<8?'Enter the paper title.':!jo?'Enter the journal.':(!da||da>TODAY)?'Enter a past acceptance date.':!$('#pjEv').checked?'Evidence of acceptance must be seen first.':'';
   if(err){e.textContent=err;e.hidden=false;return}
-  const c={id:pjNextId(),title:ti,trainee:id,type:ty,sot:true,protocol:null,manuscript:{state:'approved',sub:da,at:da,round:1,rev:[],team:false,appeal:null,final:false,paper:{journal:jo,authorship:au}},log:[]};
+  const c={id:pjNextId(),title:ti,trainee:id,type:ty,sot:true,protocol:null,manuscript:{state:'approved',sub:da,at:da,round:1,rev:[],appeal:null,final:false,paper:{journal:jo,authorship:au}},log:[]};
   pjLog(c,'Manuscript','Accepted paper recorded',jo+', '+au+', accepted '+fmt(da)+'. Evidence of acceptance seen');
   pjLog(c,'Manuscript','Board of Education and Board of Censors advised','The formal project requirement is met');
   S.projects.push(c);logAct('Accepted paper recorded',`${c.id}: ${T(id).name}, ${jo}`);ui.sub.projects='man';ui.pjFilter='approved';closeDrawer();render();toast('Accepted paper recorded. Requirement met.');
@@ -1531,7 +1548,7 @@ const ACT={
   openRecog:e=>openRecog(e.dataset.id),sendTO:e=>sendTO(e.dataset.id),returnRecog:e=>returnRecog(e.dataset.id),doRecogReturn:e=>doRecogReturn(e.dataset.id),openToForm:e=>openToForm(e.dataset.id,e.dataset.b==='1'),toSubmit:e=>toSubmit(e.dataset.id,e.dataset.b==='1'),openToView:e=>openToView(e.dataset.id),simSubmit,unlockRecog:e=>unlockRecog(e.dataset.id),reviewCredit:e=>reviewCredit(e.dataset.id),execCredit,
   pickRound:e=>{ui.round=e.dataset.id;render()},rdF:e=>{ui.rdF=e.dataset.v;render()},newRound,editRound:e=>editRound(e.dataset.id),saveRound:e=>saveRound(e.dataset.id),openNow:e=>openNow(e.dataset.id),closeNow:e=>closeNow(e.dataset.id),reopen:e=>reopen(e.dataset.id),doReopen:e=>doReopen(e.dataset.id),decideRound:e=>decideRound(e.dataset.id),attendRound:e=>attendRound(e.dataset.id),suggestSeats,applySuggest,loadSheet:()=>{ui.sheet=SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
   exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=exSample(exName());ui.exOut=null;render()},checkEx,commitEx,exv:e=>{ui.exView=e.dataset.v;ui.exOut=null;render()},newSit:()=>sitForm(''),editSit:e=>sitForm(e.dataset.id),saveSit:e=>saveSit(e.dataset.id),openSit:e=>openSit(e.dataset.id),closeSit:e=>closeSit(e.dataset.id),doCloseSit:e=>doCloseSit(e.dataset.id),viewApps:e=>{ui.exSit=e.dataset.id;ui.exView='apps';ui.exFilter='All';render()},openExApp:e=>openExApp(e.dataset.s,e.dataset.id),exFee:e=>exFee(e.dataset.s,e.dataset.id),exExc:e=>exExc(e.dataset.s,e.dataset.id),exNo:e=>exNo(e.dataset.s,e.dataset.id),exWd:e=>exWd(e.dataset.s,e.dataset.id),saveElig:e=>saveElig(e.dataset.id),sotYes:e=>sotYes(e.dataset.s,e.dataset.id),sotNo:e=>sotNoAsk(e.dataset.s,e.dataset.id),doSotNo:e=>doSotNo(e.dataset.s,e.dataset.id),
-  pjF:e=>{ui.pjFilter=e.dataset.v;render()},pjLogF:e=>{ui.pjLogF=e.dataset.v;render()},openCase:e=>openCase(e.dataset.id),pjDispatch:e=>pjDispatch(e.dataset.id,e.dataset.k),pjRecRev:e=>pjRecRev(e.dataset.id,e.dataset.k,+e.dataset.i),pjTeam:e=>pjTeam(e.dataset.id,e.dataset.k),pjDecide:e=>pjDecide(e.dataset.id,e.dataset.k),pjResub:e=>pjResub(e.dataset.id,e.dataset.k),pjAppeal:e=>pjAppeal(e.dataset.id,e.dataset.k),pjNoAppeal:e=>pjNoAppeal(e.dataset.id,e.dataset.k),pjManSub:e=>pjManSub(e.dataset.id),pjNewForm,pjSaveNew,pjPaperForm,pjSavePaper,
+  pjF:e=>{ui.pjFilter=e.dataset.v;render()},pjLogF:e=>{ui.pjLogF=e.dataset.v;render()},openCase:e=>openCase(e.dataset.id),pjDispatch:e=>pjDispatch(e.dataset.id,e.dataset.k),pjRecRev:e=>pjRecRev(e.dataset.id,e.dataset.k,+e.dataset.i),pjTeam:e=>pjTeam(e.dataset.id,e.dataset.k,+e.dataset.i),pjTeamRev:e=>pjTeamRev(e.dataset.id,e.dataset.k,+e.dataset.i),pjLate:e=>pjLate(e.dataset.id,e.dataset.k,+e.dataset.i),pjDecide:e=>pjDecide(e.dataset.id,e.dataset.k),pjResub:e=>pjResub(e.dataset.id,e.dataset.k),pjAppeal:e=>pjAppeal(e.dataset.id,e.dataset.k),pjNoAppeal:e=>pjNoAppeal(e.dataset.id,e.dataset.k),pjManSub:e=>pjManSub(e.dataset.id),pjNewForm,pjSaveNew,pjPaperForm,pjSavePaper,
   addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),
   linkIt:e=>linkIt(e.dataset.id,e.dataset.to),linkOther:e=>linkOther(e.dataset.id),linkSel:e=>linkIt(e.dataset.id,$('#lkSel').value),bulkLink,doBulk,saveUnm:e=>saveUnm(+e.dataset.i),readNow
 };
