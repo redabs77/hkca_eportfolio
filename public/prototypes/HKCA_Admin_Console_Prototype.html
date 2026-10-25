@@ -141,6 +141,12 @@ td.act,th.act{text-align:right;white-space:nowrap}
 .chk input{margin-top:3px}
 .chk small{display:block;color:var(--ink3);font-size:12px}
 .chk.done{background:var(--ok-bg);border-color:transparent}
+.sigrow{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;font-size:13px}
+.sigrow small{display:block;color:var(--ink3);font-size:12px}
+.sigrow.done{background:var(--ok-bg);border-color:transparent}
+.sigrow .acts{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.chipgrp{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.chipgrp+.chipgrp{padding-left:14px;border-left:1px solid var(--border-sub)}
 .note{font-size:12.5px;color:var(--ink2);background:var(--bg2);border:1px solid var(--border-sub);border-radius:10px;padding:10px 12px;margin:10px 0}
 .note.warn{background:var(--wn-bg);color:var(--wn-f);border-color:transparent}
 .note.bad{background:var(--bd-bg);color:var(--bd-f);border-color:transparent}
@@ -206,7 +212,7 @@ table.dk{table-layout:fixed}
 <div class="modal-bg" id="modalBg"><div class="modal" role="dialog" aria-modal="true" id="modal"></div></div>
 <div class="toast" id="toast" role="status"></div>
 <button class="btn sec sm demo-btn" data-a="demoPop">Demo controls</button>
-<div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div>
+<div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><button class="btn sec sm" data-a="simSign">Simulate pending signatures arriving</button> <button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div>
 <script>
 /* ============ helpers ============ */
 const $=s=>document.querySelector(s);
@@ -257,15 +263,15 @@ function seedState(){
     'HKCA-2020-007':{fail:{}},
     'HKCA-2020-011':{fail:{courses:'ECHO-A outstanding'}}
   };
-  const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'Exit from training'}};
+  const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:3,
+    v:4,
     trainees,dk,GATES,
     intake:[
-      {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true,end:false},note:''},
-      {id:'AP-26-033',name:'Dr. Lucas Wan',from:'Applying from PWH',submitted:'2026-10-14',hosp:'PWH',stage:'BAT',chk:{mchk:false,fee:false,end:false},note:''},
-      {id:'AP-26-034',name:'Dr. Chloe Au',from:'Applying from TMH',submitted:'2026-10-19',hosp:'TMH',stage:'BAT',chk:{mchk:true,fee:false,end:true},note:''},
-      {id:'AP-26-036',name:'Dr. Benny Hui',from:'Applying from KWH (lateral transfer)',submitted:'2026-10-21',hosp:'KWH',stage:'HAT',chk:{mchk:false,fee:false,end:false},note:''}
+      {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
+      {id:'AP-26-033',name:'Dr. Lucas Wan',from:'Applying from PWH',submitted:'2026-10-14',hosp:'PWH',stage:'BAT',chk:{mchk:false,fee:false},mc:{type:'Limited',no:'30418'},sig:{cos:null,sot:null},note:''},
+      {id:'AP-26-034',name:'Dr. Chloe Au',from:'Applying from TMH',submitted:'2026-10-19',hosp:'TMH',stage:'BAT',chk:{mchk:true,fee:false},mc:{type:'Full',no:'19652'},sig:{cos:{m:'esign',d:'2026-10-16'},sot:{m:'pdf',d:'2026-10-19'}},note:''},
+      {id:'AP-26-036',name:'Dr. Benny Hui',from:'Applying from KWH (lateral transfer)',submitted:'2026-10-21',hosp:'KWH',stage:'HAT',chk:{mchk:false,fee:false},mc:{type:'Full',no:'17240'},sig:{cos:{m:'pdf',d:'2026-10-21'},sot:null},note:''}
     ],
     recog:[
       {id:'RR-26-004',name:'Dr. Zoe Kwan',source:'Anaesthesia training overseas (ANZCA)',state:'gate',req:{CA:12,ICU:0,EL:0,cases:140},asked:'2026-10-20',docs:[],credit:null},
@@ -342,10 +348,10 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==3)S=seedState();
+if(!S||S.v!==4)S=seedState();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const ui={tab:'home',sub:{trainees:'registry',courses:'seats',exams:'cands',projects:'dispatch',centres:'accred',wba:'link'},
-  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},cn:'EMAC-1011'};
+  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
 const T=id=>S.trainees.find(t=>t.id===id);
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
 function logAct(a,d){const t=new Date().toTimeString().slice(0,5);const prev=S.log[0]?S.log[0].h:'0';S.log.unshift({d:TODAY,t,a,det:d,h:hash(prev+a+d+t)});save()}
@@ -402,7 +408,7 @@ function vHome(){
   const oldest=S.intake.reduce((m,a)=>a.submitted<m?a.submitted:m,'9999-99');
   if(c.pjOver)q.push({col:'--t5f',t:plural(c.pjOver,'project review')+' overdue',w:'The 30-day reviewer timer has passed. Reassign the reviewer or wait.',go:['projects','review'],b:'Open reviews'});
   if(c.link)q.push({col:'--acc',t:plural(c.link,'person','people')+' to link in iWBA',w:'Assessments from these people cannot reach a portfolio until you confirm who they are.',go:['wba','link'],b:'Link people'});
-  if(c.intake)q.push({col:'--t1f',t:plural(c.intake,'new application')+' to vet',w:'Oldest has waited '+ago(days(oldest,TODAY))+'. Three checks, then the account opens.',go:['trainees','intake'],b:'Open queue'});
+  if(c.intake)q.push({col:'--t1f',t:plural(c.intake,'membership application')+' to vet',w:'Oldest has waited '+ago(days(oldest,TODAY))+'. Three checks, then the account opens.',go:['trainees','intake'],b:'Open applications'});
   if(c.recogAct)q.push({col:'--t1f',t:plural(c.recogAct,'recognition request')+' need you',w:S.recog.filter(r=>r.state==='decide').length?'One has documents in and waits for the Board decision to be recorded.':'Access to the form is waiting to be unlocked.',go:['trainees','recog'],b:'Open requests'});
   if(c.triage)q.push({col:'--t4f',t:plural(c.triage,'course request')+' to triage',w:'Across '+plural(c.rounds,'round')+'. Priority and request time are already ordered for you.',go:['courses','seats'],b:'Allocate seats'});
   if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects','dispatch'],b:'Dispatch'});
@@ -413,7 +419,7 @@ function vHome(){
   const wRev=S.projects.filter(p=>p.state==='review'&&p.due>=TODAY).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
   waiting.push('JCIMED: '+S.jcimed.length+' questions sent 23 Oct');
   const dk=c.dkReady+c.dkAttn;
-  const cal=[['14 Nov','EASE round','of '+S.rounds[0].seats+' seats: '+S.rounds[0].apps.filter(a=>a[2]==='Accepted').length+' allocated'],['28 Nov','ADAM-A round',''],['1 Dec','Roster attestation opens','SOTs confirm trainee lists'],['Dec','Progression docket',dk+' trainees in a gate window'],['31 Dec','TKOH SOT term ends','Replacement endorsed'],['Mar 2027','PYNEH accreditation expires','Renewal inspection due']];
+  const cal=[['14 Nov','EASE round','of '+S.rounds[0].seats+' seats: '+S.rounds[0].apps.filter(a=>a[2]==='Accepted').length+' allocated'],['28 Nov','ADAM-A round',''],['1 Dec','Roster attestation opens','SOTs confirm trainee lists'],['Dec','Training Progression',dk+' trainees in a gate window'],['31 Dec','TKOH SOT term ends','Replacement endorsed'],['Mar 2027','PYNEH accreditation expires','Renewal inspection due']];
   return head('Friday 24 October 2026','Work queue','What needs the Secretariat, most time-sensitive first.')+
   `<div class="hm"><div class="card"><div class="q-h"><div class="h3">Needs you</div><span class="meta">${q.length?plural(q.length,'item'):'Nothing open'}</span></div>
   ${q.length?q.map(x=>`<div class="q-item"><div class="q-bar" style="background:var(${x.col})"></div><div><div class="q-title">${x.t}</div><div class="q-why">${x.w}</div></div><button class="btn pri sm" data-a="go" data-t="${x.go[0]}" data-k="${x.go[1]}">${x.b}</button></div>`).join(''):'<div class="q-clear">Everything is cleared. New items appear here as trainees, SOTs and iWBA create them.</div>'}
@@ -426,10 +432,10 @@ function vHome(){
 const stOrder={BAT:1,HAT:2,PFY:3};
 function vTrainees(){
   const c=counts();const s=ui.sub.trainees;
-  const seg=subSeg('trainees',[['registry','Registry'],['intake','Intake queue',c.intake],['docket','Progression docket',c.dkReady+c.dkAttn?0:0],['recog','Recognition requests',c.recogAct]]);
+  const seg=subSeg('trainees',[['registry','Registry'],['intake','Membership Application',c.intake],['docket','Training Progression'],['recog','Recognition requests',c.recogAct]]);
   let body='';
   if(s==='registry')body=vRegistry();else if(s==='intake')body=vIntake();else if(s==='docket')body=vDocket();else body=vRecog();
-  const t={registry:['Trainee registry','Everyone on the training programme, any status.'],intake:['Intake queue','New applications waiting to become trainee accounts.'],docket:['Progression docket','Trainees in a stage gate window. The Board advances only those who meet every criterion.'],recog:['Recognition requests','Prior training that the Board may credit towards the programme.']}[s];
+  const t={registry:['Trainee registry','Everyone on the training programme, any status.'],intake:['Membership Application','New applications waiting to become trainee accounts.'],docket:['Training Progression','Admin vetting of trainees in a stage gate window against the curriculum criteria. Only a trainee who meets every criterion can be advanced.'],recog:['Recognition requests','Prior training that the Board may credit towards the programme.']}[s];
   return head('Trainees',t[0],t[1],seg)+body;
 }
 function vRegistry(){
@@ -450,12 +456,12 @@ function vRegistry(){
 function openTrainee(id){
   const t=T(id);ui.dr={type:'trainee',id};
   openDrawer(t.id,t.name,
-  `<div class="sect">Record</div><dl class="kv"><dt>Stage</dt><dd>${stg(t.stage)} month ${t.months}</dd><dt>Hospital</dt><dd>${t.hosp}, ${CLUSTER[t.hosp]||''}</dd><dt>Training start</dt><dd>${fmt(t.start)}</dd><dt>Curriculum edition</dt><dd>${esc(t.edition)}</dd><dt>Mandatory courses</dt><dd>${t.courses.length?t.courses.map(c=>CNAME[c]).join(', '):'<span class="muted">None completed</span>'}</dd><dt>Status</dt><dd>${esc(t.status)}</dd></dl>
+  `<div class="sect">Record</div><dl class="kv"><dt>Stage</dt><dd>${stg(t.stage)} month ${t.months}</dd><dt>Hospital</dt><dd>${t.hosp}, ${CLUSTER[t.hosp]||''}</dd><dt>Training start</dt><dd>${fmt(t.start)}</dd><dt>Curriculum edition</dt><dd>${esc(t.edition)}</dd>${t.mc?`<dt>Medical Council</dt><dd>${esc(t.mc.type)} registration, no. ${esc(t.mc.no)}</dd>`:''}<dt>Mandatory courses</dt><dd>${t.courses.length?t.courses.map(c=>CNAME[c]).join(', '):'<span class="muted">None completed</span>'}</dd><dt>Status</dt><dd>${esc(t.status)}</dd></dl>
   <div class="sect">Change status</div>
   <div class="fld"><label for="stSel">New status</label><select id="stSel" data-c="stSel"><option ${t.status==='Active'?'selected':''}>Active</option><option ${t.status==='On leave'?'selected':''}>On leave</option><option ${t.status==='Deactivated'?'selected':''}>Deactivated</option></select></div>
   <div class="fld"><label for="stDate">Effective from</label><input type="date" id="stDate" value="${TODAY}" max="${TODAY}"></div>
   <div class="fld"><label for="stWhy">Reason (required unless Active)</label><textarea id="stWhy" rows="3" placeholder="For the audit log"></textarea></div>
-  <p class="note">A change of stage is not made here. It goes through the progression docket so the Board's criteria are checked each time.</p>`,
+  <p class="note">A change of stage is not made here. It goes through Training Progression so the Board's criteria are checked each time.</p>`,
   `<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="saveStatus" data-id="${t.id}">Save status</button>`);
 }
 function saveStatus(id){
@@ -465,58 +471,85 @@ function saveStatus(id){
   const old=t.status;t.status=v;logAct('Status changed',`${t.name} (${t.id}): ${old} to ${v}${why?'. '+why:''}`);closeDrawer();render();toast(`${t.name}: status set to ${v}.`)
 }
 
-/* intake */
-const CHK=[['mchk','Medical Council registration checked','Specialist or full registration current on the date of application'],['fee','Application fee received','Matched to the payment record'],['end','Endorsement signed by the Chief of Service and the SOT','Signed PDF is attached to the application']];
+/* membership application */
+const CHK=[['mchk','Medical Council registration checked','Full or limited registration, current on the date of application. This is not a specialist registration.'],['fee','Application fee received','Matched to the payment record']];
+const endOk=a=>!!(a.sig.cos&&a.sig.sot);
+const intakeN=a=>(a.chk.mchk?1:0)+(a.chk.fee?1:0)+(endOk(a)?1:0);
+const intakeDone=a=>intakeN(a)===3;
+const SIGWHO={cos:'Chief of Service',sot:'SOT'};
 function vIntake(){
-  if(!S.intake.length)return `<div class="card"><div class="empty">No applications waiting. New ones from the application form appear here.</div></div>`;
-  return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Applicant</th><th>Submitted</th><th>Checks</th><th class="act"></th></tr></thead><tbody>${S.intake.map(a=>{const n=Object.values(a.chk).filter(Boolean).length;return `<tr><td><div class="cell-name">${esc(a.name)}</div><div class="cell-sub">${esc(a.from)}</div></td><td>${fmt(a.submitted)} <span class="cell-sub">waiting ${ago(days(a.submitted,TODAY))}</span></td><td>${dt(n+' of 3 checked',n===3?'ok':n?'warn':'none')}</td><td class="act"><button class="btn pri sm" data-a="openIntake" data-id="${a.id}">Review</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+  if(!S.intake.length)return `<div class="card"><div class="empty">No applications waiting. New ones from the online application form appear here.</div></div>`;
+  return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Applicant</th><th>Submitted</th><th>Checks</th><th class="act"></th></tr></thead><tbody>${S.intake.map(a=>{const n=intakeN(a);return `<tr><td><div class="cell-name">${esc(a.name)}</div><div class="cell-sub">${esc(a.from)}</div></td><td>${fmt(a.submitted)} <span class="cell-sub">waiting ${ago(days(a.submitted,TODAY))}</span></td><td>${dt(n+' of 3 checked',n===3?'ok':n?'warn':'none')}</td><td class="act"><button class="btn pri sm" data-a="openIntake" data-id="${a.id}">Review</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+function sigRow(a,w){
+  const s=a.sig[w],who=SIGWHO[w]+', '+a.hosp;
+  if(s)return `<div class="sigrow done"><div><b>${who}</b><small>${s.m==='esign'?'Signed electronically':'Signed PDF attached'}, ${fmtS(s.d)}</small></div><div class="acts"><button class="linkbtn" data-a="toast" data-m="${s.m==='esign'?'Opens the signature record (demo)':'Opens the signed PDF (demo)'}">${s.m==='esign'?'View signature record':'View PDF'}</button></div></div>`;
+  return `<div class="sigrow"><div><b>${who}</b><small>Waiting for signature</small></div><div class="acts"><button class="btn sec sm" data-a="sigRemind" data-id="${a.id}" data-w="${w}">Send reminder</button><button class="linkbtn" data-a="sigPdf" data-id="${a.id}" data-w="${w}">Attach signed PDF instead</button></div></div>`;
 }
 function intakeBody(a){
-  const n=Object.values(a.chk).filter(Boolean).length;
-  return `<div class="sect">Checks</div>${CHK.map(([k,l,s])=>`<label class="chk ${a.chk[k]?'done':''}"><input type="checkbox" data-c="intakeChk" data-id="${a.id}" data-k="${k}" ${a.chk[k]?'checked':''}><span>${l}<small>${s}</small></span></label>`).join('')}
-  <p class="meta"><button class="linkbtn" data-a="toast" data-m="Opens the signed endorsement PDF (demo)">View the endorsement PDF</button></p>
+  return `<div class="sect">Application</div><dl class="kv"><dt>Medical Council</dt><dd>${esc(a.mc.type)} registration, no. ${esc(a.mc.no)}</dd><dt>Applying as</dt><dd>${a.stage==='HAT'?'HAT, lateral transfer':'BAT, new entrant'}</dd></dl>
+  <div class="sect">Checks</div>${CHK.map(([k,l,s])=>`<label class="chk ${a.chk[k]?'done':''}"><input type="checkbox" data-c="intakeChk" data-id="${a.id}" data-k="${k}" ${a.chk[k]?'checked':''}><span>${l}<small>${s}</small></span></label>`).join('')}
+  <div class="sect">Endorsement ${endOk(a)?'<span class="meta">complete</span>':''}</div>${sigRow(a,'cos')}${sigRow(a,'sot')}
+  <p class="meta">Both are sent a signing request when the application is submitted. They sign with their own portfolio login, as a trainee does for an ITA. If either cannot, attach their signed PDF instead.</p>
   <div class="sect">Account set-up</div>
   <div class="fld"><label for="inHosp">Parent hospital</label><select id="inHosp">${hospOpts(a.hosp)}</select></div>
   <div class="fld"><label for="inStage">Starting stage</label><select id="inStage"><option value="BAT" ${a.stage==='BAT'?'selected':''}>BAT, new entrant</option><option value="HAT" ${a.stage==='HAT'?'selected':''}>HAT, lateral transfer</option></select></div>
   <dl class="kv"><dt>Curriculum edition</dt><dd>2017 v1.1 (current)</dd><dt>HKCA number</dt><dd>Issued on approval</dd></dl>`;
 }
+function refreshIntake(a){
+  const hs=$('#inHosp').value,st=$('#inStage').value;$('#drBody').innerHTML=intakeBody(a);$('#inHosp').value=hs;$('#inStage').value=st;$('#apprBtn').disabled=!intakeDone(a);render();
+}
+function sigRemind(id,w){const a=S.intake.find(x=>x.id===id);logAct('Signing reminder sent',`${a.name}: ${SIGWHO[w]}, ${a.hosp}`);toast('Reminder sent to the '+SIGWHO[w]+' at '+a.hosp+'.')}
+function sigPdf(id,w){const a=S.intake.find(x=>x.id===id);a.sig[w]={m:'pdf',d:TODAY};logAct('Endorsement PDF attached',`${a.name}: ${SIGWHO[w]}, ${a.hosp}`);refreshIntake(a);toast('Signed PDF recorded for the '+SIGWHO[w]+'.')}
+function simSign(){S.intake.forEach(a=>['cos','sot'].forEach(w=>{if(!a.sig[w])a.sig[w]={m:'esign',d:TODAY}}));save();$('#demoPop').classList.remove('on');if(ui.dr&&ui.dr.type==='intake'){const a=S.intake.find(x=>x.id===ui.dr.id);if(a)refreshIntake(a);else render()}else render();toast('Pending signatures arrived (demo).')}
 function openIntake(id){
   const a=S.intake.find(x=>x.id===id);ui.dr={type:'intake',id};
-  openDrawer(a.id,a.name,intakeBody(a),`<button class="btn sec" data-a="returnIntake" data-id="${id}">Return to applicant</button><button class="btn pri" id="apprBtn" data-a="approveIntake" data-id="${id}" ${Object.values(a.chk).every(Boolean)?'':'disabled'}>Approve and open account</button>`);
+  openDrawer(a.id,a.name,intakeBody(a),`<button class="btn sec" data-a="returnIntake" data-id="${id}">Return to applicant</button><button class="btn pri" id="apprBtn" data-a="approveIntake" data-id="${id}" ${intakeDone(a)?'':'disabled'}>Approve and open account</button>`);
 }
 function approveIntake(id){
   const a=S.intake.find(x=>x.id===id);const hosp=$('#inHosp').value,stage=$('#inStage').value;
   const num='HKCA-2026-'+String(40+S.trainees.filter(t=>t.id.startsWith('HKCA-2026')).length+1).padStart(3,'0');
-  S.trainees.unshift({id:num,name:a.name,stage,months:0,hosp,status:'Active',edition:'2017 v1.1',start:TODAY,courses:[],exam:{}});
-  S.intake=S.intake.filter(x=>x.id!==id);logAct('Application approved',`${a.name} became ${num}, ${stage} at ${hosp}, curriculum 2017 v1.1`);closeDrawer();render();
-  openModal(`<h3>Account opened for ${esc(a.name)}</h3><dl class="kv" style="margin-top:12px"><dt>HKCA number</dt><dd class="mono">${num}</dd><dt>Stage</dt><dd>${stage}</dd><dt>Parent hospital</dt><dd>${hosp}, ${CLUSTER[hosp]}</dd><dt>Curriculum edition</dt><dd>2017 v1.1</dd><dt>Ledger</dt><dd>Opened at 0 months</dd></dl><p class="meta">The SOT at ${hosp} sees the trainee on their next load. A welcome email with a set-password link is queued.</p><div class="btn-row"><button class="btn pri" data-a="closeModal">Done</button></div>`);
+  S.trainees.unshift({id:num,name:a.name,stage,months:0,hosp,status:'Active',edition:'2017 v1.1',start:TODAY,courses:[],exam:{},mc:a.mc});
+  S.intake=S.intake.filter(x=>x.id!==id);logAct('Membership approved',`${a.name} became ${num}, ${stage} at ${hosp}, curriculum 2017 v1.1`);closeDrawer();render();
+  openModal(`<h3>Account opened for ${esc(a.name)}</h3><dl class="kv" style="margin-top:12px"><dt>HKCA number</dt><dd class="mono">${num}</dd><dt>Stage</dt><dd>${stage}</dd><dt>Parent hospital</dt><dd>${hosp}, ${CLUSTER[hosp]}</dd><dt>Curriculum edition</dt><dd>2017 v1.1</dd><dt>Ledger</dt><dd>Opened at 0 months</dd><dt>Signed off</dt><dd>Secretariat, ${fmtS(TODAY)}</dd></dl><p class="meta">A welcome email with a one-time set-password link is queued to the address on the application. No password is sent. The SOT at ${hosp} sees the trainee on their next load.</p><div class="btn-row"><button class="btn pri" data-a="closeModal">Done</button></div>`);
 }
 function returnIntake(id){
   const a=S.intake.find(x=>x.id===id);
   openModal(`<h3>Return ${esc(a.name)}'s application</h3><p class="meta" style="margin-bottom:12px">The applicant sees your note and can resubmit.</p><div class="fld"><label for="rtWhy">What is missing or wrong</label><textarea id="rtWhy" rows="3"></textarea></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doReturn" data-id="${id}">Return application</button></div>`);
 }
-function doReturn(id){const w=$('#rtWhy').value.trim();if(!w){toast('Say what needs fixing.');return}const a=S.intake.find(x=>x.id===id);S.intake=S.intake.filter(x=>x.id!==id);logAct('Application returned',`${a.name}: ${w}`);closeModal();closeDrawer();render();toast('Application returned to '+a.name+'.')}
+function doReturn(id){const w=$('#rtWhy').value.trim();if(!w){toast('Say what needs fixing.');return}const a=S.intake.find(x=>x.id===id);S.intake=S.intake.filter(x=>x.id!==id);logAct('Membership application returned',`${a.name}: ${w}`);closeModal();closeDrawer();render();toast('Application returned to '+a.name+'.')}
 
 /* docket */
 const CRIT=[['time','Time'],['courses','Courses'],['wba','WBA'],['vop','Logbook'],['ita','ITA'],['exam','Exam']];
 const CG='<colgroup><col style="width:48px"><col style="width:27%"><col style="width:22%"><col></colgroup>';
+const GK=['BAT','HAT','PFY'];
+const dkInScope=x=>ui.dkGate==='All'||x.t.stage===ui.dkGate;
+const dkVisible=()=>docketRows().filter(x=>dkInScope(x)&&(ui.dkStat==='All'||(ui.dkStat==='ready')===x.c.ready));
+const dkSelected=()=>dkVisible().filter(x=>x.c.ready&&ui.docketSel[x.t.id]).map(x=>x.t.id);
 function vDocket(){
-  const rows=docketRows();const ready=rows.filter(x=>x.c.ready),att=rows.filter(x=>!x.c.ready);
-  const sel=Object.keys(ui.docketSel).filter(k=>ui.docketSel[k]&&ready.find(x=>x.t.id===k));
-  const chips=c=>`<div class="crit">${CRIT.map(([k,l])=>`<i class="${c.out[k]?'ok':'no'}">${c.out[k]?'\u2713':'\u2715'} ${l}</i>`).join('')}</div>`;
-  const row=(x,r)=>`<tr>${r?`<td style="width:34px"><input type="checkbox" data-c="dkSel" data-id="${x.t.id}" ${ui.docketSel[x.t.id]?'checked':''} aria-label="Select ${esc(x.t.name)}"></td>`:'<td></td>'}<td><div class="cell-name">${esc(x.t.name)}</div><div class="cell-sub">${x.t.hosp} <span class="mono">${x.t.id}</span></div></td><td>${stg(x.t.stage)} <span class="meta">&rarr; ${S.GATES[x.t.stage].next}</span><div class="cell-sub">month ${x.t.months} of ${S.GATES[x.t.stage].to}</div></td><td>${r?chips(x.c):`<div>${CRIT.filter(([k])=>!x.c.out[k]).map(([k,l])=>`<div class="cell-sub" style="color:var(--bd-f)"><b>${l}:</b> ${esc(x.c.why[k])}</div>`).join('')}</div>`}</td></tr>`;
-  return `<div class="card"><div class="q-h"><div class="h3">Ready to advance <span class="cnt">${ready.length}</span></div><div class="btn-row"><button class="btn sec sm" data-a="dkAll" ${ready.length?'':'disabled'}>Select all ready</button><button class="btn pri sm" data-a="dkGo" ${sel.length?'':'disabled'}>Advance ${sel.length||''} selected</button></div></div>
-  <div class="tbl-scroll"><table class="dk">${CG}<tbody>${ready.map(x=>row(x,true)).join('')||'<tr><td class="empty">Nobody is fully ready right now.</td></tr>'}</tbody></table></div></div>
-  <div class="card" style="margin-top:18px"><div class="q-h"><div class="h3">Needs attention <span class="cnt hot">${att.length}</span></div><span class="meta">Not yet eligible. The trainee and the SOT see the same reasons.</span></div>
-  <div class="tbl-scroll"><table class="dk">${CG}<tbody>${att.map(x=>row(x,false)).join('')||'<tr><td class="empty">Nobody in a gate window is short of a criterion.</td></tr>'}</tbody></table></div></div>
+  const all=docketRows();const vis=dkVisible();const sel=dkSelected();
+  const crit=c=>`<div class="crit">${CRIT.map(([k,l])=>`<i class="${c.out[k]?'ok':'no'}">${c.out[k]?'\u2713':'\u2715'} ${l}</i>`).join('')}</div>`;
+  const row=(x,r)=>{const g=S.GATES[x.t.stage];const out=CRIT.filter(([k])=>!x.c.out[k]);return `<tr>${r?`<td style="width:34px"><input type="checkbox" data-c="dkSel" data-id="${x.t.id}" ${ui.docketSel[x.t.id]?'checked':''} aria-label="Select ${esc(x.t.name)}"></td>`:'<td></td>'}<td><div class="cell-name">${esc(x.t.name)}</div><div class="cell-sub">${x.t.hosp} <span class="mono">${x.t.id}</span></div></td><td>month ${x.t.months} of ${g.to}<div class="cell-sub">${r?dt('Ready to advance','ok'):dt(out.length+' outstanding','warn')}</div></td><td>${r?crit(x.c):`<div>${out.map(([k,l])=>`<div class="cell-sub" style="color:var(--bd-f)"><b>${l}:</b> ${esc(x.c.why[k])}</div>`).join('')}</div>`}</td></tr>`};
+  const gcard=g=>{const G=S.GATES[g];const rows=vis.filter(x=>x.t.stage===g);const rd=rows.filter(x=>x.c.ready),at=rows.filter(x=>!x.c.ready);
+    if(!rows.length&&ui.dkStat!=='All')return '';
+    return `<div class="card" style="margin-bottom:18px"><div class="q-h"><div class="h3">${G.label} <span class="cnt">${rows.length}</span></div><div class="btn-row"><span class="meta">${rd.length} ready, ${at.length} need attention. Window: month ${G.from} to ${G.to}.</span><button class="btn sec sm" data-a="dkAll" data-g="${g}" ${rd.length?'':'disabled'}>Select all ready</button></div></div>
+    <div class="tbl-scroll"><table class="dk">${CG}<tbody>${(rd.map(x=>row(x,true)).join('')+at.map(x=>row(x,false)).join(''))||'<tr><td colspan="4" class="empty">Nobody is in this gate window.</td></tr>'}</tbody></table></div></div>`};
+  const gn=g=>all.filter(x=>g==='All'||x.t.stage===g).length;
+  const sn=k=>all.filter(x=>dkInScope(x)&&(k==='All'||(k==='ready')===x.c.ready)).length;
+  const gates=ui.dkGate==='All'?GK:[ui.dkGate];
+  const cards=gates.map(gcard).join('');
+  return `<div class="toolbar"><div class="chipgrp" role="group" aria-label="Gate">${['All',...GK].map(g=>`<button class="chip ${ui.dkGate===g?'on':''}" aria-pressed="${ui.dkGate===g}" data-a="fDkGate" data-v="${g}">${g==='All'?'All gates':S.GATES[g].label} <span class="n">${gn(g)}</span></button>`).join('')}</div>
+  <div class="chipgrp" role="group" aria-label="Status">${[['All','Everyone'],['ready','Ready'],['attn','Needs attention']].map(([k,l])=>`<button class="chip ${ui.dkStat===k?'on':''}" aria-pressed="${ui.dkStat===k}" data-a="fDkStat" data-v="${k}">${l} <span class="n">${sn(k)}</span></button>`).join('')}</div>
+  <span class="grow"></span><button class="btn pri sm" data-a="dkGo" ${sel.length?'':'disabled'}>Advance ${sel.length||''} selected</button></div>
+  ${cards.trim()?cards:'<div class="card"><div class="empty">Nobody matches these filters.</div></div>'}
   <p class="meta" style="margin-top:12px">Criteria shown are illustrative. The real thresholds come from the curriculum edition each trainee is bound to.</p>`;
 }
 function dkGo(){
-  const ids=Object.keys(ui.docketSel).filter(k=>ui.docketSel[k]);const ts=ids.map(T).filter(Boolean);
+  const ids=dkSelected();const ts=ids.map(T).filter(Boolean);
   openModal(`<h3>Advance ${plural(ts.length,'trainee')}?</h3><p class="meta" style="margin:6px 0 12px">Each trainee moves to the next stage today and is notified. Stage history keeps the date and who made the change.</p><ul style="padding-left:18px;font-size:13px;line-height:1.8">${ts.map(t=>`<li>${esc(t.name)}: ${t.stage} &rarr; ${S.GATES[t.stage].next==='Exit'?'completed training':S.GATES[t.stage].next}</li>`).join('')}</ul><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="dkDo">Advance</button></div>`);
 }
 function dkDo(){
-  const ids=Object.keys(ui.docketSel).filter(k=>ui.docketSel[k]);
+  const ids=dkSelected();
   ids.forEach(id=>{const t=T(id);if(!t)return;const g=S.GATES[t.stage];if(g.next==='Exit'){t.status='Completed'}else{t.stage=g.next}logAct('Stage advanced',`${t.name} (${t.id}): ${g.label}`)});
   ui.docketSel={};closeModal();render();toast(plural(ids.length,'trainee')+' advanced.')
 }
@@ -803,11 +836,12 @@ const ACT={
   go:e=>go(e.dataset.t,e.dataset.k),sub:e=>{ui.sub[e.dataset.t]=e.dataset.k;render()},
   theme:()=>{document.documentElement.classList.toggle('dark');try{localStorage.setItem('hkca.admin.dark',document.documentElement.classList.contains('dark')?1:0)}catch(x){}},
   closeDrawer,closeModal,openLog,toast:e=>toast(e.dataset.m),demoPop:()=>$('#demoPop').classList.toggle('on'),
-  resetDemo:()=>{S=seedState();ui.q='';ui.docketSel={};ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
+  resetDemo:()=>{S=seedState();ui.q='';ui.docketSel={};ui.dkGate='All';ui.dkStat='All';ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
   sort:e=>{const k=e.dataset.k;ui.sort=[k,ui.sort[0]===k?-ui.sort[1]:1];render()},
   fStage:e=>{ui.stage=e.dataset.v;render()},openTrainee:e=>openTrainee(e.dataset.id),saveStatus:e=>saveStatus(e.dataset.id),
   openIntake:e=>openIntake(e.dataset.id),approveIntake:e=>approveIntake(e.dataset.id),returnIntake:e=>returnIntake(e.dataset.id),doReturn:e=>doReturn(e.dataset.id),
-  dkAll:()=>{docketRows().filter(x=>x.c.ready).forEach(x=>ui.docketSel[x.t.id]=true);render()},dkGo,dkDo,
+  dkAll:e=>{dkVisible().filter(x=>x.c.ready&&(!e.dataset.g||x.t.stage===e.dataset.g)).forEach(x=>ui.docketSel[x.t.id]=true);render()},dkGo,dkDo,fDkGate:e=>{ui.dkGate=e.dataset.v;render()},fDkStat:e=>{ui.dkStat=e.dataset.v;render()},
+  sigRemind:e=>sigRemind(e.dataset.id,e.dataset.w),sigPdf:e=>sigPdf(e.dataset.id,e.dataset.w),simSign,
   openRecog:e=>openRecog(e.dataset.id),unlockRecog:e=>unlockRecog(e.dataset.id),reviewCredit:e=>reviewCredit(e.dataset.id),execCredit,
   pickRound:e=>{ui.round=e.dataset.id;render()},autoFill,loadSheet:()=>{ui.sheet=SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
   exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=EX_SAMPLE;ui.exOut=null;render()},checkEx,commitEx,
@@ -820,7 +854,7 @@ document.addEventListener('change',ev=>{
   const e=ev.target,c=e.dataset.c;if(!c)return;
   if(c==='status'){ui.status=e.value;render()}
   else if(c==='hosp'){ui.hosp=e.value;render()}
-  else if(c==='intakeChk'){const a=S.intake.find(x=>x.id===e.dataset.id);a.chk[e.dataset.k]=e.checked;save();const body=$('#drBody');const hs=$('#inHosp').value,st=$('#inStage').value;body.innerHTML=intakeBody(a);$('#inHosp').value=hs;$('#inStage').value=st;$('#apprBtn').disabled=!Object.values(a.chk).every(Boolean);render();}
+  else if(c==='intakeChk'){const a=S.intake.find(x=>x.id===e.dataset.id);a.chk[e.dataset.k]=e.checked;save();refreshIntake(a)}
   else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
   else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);r.apps[+e.dataset.i][2]=e.value;save();render()}
   else if(c==='cn'){ui.cn=e.value;ui.sheetOut=null;render()}
