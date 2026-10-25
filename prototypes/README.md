@@ -29,3 +29,5 @@ documents, and the accreditation position is set by the College.
 
 None of these are production code. No accessibility audit has been run, no browser verification
 against a real device, and the JavaScript is deliberately minimal. Treat them as design artifacts.
+
+`hkca-courses-store.js` is the shared course registration store used by the Admin console (Courses tab) and the Trainee Dashboard (Courses and Next steps). It keeps rounds, applications, decisions and attendance in localStorage so a change on one page shows on the other. Use the same browser and the same site origin. Reset it from Demo controls on the dashboard or the Admin console.
