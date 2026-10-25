@@ -35,7 +35,7 @@ const before = {};
 for (const t of ORDER) before[t] = await count(pg, t);
 const tablesBefore = (await pg.query(`SELECT count(*)::int n FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'`)).rows[0].n;
 await pg.exec(mig(m3));
-for (const d of dirs.filter(d => parseInt(d) > 3)) await pg.exec(mig(d));   // later migrations (4: status provenance)
+for (const d of dirs.filter(d => parseInt(d) > 3 && parseInt(d) <= 4)) await pg.exec(mig(d));   // migration 4 (status provenance); migration 5 has its own test, verify_secretariat_schema.mjs
 for (const t of ORDER) ok(await count(pg, t) === before[t], `${t}: ${before[t]} rows preserved`);
 const tablesAfter = (await pg.query(`SELECT count(*)::int n FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'`)).rows[0].n;
 ok(tablesAfter - tablesBefore === 22, `22 new tables (${tablesBefore} -> ${tablesAfter})`);

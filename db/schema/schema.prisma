@@ -116,7 +116,7 @@ enum ProjectStatus {
   MANUSCRIPT_SUBMITTED
   APPROVED
   REJECTED
-  ESCALATED // divergent reviews sent to the Formal Project Subcommittee Chair
+  APPEAL // rejection under the once-only appeal (decided 2026-10-25; replaces ESCALATED)
 }
 
 enum BulkIngestionType {
@@ -167,11 +167,35 @@ enum EchoStudyType {
   FOCUS
 }
 
-enum ReviewGrade {
-  SATISFACTORY
-  MINOR_REVISION
-  MAJOR_REVISION
-  UNSATISFACTORY
+enum ReviewRecommendation {
+  APPROVED
+  REVISION // revision and resubmission
+  REJECTED
+}
+
+enum ProjectStageState {
+  AWAITING_REVIEWERS
+  UNDER_REVIEW
+  REVIEWS_IN
+  REVISION
+  APPEAL
+  APPROVED
+  REJECTED
+}
+
+enum DecisionBody {
+  TRAINING_OFFICER
+  BOARD
+}
+
+enum ApplicationSignerRole {
+  CHIEF_OF_SERVICE
+  SOT
+}
+
+enum SigningMethod {
+  ESIGN // signed with the signer's own portfolio login
+  PDF // Admin attached a signed PDF instead
 }
 
 enum ApplicationStatus {
@@ -182,17 +206,20 @@ enum ApplicationStatus {
 
 enum RecognitionStatus {
   ACCESS_REQUESTED
-  UNLOCKED
-  SUBMITTED
-  APPROVED
-  REJECTED
+  UNLOCKED // with the applicant
+  SUBMITTED // Admin checks the documents
+  WITH_TRAINING_OFFICER
+  REFERRED_TO_BOARD
+  APPROVED_PENDING_CREDIT // decided by the Training Officer or the Board; Admin executes the credit
+  APPROVED // credit executed
+  REJECTED // only ever decided by the Board
 }
 
 enum CourseDecision {
   REQUESTED
   ACCEPTED
   WAITLISTED
-  DEFERRED
+  REJECTED
 }
 
 enum IwbaLinkStatus {
@@ -297,6 +324,14 @@ model User {
   attestationsConfirmed     RosterAttestation[]         @relation("AttestConfirmer")
   attestationsReviewed      RosterAttestation[]         @relation("AttestReviewer")
 
+  attendanceRecorded       CourseAttendance[]              @relation("AttendanceRecorder")
+  feesRecorded             TraineeFeePayment[]             @relation("FeeRecorder")
+  exemptionsRecorded       TraineeExemption[]              @relation("ExemptionRecorder")
+  endorsementsSigned       ApplicationEndorsement[]        @relation("EndorsementSigner")
+  endorsementsAttached     ApplicationEndorsement[]        @relation("EndorsementAttacher")
+  recognitionEventsActed   RetrospectiveRecognitionEvent[] @relation("RecognitionEventActor")
+  projectReviewsOverridden FormalProjectReview[]           @relation("ReviewLateOverrider")
+
   @@index([email, hkcaNumber])
   @@index([hkamId])
   @@index([isActive])
@@ -347,7 +382,7 @@ model TraineeProfile {
   intermediateExamDate      DateTime?
   finalExamPassed           Boolean   @default(false)
   finalExamDate             DateTime?
-  formalProjectApproved     Boolean   @default(false)
+  formalProjectApproved     Boolean   @default(false) // derived from FormalProjectStage / route; keep as a maintained copy, never edited by hand
   formalProjectApprovalDate DateTime?
 
   // Status flags
@@ -391,6 +426,13 @@ model TraineeProfile {
   sotAssignments         SotAssignment[]             @relation("SotAsgTrainee")
   verifierAssignments    LogbookVerifierAssignment[] @relation("VerifierTrainee")
   courseRequests         CourseRequest[]             @relation("RequestTrainee")
+
+  courseAttendance  CourseAttendance[]  @relation("AttendanceTrainee")
+  courseNotices     CourseNotice[]      @relation("NoticeTrainee")
+  examResults       ExamResult[]        @relation("ResultTrainee")
+  examSectionPasses ExamSectionPass[]   @relation("PassTrainee")
+  feePayments       TraineeFeePayment[] @relation("FeeTrainee")
+  exemptions        TraineeExemption[]  @relation("ExemptionTrainee")
 
   @@index([currentStage, isSuspended])
   @@index([parentHospitalId])
@@ -647,12 +689,13 @@ model AccreditedTimeLedger {
   effectiveAt    DateTime @default(now())
   isCurrent      Boolean  @default(true)
 
-  trainee           TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
-  rotation          Rotation?      @relation(fields: [rotationId], references: [id], onDelete: Restrict)
-  itaSession        ItaSession?    @relation(fields: [itaSessionId], references: [id], onDelete: Restrict)
-  authorityUser     User           @relation("LedgerAuthority", fields: [authorityId], references: [id], onDelete: Restrict)
+  trainee       TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  rotation      Rotation?      @relation(fields: [rotationId], references: [id], onDelete: Restrict)
+  itaSession    ItaSession?    @relation(fields: [itaSessionId], references: [id], onDelete: Restrict)
+  authorityUser User           @relation("LedgerAuthority", fields: [authorityId], references: [id], onDelete: Restrict)
   // --- Admin console / schema doc alignment (2026-10-24) ---
-  boardDecisionDate DateTime?      @db.Date // Board decision date (recognition and rulings); authorityId is who recorded it
+  decisionDate  DateTime?      @db.Date // date of the Training Officer or Board decision (recognition and rulings); authorityId is who recorded it
+  decidedByBody DecisionBody?
 
   @@index([traineeId, isCurrent])
   @@index([rotationId])
@@ -973,6 +1016,25 @@ model ExamApplication {
   // --- Admin console / schema doc alignment (2026-10-24) ---
   sourceBatch   BulkIngestionBatch? @relation("ExamBatch", fields: [sourceBatchId], references: [id], onDelete: SetNull)
 
+  // --- Secretariat console (2026-10-25, migration 5) ---
+  // result, score, attemptNumber and sourceBatchId below are superseded by ExamResult; kept until no code reads them.
+  sittingId            String?
+  withdrawnAt          DateTime?
+  withdrawnKind        String? // trainee | admin
+  sotDeclineReason     String? // set when sotApprovalStatus = REJECTED
+  feeReceivedAt        DateTime?    @db.Date
+  feeMethod            String? // Faster Payment System | Bank deposit | E-cheque
+  feeReference         String?
+  slipDocumentId       String? // payment slip, attached by the trainee or emailed and attached by Admin
+  boardExceptionReason String? // Board exception when criteria are not met (reason and reference)
+  boardExceptionAt     DateTime?    @db.Date
+  notAdmittedAt        DateTime?
+  sectionsToSit        String[]     @default([]) // snapshot at application: PHYSIOLOGY / PHARMACOLOGY, or WRITTEN / ORAL / OSCE
+  sitting              ExamSitting? @relation("ApplicationSitting", fields: [sittingId], references: [id], onDelete: Restrict)
+  results              ExamResult[] @relation("ResultApplication")
+
+  @@unique([traineeId, sittingId])
+  @@index([sittingId])
   @@index([traineeId, examType, examDate])
 }
 
@@ -987,7 +1049,7 @@ model FormalProject {
   protocolPath          String?
   manuscriptPath        String?
 
-  // Blinded Reviewers (E6: 30-day tracking clock)
+  // Blinded Reviewers. CURRENT reviewers only; FormalProjectReview is the source of truth. Review period is two months (HKCA-E03)
   reviewer1Id     String?
   reviewer2Id     String?
   reviewer1Status String? // "APPROVED", "REVISION", "REJECT"
@@ -999,14 +1061,21 @@ model FormalProject {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @default(now()) @updatedAt
 
-  trainee       TraineeProfile        @relation(fields: [traineeId], references: [id], onDelete: Restrict)
-  reviewer1     User?                 @relation("ProjectReviewer1", fields: [reviewer1Id], references: [id], onDelete: Restrict)
-  reviewer2     User?                 @relation("ProjectReviewer2", fields: [reviewer2Id], references: [id], onDelete: Restrict)
+  trainee            TraineeProfile        @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  reviewer1          User?                 @relation("ProjectReviewer1", fields: [reviewer1Id], references: [id], onDelete: Restrict)
+  reviewer2          User?                 @relation("ProjectReviewer2", fields: [reviewer2Id], references: [id], onDelete: Restrict)
   // --- Admin console / schema doc alignment (2026-10-24) ---
-  projectNumber String?               @unique // College project number, e.g. FP-26-014
+  projectNumber      String?               @unique // College project number, e.g. FP-26-014
   // --- Admin console / schema doc alignment (2026-10-24) ---
-  events        FormalProjectEvent[]  @relation("ProjectEventProject")
-  reviews       FormalProjectReview[] @relation("ReviewProject")
+  events             FormalProjectEvent[]  @relation("ProjectEventProject")
+  reviews            FormalProjectReview[] @relation("ReviewProject")
+  stages             FormalProjectStage[]  @relation("StageProject")
+  // Route: STANDARD (protocol then manuscript) or ACCEPTED_PAPER (guideline 2.1: accepted peer-reviewed paper, trainee first or corresponding author; no protocol)
+  route              String                @default("STANDARD")
+  paperJournal       String?
+  paperAuthorship    String?
+  paperAcceptedOn    DateTime?             @db.Date
+  paperEvidenceDocId String?
 
   @@index([traineeId, status])
 }
@@ -1089,6 +1158,9 @@ model BulkIngestionBatch {
   // --- Admin console / schema doc alignment (2026-10-24) ---
   examApplications ExamApplication[] @relation("ExamBatch")
   mandatoryCourses MandatoryCourse[] @relation("CourseBatch")
+
+  attendanceRows CourseAttendance[] @relation("AttendanceBatch")
+  examResults    ExamResult[]       @relation("ResultBatch")
 
   @@index([batchType, status])
   @@index([executedById, executedAt])
@@ -1314,20 +1386,23 @@ model TraineeStatusEvent {
 }
 
 model Application {
-  id               String            @id @default(uuid())
-  applicantUserId  String?
-  requestedStage   TrainingStage     @default(BAT)
-  parentHospitalId String?
-  submittedAt      DateTime
-  checkMchk        Boolean           @default(false)
-  checkFee         Boolean           @default(false)
-  checkEndorsement Boolean           @default(false)
-  endorsementDocId String?
-  status           ApplicationStatus @default(SUBMITTED)
-  returnNote       String?
-  decidedById      String?
-  decidedAt        DateTime?
-  traineeId        String?           @unique // set on approval
+  id                     String                   @id @default(uuid())
+  applicantUserId        String?
+  requestedStage         TrainingStage            @default(BAT)
+  parentHospitalId       String?
+  submittedAt            DateTime
+  checkMchk              Boolean                  @default(false)
+  checkFee               Boolean                  @default(false)
+  checkEndorsement       Boolean                  @default(false) // derived: both ApplicationEndorsement rows signed (or PDF attached)
+  endorsementDocId       String?
+  status                 ApplicationStatus        @default(SUBMITTED)
+  returnNote             String?
+  decidedById            String?
+  decidedAt              DateTime?
+  traineeId              String?                  @unique // set on approval
+  mchkRegistrationType   String? // full | limited. Not a specialist registration: applicants are not yet specialists
+  mchkRegistrationNumber String?
+  endorsements           ApplicationEndorsement[] @relation("EndorsementApplication")
 
   applicantUser  User?           @relation("ApplicationApplicant", fields: [applicantUserId], references: [id], onDelete: Restrict)
   parentHospital Hospital?       @relation("ApplicationHospital", fields: [parentHospitalId], references: [id], onDelete: Restrict)
@@ -1338,45 +1413,51 @@ model Application {
 }
 
 model RetrospectiveRecognition {
-  id                                String            @id @default(uuid())
+  id                                String                          @id @default(uuid())
   traineeId                         String
-  applicationDate                   DateTime          @default(now()) @db.Date // set when access is requested
+  applicationDate                   DateTime                        @default(now()) @db.Date // set when access is requested
   applicationType                   String // overseas_training | lateral_transfer | prior_experience
   accessRequestedAt                 DateTime?
   formUnlockedAt                    DateTime?
   formUnlockedById                  String?
-  requestedClinicalMonths           Decimal?          @db.Decimal(4, 2)
-  requestedIcuMonths                Decimal?          @db.Decimal(4, 2)
-  requestedElectiveMonths           Decimal?          @db.Decimal(4, 2)
+  requestedClinicalMonths           Decimal?                        @db.Decimal(4, 2)
+  requestedIcuMonths                Decimal?                        @db.Decimal(4, 2)
+  requestedElectiveMonths           Decimal?                        @db.Decimal(4, 2)
   requestedCases                    Int?
-  boardDecisionDate                 DateTime?         @db.Date
-  vettingStatus                     RecognitionStatus @default(ACCESS_REQUESTED)
+  decisionDate                      DateTime?                       @db.Date // the date the Training Officer or the Board decided
+  decidedByBody                     DecisionBody?
+  // Origin is structured, never free text. The ledger reason is DERIVED from it.
+  originKind                        String? // OVERSEAS_TRAINING | OTHER_SPECIALTY
+  originSpecialty                   String? // for OTHER_SPECIALTY, for example surgery or emergency medicine
+  originPlace                       String? // country for overseas training, hospital or place for another specialty
+  events                            RetrospectiveRecognitionEvent[] @relation("RecognitionEventRecognition")
+  vettingStatus                     RecognitionStatus               @default(ACCESS_REQUESTED)
   assignedReviewerId                String?
-  boeReviewDate                     DateTime?         @db.Date
-  approvalDate                      DateTime?         @db.Date
-  creditedBatMonths                 Decimal           @default(0) @db.Decimal(4, 2)
-  creditedHatMonths                 Decimal           @default(0) @db.Decimal(4, 2)
-  creditedIcuMonths                 Decimal           @default(0) @db.Decimal(4, 2)
-  creditedElectiveMonths            Decimal           @default(0) @db.Decimal(4, 2)
-  creditedAccreditedMonths          Decimal           @default(0) @db.Decimal(4, 2)
-  creditedClinicalAnaesthesiaMonths Decimal           @default(0) @db.Decimal(4, 2)
-  creditedCardiacMonths             Decimal           @default(0) @db.Decimal(4, 2)
-  creditedPaediatricMonths          Decimal           @default(0) @db.Decimal(4, 2)
-  creditedObstetricMonths           Decimal           @default(0) @db.Decimal(4, 2)
-  creditedPainMonths                Decimal           @default(0) @db.Decimal(4, 2)
+  boeReviewDate                     DateTime?                       @db.Date
+  approvalDate                      DateTime?                       @db.Date
+  creditedBatMonths                 Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedHatMonths                 Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedIcuMonths                 Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedElectiveMonths            Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedAccreditedMonths          Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedClinicalAnaesthesiaMonths Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedCardiacMonths             Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedPaediatricMonths          Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedObstetricMonths           Decimal                         @default(0) @db.Decimal(4, 2)
+  creditedPainMonths                Decimal                         @default(0) @db.Decimal(4, 2)
   overseasInstitution               String?
   overseasProgramName               String?
-  overseasTrainingStart             DateTime?         @db.Date
-  overseasTrainingEnd               DateTime?         @db.Date
-  overseasDurationMonths            Decimal?          @db.Decimal(4, 2)
+  overseasTrainingStart             DateTime?                       @db.Date
+  overseasTrainingEnd               DateTime?                       @db.Date
+  overseasDurationMonths            Decimal?                        @db.Decimal(4, 2)
   vettingNotes                      String?
   boeDecisionRationale              String?
   conditionsAttached                String?
   documentsJson                     Json? // [{type, filePath, uploadedDate}]
   createdById                       String?
   approvedById                      String?
-  createdAt                         DateTime          @default(now())
-  updatedAt                         DateTime          @default(now()) @updatedAt
+  createdAt                         DateTime                        @default(now())
+  updatedAt                         DateTime                        @default(now()) @updatedAt
 
   trainee           TraineeProfile        @relation("RecognitionTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
   formUnlockedBy    User?                 @relation("RecognitionUnlocker", fields: [formUnlockedById], references: [id], onDelete: Restrict)
@@ -1390,18 +1471,19 @@ model RetrospectiveRecognition {
 }
 
 model VopCreditAdjustment {
-  id                String       @id @default(uuid())
-  traineeId         String
-  recognitionId     String?
-  cases             Int
-  moduleCode        String? // descriptor the Board allocated the cases to; null counts to the overall total only
-  reason            LedgerReason
-  boardDecisionDate DateTime     @db.Date
-  note              String?
-  recordedById      String?
-  supersedesId      String?
-  isCurrent         Boolean      @default(true)
-  createdAt         DateTime     @default(now())
+  id            String        @id @default(uuid())
+  traineeId     String
+  recognitionId String?
+  cases         Int
+  moduleCode    String? // descriptor the Board allocated the cases to; null counts to the overall total only
+  reason        LedgerReason
+  decisionDate  DateTime      @db.Date
+  decidedByBody DecisionBody?
+  note          String?
+  recordedById  String?
+  supersedesId  String?
+  isCurrent     Boolean       @default(true)
+  createdAt     DateTime      @default(now())
 
   trainee      TraineeProfile            @relation("CreditTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
   recognition  RetrospectiveRecognition? @relation("CreditRecognition", fields: [recognitionId], references: [id], onDelete: Restrict)
@@ -1431,12 +1513,13 @@ model VopVerificationEvent {
 model FormalProjectEvent {
   id           String   @id @default(uuid())
   projectId    String
-  eventType    String // protocol_submitted | revision_requested | protocol_resubmitted | protocol_approved | manuscript_*
+  eventType    String // trainee-visible: protocol_submitted | revision_requested | protocol_resubmitted | protocol_approved | manuscript_* | accepted_paper_recorded. Internal: reviewers_assigned | reminder_sent | handed_to_team | late_report_accepted | reviewer_reassigned | appeal_received | certification_advice_queued
   eventDate    DateTime @db.Date
   versionNo    Int?
   outcomeNote  String? // trainee-visible; never names a blinded reviewer
   recordedById String?
   source       String // app | admin | legacy_backfill
+  visibility   String   @default("trainee") // trainee | internal. Reminders, hand-over, override and reassignment are internal. A trainee-visible row never names a reviewer
   createdAt    DateTime @default(now())
 
   project    FormalProject @relation("ProjectEventProject", fields: [projectId], references: [id], onDelete: Restrict)
@@ -1446,24 +1529,33 @@ model FormalProjectEvent {
 }
 
 model FormalProjectReview {
-  id           String       @id @default(uuid())
-  projectId    String
-  stage        String // protocol | manuscript
-  versionNo    Int          @default(1)
-  reviewerId   String
-  assignedAt   DateTime
-  assignedById String?
-  dueAt        DateTime     @db.Date // assignedAt + 30 days
-  replacedAt   DateTime?
-  replacedById String?
-  submittedAt  DateTime?
-  grade        ReviewGrade?
-  feedback     String?
+  id                 String                @id @default(uuid())
+  projectId          String
+  stage              String // protocol | manuscript
+  versionNo          Int                   @default(1)
+  reviewerId         String
+  assignedAt         DateTime
+  assignedById       String?
+  dueAt              DateTime              @db.Date // assignedAt + 2 months (HKCA-E03); a reminder goes 14 days before
+  replacedAt         DateTime?
+  replacedById       String?
+  submittedAt        DateTime?
+  recommendation     ReviewRecommendation?
+  feedback           String?
+  // Overdue handling (2026-10-25). After the deadline Admin may hand a missing review to the Formal Project Team;
+  // the Team's review is recorded on the same row (byTeam). A late report is ignored unless Admin overrides with a reason.
+  handedToTeamAt     DateTime?
+  byTeam             Boolean               @default(false)
+  lateOverrideReason String?
+  lateOverrideById   String?
+  reassignReason     String? // on the NEW row written by a reassignment
+  reminderSentAt     DateTime?
 
-  project    FormalProject @relation("ReviewProject", fields: [projectId], references: [id], onDelete: Restrict)
-  reviewer   User          @relation("ReviewReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
-  assignedBy User?         @relation("ReviewAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
-  replacedBy User?         @relation("ReviewReplacer", fields: [replacedById], references: [id], onDelete: Restrict)
+  project        FormalProject @relation("ReviewProject", fields: [projectId], references: [id], onDelete: Restrict)
+  reviewer       User          @relation("ReviewReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+  assignedBy     User?         @relation("ReviewAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+  replacedBy     User?         @relation("ReviewReplacer", fields: [replacedById], references: [id], onDelete: Restrict)
+  lateOverrideBy User?         @relation("ReviewLateOverrider", fields: [lateOverrideById], references: [id], onDelete: Restrict)
 
   @@index([projectId, stage])
   @@index([reviewerId])
@@ -1599,6 +1691,7 @@ model CourseCatalogue {
   courseCode  String  @id // EASE, EMAC, ADAM-A, ECHO-A, UGRA, plus non-mandatory legacy courses
   courseName  String
   isMandatory Boolean @default(false)
+  organiser   String? // CSC (Clinical Simulation Committee) | HKCA
 
   rounds CourseRound[] @relation("RoundCourse")
 }
@@ -1607,13 +1700,25 @@ model CourseRound {
   id                   String    @id @default(uuid())
   courseCode           String
   roundDate            DateTime  @db.Date
-  seats                Int
-  status               String    @default("open") // open | held | cancelled
+  seats                Int? // null = no cap (e.g. the Mock Viva)
+  status               String    @default("open") // stored: open | cancelled. Not-open-yet, open, closed, held and recorded are DERIVED from the dates, registrationShutAt and attendanceRecordedAt
   attendanceRecordedAt DateTime?
+  endDate              DateTime? @db.Date
+  venue                String?
+  format               String? // Face-to-face | Online | Online and face-to-face
+  feeMember            Int? // HK$; null = fee to be confirmed, 0 = no charge
+  feeNonMember         Int?
+  registrationOpens    DateTime? @db.Date
+  registrationCloses   DateTime? @db.Date
+  registrationShutAt   DateTime? // Admin closed registration early (Close now); reopening clears it and sets a new closing date
+  coordinators         String?
+  rankingMode          String    @default("priority") // priority | fcfs (first come first served; anyone waitlisted last time still goes first)
 
-  catalogue   CourseCatalogue   @relation("RoundCourse", fields: [courseCode], references: [courseCode], onDelete: Restrict)
-  completions MandatoryCourse[] @relation("CourseRoundCompletion")
-  requests    CourseRequest[]   @relation("RequestRound")
+  catalogue   CourseCatalogue    @relation("RoundCourse", fields: [courseCode], references: [courseCode], onDelete: Restrict)
+  completions MandatoryCourse[]  @relation("CourseRoundCompletion")
+  requests    CourseRequest[]    @relation("RequestRound")
+  attendance  CourseAttendance[] @relation("AttendanceRound")
+  notices     CourseNotice[]     @relation("NoticeRound")
 
   @@index([courseCode, roundDate])
 }
@@ -1626,6 +1731,7 @@ model CourseRequest {
   decision    CourseDecision @default(REQUESTED)
   decidedById String?
   decidedAt   DateTime?
+  withdrawnAt DateTime? // trainee withdrew before the deadline; excluded from applicant counts
 
   round     CourseRound    @relation("RequestRound", fields: [roundId], references: [id], onDelete: Restrict)
   trainee   TraineeProfile @relation("RequestTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
@@ -1660,4 +1766,200 @@ model RosterAttestation {
   reviewedBy  User?       @relation("AttestReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
 
   @@unique([roundId, hospitalId])
+}
+
+// =============================================================================
+// 13. SECRETARIAT CONSOLE: COURSES, EXAMS, FORMAL PROJECTS, RECOGNITION (migration 5, 2026-10-25)
+// =============================================================================
+
+model CourseAttendance {
+  id                String   @id @default(uuid())
+  roundId           String
+  traineeId         String
+  ratePercent       Int // 0 to 100. 70 or more earns the Certificate of Attendance; below 50 is reported
+  certificateIssued Boolean  @default(false)
+  recordedAt        DateTime @default(now())
+  recordedById      String?
+  sourceBatchId     String?
+
+  round       CourseRound         @relation("AttendanceRound", fields: [roundId], references: [id], onDelete: Restrict)
+  trainee     TraineeProfile      @relation("AttendanceTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  recordedBy  User?               @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+  sourceBatch BulkIngestionBatch? @relation("AttendanceBatch", fields: [sourceBatchId], references: [id], onDelete: SetNull)
+
+  @@unique([roundId, traineeId])
+  @@index([traineeId])
+}
+
+model CourseNotice {
+  id          String    @id @default(uuid())
+  roundId     String
+  traineeId   String
+  ratePercent Int
+  noticeType  String    @default("UNDER_50_REPORT") // reported to the trainee's Chief of Service and SOT
+  queuedAt    DateTime  @default(now())
+  sentAt      DateTime?
+
+  round   CourseRound    @relation("NoticeRound", fields: [roundId], references: [id], onDelete: Restrict)
+  trainee TraineeProfile @relation("NoticeTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+
+  @@unique([roundId, traineeId, noticeType])
+}
+
+model ExamSitting {
+  id        String    @id @default(uuid())
+  examType  String // INTERMEDIATE | FINAL_ANAESTHESIA | FINAL_ICU
+  name      String // for example "Feb / Apr 2027"
+  opensOn   DateTime  @db.Date
+  closesOn  DateTime  @db.Date // 3 to 8 weeks before the first written paper (Vocational Training Guide 2.4.2); checked in the write
+  mcqOn     DateTime? @db.Date
+  writtenOn DateTime  @db.Date
+  oralOn    DateTime? @db.Date
+  oralEndOn DateTime? @db.Date
+  osceOn    DateTime? @db.Date
+  feeHkd    Int
+  shutAt    DateTime? // Admin closed applications early
+  createdAt DateTime  @default(now())
+
+  applications  ExamApplication[] @relation("ApplicationSitting")
+  results       ExamResult[]      @relation("ResultSitting")
+  sectionPasses ExamSectionPass[] @relation("PassSitting")
+
+  @@index([examType, writtenOn])
+}
+
+model ExamResult {
+  id            String   @id @default(uuid())
+  traineeId     String
+  examType      String // INTERMEDIATE | FINAL_ANAESTHESIA | FINAL_ICU
+  sittingId     String?
+  applicationId String?
+  examDate      DateTime @db.Date
+  attemptNumber Int      @default(1)
+  result        String // PASS | FAIL (overall)
+  score         Decimal? @db.Decimal(5, 2)
+  // Intermediate, per subject. A blank subject is carried forward from an earlier sitting.
+  physiology    String? // PASS | FAIL
+  pharmacology  String? // PASS | FAIL
+  minimumMet    Boolean? // needed when one subject is passed and the other failed: the pass carries forward only if the minimum score was met in the failed subject
+  // Final, per section. oral and OSCE are one result (decided 2026-10-25).
+  written       String? // PASS | FAIL; blank = carried forward
+  oralOsce      String? // PASS | FAIL
+  sourceBatchId String?
+  createdAt     DateTime @default(now())
+
+  trainee     TraineeProfile      @relation("ResultTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  sitting     ExamSitting?        @relation("ResultSitting", fields: [sittingId], references: [id], onDelete: Restrict)
+  application ExamApplication?    @relation("ResultApplication", fields: [applicationId], references: [id], onDelete: SetNull)
+  sourceBatch BulkIngestionBatch? @relation("ResultBatch", fields: [sourceBatchId], references: [id], onDelete: SetNull)
+
+  @@unique([traineeId, examType, attemptNumber])
+  @@index([traineeId, examType])
+}
+
+model ExamSectionPass {
+  id              String   @id @default(uuid())
+  traineeId       String
+  examType        String // INTERMEDIATE | FINAL_ANAESTHESIA
+  section         String // PHYSIOLOGY | PHARMACOLOGY | WRITTEN
+  passedOn        DateTime @db.Date
+  passedSittingId String?
+  sittingsLeft    Int      @default(4) // carried forward for up to four subsequent consecutive exams. Counting every sitting is OUR reading; confirm with the College
+  isActive        Boolean  @default(true) // false once used up or when the exam is passed. One active carried pass per trainee and exam (partial unique index in the migration)
+  createdAt       DateTime @default(now())
+
+  trainee       TraineeProfile @relation("PassTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  passedSitting ExamSitting?   @relation("PassSitting", fields: [passedSittingId], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, examType, isActive])
+}
+
+model TraineeFeePayment {
+  id           String    @id @default(uuid())
+  traineeId    String
+  feeType      String // REGISTRATION | TRAINING
+  paidOn       DateTime  @db.Date
+  reference    String?
+  recordedById String?
+  voidedAt     DateTime? // a wrongly recorded payment is voided, never deleted
+  createdAt    DateTime  @default(now())
+
+  trainee    TraineeProfile @relation("FeeTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  recordedBy User?          @relation("FeeRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, feeType])
+}
+
+model TraineeExemption {
+  id           String   @id @default(uuid())
+  traineeId    String
+  examType     String   @default("INTERMEDIATE")
+  kind         String // ANZCA_PRIMARY | FRCA_PRIMARY | OTHER_BOARD
+  grantedOn    DateTime @db.Date
+  reference    String?
+  note         String?
+  recordedById String?
+  createdAt    DateTime @default(now())
+
+  trainee    TraineeProfile @relation("ExemptionTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  recordedBy User?          @relation("ExemptionRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@unique([traineeId, examType])
+}
+
+model FormalProjectStage {
+  id           String                @id @default(uuid())
+  projectId    String
+  stage        String // protocol | manuscript
+  state        ProjectStageState     @default(AWAITING_REVIEWERS)
+  roundNo      Int                   @default(1) // a revision starts a new round with the same reviewers
+  dispatchedAt DateTime?             @db.Date
+  dueAt        DateTime?             @db.Date // dispatched + two months
+  decision     ReviewRecommendation?
+  decidedOn    DateTime?             @db.Date
+  appealedOn   DateTime? // one appeal only; a rejection after appeal is final
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @default(now()) @updatedAt
+
+  project FormalProject @relation("StageProject", fields: [projectId], references: [id], onDelete: Restrict)
+
+  @@unique([projectId, stage])
+}
+
+model ApplicationEndorsement {
+  id            String                @id @default(uuid())
+  applicationId String
+  signerRole    ApplicationSignerRole
+  signerUserId  String?
+  method        SigningMethod?
+  requestedAt   DateTime              @default(now())
+  signedAt      DateTime?
+  documentId    String? // signed PDF when method = PDF
+  attachedById  String? // Admin who attached the PDF
+
+  application Application @relation("EndorsementApplication", fields: [applicationId], references: [id], onDelete: Cascade)
+  signer      User?       @relation("EndorsementSigner", fields: [signerUserId], references: [id], onDelete: Restrict)
+  attachedBy  User?       @relation("EndorsementAttacher", fields: [attachedById], references: [id], onDelete: Restrict)
+
+  @@unique([applicationId, signerRole])
+}
+
+model RetrospectiveRecognitionEvent {
+  id            String             @id @default(uuid())
+  recognitionId String
+  eventType     String // requested | enabled | submitted | documents_returned | sent_to_training_officer | more_documents_asked | decided | referred_to_board | credit_executed
+  fromStatus    RecognitionStatus?
+  toStatus      RecognitionStatus?
+  actorUserId   String?
+  actorRole     String // ADMIN | TRAINING_OFFICER | BOARD
+  onBehalf      Boolean            @default(false) // Admin recorded an outcome that arrived outside the system
+  outcome       String?
+  note          String?
+  eventDate     DateTime           @db.Date
+  createdAt     DateTime           @default(now())
+
+  recognition RetrospectiveRecognition @relation("RecognitionEventRecognition", fields: [recognitionId], references: [id], onDelete: Restrict)
+  actor       User?                    @relation("RecognitionEventActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([recognitionId, eventDate])
 }
