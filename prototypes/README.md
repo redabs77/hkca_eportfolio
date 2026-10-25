@@ -35,3 +35,5 @@ against a real device, and the JavaScript is deliberately minimal. Treat them as
 **Exams (Admin console):** Intermediate and Final tabs, each with Sittings, Exam Applications, Upload results and Past sittings. Closed loop with the Trainee Dashboard (overview card and Next steps) through `hkca-courses-store.js`; the SOT step is the demo role "View as Supervisor of Training". Criteria are one list (`EX_RULES`) in the store.
 
 Exam results are per subject (Intermediate) and per section (Final) and drive the carry-forward of section passes (see the decisions log).
+
+Formal projects tab: Protocols, Manuscripts and Approval log, following HKCA-E03; the exit-gate formal project criterion is derived from the cases.

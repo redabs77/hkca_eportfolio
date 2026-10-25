@@ -252,6 +252,7 @@ table.dk{table-layout:fixed}
 .chk-list li b{display:inline-block;min-width:58px;margin-right:8px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
 .chk-list li.ok b{color:var(--ok-f)}.chk-list li.bad b{color:var(--bd-f)}
 @media(max-width:560px){.chk-list li b{display:block;margin:0 0 2px}}
+.tl{list-style:none;margin:0;padding:0}.tl li{display:grid;grid-template-columns:86px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-sub);font-size:13px;line-height:1.4}.tl .d{color:var(--ink3);font-size:12px}.tl .tsub{display:block;color:var(--ink3);font-size:12px}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 </head>
@@ -332,7 +333,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:11,
+    v:12,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -360,15 +361,7 @@ function seedState(){
       {sitting:'2026-04-18',label:'Feb / Apr 2026',exam:'Intermediate',cand:11,pass:8,fail:3,by:'Secretariat',at:'2026-04-30'},
       {sitting:'2026-05-10',label:'Mar / May 2026',exam:'Final',cand:9,pass:7,fail:2,by:'Secretariat',at:'2026-05-22'}
     ],
-    projects:[
-      {id:'FP-26-014',title:'Quality improvement: reducing PONV in day surgery',trainee:'HKCA-2023-004',stage:'Protocol',state:'dispatch',sot:true,rev:[]},
-      {id:'FP-26-011',title:'Audit of difficult airway alerts',trainee:'HKCA-2022-019',stage:'Manuscript',state:'dispatch',sot:true,rev:[]},
-      {id:'FP-26-009',title:'Retrospective cohort: sugammadex and postoperative pulmonary complications',trainee:'HKCA-2023-009',stage:'Protocol',state:'dispatch',sot:true,rev:[]},
-      {id:'FP-26-006',title:'Survey: handover practice in recovery',trainee:'HKCA-2023-017',stage:'Manuscript',state:'review',sot:true,due:'2026-11-08',rev:[{a:'A-03',in:false},{a:'A-11',in:false}]},
-      {id:'FP-26-004',title:'Regional anaesthesia and delirium after hip fracture',trainee:'HKCA-2023-015',stage:'Protocol',state:'review',sot:true,due:'2026-10-18',rev:[{a:'A-05',in:true,g:'Satisfactory'},{a:'A-08',in:false}]},
-      {id:'FP-26-002',title:'Preoperative anxiety in children: a prospective study',trainee:'HKCA-2022-013',stage:'Manuscript',state:'reviewsIn',sot:true,rev:[{a:'A-02',in:true,g:'Minor revision'},{a:'A-09',in:true,g:'Major revision'}]},
-      {id:'FP-26-001',title:'Opioid-free anaesthesia: a service evaluation',trainee:'HKCA-2022-006',stage:'Manuscript',state:'reviewsIn',sot:true,rev:[{a:'A-04',in:true,g:'Satisfactory'},{a:'A-06',in:true,g:'Satisfactory'}]}
-    ],
+    projects:pjSeedCases(),
     assessors:[['A-01','Dr. Wing Fai Tong','NDH'],['A-02','Dr. Irene Shum','QMH'],['A-03','Dr. Ken Sit','QEH'],['A-04','Dr. Dora Yau','TMH'],['A-05','Dr. Paul Luk','PYNEH'],['A-06','Dr. Janet Ma','PWH'],['A-07','Dr. Colin Ip','UCH'],['A-08','Dr. Rita Hon','KWH'],['A-09','Dr. Terry Cho','YCH'],['A-10','Dr. Nancy Ling','PMH'],['A-11','Dr. Oscar Wu','TKOH'],['A-12','Dr. Lena Fu','POH']].map(([id,name,hosp])=>({id,name,hosp})),
     centres:[
       ['PWH',60,'2029-06-30'],['NDH',36,'2028-03-31'],['AHNH',30,'2028-09-30'],['PYNEH',36,'2027-03-31'],['QMH',48,'2029-01-31'],['QEH',48,'2028-11-30'],['KWH',36,'2027-08-31'],['UCH',36,'2029-04-30'],['TKOH',36,'2028-05-31'],['PMH',48,'2028-12-31'],['YCH',30,'2029-02-28'],['CMC',24,'2028-07-31'],['TMH',36,'2027-12-31'],['POH',30,'2029-03-31']
@@ -406,18 +399,54 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==11)S=seedState();
+if(!S||S.v!==12)S=seedState();
 S.rounds=HKC.get().rounds;
 S.exams=HKC.get().exams;
 const doneMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]=t.courses.slice()});return m};
 const profMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]={stage:t.stage,hosp:t.hosp,status:t.status,regFee:t.regFee!==false,trainFee:t.trainFee!==false,inter:t.exam.Intermediate||null,final:t.exam.Final||null,exempt:t.exempt?t.exempt.basis:null,cf:t.cf||{},accred:S.centres.some(c=>c.hosp===t.hosp&&c.exp>=TODAY)}});return m};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}HKC.setRounds(S.rounds);HKC.setDone(doneMap());HKC.setExams(S.exams);HKC.setProfiles(profMap())};
-const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'int',projects:'dispatch',centres:'accred',wba:'link'},
-  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',exView:'apps',exSit:null,pjFilter:'dispatch',docketSel:{},role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
+const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'int',projects:'prot',centres:'accred',wba:'link'},
+  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',exView:'apps',exSit:null,pjFilter:'active',pjUw:true,pjLogF:'all',docketSel:{},role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
 const T=id=>S.trainees.find(t=>t.id===id);
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
 function logAct(a,d){const t=new Date().toTimeString().slice(0,5);const prev=S.log[0]?S.log[0].h:'0';S.log.unshift({d:TODAY,t,a,det:d,h:hash(prev+a+d+t)});save()}
 
+function pjSeedCases(){
+  const L=(d,part,a,det,who)=>({d,part,a,det:det||'',who:who||'Secretariat'});
+  const P=o=>Object.assign({round:1,rev:[],team:false,appeal:null,final:false},o);
+  const R=(a,rec,d)=>d?{a,in:true,rec,d}:{a,in:false};
+  const mk=(id,title,trainee,type,protocol,manuscript)=>({id,title,trainee,type,sot:true,protocol,manuscript,log:[]});
+  const O=[
+    mk('FP-26-014','Quality improvement: reducing PONV in day surgery','HKCA-2023-004','Quality improvement study',P({state:'dispatch',sub:'2026-10-12'}),null),
+    mk('FP-26-011','Audit of difficult airway alerts','HKCA-2022-019','Clinical audit',P({state:'approved',sub:'2026-02-02',disp:'2026-02-05',at:'2026-03-05',rev:[R('A-02','Approved','2026-03-03'),R('A-06','Approved','2026-03-04')]}),P({state:'dispatch',sub:'2026-10-15'})),
+    mk('FP-26-009','Retrospective cohort: sugammadex and postoperative pulmonary complications','HKCA-2023-009','Observational study',P({state:'dispatch',sub:'2026-10-19'}),null),
+    mk('FP-26-006','Survey: handover practice in recovery','HKCA-2023-017','Observational study',P({state:'approved',sub:'2025-12-01',disp:'2025-12-03',at:'2026-01-22',rev:[R('A-04','Approved','2026-01-19'),R('A-07','Approved','2026-01-20')]}),P({state:'review',sub:'2026-09-08',disp:'2026-09-09',due:'2026-11-08',rev:[R('A-03'),R('A-11')]})),
+    mk('FP-26-004','Regional anaesthesia and delirium after hip fracture','HKCA-2023-015','Observational study',P({state:'review',sub:'2026-08-18',disp:'2026-08-18',due:'2026-10-18',rev:[R('A-05','Approved','2026-09-30'),R('A-08')]}),null),
+    mk('FP-26-002','Preoperative anxiety in children: a prospective study','HKCA-2022-013','Observational study',P({state:'approved',sub:'2025-09-15',disp:'2025-09-17',at:'2025-11-14',rev:[R('A-05','Approved','2025-11-10'),R('A-08','Approved','2025-11-11')]}),P({state:'reviewsIn',sub:'2026-08-24',disp:'2026-08-25',due:'2026-10-24',rev:[R('A-02','Approved','2026-10-05'),R('A-09','Revision and resubmission','2026-10-12')]})),
+    mk('FP-26-001','Opioid-free anaesthesia: a service evaluation','HKCA-2022-006','Quality improvement study',P({state:'approved',sub:'2025-08-04',disp:'2025-08-06',at:'2025-09-30',rev:[R('A-01','Approved','2025-09-26'),R('A-03','Approved','2025-09-27')]}),P({state:'reviewsIn',sub:'2026-08-17',disp:'2026-08-18',due:'2026-10-17',rev:[R('A-04','Approved','2026-09-28'),R('A-06','Approved','2026-10-02')]})),
+    mk('FP-25-020','Dexmedetomidine and emergence delirium in children','HKCA-2024-011','Randomized controlled trial',P({state:'approved',sub:'2026-04-20',disp:'2026-04-22',at:'2026-06-10',rev:[R('A-05','Approved','2026-06-04'),R('A-08','Approved','2026-06-08')]}),null),
+    mk('FP-25-018','Ultrasound-guided erector spinae block after spinal surgery','HKCA-2023-022','Randomized controlled trial',P({state:'revision',sub:'2026-07-28',disp:'2026-07-30',decD:'2026-10-02',rev:[R('A-02','Revision and resubmission','2026-09-25'),R('A-07','Revision and resubmission','2026-09-29')]}),null),
+    mk('FP-25-015','Intranasal dexmedetomidine premedication: a systematic review','HKCA-2023-026','Systematic review (with or without meta-analysis)',P({state:'rejected',sub:'2026-06-29',disp:'2026-07-01',decD:'2026-09-20',rev:[R('A-03','Rejected','2026-09-10'),R('A-09','Rejected','2026-09-14')]}),null),
+    mk('FP-25-012','Lung ultrasound for atelectasis during general anaesthesia','HKCA-2021-003','Observational study',P({state:'approved',sub:'2024-09-02',disp:'2024-09-04',at:'2024-11-20',rev:[R('A-01','Approved','2024-11-12'),R('A-04','Approved','2024-11-14')]}),P({state:'approved',sub:'2026-05-25',disp:'2026-05-27',at:'2026-08-14',rev:[R('A-06','Approved','2026-07-30'),R('A-07','Approved','2026-08-06')]})),
+    mk('FP-25-009','Effect of a ward handover tool on postoperative nausea','HKCA-2020-007','Quality improvement study',null,P({state:'approved',sub:'2026-05-30',at:'2026-05-30',paper:{journal:'Anaesthesia',authorship:'First author'}})),
+    mk('FP-25-007','Perioperative outcomes in elderly hip fracture surgery','HKCA-2020-011','Observational study',P({state:'approved',sub:'2023-12-04',disp:'2023-12-06',at:'2024-03-01',rev:[R('A-02','Approved','2024-02-20'),R('A-05','Approved','2024-02-22')]}),P({state:'revision',sub:'2026-06-08',disp:'2026-06-10',decD:'2026-09-18',rev:[R('A-08','Revision and resubmission','2026-08-30'),R('A-11','Revision and resubmission','2026-09-02')]})),
+    mk('FP-25-005','Case-based audit of postoperative analgesia failures','HKCA-2021-009','Clinical audit',P({state:'appeal',sub:'2026-05-04',disp:'2026-05-06',decD:'2026-09-01',appeal:{d:'2026-10-10'},rev:[R('A-06','Rejected','2026-08-12'),R('A-09','Rejected','2026-08-20')]}),null)
+  ];
+  O.forEach(c=>{
+    ['protocol','manuscript'].forEach(k=>{
+      const p=c[k];if(!p)return;const N=k==='protocol'?'Protocol':'Manuscript';
+      if(p.paper){c.log.push(L(p.at,N,'Accepted paper recorded',p.paper.journal+', '+p.paper.authorship+'. Evidence of acceptance seen'));c.log.push(L(p.at,N,'Board of Education and Board of Censors advised','The formal project requirement is met'));return}
+      c.log.push(L(p.sub,N,'Submitted','Recorded by the Secretariat; SOT signed off'));
+      if(p.disp)c.log.push(L(p.disp,N,'Reviewers assigned',p.rev.map(r=>r.a).join(' and ')));
+      p.rev.forEach((r,i)=>{if(r.in)c.log.push(L(r.d,N,'Review in','Reviewer '+(i+1)+' recommends: '+r.rec,'Reviewer'))});
+      if(p.state==='approved'){c.log.push(L(p.at,N,'Approved','','Formal Project Team'));if(k==='manuscript')c.log.push(L(p.at,N,'Board of Education and Board of Censors advised','The formal project requirement is met'))}
+      if(p.state==='revision')c.log.push(L(p.decD,N,'Revision and resubmission requested','','Formal Project Team'));
+      if(p.state==='rejected'||p.state==='appeal')c.log.push(L(p.decD,N,'Rejected','','Formal Project Team'));
+      if(p.appeal)c.log.push(L(p.appeal.d,N,'Appeal received','Point-by-point reply to the reviewers'));
+    });
+  });
+  return O;
+}
 /* ============ derived: docket, counts ============ */
 function critOf(t){
   const g=S.GATES[t.stage];const d=S.dk[t.id]||{fail:{}};const f=d.fail;
@@ -425,7 +454,7 @@ function critOf(t){
   const miss=need.filter(c=>!t.courses.includes(c));
   const out={time:!f.time,courses:miss.length===0&&!f.courses,wba:!f.wba,vop:!f.vop,ita:!f.ita,exam:!f.exam};
   const why={time:f.time||'',courses:miss.length?CNAME[miss[0]]+(miss.length>1?' and '+(miss.length-1)+' more':'')+' outstanding':(f.courses||''),wba:f.wba||'',vop:f.vop||'',ita:f.ita||'',exam:f.exam||''};
-  if(g.next==='Exit'){out.project=!f.project;why.project=f.project||''}
+  if(g.next==='Exit'){const cs=S.projects.filter(x=>x.trainee===t.id),met=cs.some(x=>x.manuscript&&x.manuscript.state==='approved');out.project=met||(!cs.length&&!f.project);why.project=out.project?'':(f.project||(cs.length?'Formal project manuscript not yet approved':'No formal project recorded'))}
   return {out,why,ready:Object.values(out).every(Boolean),miss};
 }
 const docketRows=()=>S.trainees.filter(t=>t.status==='Active'&&S.GATES[t.stage]&&t.months>=S.GATES[t.stage].from&&t.months<=S.GATES[t.stage].to).map(t=>({t,c:critOf(t)}));
@@ -439,9 +468,7 @@ function counts(){
     recogAct:S.recog.filter(r=>['gate','docs','board','approved'].includes(r.state)).length,
     recogTo:S.recog.filter(r=>r.state==='to').length,
     triage,rounds:rr.length,
-    pjDispatch:S.projects.filter(p=>p.state==='dispatch').length,
-    pjOver:S.projects.filter(p=>p.state==='review'&&p.due<TODAY).length,
-    pjIn:S.projects.filter(p=>p.state==='reviewsIn').length,
+    ...(()=>{const pe=pjEvery(),n=fn=>pe.filter(fn).length,tb=fn=>(pe.find(fn)||{k:'prot'}).k;const fD=e=>e.p.state==='dispatch',fO=e=>pjOverdue(e.p),fI=e=>e.p.state==='reviewsIn',fA=e=>e.p.state==='appeal';return {pjDispatch:n(fD),pjDispatchT:tb(fD),pjOver:n(fO),pjOverT:tb(fO),pjIn:n(fI),pjInT:tb(fI),pjAppeal:n(fA),pjAppealT:tb(fA)}})(),
     accSoon:S.centres.filter(c=>days(TODAY,c.exp)<=366).length,
     pend:S.pendingAppt.length,
     rosterOpen:S.roster.filter(r=>!r.reviewed).length,
@@ -471,18 +498,20 @@ const tname=id=>{const t=T(id);return t?t.name:id};
 function vHome(){
   const c=counts();const q=[];
   const oldest=S.intake.reduce((m,a)=>a.submitted<m?a.submitted:m,'9999-99');
-  if(c.pjOver)q.push({col:'--t5f',t:plural(c.pjOver,'project review')+' overdue',w:'The 30-day reviewer timer has passed. Reassign the reviewer or wait.',go:['projects','review'],b:'Open reviews'});
+  if(c.pjOver)q.push({col:'--t5f',t:plural(c.pjOver,'project review')+' overdue',w:'The two months have passed. Hand each to the Formal Project Team.',go:['projects',c.pjOverT+':review'],b:'Open reviews'});
+  if(c.pjAppeal)q.push({col:'--t5f',t:plural(c.pjAppeal,'formal project appeal')+' to decide',w:'The Formal Project Team reviews the reply. A rejection after appeal is final.',go:['projects',c.pjAppealT+':appeal'],b:'Open appeals'});
   if(c.link)q.push({col:'--acc',t:plural(c.link,'person','people')+' to link in iWBA',w:'Assessments from these people cannot reach a portfolio until you confirm who they are.',go:['wba','link'],b:'Link people'});
   if(c.intake)q.push({col:'--t1f',t:plural(c.intake,'membership application')+' to vet',w:'Oldest has waited '+ago(days(oldest,TODAY))+'. Three checks, then the account opens.',go:['trainees','intake'],b:'Open applications'});
   if(c.recogAct){const rp=[];const nn=k=>S.recog.filter(r=>r.state===k).length;if(nn('gate'))rp.push(nn('gate')+' to enable');if(nn('docs'))rp.push(nn('docs')+' with documents to check');if(nn('board'))rp.push(nn('board')+' for the Board decision');if(nn('approved'))rp.push(nn('approved')+' approved, credit to execute');q.push({col:'--t1f',t:plural(c.recogAct,'retrospective recognition request')+' need you',w:rp.join(', ')+'.',go:['trainees','recog'],b:'Open requests'})}
   if(c.triage)q.push({col:'--t4f',t:plural(c.triage,'course request')+' to triage',w:'Across '+plural(c.rounds,'round')+'. '+((n=>n?plural(n,'round')+(n===1?' has':' have')+' more applications than places. ':'')(S.rounds.filter(r=>overBy(r)>0).length))+'Applications are already ranked for you.',go:['courses','seats'],b:'Allocate seats'});
   if(c.exFee+c.exCrit)q.push({col:'--t4f',t:plural(c.exFee+c.exCrit,'exam application')+' need you',w:[c.exFee?c.exFee+' awaiting the fee':'',c.exCrit?c.exCrit+' with criteria not met':''].filter(Boolean).join(', ')+'.',go:['exams',c.exTab],b:'Open applications'});
-  if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects','dispatch'],b:'Dispatch'});
+  if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects',c.pjDispatchT+':dispatch'],b:'Dispatch'});
+  if(c.pjIn)q.push({col:'--t5f',t:plural(c.pjIn,'formal project')+' with both reviews in',w:'Record the Formal Project Team\u2019s decision.',go:['projects',c.pjInT+':reviewsIn'],b:'Record decisions'});
   if(c.pend)q.push({col:'--t2f',t:'SOT appointment to enter',w:'The Board endorsed the replacement at '+S.pendingAppt[0].hosp+'. Record the appointment before the current term ends.',go:['centres','appts'],b:'Open appointments'});
   if(c.unm)q.push({col:'--acc',t:plural(c.unm,'iWBA item')+' not mapped',w:'These assessments are held back until each is matched to a curriculum code.',go:['wba','unmapped'],b:'Map items'});
   const waiting=[];
   const wRecog=S.recog.filter(r=>r.state==='waiting').length;if(wRecog)waiting.push(plural(wRecog,'retrospective recognition request')+' with the applicant');const wTo=S.recog.filter(r=>r.state==='to').length;if(wTo)waiting.push(plural(wTo,'retrospective recognition request')+' with the Training Officer');
-  const wRev=S.projects.filter(p=>p.state==='review'&&p.due>=TODAY).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
+  const wRev=pjEvery().filter(e=>e.p.state==='review'&&!e.p.team&&e.p.due>=TODAY).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
   waiting.push('JCIMED: '+S.jcimed.length+' questions sent 23 Oct');
   const dk=c.dkReady+c.dkAttn;
   const calR=S.rounds.filter(r=>['open','closed'].includes(rState(r))).sort((a,b)=>a.date>b.date?1:-1).slice(0,2).map(r=>[fmtS(r.date),CNAME[r.course]+' round',seatTxt(r)+(rState(r)==='open'?'. Registration closes '+fmtS(r.closes):'. Registration closed')]);
@@ -1251,46 +1280,152 @@ function vHist(){return `<div class="card"><div class="tbl-scroll"><table><thead
 </script>
 <script>
 /* ============ FORMAL PROJECTS ============ */
-const GR=['Satisfactory','Minor revision','Major revision','Unsatisfactory'];
-const PJ={dispatch:'To dispatch',review:'Under review',reviewsIn:'Reviews in',done:'Recorded'};
+/* College guideline HKCA-E03 (March 2026): protocol approved by the Formal Project Team, then a manuscript approved; or an accepted peer-reviewed paper (2.1).
+   Review within two months; after two months the Team handles it. Decisions: accept, reject, or revise and resubmit. One appeal against a rejection. */
+const PJ_STATE={dispatch:'To dispatch',review:'Under review',reviewsIn:'Reviews in',revision:'With trainee',appeal:'Appeal',approved:'Approved',rejected:'Not approved'};
+const PJ_CLS={dispatch:'warn',review:'mute',reviewsIn:'warn',revision:'mute',appeal:'warn',approved:'ok',rejected:'bad'};
+const PJ_TYPES=['Systematic review (with or without meta-analysis)','Randomized controlled trial','Observational study','Clinical audit','Quality improvement study'];
+const REC=['Approved','Revision and resubmission','Rejected'];
+const PK={prot:'protocol',man:'manuscript'},PN={prot:'Protocol',man:'Manuscript'};
+const addMonths=(i,n)=>{const d=D(i),t=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+n,1)),dim=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0)).getUTCDate();t.setUTCDate(Math.min(d.getUTCDate(),dim));return iso(t)};
+const pjCase=id=>S.projects.find(x=>x.id===id);
+const pjAct=p=>p.state!=='approved'&&!(p.state==='rejected'&&p.final);
+const pjOverdue=p=>p.state==='review'&&!p.team&&p.due<TODAY;
+function pjEvery(){const o=[];S.projects.forEach(c=>['prot','man'].forEach(k=>{const p=c[PK[k]];if(p)o.push({c,k,p})}));return o}
+const pjParts=k=>pjEvery().filter(e=>e.k===k);
+const pjUnder=()=>S.projects.filter(c=>c.protocol&&c.protocol.state==='approved'&&!c.manuscript);
+function pjLog(c,part,a,det,who){c.log.push({d:TODAY,part,a,det:det||'',who:who||'Secretariat'})}
+const pjNeed=k=>pjParts(k).filter(e=>['dispatch','reviewsIn','appeal'].includes(e.p.state)||pjOverdue(e.p)).length;
+const pjStatePill=p=>pill(PJ_STATE[p.state]+(p.state==='rejected'&&!p.final?', appeal open':''),PJ_CLS[p.state]);
+function pjWhere(e){
+  const p=e.p;
+  if(p.paper)return dt('Accepted paper, '+fmtS(p.at),'ok');
+  switch(p.state){
+    case 'dispatch':return dt('Reviewers not chosen','none');
+    case 'review':{if(p.team)return dt('With the Formal Project Team','info');const d=days(TODAY,p.due),w=p.rev.filter(r=>!r.in).length;return d<0?dt(plural(w,'review')+' '+(-d)+' days overdue','bad'):dt(plural(w,'review')+' due '+fmtS(p.due)+', '+d+' days left','info')}
+    case 'reviewsIn':{const same=p.rev[0].rec===p.rev[1].rec;return dt(same?'Reviewers agree: '+p.rev[0].rec:'Reviewers differ','' +(same?'ok':'warn'))}
+    case 'revision':return dt('Revision requested '+fmtS(p.decD)+', with the trainee','warn');
+    case 'appeal':return dt('Appeal received '+fmtS(p.appeal.d),'info');
+    case 'approved':return dt('Approved '+fmtS(p.at),'ok');
+    default:return dt(p.final?'Rejected, final':'Rejected '+fmtS(p.decD)+', appeal open','bad');
+  }
+}
 function vProjects(){
-  const c=counts();const f=ui.pjFilter;const n=k=>S.projects.filter(p=>p.state===k||(k==='done'&&p.state==='escalated')).length;
-  const list=S.projects.filter(p=>f==='done'?(p.state==='done'||p.state==='escalated'):p.state===f);
-  const chips=`<div class="chips">${Object.keys(PJ).map(k=>`<button class="chip ${f===k?'on':''}" aria-pressed="${f===k}" data-a="pjF" data-v="${k}">${PJ[k]} <span class="n">${n(k)}</span></button>`).join('')}</div>`;
-  const nextCol=p=>{
-    if(p.state==='dispatch')return dt('Reviewers not chosen','none');
-    if(p.state==='review'){const d=days(TODAY,p.due);const waiting=p.rev.filter(r=>!r.in).length;return dt(d<0?`${plural(waiting,'review')} ${-d} days overdue`:`${plural(waiting,'review')} due ${fmtS(p.due)}, ${d} days left`,d<0?'bad':'info')}
-    if(p.state==='reviewsIn'){const d=Math.abs(GR.indexOf(p.rev[0].g)-GR.indexOf(p.rev[1].g));return dt(d>=2?'Reviews differ widely':d===1?'Reviews differ':'Reviews agree',d>=2?'bad':d===1?'warn':'ok')}
-    if(p.state==='escalated')return dt('With the Subcommittee Chair','info');return dt('Outcome: '+p.outcome,'ok')};
-  const act=p=>({dispatch:['Choose reviewers','pri'],review:['Open','sec'],reviewsIn:['Record outcome','pri'],done:['Open','sec'],escalated:['Open','sec']}[p.state]);
-  return head('Formal projects','Review pipeline','Reviewers are chosen by the Secretariat and never see the trainee\u2019s name. Each review has 30 days.',chips)+
-  `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Project</th><th>Trainee</th><th>Stage</th><th>Where it stands</th><th class="act"></th></tr></thead><tbody>${list.map(p=>{const t=T(p.trainee);const a=act(p);return `<tr><td style="max-width:380px"><div class="cell-name">${esc(p.title)}</div><div class="cell-sub mono">${p.id}</div></td><td>${esc(t.name)}<div class="cell-sub">${t.hosp}</div></td><td>${p.stage}</td><td>${nextCol(p)}</td><td class="act"><button class="btn ${a[1]} sm" data-a="openProject" data-id="${p.id}">${a[0]}</button></td></tr>`}).join('')||'<tr><td colspan="5" class="empty">Nothing here.</td></tr>'}</tbody></table></div></div>`;
+  if(!['prot','man','log'].includes(ui.sub.projects))ui.sub.projects='prot';
+  const s=ui.sub.projects;
+  const top=subSeg('projects',[['prot','Protocols',pjNeed('prot')],['man','Manuscripts',pjNeed('man')],['log','Approval log']]);
+  const sub={prot:'A protocol is approved by the Formal Project Team before the trainee starts the project. Reviewers are chosen by the Secretariat and never see the trainee\u2019s name. Reviews are due within two months.',man:'The completed manuscript is reviewed against the approved protocol. Includes projects underway: protocol approved, manuscript not yet submitted.',log:'The dates each protocol and manuscript was approved, for every case. Open a case for its full timeline.'}[s];
+  return head('Formal projects',{prot:'Protocols',man:'Manuscripts',log:'Approval log'}[s],sub,top)+(s==='log'?vPjLog():vPjList(s));
 }
-const eligible=(p,excl)=>S.assessors.filter(a=>a.hosp!==T(p.trainee).hosp&&!(excl||[]).includes(a.id));
-function openProject(id){
-  const p=S.projects.find(x=>x.id===id);const t=T(p.trainee);ui.dr={type:'project',id};ui.pick=[];
-  const info=`<dl class="kv"><dt>Project</dt><dd>${esc(p.title)}</dd><dt>Trainee</dt><dd>${esc(t.name)}, ${t.hosp}</dd><dt>Stage</dt><dd>${p.stage}</dd><dt>SOT sign-off</dt><dd>${p.sot?'Signed':'Not yet'}</dd></dl>`;
-  let body=info,foot='';
+function vPjList(k){
+  const keys=['active','dispatch','review','reviewsIn','revision','appeal','approved','rejected'].concat(k==='man'?['underway']:[]);
+  const f=keys.includes(ui.pjFilter)?ui.pjFilter:'active';
+  const all=pjParts(k),under=k==='man'?pjUnder():[];
+  const cnt=x=>x==='active'?all.filter(e=>pjAct(e.p)).length+(k==='man'&&ui.pjUw?under.length:0):x==='underway'?under.length:all.filter(e=>e.p.state===x).length;
+  const lab=x=>x==='active'?'In progress':x==='underway'?'Underway':PJ_STATE[x];
+  const uRows=under.map(c=>({c,k:'man',u:true,p:null}));
+  let rows=f==='underway'?uRows:f==='active'?all.filter(e=>pjAct(e.p)).concat(k==='man'&&ui.pjUw?uRows:[]):all.filter(e=>e.p.state===f);
+  const age=e=>e.u?days(e.c.protocol.at,TODAY):(pjAct(e.p)?days(e.p.sub,TODAY):-1);
+  rows=rows.slice().sort((a,b)=>age(b)-age(a));
+  const chips=`<div class="chips">${keys.map(x=>`<button class="chip ${f===x?'on':''}" aria-pressed="${f===x}" data-a="pjF" data-v="${x}">${lab(x)} <span class="n">${cnt(x)}</span></button>`).join('')}</div>`;
+  const tb=`<div class="toolbar">${chips}<span class="grow"></span>${k==='man'?`<span style="display:flex;gap:14px;align-items:center;margin-left:auto"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" data-c="pjUw" ${ui.pjUw?'checked':''}> Include projects underway</label><button class="btn sec sm" data-a="pjPaperForm">Record an accepted paper</button></span>`:`<button class="btn pri sm" data-a="pjNewForm">Record a protocol</button>`}</div>`;
+  const btn=e=>e.u?['Record submission','pri']:({dispatch:['Choose reviewers','pri'],review:['Open','sec'],reviewsIn:['Record decision','pri'],appeal:['Record decision','pri']}[e.p.state]||['Open','sec']);
+  const body=rows.map(e=>{const c=e.c,t=T(c.trainee),b=btn(e),a=age(e);
+    return `<tr><td style="max-width:380px"><div class="cell-name">${esc(c.title)}</div><div class="cell-sub mono">${c.id}</div></td><td>${esc(t.name)}<div class="cell-sub">${t.hosp}</div></td><td class="meta">${esc(c.type)}</td><td>${e.u?dt('Project underway, manuscript not yet submitted','none'):pjWhere(e)}</td><td>${a>=0?plural(a,'day'):'<span class="muted">-</span>'}<div class="cell-sub">${e.u?'since protocol approved':a>=0?'since submitted':''}</div></td><td class="act"><button class="btn ${b[1]} sm" data-a="openCase" data-id="${c.id}" data-k="${k}">${b[0]}</button></td></tr>`}).join('');
+  return tb+`<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Project</th><th>Trainee</th><th>Type</th><th>Where it stands</th><th>Open for</th><th class="act"></th></tr></thead><tbody>${body||'<tr><td colspan="6" class="empty">Nothing here.</td></tr>'}</tbody></table></div></div>`;
+}
+function vPjLog(){
+  const f=ui.pjLogF||'all';
+  const rows=S.projects.map(c=>({c,pa:c.protocol&&c.protocol.state==='approved'?c.protocol.at:null,ma:c.manuscript&&c.manuscript.state==='approved'?c.manuscript.at:null}));
+  const sel={all:()=>true,met:r=>r.ma,under:r=>r.pa&&!r.ma,none:r=>!r.pa&&!r.ma};
+  const lab={all:'All cases',met:'Requirement met',under:'Underway or in review',none:'Nothing approved yet'};
+  const list=rows.filter(sel[f]).sort((a,b)=>((b.ma||b.pa||'')>(a.ma||a.pa||''))?1:-1);
+  const chips=`<div class="chips">${Object.keys(lab).map(x=>`<button class="chip ${f===x?'on':''}" aria-pressed="${f===x}" data-a="pjLogF" data-v="${x}">${lab[x]} <span class="n">${rows.filter(sel[x]).length}</span></button>`).join('')}</div>`;
+  const body=list.map(r=>{const c=r.c,t=T(c.trainee),m=r.pa&&r.ma?Math.max(1,Math.round(days(r.pa,r.ma)/30.4))+' months':'';
+    return `<tr><td style="max-width:360px"><div class="cell-name">${esc(c.title)}</div><div class="cell-sub mono">${c.id}</div></td><td>${esc(t.name)}<div class="cell-sub">${t.hosp}</div></td><td>${r.pa?fmt(r.pa):c.protocol?dt('Not yet','none'):'<span class="muted">Not needed, accepted paper</span>'}</td><td>${r.ma?fmt(r.ma)+(c.manuscript.paper?'<div class="cell-sub">Accepted paper, '+esc(c.manuscript.paper.journal)+'</div>':''):dt('Not yet','none')}</td><td>${m||'<span class="muted">-</span>'}</td><td>${r.ma?pill('Requirement met','ok'):pill('In progress','mute')}</td><td class="act"><button class="btn sec sm" data-a="openCase" data-id="${c.id}" data-k="log">Timeline</button></td></tr>`}).join('');
+  return `<div class="toolbar">${chips}<span class="grow"></span><button class="btn sec sm" data-a="toast" data-m="Approval log exported as CSV (demo)">Export log</button></div><div class="card"><div class="tbl-scroll"><table><thead><tr><th>Project</th><th>Trainee</th><th>Protocol approved</th><th>Manuscript approved</th><th>Protocol to manuscript</th><th>Formal project</th><th class="act"></th></tr></thead><tbody>${body||'<tr><td colspan="7" class="empty">Nothing here.</td></tr>'}</tbody></table></div></div>`;
+}
+const eligible=(c,excl)=>S.assessors.filter(a=>a.hosp!==T(c.trainee).hosp&&!(excl||[]).includes(a.id));
+function decisionForm(id,k,dflt){
+  return `<div class="fld"><label for="pjOut${k}">Decision to record</label><select id="pjOut${k}">${REC.map(g=>`<option ${g===dflt?'selected':''}>${g}</option>`).join('')}</select></div><div class="fld"><label for="pjNote${k}">Note (optional)</label><input type="text" id="pjNote${k}" placeholder="Reason or conditions"></div><button class="btn pri" data-a="pjDecide" data-id="${id}" data-k="${k}">Record decision</button>`;
+}
+function partBlock(c,k){
+  const p=c[PK[k]],N=PN[k],id=c.id,t=T(c.trainee);
+  if(!p){return k==='man'&&c.protocol&&c.protocol.state==='approved'?`<div class="sect">Manuscript</div><p class="note">Project underway since ${fmt(c.protocol.at)}. Record the manuscript when the trainee submits it.</p><button class="btn pri sm" data-a="pjManSub" data-id="${id}">Record manuscript submitted</button>`:''}
+  if(p.paper)return `<div class="sect">Accepted paper</div><dl class="kv"><dt>Journal</dt><dd>${esc(p.paper.journal)}</dd><dt>Accepted</dt><dd>${fmt(p.at)}</dd><dt>Authorship</dt><dd>${esc(p.paper.authorship)}</dd></dl><p class="note ok">Counts as the formal project (College guideline 2.1). A copy of the publication goes to the Formal Project Team for the record.</p>`;
+  let h=`<div class="sect">${N} ${pjStatePill(p)}</div><dl class="kv"><dt>Submitted</dt><dd>${fmt(p.sub)}</dd>${p.round>1?`<dt>Round</dt><dd>Resubmission ${p.round-1}</dd>`:''}</dl>`;
   if(p.state==='dispatch'){
-    const el=eligible(p),ex=S.assessors.filter(a=>a.hosp===t.hosp);
-    body+=`<div class="sect">Choose two reviewers</div><div id="pickList">${el.map(a=>`<label class="chk"><input type="checkbox" data-c="pick" value="${a.id}"><span>${esc(a.name)}<small>${a.hosp}</small></span></label>`).join('')}</div>${ex.length?`<details class="fold"><summary>${plural(ex.length,'assessor')} excluded</summary><div class="in meta">${ex.map(a=>esc(a.name)+', '+a.hosp).join('<br>')}<br>Same hospital as the trainee.</div></details>`:''}<p class="note">Both reviewers get the same 30-day deadline from today, ${fmt(addDays(TODAY,30))}.</p>`;
-    foot=`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" id="dispBtn" data-a="dispatch" data-id="${id}" disabled>Send to reviewers</button>`;
+    const el=eligible(c),ex=S.assessors.filter(a=>a.hosp===t.hosp);
+    h+=`<div class="sect">Choose two reviewers</div><div id="pickList">${el.map(a=>`<label class="chk"><input type="checkbox" data-c="pick" value="${a.id}"><span>${esc(a.name)}<small>${a.hosp}</small></span></label>`).join('')}</div>${ex.length?`<details class="fold"><summary>${plural(ex.length,'assessor')} excluded</summary><div class="in meta">${ex.map(a=>esc(a.name)+', '+a.hosp).join('<br>')}<br>Same hospital as the trainee.</div></details>`:''}<p class="note">Both reviewers get two months from today, to ${fmt(addMonths(TODAY,2))}.</p><button class="btn pri" id="dispBtn" data-a="pjDispatch" data-id="${id}" data-k="${k}" disabled>Send to reviewers</button>`;
   }else if(p.state==='review'){
-    const od=p.due<TODAY;
-    body+=`<div class="sect">Reviewers</div>${p.rev.map((r,i)=>{const a=S.assessors.find(x=>x.id===r.a);return `<div class="chk" style="cursor:default;justify-content:space-between;align-items:center"><span>${esc(a.name)}<small>${a.hosp}</small></span><span style="display:flex;gap:10px;align-items:center">${r.in?dt('Review in','ok'):dt(od?'Overdue':'Not yet',od?'bad':'none')}${!r.in&&od?`<button class="btn sec sm" data-a="replaceRev" data-id="${id}" data-i="${i}">Replace</button>`:''}</span></div>`}).join('')}<p class="note ${od?'warn':''}">${od?'The deadline of '+fmt(p.due)+' has passed. Replacing a reviewer gives the new one 30 days.':'Due '+fmt(p.due)+'. A reminder goes to each reviewer who has not finished, 7 days before.'}</p>`;
+    const od=pjOverdue(p);
+    h+=`<div class="sect">Reviewers</div>${p.rev.map((r,i)=>{const a=S.assessors.find(x=>x.id===r.a);return `<div class="chk" style="cursor:default;display:block"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>${esc(a.name)}<small>${a.hosp}</small></span>${r.in?`<b>${esc(r.rec)}</b>`:dt(od?'Overdue':'Not yet',od?'bad':'none')}</div>${r.in||p.team?'':`<div class="btn-row" style="margin-top:8px"><select id="rv${k}${i}" aria-label="Recommendation of reviewer ${i+1}">${REC.map(x=>`<option>${x}</option>`).join('')}</select><button class="btn sec sm" data-a="pjRecRev" data-id="${id}" data-k="${k}" data-i="${i}">Record review</button></div>`}</div>`}).join('')}`;
+    if(p.team)h+=`<p class="note">With the Formal Project Team since the review period ended. Record the Team\u2019s decision.</p>${decisionForm(id,k,'Revision and resubmission')}`;
+    else if(od)h+=`<p class="note warn">The two months to ${fmt(p.due)} have passed. After two months the Formal Project Team handles the review.</p><button class="btn pri" data-a="pjTeam" data-id="${id}" data-k="${k}">Hand to the Formal Project Team</button>`;
+    else h+=`<p class="note">Due ${fmt(p.due)}. A reminder goes to each reviewer who has not finished, 14 days before.</p>`;
   }else if(p.state==='reviewsIn'){
-    const d=Math.abs(GR.indexOf(p.rev[0].g)-GR.indexOf(p.rev[1].g));
-    body+=`<div class="sect">Reviews</div>${p.rev.map((r,i)=>`<div class="chk" style="cursor:default;justify-content:space-between"><span>Reviewer ${i+1}<small>Name hidden from the trainee</small></span><b>${r.g}</b></div>`).join('')}
-    <div class="sect">Outcome</div><div class="fld"><label for="pjOut">Outcome to record</label><select id="pjOut">${GR.map(g=>`<option ${g===(d===0?p.rev[0].g:GR[Math.max(GR.indexOf(p.rev[0].g),GR.indexOf(p.rev[1].g))])?'selected':''}>${g}</option>`).join('')}</select></div>${d>=2?'<p class="note warn">The two reviews are two or more grades apart. Record an outcome only if the Board policy allows it, otherwise escalate.</p>':d===1?'<p class="note">The reviews differ by one grade. Choose the outcome, or escalate.</p>':''}`;
-    foot=`<button class="btn sec" data-a="escalate" data-id="${id}">Escalate to Subcommittee Chair</button><button class="btn pri" data-a="recordPj" data-id="${id}">Record outcome</button>`;
-  }else if(p.state==='escalated'){body+=`<p class="note">Sent to the Formal Project Subcommittee Chair. The outcome will be recorded here when the Chair decides.</p>`}
-  else{body+=`<dl class="kv"><dt>Outcome</dt><dd>${p.outcome}</dd></dl><p class="note ok">Recorded on ${fmt(p.at)}. The trainee and SOT see the outcome in the portfolio.</p>`}
-  openDrawer(p.id,p.stage+' stage',body,foot);
+    const same=p.rev[0].rec===p.rev[1].rec;
+    h+=`<div class="sect">Reviews</div>${p.rev.map((r,i)=>`<div class="chk" style="cursor:default;justify-content:space-between"><span>Reviewer ${i+1}<small>Name hidden from the trainee</small></span><b>${esc(r.rec)}</b></div>`).join('')}<div class="sect">Decision</div>${same?'':'<p class="note warn">The reviewers differ. The Formal Project Team decides.</p>'}${decisionForm(id,k,same?p.rev[0].rec:'Revision and resubmission')}`;
+  }else if(p.state==='revision'){
+    h+=`<p class="note">Revision requested ${fmt(p.decD)}. The trainee revises and resubmits. Changes to an approved protocol also need resubmission.</p><p class="note">On resubmission the same reviewers get two months from that day, to ${fmt(addMonths(TODAY,2))} if recorded today.</p><button class="btn pri" data-a="pjResub" data-id="${id}" data-k="${k}">Record resubmission</button>`;
+  }else if(p.state==='appeal'){
+    h+=`<p class="note">Appeal received ${fmt(p.appeal.d)} with a point-by-point reply. The Formal Project Team reviews it and may seek a second opinion. A rejection after appeal is final.</p>${decisionForm(id,k,'Revision and resubmission')}`;
+  }else if(p.state==='rejected'){
+    h+=p.final?`<p class="note bad">Rejected. This decision is final.</p>`:`<p class="note">Rejected ${fmt(p.decD)}. The trainee may appeal once, with a point-by-point reply to the reviewers\u2019 comments.</p><div class="btn-row"><button class="btn pri" data-a="pjAppeal" data-id="${id}" data-k="${k}">Record appeal received</button><button class="btn sec" data-a="pjNoAppeal" data-id="${id}" data-k="${k}">Close without appeal</button></div>`;
+  }else{
+    h+=`<p class="note ok">Approved ${fmt(p.at)}.${k==='man'?' The Board of Education and the Board of Censors have been advised that the formal project requirement is met.':''}</p>`;
+  }
+  return h;
 }
-function dispatchPj(id){const p=S.projects.find(x=>x.id===id);const ids=ui.pick;p.state='review';p.due=addDays(TODAY,30);p.rev=ids.map(a=>({a,in:false}));logAct('Reviewers assigned',`${p.id}: ${ids.join(' and ')}, due ${fmt(p.due)}`);closeDrawer();ui.pjFilter='review';render();toast('Sent to two reviewers. Due '+fmtS(p.due)+'.')}
-function replaceRev(id,i){const p=S.projects.find(x=>x.id===id);const cur=p.rev.map(r=>r.a);const a=eligible(p,cur)[0];if(!a){toast('No other eligible assessor.');return}const old=p.rev[i].a;p.rev[i]={a:a.id,in:false};p.due=addDays(TODAY,30);logAct('Reviewer replaced',`${p.id}: ${old} replaced by ${a.id}`);openProject(id);render();toast('Replaced with '+a.name+'. New deadline '+fmtS(p.due)+'.')}
-function recordPj(id){const p=S.projects.find(x=>x.id===id);p.state='done';p.outcome=$('#pjOut').value;p.at=TODAY;logAct('Project outcome recorded',`${p.id}: ${p.outcome}`);closeDrawer();ui.pjFilter='done';render();toast('Outcome recorded: '+p.outcome+'.')}
-function escalate(id){const p=S.projects.find(x=>x.id===id);p.state='escalated';logAct('Project escalated',`${p.id} sent to the Subcommittee Chair`);closeDrawer();ui.pjFilter='done';render();toast('Escalated to the Subcommittee Chair.')}
+function openCase(id){
+  const c=pjCase(id),t=T(c.trainee);ui.dr={type:'case',id};ui.pick=[];
+  const pa=c.protocol&&c.protocol.state==='approved'?c.protocol.at:null,ma=c.manuscript&&c.manuscript.state==='approved'?c.manuscript.at:null;
+  const info=`<dl class="kv"><dt>Project</dt><dd>${esc(c.title)}</dd><dt>Trainee</dt><dd>${esc(t.name)}, ${t.hosp}</dd><dt>Type</dt><dd>${esc(c.type)}</dd><dt>Route</dt><dd>${c.protocol?'Protocol, then manuscript':'Accepted paper (guideline 2.1)'}</dd><dt>SOT sign-off</dt><dd>${c.sot?'Signed':'Not yet'}</dd><dt>Protocol approved</dt><dd>${pa?fmt(pa):c.protocol?'Not yet':'Not needed'}</dd><dt>Manuscript approved</dt><dd>${ma?fmt(ma):'Not yet'}</dd></dl>`;
+  const tl=c.log.map((l,i)=>({...l,i})).sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:b.i-a.i);
+  const tlh=`<div class="sect">Timeline</div><ol class="tl">${tl.map(l=>`<li><span class="d">${fmt(l.d)}</span><span><b>${esc(l.part)}: ${esc(l.a)}</b>${l.det?`<span class="tsub">${esc(l.det)}</span>`:''}<span class="tsub">${esc(l.who)}</span></span></li>`).join('')}</ol>`;
+  openDrawer(c.id,c.title.length>56?c.title.slice(0,54)+'\u2026':c.title,info+partBlock(c,'prot')+partBlock(c,'man')+tlh,'');
+}
+function pjRefresh(id,msg){openCase(id);render();if(msg)toast(msg)}
+function pjDispatch(id,k){const c=pjCase(id),p=c[PK[k]],ids=ui.pick;p.state='review';p.disp=TODAY;p.due=addMonths(TODAY,2);p.team=false;p.rev=ids.map(a=>({a,in:false}));pjLog(c,PN[k],'Reviewers assigned',ids.join(' and ')+'; review due '+fmt(p.due));logAct('Reviewers assigned',`${c.id} ${PN[k].toLowerCase()}: ${ids.join(' and ')}, due ${fmt(p.due)}`);ui.pjFilter='review';pjRefresh(id,'Sent to two reviewers. Due '+fmtS(p.due)+'.')}
+function pjRecRev(id,k,i){const c=pjCase(id),p=c[PK[k]],r=p.rev[i],rec=$('#rv'+k+i).value;r.in=true;r.rec=rec;r.d=TODAY;pjLog(c,PN[k],'Review in','Reviewer '+(i+1)+' recommends: '+rec,'Reviewer');logAct('Project review recorded',`${c.id} ${PN[k].toLowerCase()}: reviewer ${i+1}, ${rec}`);if(p.rev.every(x=>x.in))p.state='reviewsIn';pjRefresh(id,p.state==='reviewsIn'?'Both reviews are in.':'Review recorded.')}
+function pjTeam(id,k){const c=pjCase(id),p=c[PK[k]];p.team=true;pjLog(c,PN[k],'Handed to the Formal Project Team','No review within two months');logAct('Project handed to the Formal Project Team',`${c.id} ${PN[k].toLowerCase()}: review period ended ${fmt(p.due)}`);pjRefresh(id,'Handed to the Formal Project Team.')}
+function pjDecide(id,k){
+  const c=pjCase(id),p=c[PK[k]],N=PN[k],res=$('#pjOut'+k).value,note=$('#pjNote'+k).value.trim();
+  const who=p.state==='appeal'?'Formal Project Team, on appeal':'Formal Project Team';
+  if(res==='Approved'){p.state='approved';p.at=TODAY}else if(res==='Rejected'){p.state='rejected';p.decD=TODAY;p.final=!!p.appeal}else{p.state='revision';p.decD=TODAY}
+  p.res=res;pjLog(c,N,res==='Approved'?'Approved':res==='Rejected'?(p.final?'Rejected, final':'Rejected'):'Revision and resubmission requested',note,who);
+  if(k==='man'&&res==='Approved')pjLog(c,N,'Board of Education and Board of Censors advised','The formal project requirement is met');
+  logAct('Project decision recorded',`${c.id} ${N.toLowerCase()}: ${res}${note?'. '+note:''}`);
+  if(res==='Approved'&&k==='prot')ui.pjFilter='approved';
+  pjRefresh(id,N+': '+res.toLowerCase()+'.');
+}
+function pjResub(id,k){const c=pjCase(id),p=c[PK[k]];p.state='review';p.round=(p.round||1)+1;p.disp=TODAY;p.due=addMonths(TODAY,2);p.team=false;p.rev=p.rev.map(r=>({a:r.a,in:false}));pjLog(c,PN[k],'Resubmitted','Same reviewers; due '+fmt(p.due));logAct('Project resubmitted',`${c.id} ${PN[k].toLowerCase()}: due ${fmt(p.due)}`);ui.pjFilter='review';pjRefresh(id,'Resubmission recorded. Due '+fmtS(p.due)+'.')}
+function pjAppeal(id,k){const c=pjCase(id),p=c[PK[k]];p.appeal={d:TODAY};p.state='appeal';pjLog(c,PN[k],'Appeal received','Point-by-point reply to the reviewers');logAct('Project appeal received',`${c.id} ${PN[k].toLowerCase()}`);ui.pjFilter='appeal';pjRefresh(id,'Appeal recorded.')}
+function pjNoAppeal(id,k){const c=pjCase(id),p=c[PK[k]];p.final=true;pjLog(c,PN[k],'Closed without appeal','The rejection stands');logAct('Project closed without appeal',`${c.id} ${PN[k].toLowerCase()}`);pjRefresh(id,'Closed without appeal.')}
+function pjManSub(id){const c=pjCase(id);c.manuscript={state:'dispatch',sub:TODAY,round:1,rev:[],team:false,appeal:null,final:false};pjLog(c,'Manuscript','Submitted','Recorded by the Secretariat');logAct('Manuscript submitted',`${c.id}: ${T(c.trainee).name}`);ui.sub.projects='man';ui.pjFilter='dispatch';pjRefresh(id,'Manuscript recorded. Choose reviewers.')}
+const pjTrainees=()=>S.trainees.filter(t=>t.status==='Active');
+const pjTrSel=()=>`<div class="fld"><label for="pjTr">Trainee</label><select id="pjTr">${pjTrainees().map(t=>`<option value="${t.id}">${esc(t.name)}, ${t.hosp}</option>`).join('')}</select></div>`;
+const pjTypeSel=()=>`<div class="fld"><label for="pjTy">Project type</label><select id="pjTy">${PJ_TYPES.map(x=>`<option>${x}</option>`).join('')}</select></div><p class="note">Narrative reviews and case reports are not eligible, whether or not they are published.</p>`;
+const pjNextId=()=>'FP-26-'+String(Math.max(...S.projects.map(c=>+c.id.split('-')[2]))+1).padStart(3,'0');
+function pjNewForm(){openDrawer('Formal projects','Record a protocol',`${pjTrSel()}<div class="fld"><label for="pjTi">Project title</label><input type="text" id="pjTi" placeholder="Title as on the application form"></div>${pjTypeSel()}<label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="pjSot" checked> The Supervisor of Training has signed off the submission</label><p class="note bad" id="pjErr" hidden></p>`,`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="pjSaveNew">Record protocol</button>`)}
+function pjSaveNew(){
+  const id=$('#pjTr').value,ti=$('#pjTi').value.trim(),ty=$('#pjTy').value,e=$('#pjErr');
+  const err=ti.length<8?'Enter the project title.':!$('#pjSot').checked?'The SOT must sign off the submission before it is recorded.':'';
+  if(err){e.textContent=err;e.hidden=false;return}
+  const c={id:pjNextId(),title:ti,trainee:id,type:ty,sot:true,protocol:{state:'dispatch',sub:TODAY,round:1,rev:[],team:false,appeal:null,final:false},manuscript:null,log:[]};
+  pjLog(c,'Protocol','Submitted','Recorded by the Secretariat; SOT signed off');S.projects.push(c);logAct('Protocol recorded',`${c.id}: ${T(id).name}, ${ty}`);
+  ui.sub.projects='prot';ui.pjFilter='dispatch';closeDrawer();render();toast('Protocol recorded. Choose reviewers.');
+}
+function pjPaperForm(){openDrawer('Formal projects','Record an accepted paper',`${pjTrSel()}<div class="fld"><label for="pjTi">Paper title</label><input type="text" id="pjTi"></div>${pjTypeSel()}<div class="fld"><label for="pjJo">Journal (peer reviewed)</label><input type="text" id="pjJo"></div><div style="${G2}"><div class="fld"><label for="pjDa">Accepted on</label><input type="date" id="pjDa" max="${TODAY}"></div><div class="fld"><label for="pjAu">Trainee\u2019s authorship</label><select id="pjAu"><option>First author</option><option>Corresponding author</option><option>First and corresponding author</option><option>Other significant contribution</option></select></div></div><label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="pjEv"> Evidence of acceptance has been seen</label><p class="note">The trainee must have contributed significantly, for example as first or corresponding author (guideline 2.1.1).</p><p class="note bad" id="pjErr" hidden></p>`,`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="pjSavePaper">Record accepted paper</button>`)}
+function pjSavePaper(){
+  const id=$('#pjTr').value,ti=$('#pjTi').value.trim(),ty=$('#pjTy').value,jo=$('#pjJo').value.trim(),da=$('#pjDa').value,au=$('#pjAu').value,e=$('#pjErr');
+  const err=ti.length<8?'Enter the paper title.':!jo?'Enter the journal.':(!da||da>TODAY)?'Enter a past acceptance date.':!$('#pjEv').checked?'Evidence of acceptance must be seen first.':'';
+  if(err){e.textContent=err;e.hidden=false;return}
+  const c={id:pjNextId(),title:ti,trainee:id,type:ty,sot:true,protocol:null,manuscript:{state:'approved',sub:da,at:da,round:1,rev:[],team:false,appeal:null,final:false,paper:{journal:jo,authorship:au}},log:[]};
+  pjLog(c,'Manuscript','Accepted paper recorded',jo+', '+au+', accepted '+fmt(da)+'. Evidence of acceptance seen');
+  pjLog(c,'Manuscript','Board of Education and Board of Censors advised','The formal project requirement is met');
+  S.projects.push(c);logAct('Accepted paper recorded',`${c.id}: ${T(id).name}, ${jo}`);ui.sub.projects='man';ui.pjFilter='approved';closeDrawer();render();toast('Accepted paper recorded. Requirement met.');
+}
 
 /* ============ CENTRES & SOTs ============ */
 function vCentres(){
@@ -1371,7 +1506,7 @@ function openLog(){
   openDrawer('Audit trail','Activity log',(S.log.length?S.log.map(l=>`<div class="log-row"><div class="t">${fmtS(l.d)} ${l.t}</div><div><b>${esc(l.a)}</b><div class="meta">${esc(l.det)}</div></div><div class="h">${l.h}</div></div>`).join(''):'<p class="meta">Nothing yet. Each action you take in this console is recorded here with a chained reference.</p>')+'<p class="note" style="margin-top:14px">Each line carries a reference that depends on the line before it, so a changed or removed entry shows. This is the same trail the College can inspect.</p>','');
 }
 const TABS=[['home','Home'],['trainees','Trainees'],['courses','Courses'],['exams','Exams'],['projects','Formal projects'],['centres','Centres and SOTs'],['wba','iWBA sync']];
-function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct,courses:c.triage,exams:c.exFee+c.exCrit,projects:c.pjDispatch+c.pjOver+c.pjIn,centres:c.pend+c.accSoon,wba:c.link+c.unm}[k]||0}
+function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct,courses:c.triage,exams:c.exFee+c.exCrit,projects:c.pjDispatch+c.pjOver+c.pjIn+c.pjAppeal,centres:c.pend+c.accSoon,wba:c.link+c.unm}[k]||0}
 const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,projects:vProjects,centres:vCentres,wba:vWba};
 function labelTables(){document.querySelectorAll('#app table').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(h=>h.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.dataset.l===undefined&&hs[i]!==undefined)td.dataset.l=hs[i]}))})}
 function render(){
@@ -1382,7 +1517,7 @@ function render(){
   document.title='HKCA e-Portfolio · '+TABS.find(t=>t[0]===ui.tab)[1]+' (Secretariat prototype)';
   window.scrollTo(0,y);
 }
-function go(t,k){ui.tab=t;if(k)ui.sub[t]=k;if(t==='exams'&&k)ui.exView='apps';closeDrawer();window.scrollTo(0,0);render()}
+function go(t,k){ui.tab=t;if(t==='projects'&&k&&k.includes(':')){const q=k.split(':');ui.sub.projects=q[0];ui.pjFilter=q[1]}else if(k)ui.sub[t]=k;if(t==='exams'&&k)ui.exView='apps';closeDrawer();window.scrollTo(0,0);render()}
 const ACT={
   go:e=>go(e.dataset.t,e.dataset.k),sub:e=>{ui.sub[e.dataset.t]=e.dataset.k;if(e.dataset.t==='exams'){ui.exOut=null;ui.exRaw=null;ui.exFilter='All';ui.exSit=null}render()},
   theme:()=>{document.documentElement.classList.toggle('dark');try{localStorage.setItem('hkca.admin.dark',document.documentElement.classList.contains('dark')?1:0)}catch(x){}},
@@ -1396,7 +1531,7 @@ const ACT={
   openRecog:e=>openRecog(e.dataset.id),sendTO:e=>sendTO(e.dataset.id),returnRecog:e=>returnRecog(e.dataset.id),doRecogReturn:e=>doRecogReturn(e.dataset.id),openToForm:e=>openToForm(e.dataset.id,e.dataset.b==='1'),toSubmit:e=>toSubmit(e.dataset.id,e.dataset.b==='1'),openToView:e=>openToView(e.dataset.id),simSubmit,unlockRecog:e=>unlockRecog(e.dataset.id),reviewCredit:e=>reviewCredit(e.dataset.id),execCredit,
   pickRound:e=>{ui.round=e.dataset.id;render()},rdF:e=>{ui.rdF=e.dataset.v;render()},newRound,editRound:e=>editRound(e.dataset.id),saveRound:e=>saveRound(e.dataset.id),openNow:e=>openNow(e.dataset.id),closeNow:e=>closeNow(e.dataset.id),reopen:e=>reopen(e.dataset.id),doReopen:e=>doReopen(e.dataset.id),decideRound:e=>decideRound(e.dataset.id),attendRound:e=>attendRound(e.dataset.id),suggestSeats,applySuggest,loadSheet:()=>{ui.sheet=SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
   exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=exSample(exName());ui.exOut=null;render()},checkEx,commitEx,exv:e=>{ui.exView=e.dataset.v;ui.exOut=null;render()},newSit:()=>sitForm(''),editSit:e=>sitForm(e.dataset.id),saveSit:e=>saveSit(e.dataset.id),openSit:e=>openSit(e.dataset.id),closeSit:e=>closeSit(e.dataset.id),doCloseSit:e=>doCloseSit(e.dataset.id),viewApps:e=>{ui.exSit=e.dataset.id;ui.exView='apps';ui.exFilter='All';render()},openExApp:e=>openExApp(e.dataset.s,e.dataset.id),exFee:e=>exFee(e.dataset.s,e.dataset.id),exExc:e=>exExc(e.dataset.s,e.dataset.id),exNo:e=>exNo(e.dataset.s,e.dataset.id),exWd:e=>exWd(e.dataset.s,e.dataset.id),saveElig:e=>saveElig(e.dataset.id),sotYes:e=>sotYes(e.dataset.s,e.dataset.id),sotNo:e=>sotNoAsk(e.dataset.s,e.dataset.id),doSotNo:e=>doSotNo(e.dataset.s,e.dataset.id),
-  pjF:e=>{ui.pjFilter=e.dataset.v;render()},openProject:e=>openProject(e.dataset.id),dispatch:e=>dispatchPj(e.dataset.id),replaceRev:e=>replaceRev(e.dataset.id,+e.dataset.i),recordPj:e=>recordPj(e.dataset.id),escalate:e=>escalate(e.dataset.id),
+  pjF:e=>{ui.pjFilter=e.dataset.v;render()},pjLogF:e=>{ui.pjLogF=e.dataset.v;render()},openCase:e=>openCase(e.dataset.id),pjDispatch:e=>pjDispatch(e.dataset.id,e.dataset.k),pjRecRev:e=>pjRecRev(e.dataset.id,e.dataset.k,+e.dataset.i),pjTeam:e=>pjTeam(e.dataset.id,e.dataset.k),pjDecide:e=>pjDecide(e.dataset.id,e.dataset.k),pjResub:e=>pjResub(e.dataset.id,e.dataset.k),pjAppeal:e=>pjAppeal(e.dataset.id,e.dataset.k),pjNoAppeal:e=>pjNoAppeal(e.dataset.id,e.dataset.k),pjManSub:e=>pjManSub(e.dataset.id),pjNewForm,pjSaveNew,pjPaperForm,pjSavePaper,
   addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),
   linkIt:e=>linkIt(e.dataset.id,e.dataset.to),linkOther:e=>linkOther(e.dataset.id),linkSel:e=>linkIt(e.dataset.id,$('#lkSel').value),bulkLink,doBulk,saveUnm:e=>saveUnm(+e.dataset.i),readNow
 };
@@ -1418,6 +1553,7 @@ document.addEventListener('change',ev=>{
   else if(c==='warnOn'){ui.sheetOut.rows[+e.dataset.i].on=e.checked;render()}
   else if(c==='exWarn'){ui.exOut.rows[+e.dataset.i].on=e.checked;render()}
   else if(c==='pick'){const v=[...document.querySelectorAll('#pickList input:checked')].map(x=>x.value);if(v.length>2){e.checked=false;toast('Pick exactly two reviewers.');return}ui.pick=v;$('#dispBtn').disabled=v.length!==2;document.querySelectorAll('#pickList input').forEach(x=>{x.disabled=v.length>=2&&!x.checked})}
+  else if(c==='pjUw'){ui.pjUw=e.checked;render()}
   else if(c==='unm'){S.unmapped[+e.dataset.i].map=e.value;save();render()}
 });
 document.addEventListener('input',ev=>{
