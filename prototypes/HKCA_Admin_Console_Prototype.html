@@ -1146,25 +1146,25 @@ function eligSection(t){
   <p class="meta" style="margin-top:8px">The examination application checks these records. Exemption is the Board of Examinations' decision.</p>`;
 }
 
-const EX_HEAD={Intermediate:'hkca_no,exam,sitting_date,physiology,pharmacology,minimum_met',Final:'hkca_no,exam,sitting_date,written,oral,osce'};
+const EX_HEAD={Intermediate:'hkca_no,exam,sitting_date,physiology,pharmacology,minimum_met',Final:'hkca_no,exam,sitting_date,written,oral_osce'};
 const EX_SAMPLES={Intermediate:`${EX_HEAD.Intermediate}
 HKCA-2024-014,Intermediate,2026-09-05,,Pass,
 HKCA-2024-008,Intermediate,2026-09-05,Pass,Fail,Yes
 HKCA-2025-013,Intermediate,2026-09-05,Fail,Fail,
 HKCA-2025-009,Intermediate,2026-09-05,Pass,Fail,
 HKCA-2022-006,Final,2026-10-04,Pass,Pass,Pass`,Final:`${EX_HEAD.Final}
-HKCA-2023-009,Final,2026-10-04,Pass,Pass,Pass
-HKCA-2022-010,Final,2026-10-04,,Pass,Fail
-HKCA-2023-017,Final,2026-10-04,Pass,Fail,Pass
-HKCA-2024-023,Final,2026-10-04,Pass,Pass,Pass
-HKCA-2023-004,Final,2026-10-04,Merit,Pass,Pass
-HKCA-2023-009,Final,2026-10-04,Pass,Pass,Pass
-HKCA-2024-099,Final,2026-10-04,Pass,Pass,Pass`};
+HKCA-2023-009,Final,2026-10-04,Pass,Pass
+HKCA-2022-010,Final,2026-10-04,,Fail
+HKCA-2023-017,Final,2026-10-04,Pass,Fail
+HKCA-2024-023,Final,2026-10-04,Pass,Pass
+HKCA-2023-004,Final,2026-10-04,Merit,Pass
+HKCA-2023-009,Final,2026-10-04,Pass,Pass
+HKCA-2024-099,Final,2026-10-04,Pass,Pass`};
 const exSample=ex=>EX_SAMPLES[ex];
 const CF_NOTE='Counting every sitting the College holds towards the four-sitting limit is our reading of the FAQ. To be confirmed with the College.';
 function vResults(){
   const o=ui.exOut,ex=exName();
-  const help=ex==='Intermediate'?'<b>physiology</b> and <b>pharmacology</b> are Pass or Fail. Leave a subject blank if it is carried forward. <b>minimum_met</b> (Yes or No) is needed when one subject is passed and the other failed: a pass is carried forward only if the minimum score was met in the other subject.':'<b>written</b>, <b>oral</b> and <b>osce</b> are Pass or Fail (a single <b>oral_osce</b> column also works). Leave written blank if it is carried forward. If the written is failed, oral and OSCE can be left blank. A failed oral or OSCE with the written passed carries the written pass forward.';
+  const help=ex==='Intermediate'?'<b>physiology</b> and <b>pharmacology</b> are Pass or Fail. Leave a subject blank if it is carried forward. <b>minimum_met</b> (Yes or No) is needed when one subject is passed and the other failed: a pass is carried forward only if the minimum score was met in the other subject.':'<b>written</b> and <b>oral_osce</b> (the oral and OSCE result together) are Pass or Fail. Leave written blank if it is carried forward. If the written is failed, oral_osce can be left blank. A failed oral_osce with the written passed carries the written pass forward.';
   return `<div class="card pad"><div class="steps"><span class="${o?'done':'on'}">1 Paste the file</span><span class="${o?'on':''}">2 Check it</span><span>3 Record results</span></div>
   <div class="fld"><label for="exRaw">CSV from the examiners for the ${ex} examination, with a header row</label><textarea id="exRaw" rows="8" class="mono" style="font-size:12.5px" placeholder="${EX_HEAD[ex]}">${esc(ui.exRaw==null?'':ui.exRaw)}</textarea></div>
   <p class="meta" style="margin:0 0 6px">Results are per ${ex==='Intermediate'?'subject':'section'}. ${help}</p><p class="meta" style="margin:0 0 12px">A carried-forward pass lasts for up to four subsequent consecutive exams. ${CF_NOTE}</p>
@@ -1195,7 +1195,7 @@ function evalFin(t,c){
   const w=c.w||(cur?'Pass':'');
   if(!w)return {err:'Written result missing'};
   if(w==='Fail')return {res:'Fail',cf:'none',msg:'Written failed: all sections to be re-sat'};
-  if(!c.o||!c.s)return {err:'Oral and OSCE results are needed once the written is passed'};
+  if(!c.o||!c.s)return {err:'The oral and OSCE result (oral_osce) is needed once the written is passed'};
   if(c.o==='Pass'&&c.s==='Pass')return {res:'Pass',cf:'clear',msg:cur?'Passes oral and OSCE with the written carried forward: Final passed':'Passes all sections: Final passed'};
   if(cur)return {res:'Fail',cf:'keep',msg:'Written stays carried forward ('+cfLeftTxt(cur.left-1)+')'};
   return {res:'Fail',cf:{written:true},msg:'Written passed, oral or OSCE failed: written carried forward for 4 sittings'};
@@ -1203,12 +1203,12 @@ function evalFin(t,c){
 function checkEx(){
   const ex0=exName(),raw=$('#exRaw').value;ui.exRaw=raw;const lines=raw.split(/\n/).map(s=>s.trim()).filter(Boolean);
   if(!lines.length){toast('Paste the results file first.');return}
-  const h=lines[0].toLowerCase().replace(/\s/g,''),comb=ex0==='Final'&&h==='hkca_no,exam,sitting_date,written,oral_osce';
-  if(h!==EX_HEAD[ex0].toLowerCase()&&!comb){ui.exOut={fatal:'The header row must be exactly: '+EX_HEAD[ex0]+(ex0==='Final'?' (or ending written,oral_osce)':'')};render();return}
+  const h=lines[0].toLowerCase().replace(/\s/g,'');
+  if(h!==EX_HEAD[ex0].toLowerCase()){ui.exOut={fatal:'The header row must be exactly: '+EX_HEAD[ex0]};render();return}
   const seen={};const rows=lines.slice(1).map((l,n)=>{
     const p=l.split(',').map(s=>(s||'').trim()),[id,ex,date]=p,t=T(id);
-    const c=ex0==='Intermediate'?{a:p[3]||'',b:p[4]||'',m:p[5]||''}:{w:p[3]||'',o:p[4]||'',s:comb?(p[4]||''):(p[5]||'')};
-    const res=ex0==='Intermediate'?'Physiology: '+(c.a||'not sat')+' · Pharmacology: '+(c.b||'not sat'):'Written: '+(c.w||'not sat')+' · Oral: '+(c.o||'-')+' · OSCE: '+(c.s||'-');
+    const c=ex0==='Intermediate'?{a:p[3]||'',b:p[4]||'',m:p[5]||''}:{w:p[3]||'',o:p[4]||'',s:p[4]||''};
+    const res=ex0==='Intermediate'?'Physiology: '+(c.a||'not sat')+' · Pharmacology: '+(c.b||'not sat'):'Written: '+(c.w||'not sat')+' · Oral and OSCE: '+(c.o||'-');
     const base={n:n+2,id,ex,date,res,name:t?t.name:''};
     if(!t)return Object.assign(base,{k:'err',msg:'Not a known HKCA number'});
     if(!['Intermediate','Final'].includes(ex))return Object.assign(base,{k:'err',msg:'Examination must be Intermediate or Final'});
