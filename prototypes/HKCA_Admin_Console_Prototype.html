@@ -270,7 +270,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:7,
+    v:8,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -293,16 +293,18 @@ function seedState(){
         trail:[{d:'2026-07-02',who:'Dr. Sam Fok',ev:'Asked for retrospective recognition'},{d:'2026-07-03',who:'Secretariat',ev:'Application enabled'},{d:'2026-08-20',who:'Dr. Sam Fok',ev:'Submitted form and documents'},{d:'2026-08-25',who:'Secretariat',ev:'Documents checked, sent to the Training Officer'},{d:'2026-09-08',who:'Training Officer',ev:'Approved with different figures',note:'Cases reduced from 120 to 110: ten could not be matched to the logbook summary.'},{d:'2026-09-08',who:'Secretariat',ev:'Credit written to the ledger'}]}
     ],
     rounds:[
-      {id:'EASE-0614',course:'EASE',date:'2026-06-14',venue:'',format:'Face-to-face',feeM:null,feeN:null,seats:12,opens:'2026-04-20',closes:'2026-05-31',recorded:'2026-06-15',coord:'',apps:[
+      {id:'EASE-0614',course:'EASE',date:'2026-06-14',venue:'',format:'Face-to-face',feeM:0,feeN:0,seats:12,opens:'2026-04-20',closes:'2026-05-31',recorded:'2026-06-15',coord:'',apps:[
         ['HKCA-2024-014','2026-05-02','Accepted'],['HKCA-2024-019','2026-05-03','Accepted'],['HKCA-2023-022','2026-05-05','Accepted'],['HKCA-2024-023','2026-05-20','Waitlisted'],['HKCA-2024-008','2026-05-22','Waitlisted']]},
-      {id:'EASE-1114',course:'EASE',date:'2026-11-14',venue:'',format:'Face-to-face',feeM:null,feeN:null,seats:12,opens:'2026-09-01',closes:'2026-10-31',coord:'',apps:[
+      {id:'EASE-1114',course:'EASE',date:'2026-11-14',venue:'',format:'Face-to-face',feeM:0,feeN:0,seats:12,opens:'2026-09-01',closes:'2026-10-31',coord:'',apps:[
         ['HKCA-2025-004','2026-09-14','Accepted'],['HKCA-2025-009','2026-09-14','Accepted'],['HKCA-2025-013','2026-09-16','Requested'],['HKCA-2025-021','2026-09-17','Requested'],['HKCA-2024-011','2026-09-20','Requested'],['HKCA-2024-008','2026-09-21','Requested'],['HKCA-2024-023','2026-09-29','Requested'],['HKCA-2024-031','2026-10-02','Rejected']]},
-      {id:'ADAM-1128',course:'ADAMA',date:'2026-11-28',venue:'',format:'Face-to-face',feeM:null,feeN:null,seats:6,opens:'2026-09-15',closes:'2026-11-13',coord:'',apps:[
+      {id:'ADAM-1128',course:'ADAMA',date:'2026-11-28',venue:'',format:'Face-to-face',feeM:0,feeN:0,seats:6,opens:'2026-09-15',closes:'2026-11-13',coord:'',apps:[
         ['HKCA-2023-022','2026-09-30','Requested'],['HKCA-2022-013','2026-10-01','Requested'],['HKCA-2024-023','2026-10-03','Requested'],['HKCA-2024-019','2026-10-04','Requested'],['HKCA-2022-010','2026-10-04','Requested'],['HKCA-2023-017','2026-10-06','Requested'],['HKCA-2023-009','2026-10-10','Requested'],['HKCA-2024-011','2026-10-12','Requested']]},
-      {id:'EMAC-1011',course:'EMAC',date:'2026-10-11',venue:'',format:'Face-to-face',feeM:null,feeN:null,seats:10,opens:'2026-07-20',closes:'2026-09-30',coord:'',apps:[
+      {id:'EMAC-1011',course:'EMAC',date:'2026-10-11',venue:'',format:'Face-to-face',feeM:0,feeN:0,seats:10,opens:'2026-07-20',closes:'2026-09-30',coord:'',apps:[
         ['HKCA-2022-006','2026-08-10','Accepted'],['HKCA-2022-010','2026-08-11','Accepted'],['HKCA-2022-013','2026-08-12','Accepted'],['HKCA-2022-019','2026-08-14','Accepted'],['HKCA-2023-004','2026-08-20','Accepted'],['HKCA-2023-015','2026-08-22','Accepted']]},
-      {id:'RTB-1102',course:'RTB',date:'2026-11-02',end:'2026-11-13',venue:'Function Rooms 1\u20133, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:6500,feeN:13000,seats:null,opens:'2026-09-01',closes:'2026-10-20',coord:'Dr FOK King Tak Douglas',apps:[
+      {id:'RTB-1102',course:'RTB',date:'2026-11-02',end:'2026-11-13',venue:'Function Rooms 1\u20133, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:6500,feeN:13000,seats:50,opens:'2026-09-01',closes:'2026-10-20',coord:'Dr FOK King Tak Douglas',apps:[
         ['HKCA-2023-022','2026-09-10','Accepted'],['HKCA-2024-019','2026-09-12','Accepted'],['HKCA-2024-027','2026-09-18','Accepted'],['HKCA-2024-008','2026-10-02','Waitlisted'],['HKCA-2024-023','2026-10-15','Requested']]},
+      {id:'IMV-1212',course:'IMV',date:'2026-12-12',venue:'PACU, 4/F, Block D, Queen Elizabeth Hospital',format:'Face-to-face',feeM:1500,feeN:1500,seats:null,opens:'2026-10-01',closes:'2026-11-25',coord:'Dr TAM Suet Yee Zoey, Dr CHAN Kai Wai Kevin, Dr LEE Tien Seng Bryan',apps:[
+        ['HKCA-2025-009','2026-10-02','Requested'],['HKCA-2025-004','2026-10-03','Requested'],['HKCA-2024-019','2026-10-06','Requested'],['HKCA-2024-023','2026-10-08','Requested'],['HKCA-2023-022','2026-10-10','Requested'],['HKCA-2024-027','2026-10-12','Requested']]},
       {id:'RTC-1116',course:'RTC',date:'2026-11-16',end:'2026-11-21',venue:'Function Rooms 1\u20132, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:5500,feeN:11000,seats:50,opens:'2026-09-15',closes:'2026-11-02',coord:'Dr FOK King Tak Douglas',apps:[
         ['HKCA-2022-013','2026-10-01','Requested'],['HKCA-2022-019','2026-10-03','Requested'],['HKCA-2022-006','2026-10-05','Requested'],['HKCA-2022-010','2026-10-08','Requested'],['HKCA-2023-004','2026-10-12','Requested']]},
       {id:'BSC-0425',course:'BSC',date:'2027-04-25',end:'2027-07-25',venue:'Seminar Room 113-115, 1/F, School of General Nursing, Queen Elizabeth Hospital',format:'Online and face-to-face',feeM:2000,feeN:4000,seats:null,opens:'2027-03-01',closes:'2027-04-14',coord:'Dr TAM Suet Yee Zoey',apps:[]}
@@ -368,7 +370,7 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==7)S=seedState();
+if(!S||S.v!==8)S=seedState();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'cands',projects:'dispatch',centres:'accred',wba:'link'},
   q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
@@ -675,6 +677,9 @@ function execCredit(){const {id,g}=ui.pendingCredit;const r=S.recog.find(x=>x.id
 /* ============ COURSES ============ */
 const PR={h:['High','pri-h'],m:['Medium','pri-m'],l:['Low','pri-l'],n:['Standard','pri-l']};
 const hk=n=>'HK$'+Number(n).toLocaleString('en-US');
+const noCharge=r=>r.feeM===0&&r.feeN===0;
+const feeLine=r=>noCharge(r)?'No charge':r.feeM===r.feeN?hk(r.feeM):hk(r.feeM)+' member / '+hk(r.feeN)+' non-member';
+const feeCell=r=>r.feeM==null?'<span class="pill warn">Fee not set</span>':noCharge(r)?'No charge':r.feeM===r.feeN?`${hk(r.feeM)}<div class="cell-sub">Same for non-members</div>`:`${hk(r.feeM)}<div class="cell-sub">${hk(r.feeN)} non-member</div>`;
 const rEnd=r=>r.end||r.date;
 const isMand=k=>MAND.includes(k);
 const orgOf=k=>CSC.includes(k)?'Clinical Simulation Committee':'HKCA';
@@ -708,10 +713,11 @@ function aboutToProgress(t,key){
 const wlBefore=(r,id)=>S.rounds.some(x=>x.course===r.course&&x.id!==r.id&&x.date<r.date&&x.apps.some(a=>a[0]===id&&a[2]==='Waitlisted'));
 function appInfo(r,a){
   const t=T(a[0]);const wl=wlBefore(r,a[0]);const pg=t?aboutToProgress(t,r.course):null;
+  const ix=r.course==='IMV'&&S.exCands.some(x=>x.id===a[0]&&x.exam==='Intermediate');
   let lvl='n',base='';if(isMand(r.course)){const p=prio(a[0],r.course);lvl=p[0];base=p[1]}
-  if(wl||pg)lvl='h';
-  const why=[];if(wl)why.push('Waitlisted for an earlier round');if(pg)why.push('About to progress ('+pg+')');if(base&&!pg)why.push(base);
-  const score=(wl?100:0)+(pg?50:0)+{h:30,m:20,n:15,l:10}[lvl];
+  if(wl||pg||ix)lvl='h';
+  const why=[];if(wl)why.push('Waitlisted for an earlier round');if(pg)why.push('About to progress ('+pg+')');if(ix)why.push('Sitting the coming Intermediate examination');if(base&&!pg)why.push(base);
+  const score=(wl?100:0)+(ix?80:0)+(pg?50:0)+{h:30,m:20,n:15,l:10}[lvl];
   return {lvl,why,score,wl,pg};
 }
 function sortedApps(r){return r.apps.map((a,i)=>Object.assign({i,id:a[0],req:a[1],st:a[2]},{p:appInfo(r,a)})).sort((a,b)=>b.p.score-a.p.score||(a.req>b.req?1:-1))}
@@ -740,7 +746,7 @@ function vRounds(){
     return `<tr><td><div class="cell-name">${esc(COURSES[r.course])}</div><div class="cell-sub">${isMand(r.course)?'Mandatory':'Other course'} &middot; ${orgOf(r.course)}</div></td>
     <td>${fmt(r.date)}${r.end?` <span class="cell-sub" style="display:inline">to ${fmt(r.end)}</span>`:''}${r.venue?`<div class="cell-sub">${esc(r.venue)}</div>`:''}</td>
     <td>${rPill(r)}<div class="cell-sub">${fmtS(r.opens)} to ${fmtS(r.closes)}</div></td>
-    <td>${r.feeM==null?'<span class="pill warn">Fee not set</span>':`${hk(r.feeM)}<div class="cell-sub">${hk(r.feeN)} non-member</div>`}</td>
+    <td>${feeCell(r)}</td>
     <td>${s==='scheduled'?'<span class="meta">Not open yet</span>':`${r.apps.length} applied<div class="cell-sub">${esc(seatTxt(r))}${u&&['open','closed'].includes(s)?', '+u+' to decide':''}</div>`}</td>
     <td>${act(r)}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No rounds match.</div></td></tr>'}</tbody></table></div></div>`;
 }
@@ -748,11 +754,12 @@ function roundForm(r){
   const v=r||{course:'',date:'',end:'',venue:'',format:'Face-to-face',feeM:'',feeN:'',seats:'',opens:'',closes:'',coord:''};
   const opt=k=>`<option value="${k}" ${v.course===k?'selected':''}>${esc(COURSES[k])}${CNAME[k]!==COURSES[k]&&k.length<=5&&isMand(k)?' ('+CNAME[k]+')':''}</option>`;
   const g2='display:grid;grid-template-columns:1fr 1fr;gap:12px';
-  return `<div class="fld"><label for="rfCourse">Course</label>${r?`<input type="text" id="rfCourse" value="${esc(COURSES[r.course])}" disabled>`:`<select id="rfCourse"><option value="">Choose a course</option><optgroup label="Mandatory">${MAND.map(opt).join('')}</optgroup><optgroup label="Other courses">${Object.keys(COURSES).filter(k=>!isMand(k)).map(opt).join('')}</optgroup></select>`}</div>
+  return `<div class="fld"><label for="rfCourse">Course</label>${r?`<input type="text" id="rfCourse" value="${esc(COURSES[r.course])}" disabled>`:`<select id="rfCourse" data-c="rfCourse"><option value="">Choose a course</option><optgroup label="Mandatory">${MAND.map(opt).join('')}</optgroup><optgroup label="Other courses">${Object.keys(COURSES).filter(k=>!isMand(k)).map(opt).join('')}</optgroup></select>`}</div>
   <div style="${g2}"><div class="fld"><label for="rfDate">Course date (first day)</label><input type="date" id="rfDate" value="${v.date||''}"></div><div class="fld"><label for="rfEnd">Last day, if more than one</label><input type="date" id="rfEnd" value="${v.end||''}"></div></div>
   <div class="fld"><label for="rfVenue">Venue</label><input type="text" id="rfVenue" value="${esc(v.venue||'')}" placeholder="Leave blank if not confirmed"></div>
   <div style="${g2}"><div class="fld"><label for="rfFormat">Format</label><select id="rfFormat">${FORMATS.map(x=>`<option ${v.format===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="fld"><label for="rfSeats">Seats</label><input type="number" id="rfSeats" min="1" value="${v.seats||''}" placeholder="No limit"></div></div>
   <div style="${g2}"><div class="fld"><label for="rfFeeM">Fee, HKCA member (HK$)</label><input type="number" id="rfFeeM" min="0" value="${v.feeM==null?'':v.feeM}"></div><div class="fld"><label for="rfFeeN">Fee, non-member (HK$)</label><input type="number" id="rfFeeN" min="0" value="${v.feeN==null?'':v.feeN}"></div></div>
+  <p class="meta" style="margin:-4px 0 14px">Enter 0 for no charge. Mandatory courses are not charged at present; set a fee here if that changes.</p>
   <div style="${g2}"><div class="fld"><label for="rfOpens">Registration opens</label><input type="date" id="rfOpens" value="${v.opens||''}"></div><div class="fld"><label for="rfCloses">Registration closes (deadline)</label><input type="date" id="rfCloses" value="${v.closes||''}"></div></div>
   <div class="fld"><label for="rfCoord">Coordinators</label><input type="text" id="rfCoord" value="${esc(v.coord||'')}" placeholder="Optional"></div>`;
 }
@@ -782,7 +789,7 @@ function saveRound(id){
   if(!r){
     let nid=course+'-'+date.slice(5,7)+date.slice(8),n=2;const base=nid;while(S.rounds.find(x=>x.id===nid))nid=base+'-'+n++;
     S.rounds.push(Object.assign({id:nid,course,apps:[]},v));
-    logAct('Course round created',`${CNAME[course]} ${fmt(date)}: registration ${fmtS(opens)} to ${fmtS(closes)}, ${hk(feeM)} member / ${hk(feeN)} non-member`);
+    logAct('Course round created',`${CNAME[course]} ${fmt(date)}: registration ${fmtS(opens)} to ${fmtS(closes)}, ${feeLine({feeM:+feeM,feeN:+feeN})}`);
     closeDrawer();ui.rdF='All';ui.rdS='All';render();toast(CNAME[course]+' round created.');return;
   }
   const lab={date:'date',end:'last day',venue:'venue',format:'format',feeM:'member fee',feeN:'non-member fee',seats:'seats',opens:'opening date',closes:'deadline',coord:'coordinators'};
@@ -816,7 +823,7 @@ function vSeats(){
   const r=open.find(x=>x.id===ui.round);
   const over=r.seats&&accepted(r)>r.seats;const full=r.seats&&accepted(r)>=r.seats;const und=undecided(r);
   return `<div class="split"><div class="card">${open.map(o=>`<button class="round ${o.id===r.id?'on':''}" data-a="pickRound" data-id="${o.id}"><b>${esc(CNAME[o.course])}</b> <span class="meta">${fmt(o.date)}</span><div class="meta" style="margin-top:2px">${esc(seatTxt(o))} &middot; ${undecided(o)} undecided</div>${o.seats?`<div class="seatbar"><i class="${accepted(o)>=o.seats?'full':''}" style="width:${Math.min(100,accepted(o)/o.seats*100)}%"></i></div>`:''}</button>`).join('')}</div>
-  <div class="card"><div class="q-h"><div><div class="h3">${esc(COURSES[r.course])}</div><div class="meta">${fmt(r.date)}${r.end?' to '+fmt(r.end):''} &middot; ${esc(seatTxt(r))}${r.feeM==null?'':' &middot; '+hk(r.feeM)+' member / '+hk(r.feeN)+' non-member'}</div><div style="margin-top:6px">${rPill(r)}</div></div><button class="btn sec sm" data-a="suggestSeats" ${und?'':'disabled'}>Review a suggestion</button></div>
+  <div class="card"><div class="q-h"><div><div class="h3">${esc(COURSES[r.course])}</div><div class="meta">${fmt(r.date)}${r.end?' to '+fmt(r.end):''} &middot; ${esc(seatTxt(r))}${r.feeM==null?'':' &middot; '+feeLine(r)}</div><div style="margin-top:6px">${rPill(r)}</div></div><button class="btn sec sm" data-a="suggestSeats" ${und?'':'disabled'}>Review a suggestion</button></div>
   <div class="tbl-scroll"><table><thead><tr><th>Trainee</th><th>Priority</th><th>Requested</th><th>Decision</th></tr></thead><tbody>${r.apps.length?sortedApps(r).map(a=>{const t=T(a.id);return `<tr><td><div class="cell-name">${esc(t?t.name:a.id)}</div><div class="cell-sub">${t?stg(t.stage)+' '+t.hosp:''}</div></td><td><span class="${PR[a.p.lvl][1]}">${PR[a.p.lvl][0]}</span>${a.p.why.map(w=>`<div class="cell-sub">${esc(w)}</div>`).join('')}</td><td class="meta">${fmtS(a.req)}</td><td><select data-c="setApp" data-i="${a.i}" aria-label="Decision for ${esc(t?t.name:a.id)}"><option value="Requested" ${a.st==='Requested'?'selected':''}>Not decided</option><option ${a.st==='Accepted'?'selected':''}>Accepted</option><option ${a.st==='Waitlisted'?'selected':''}>Waitlisted</option><option ${a.st==='Rejected'?'selected':''}>Rejected</option></select></td></tr>`}).join(''):'<tr><td colspan="4"><div class="empty">No applications yet.</div></td></tr>'}</tbody></table></div>
   <div class="q-wait">${over?`<b>${accepted(r)} accepted for ${r.seats} seats.</b> You can keep this, or change a decision.`:full?'All seats are taken. You can still accept more, waitlist or reject.':'Waitlisted trainees are tagged as priority when the next round of this course opens.'}</div></div></div>`;
 }
@@ -838,43 +845,56 @@ function applySuggest(){
   p.acc.forEach(a=>{r.apps[a.i][2]='Accepted'});p.wl.forEach(a=>{r.apps[a.i][2]='Waitlisted'});
   logAct('Seat suggestion applied',`${CNAME[r.course]} ${fmt(r.date)}: ${p.acc.length} accepted, ${p.wl.length} waitlisted, as reviewed by the Secretariat`);closeModal();render();toast(p.acc.length+' accepted, '+p.wl.length+' waitlisted.');
 }
-const SHEET=`HKCA-2022-006\nHKCA-2022-010\nHKCA-2022-019\nHKCA-2023-004\nHKCA-2023-015\nHKCA-2023-009\nHKCA-2022-099`;
+const SHEET=`HKCA-2022-006\nHKCA-2022-010, 100\nHKCA-2022-019, 40\nHKCA-2023-004, 60\nHKCA-2023-015\nHKCA-2023-009\nHKCA-2022-099`;
 function attendRounds(){return S.rounds.filter(r=>['held','recorded'].includes(rState(r))).sort((a,b)=>a.date<b.date?1:-1)}
+function noticeTo(t){const s=S.appts.find(a=>a.hosp===t.hosp&&a.role==='SOT'&&(!a.until||a.until>=TODAY));return 'the Chief of Service, '+t.hosp+(s?' and the SOT, '+s.who:' and the SOT')}
 function vAttend(){
   const done=attendRounds();if(!done.length)return '<div class="card"><div class="empty">No round has been held yet.</div></div>';
   if(!ui.cn||!done.find(x=>x.id===ui.cn))ui.cn=done[0].id;
   const r=done.find(x=>x.id===ui.cn);const o=ui.sheetOut;
   const rows=o&&o.round===r.id?o.rows:null;
-  return `<div class="card pad"><div class="steps"><span class="${rows?'done':'on'}">1 Paste the sheet</span><span class="${rows?'on':''}">2 Check it</span><span>3 Mark attended</span></div>
+  return `<div class="card pad"><div class="steps"><span class="${rows?'done':'on'}">1 Paste the sheet</span><span class="${rows?'on':''}">2 Check it</span><span>3 Record attendance</span></div>
   <div class="fld" style="max-width:420px"><label for="cnSel">Round</label><select id="cnSel" data-c="cn">${done.map(x=>`<option value="${x.id}" ${x.id===r.id?'selected':''}>${esc(CNAME[x.course])} &middot; ${fmt(x.date)}${x.recorded?' (attendance recorded)':''}</option>`).join('')}</select></div>
   ${isMand(r.course)?'':'<p class="meta" style="margin-bottom:12px">This is not a mandatory course. Attendance is kept on the round and does not change the trainee\'s mandatory course record.</p>'}
-  <div class="fld"><label for="sheet">HKCA numbers, one per line, from the attendance sheet</label><textarea id="sheet" rows="7" class="mono" style="font-size:12.5px">${esc(ui.sheet==null?'':ui.sheet)}</textarea></div>
+  <p class="meta" style="margin-bottom:12px">College rule: <b>70% or more</b> earns the Certificate of Attendance. Below 70% gets no certificate. Below <b>50%</b> is reported to the trainee's Chief of Service and SOT. After the number, add a comma and the attendance rate if the trainee missed sessions, for example <span class="mono">HKCA-2022-006, 60</span>. A line with no rate means full attendance.</p>
+  <div class="fld"><label for="sheet">HKCA numbers from the attendance sheet, one per line</label><textarea id="sheet" rows="7" class="mono" style="font-size:12.5px">${esc(ui.sheet==null?'':ui.sheet)}</textarea></div>
   <div class="btn-row"><button class="btn sec" data-a="loadSheet">Load a sample sheet</button><button class="btn pri" data-a="checkSheet">Check the sheet</button></div></div>
   ${rows?attendOut(r,rows):''}`;
 }
 function attendOut(r,rows){
-  const nOk=rows.filter(x=>x.k==='ok').length,nW=rows.filter(x=>x.k==='warn').length,nS=rows.filter(x=>x.k==='skip').length,nE=rows.filter(x=>x.k==='err').length;
-  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${nOk} ready &middot; ${nW} need your decision &middot; ${nS} already done &middot; ${nE} not recognised</div></div><button class="btn pri sm" data-a="commitSheet" ${nOk+rows.filter(x=>x.k==='warn'&&x.on).length?'':'disabled'}>Mark ${nOk+rows.filter(x=>x.k==='warn'&&x.on).length||''} as completed</button></div>
-  <div class="tbl-scroll"><table><thead><tr><th></th><th>Number</th><th>Trainee</th><th>Result</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td style="width:34px">${x.k==='warn'?`<input type="checkbox" data-c="warnOn" data-i="${i}" ${x.on?'checked':''} aria-label="Include ${esc(x.id)}">`:''}</td><td class="mono">${esc(x.id)}</td><td>${esc(x.name||'')}</td><td>${dt(x.msg,{ok:'ok',warn:'warn',skip:'none',err:'bad'}[x.k])}</td></tr>`).join('')}</tbody></table></div></div>`;
+  const n=k=>rows.filter(x=>x.k===k).length;const nOk=n('ok'),nW=n('warn'),nS=n('skip'),nE=n('err'),nB=n('below');
+  const inc=nOk+rows.filter(x=>x.k==='warn'&&x.on).length,n50=rows.filter(x=>x.k==='below'&&x.rate<50).length,tot=inc+nB;
+  const tone=x=>x.k==='below'?(x.rate<50?'bad':'warn'):{ok:'ok',warn:'warn',skip:'none',err:'bad'}[x.k];
+  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${nOk} ready &middot; ${nW} need your decision &middot; ${nB} below 70% &middot; ${nS} already done &middot; ${nE} not recognised</div>${nB?`<div class="meta" style="margin-top:4px">${inc} will ${isMand(r.course)?'be marked completed':'be marked as attended'}. ${nB} below 70% get no certificate${n50?`; ${n50} below 50% will be reported to the Chief of Service and SOT`:''}.</div>`:''}</div><button class="btn pri sm" data-a="commitSheet" ${tot?'':'disabled'}>Record attendance${tot?' for '+tot:''}</button></div>
+  <div class="tbl-scroll"><table><thead><tr><th></th><th>Number</th><th>Trainee</th><th>Result</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td style="width:34px">${x.k==='warn'?`<input type="checkbox" data-c="warnOn" data-i="${i}" ${x.on?'checked':''} aria-label="Include ${esc(x.id)}">`:''}</td><td class="mono">${esc(x.id)}</td><td>${esc(x.name||'')}</td><td>${dt(x.msg,tone(x))}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 function checkSheet(){
   const r=S.rounds.find(x=>x.id===ui.cn);ui.sheet=$('#sheet').value;
-  const seen={};const rows=ui.sheet.split(/\n/).map(s=>s.trim()).filter(Boolean).map(id=>{
+  const seen={};const rows=ui.sheet.split(/\n/).map(s=>s.trim()).filter(Boolean).map(line=>{
+    const p=line.split(/[\s,;]+/).filter(Boolean);const id=p[0];let rate=100,stated=false;
     const t=T(id);if(!t)return {id,k:'err',msg:'Not a known HKCA number'};
+    if(p.length>1){const v=parseFloat(p[1].replace('%',''));if(p.length>2||isNaN(v)||v<0||v>100)return {id,name:t.name,k:'err',msg:'Attendance rate not understood. Use a number from 0 to 100.'};rate=v;stated=true}
     if(seen[id])return {id,name:t.name,k:'skip',msg:'Listed twice on the sheet'};seen[id]=1;
     if(isMand(r.course)&&t.courses.includes(r.course))return {id,name:t.name,k:'skip',msg:'Already has '+CNAME[r.course]+' recorded'};
     if((r.attended||[]).includes(id))return {id,name:t.name,k:'skip',msg:'Already recorded for this round'};
-    const a=r.apps.find(x=>x[0]===id);
-    if(a&&a[2]==='Accepted')return {id,name:t.name,k:'ok',msg:isMand(r.course)?'Accepted for this round. Will be marked completed':'Accepted for this round. Will be marked as attended'};
-    return {id,name:t.name,k:'warn',on:false,msg:a?'Was '+a[2].toLowerCase()+' for this round. Tick to include':'Never applied for this round. Tick to include'};
+    if(rate<70)return {id,name:t.name,k:'below',rate,msg:'Attendance '+rate+'%. Below 70%: no certificate'+(isMand(r.course)?' and not marked completed':'')+(rate<50?'. Chief of Service and SOT will be told':'')};
+    const a=r.apps.find(x=>x[0]===id);const rt=stated?' ('+rate+'%)':'';
+    if(a&&a[2]==='Accepted')return {id,name:t.name,rate,k:'ok',msg:(isMand(r.course)?'Accepted for this round. Will be marked completed':'Accepted for this round. Will be marked as attended')+rt};
+    return {id,name:t.name,rate,k:'warn',on:false,msg:(a?'Was '+a[2].toLowerCase()+' for this round. Tick to include':'Never applied for this round. Tick to include')+rt};
   });
   ui.sheetOut={round:r.id,rows};render();
 }
 function commitSheet(){
-  const r=S.rounds.find(x=>x.id===ui.cn);const rows=ui.sheetOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));
-  if(isMand(r.course))rows.forEach(x=>{T(x.id).courses.push(r.course)});
-  r.attended=(r.attended||[]).concat(rows.map(x=>x.id));r.recorded=TODAY;
-  logAct('Course attendance recorded',`${CNAME[r.course]} ${fmt(r.date)}: ${rows.length} trainees ${isMand(r.course)?'marked completed':'marked as attended'}`);ui.sheetOut=null;ui.sheet=null;render();toast(plural(rows.length,'trainee')+(isMand(r.course)?' marked as completed ':' marked as attended ')+CNAME[r.course]+'.')
+  const r=S.rounds.find(x=>x.id===ui.cn);const all=ui.sheetOut.rows;
+  const good=all.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on)),below=all.filter(x=>x.k==='below');
+  if(isMand(r.course))good.forEach(x=>{T(x.id).courses.push(r.course)});
+  r.att=r.att||{};good.concat(below).forEach(x=>{r.att[x.id]=x.rate});
+  r.attended=(r.attended||[]).concat(good.map(x=>x.id));r.recorded=TODAY;
+  S.notices=S.notices||[];let nn=0;
+  below.filter(x=>x.rate<50).forEach(x=>{const t=T(x.id);S.notices.push({d:TODAY,id:x.id,round:r.id,rate:x.rate});nn++;logAct('Attendance below 50%',`${t.name} (${x.id}), ${CNAME[r.course]} ${fmt(r.date)}: ${x.rate}%. Notice queued to ${noticeTo(t)}`)});
+  logAct('Course attendance recorded',`${CNAME[r.course]} ${fmt(r.date)}: ${good.length} ${isMand(r.course)?'marked completed':'marked as attended'}, ${below.length} below 70% without certificate`);
+  ui.sheetOut=null;ui.sheet=null;render();
+  toast(plural(good.length,'trainee')+(isMand(r.course)?' marked completed':' marked as attended')+(below.length?'. '+below.length+' below 70%':'')+(nn?'. '+plural(nn,'notice')+' queued.':'.'))
 }
 
 /* ============ EXAMS ============ */
@@ -1090,6 +1110,7 @@ document.addEventListener('change',ev=>{
   else if(c==='role'){ui.role=e.value;closeDrawer();$('#demoPop').classList.remove('on');window.scrollTo(0,0);render()}
   else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
   else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);r.apps[+e.dataset.i][2]=e.value;save();render()}
+  else if(c==='rfCourse'){if(isMand(e.value))['rfFeeM','rfFeeN'].forEach(i=>{if($('#'+i).value==='')$('#'+i).value=0})}
   else if(c==='rdS'){ui.rdS=e.value;render()}
   else if(c==='cn'){ui.cn=e.value;ui.sheetOut=null;render()}
   else if(c==='warnOn'){ui.sheetOut.rows[+e.dataset.i].on=e.checked;render()}
