@@ -1,8 +1,8 @@
 ---
 type: prd
 project: "[[HKCA Portfolio Revamp]]"
-version: "1.4.0"
-date: 2026-10-23
+version: "1.5.0"
+date: 2026-10-24
 aliases:
   - "HKCA ePortfolio Master PRD v1.0"
 status: approved_for_implementation
@@ -21,6 +21,7 @@ The version number is in the front matter above. Every release is tagged in git 
 
 | Version | Date | Tag | What changed |
 |---|---|---|---|
+| 1.5.0 | 2026-10-24 | `prd-v1.5.0` | Board-recognised cases: recognised cases bypass hospital scoping and the 2-year lock (§3.10; exceptions noted in §3.1 and §3.2). |
 | 1.4.0 | 2026-10-23 | `prd-v1.4.0` | Formal project number, title and dated submission record (§6.1); trainee logbook shows four states, "under review" merged into "waiting for verifier" (§3.8); course name corrected to UGRA; iWBA read API refresh 2026-10-20: modalities, sync algorithm, identity linking, curriculum mapping, backfill (§4.1 to 4.5). WBA and iWBA sync build on hold (see §4). |
 | 1.3.1 | 2026-10-23 | `prd-v1.3.1` | Trainee Overview restructured into five blocks; stage path BAT, exam, HAT, exam, PF, Exit; Exit requirements panel (§6.3, §6.4). |
 | 1.3.0 | 2026-10-22 | `prd-v1.3.0` | Trainee logbook with legacy fields, case detail, imported-case classification (§3.8); legacy logbook import and merge (§3.9, Migration Plan §6.8); progression record (§6.3). |
@@ -219,9 +220,9 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 
 * **3.1 Mobile-First PWA & Hospital Scoping:**
   * Installable PWA with local `IndexedDB` caching for offline operating theatre entry ($<45\text{s}$ target entry time).
-  * **Hospital-Level Scoping:** Case locations are recorded at the **Hospital** level only. Theatre identifiers are deprecated to eliminate clutter and maintain cross-hospital consistency.
+  * **Hospital-Level Scoping:** Case locations are recorded at the **Hospital** level only. Theatre identifiers are deprecated to eliminate clutter and maintain cross-hospital consistency. Every case a trainee logs names a hospital known to the College. **Exception:** cases recognised by the Board from earlier training (§3.10) are credited, not logged, and carry no hospital.
 * **3.2 2-Year Retrospective Lock:**
-  * Cases logged where $\text{first\_logged\_at} - \text{case\_date} > 2\text{ years}$ are stored for personal audit but permanently flagged `is_accredited = false`.
+  * Cases logged where $\text{first\_logged\_at} - \text{case\_date} > 2\text{ years}$ are stored for personal audit but permanently flagged `is_accredited = false`. **Exception:** Board-recognised cases (§3.10) are not subject to this lock, because they are credited by Board decision on a stated date and were never logged here.
 * **3.3 AI / Heuristic Curriculum Classifier:**
   * Client-side model suggests curriculum descriptor codes (e.g. 2.1 General, 2.2 Regional, 3.5 Obstetric) with confidence indicators. Trainee confirms or overrides.
 * **3.4 SOT Verification Console (`To Verify`):**
@@ -255,6 +256,13 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
   * **Reconciliation gate:** rows in = imported + quarantined, and the cutover is blocked until per-trainee approved counts match legacy exactly (§7, CI parity suite).
   * **Notice to the trainee:** the logbook states how many cases came from the previous e-logbook, the import date, and how many need classification.
 
+* **3.10 Board-Recognised Cases (Retrospective Recognition):**
+  * When the Board of Education recognises earlier training (overseas training, specialty transfer or prior experience), its decision may include a number of logbook cases (for example "recognise 180 cases"). The Secretariat records the decision; the Board makes it.
+  * **These cases are credited, not logged.** Each is stored as a permanent case-credit row (`vop_credit_adjustments`) carrying the case count, the Board decision date, a reason (`RETROSPECTIVE_OVERSEAS_RECOGNITION` or `RETROSPECTIVE_SPECIALTY_TRANSFER`) and an optional specialty module. They **bypass the hospital-only logging rule (§3.1) and the 2-year retrospective lock (§3.2)**, since no hospital or case date exists for them.
+  * **Counting:** recognised cases add to the trainee's overall case total. They count towards a specialty-module minimum only when the Board allocates them to that module; a case total without a module satisfies no per-module minimum.
+  * **Display:** the trainee and SOT see them as a separate line, "Recognised by the Board", with the decision date. They are never shown as verified cases, never appear in the All cases log, and cannot be edited or verified by a verifier.
+  * **Changes:** rows are never edited. A correction is a new row that supersedes the old one, with a reason and the Board decision date, and is recorded in the audit log.
+  * Time credit from the same decision is written to the Accredited Time Ledger with the same reason code and decision date (§5.1).
 ---
 
 ### Feature 4: Workplace-Based Assessments (WBA) & HKAM iWBA Linkage (P0)
@@ -385,6 +393,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 | **§5.1 (Ledger & Rotations)** | M2, M3, H5, F5, Albert Rotations Directives | `accredited_time_ledger`, Bilateral Handshake, ICU 11-Unit Filter |
 | **§5.2 (2-Tier ITA & Goals)** | M1, M6, H1, H8, I1, Albert ITA/Goals Directives | 15-Item Form, Voluntary Trainer Forms, Learning Plans (6-month goals, PF year plan), Assigned SOT, ASOT Final Sign-Off |
 | **§5.3 (PWA Logbook & VOP)** | H5, U2, U3, U4, Albert VOP Directives | Mobile PWA, Hospital-Only Scoping, Milestone Reopening, Cohort Heatmap |
+| **§5.3.10 (Board-Recognised Cases)** | Albert decision 2026-10-24 (option A); Admin Operational Workflows, retrospective recognition | `vop_credit_adjustments`, `retrospective_recognitions`, ledger reasons `RETROSPECTIVE_*` |
 | **§5.3.8 to 5.3.9 (Trainee Logbook, Legacy Import)** | Albert directive 2026-10-22; Legacy EPS Schema Audit §5 | Case detail and entry with legacy fields, 4-state trainee verification, `domain/vop/legacyImport.ts`, `tests/domain/run_vop_import_tests.ts` |
 | **§5.6.3 (Progression Record)** | Albert directive 2026-10-22 | `training_stage_history`, `exam_results` |
 | **§5.4 (WBA & iWBA)** | E2, Albert Directive | OAuth2 SSO, Background Polling Daemon |
