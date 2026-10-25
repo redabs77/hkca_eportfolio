@@ -1519,7 +1519,7 @@ CREATE TABLE course_notices (                  -- HKCA courses: below 50% is rep
   UNIQUE (round_id, trainee_id, notice_type)
 );
 ```
-Rules: the pass mark depends on the organiser (`course_catalogue.organiser`). **HKCA courses:** 70% or more earns the Certificate of Attendance and marks a mandatory course completed (a `mandatory_courses` row linked by `round_id`); below 70% gives none; below 50% queues a notice. **CSC courses** (Clinical Simulation Committee: EASE, EMAC, ADAM-A, UGRA, ADAM-D, ASSW; one to three days): only 100% earns the certificate and completes the course; anything less gives none and queues a notice to the trainee's SOT (`course_notices`, `notice_type` UNDER_100_CSC); the 70% rule and the under-50% notice do not apply (Dr. Chan, 2026-10-25). The pass mark is application logic, not a database constraint. Attendance for a non-mandatory course stays here and does not touch `mandatory_courses`. A line with no rate on the attendance sheet means full attendance (prototype assumption, to confirm with the College).
+Rules: the pass mark depends on the organiser (`course_catalogue.organiser`). **HKCA courses:** 70% or more earns the Certificate of Attendance and marks a mandatory course completed (a `mandatory_courses` row linked by `round_id`); below 70% gives none; below 50% queues a notice. **CSC courses** (Clinical Simulation Committee: EASE, EMAC, ADAM-A, UGRA, ADAM-D, ASSW; one to three days): only 100% earns the certificate and completes the course; anything less gives none and queues a notice to the trainee's SOT (`course_notices`, `notice_type` UNDER_100_CSC); the 70% rule and the under-50% notice do not apply (Dr. Chan, 2026-10-25). The pass mark is application logic, not a database constraint. Attendance for a non-mandatory course stays here and does not touch `mandatory_courses`. On the attendance sheet a CSC course line with no rate means 100%; an HKCA course line must state the rate (Dr. Chan, 2026-10-25).
 
 ### Exams
 
@@ -1562,7 +1562,7 @@ CREATE TABLE exam_section_passes (             -- carry-forward of a passed sect
 );
 CREATE UNIQUE INDEX one_active_pass ON exam_section_passes(trainee_id, exam_type) WHERE is_active;
 ```
-Carry-forward (Intermediate and Final Exam FAQs): Intermediate, a pass in one subject carries when the other subject meets the minimum score; Final, the written pass carries when the oral or OSCE is failed; each lasts up to four subsequent consecutive exams, then every section is re-sat; the fee is unchanged. **Counting every sitting the College holds toward the four is our reading and is not confirmed by the College.** Results upload formats: Intermediate `hkca_no,exam,sitting_date,physiology,pharmacology,minimum_met`; Final `hkca_no,exam,sitting_date,written,oral_osce`.
+Carry-forward (Intermediate and Final Exam FAQs): Intermediate, a pass in one subject carries when the other subject meets the minimum score; Final, the written pass carries when the oral or OSCE is failed; each lasts up to four subsequent consecutive exams, then every section is re-sat; the fee is unchanged. **Every sitting the College holds counts toward the four, whether or not the trainee sat it (Dr. Chan, 2026-10-25).** The results file comes from the exam coordinator, who gives the final result: Pass or Fail per subject or section and Yes or No for `minimum_met`; nothing is computed from marks. Results upload formats: Intermediate `hkca_no,exam,sitting_date,physiology,pharmacology,minimum_met`; Final `hkca_no,exam,sitting_date,written,oral_osce`.
 
 ```sql
 CREATE TABLE trainee_fee_payments (            -- append-only; a wrong entry is voided, never deleted (decision D3: entered by hand from payment slips)
@@ -1577,7 +1577,7 @@ CREATE TABLE trainee_exemptions (              -- Intermediate exemption
   UNIQUE (trainee_id, exam_type)
 );
 ```
-Eligibility criteria are read live and kept in one list per exam, each with its source (Intermediate: member and registered trainee, fees paid, in Basic training, not already passed or exempt; Final: member and registered trainee, fees paid, in Higher training, Intermediate passed or exempt, in a College-accredited centre, not already passed). The two "not already passed" checks are our additions and are not in the published rules; the Administrative Instructions (members only) were not read.
+Eligibility criteria are read live and kept in one list per exam, each with its source (Intermediate: member and registered trainee, fees paid, in Basic training, not already passed or exempt; Final: member and registered trainee, fees paid, in Higher training, Intermediate passed or exempt, in a College-accredited centre, not already passed). The two "not already passed" checks are our additions and are not in the published rules; Dr. Chan agreed to keep them (2026-10-25). The Administrative Instructions (members only) have not been read yet: Dr. Chan will send them when he has access, and the criteria list is then checked against them.
 
 ### Formal projects: stages, appeal, accepted-paper route
 

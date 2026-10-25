@@ -902,11 +902,16 @@ function nsItems(){
   HKC.get().rounds.forEach(r=>{
     const a = HKC.appOf(r,TR_KEY); if(!a || a[2]==='Withdrawn') return;
     const st = HKC.rState(r), nm = HKC.SHORT[r.course], d = HKC.fmtS(r.date), rate = (r.att||{})[TR_KEY];
+    if(a[2]==='Waitlisted' && (st==='held'||st==='recorded') && HKC.daysTo(r.date)>-120 && !HKC.doneList(TR_KEY).includes(r.course)){
+      const nx = HKC.get().rounds.find(o=>o.course===r.course && HKC.rState(o)==='open' && !(HKC.appOf(o,TR_KEY) && HKC.appOf(o,TR_KEY)[2]!=='Withdrawn'));
+      if(nx) it.push({r:3.1, t:'Apply for the next '+nm+' round', s:'You were waitlisted for '+d+' and are not added automatically. You keep priority. Registration closes '+HKC.fmtS(nx.closes)+'.', cta:'Apply', act:()=>showTab('courses')});
+      else it.push({r:5.5, t:'You were waitlisted for '+nm+', '+d, s:'You are not added to the next round automatically. When registration opens, apply yourself: you keep priority.', cta:'View', act:()=>showTab('courses')});
+      return; }
     if(st==='recorded'){ if(rate!=null && rate<HKC.passPct(r.course) && HKC.daysTo(r.recorded)>-30) it.push({r:2.5, t:nm+': attendance '+rate+'%, below the '+HKC.passPct(r.course)+'% needed', s:'No certificate was issued'+(HKC.MAND.includes(r.course)?'. You will need another round.':'.'), cta:'View', act:()=>showTab('courses')}); return; }
     if(st==='held') return;
     if(a[2]==='Accepted') it.push({r:6, t:'You have a place on '+nm+', '+d, s:'Notice of acceptance sent to your email.', cta:'View', act:()=>showTab('courses')});
     else if(a[2]==='Rejected') it.push({r:6, t:'Your '+nm+' application was not accepted', s:'You can apply again when the next round opens.', cta:'View', act:()=>showTab('courses')});
-    else if(a[2]==='Waitlisted') wait.push(nm+' '+d+': waitlisted, with priority for the next round');
+    else if(a[2]==='Waitlisted') wait.push(nm+' '+d+': waitlisted. You are not added to the next round automatically: apply when it opens, and you keep priority');
     else wait.push('College Admin is deciding your '+nm+' application');
   });
   exRel().forEach(({x,a,el,st})=>{
@@ -1145,7 +1150,7 @@ function crStatus(r,a){
     return {c:'bad',l:'Attendance '+rate+'%',sub:'Below the '+HKC.passPct(r.course)+'% needed for the certificate'+(mand?', so the course is not complete. You will need another round.':'.')+(rate<HKC.noticeBelow(r.course)?(HKC.noticeOn(r.course)?' Your Chief of Service and SOT have been told.':' Your SOT has been told.'):'')};
   }
   if(a[2]==='Accepted') return {c:'ok',l:'Accepted',sub:'Notice of acceptance sent to your email.'};
-  if(a[2]==='Waitlisted') return {c:'warn',l:'Waitlisted',sub:'You get priority for the next round.'};
+  if(a[2]==='Waitlisted') return {c:'warn',l:'Waitlisted',sub:'You are not added to the next round automatically. When it opens, apply again: you keep priority.'};
   if(a[2]==='Rejected') return {c:'bad',l:'Not accepted',sub:'You can apply again when the next round opens.'};
   return {c:'info',l:'Applied',sub:'College Admin will decide your place.'};
 }
