@@ -1077,10 +1077,10 @@ function renderIta(){
 /* ---------- courses & project: read-only facts from the College record ---------- */
 const COURSES = [
  {n:'EASE',d:'Exposure to Anaesthetic Safety & Emergencies',done:'14 Mar 2024'},
- {n:'EMAC',d:'Effective Management of Anaesthesia Crisis',done:'02 Sep 2024'},
- {n:'ADAM-A',d:'Advanced and Difficult Airway Management for Anaesthetists',done:'18 Jan 2025'},
- {n:'ECHO-A',d:'HKCA Focused Transthoracic Echocardiography',done:'07 Jun 2025'},
- {n:'UGRA',d:'Ultrasound-guided Regional Anaesthesia',done:null}];
+ {n:'EMAC',d:'Effective Management of Anaesthetic Crises',done:'02 Sep 2024'},
+ {n:'ADAM-A',d:'Advanced & Difficult Airway Workshop for Anaesthesiologists',done:'18 Jan 2025'},
+ {n:'ECHO-A',d:'Focused Transthoracic Echocardiography Workshop for Anaesthetists',done:'07 Jun 2025'},
+ {n:'UGRA',d:'Ultrasound-Guided Regional Anaesthesia – Elementary',done:null}];
 function courseListHtml(){
   return '<div class="courselist">'+COURSES.map(c=>c.done
     ? `<div class="course"><div class="cstat done">&#10003;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill ok">Verified</span><span class="cdate mono">${c.done}</span></div></div>`

@@ -233,8 +233,11 @@ const plural=(n,a,b)=>n+' '+(n===1?a:(b||a+'s'));
 /* ============ reference data ============ */
 const HOSP=[['HKE','PYNEH'],['HKE','RH'],['HKW','QMH'],['HKW','GH'],['KCC','HKBH'],['KCC','HKEH'],['KCC','KWH'],['KCC','QEH'],['KEC','TKOH'],['KEC','UCH'],['KWC','CMC'],['KWC','NLTH'],['KWC','PMH'],['KWC','YCH'],['NTE','AHNH'],['NTE','NDH'],['NTE','PWH'],['NTW','POH'],['NTW','TMH'],['NTW','TSWH']];
 const CLUSTER=Object.fromEntries(HOSP.map(([c,h])=>[h,c]));
-const COURSES={EASE:'Essential Anaesthesia Skills Education',EMAC:'Emergency and Management of Anaesthetic Crises',ECHOA:'Echo-A workshop','ADAMA':'ADAM-A',UGRA:'Ultrasound-Guided Regional Anaesthesia'};
-const CNAME={EASE:'EASE',EMAC:'EMAC',ECHOA:'ECHO-A',ADAMA:'ADAM-A',UGRA:'UGRA'};
+const COURSES={EASE:'Exposure to Anaesthetic Safety & Emergencies',EMAC:'Effective Management of Anaesthetic Crises',ADAMA:'Advanced & Difficult Airway Workshop for Anaesthesiologists',ECHOA:'Focused Transthoracic Echocardiography Workshop for Anaesthetists',UGRA:'Ultrasound-Guided Regional Anaesthesia \u2013 Elementary',ADAMD:'Advanced Difficult Airway Management for Doctors',ASSW:'Advanced Sedation Safety Workshop',BSC:'Basic Sciences Course in Anaesthesiology',IMV:'Intermediate Examination Mock Viva',RTB:'Revision Tutorial Course in Basic Sciences in Anaesthesiology',HTC:'Higher Training Course in Clinical Anaesthesia',CRASH:'Crash Course for Clinical Anaesthesiology',RTC:'Revision Tutorial Course in Clinical Anaesthesiology'};
+const CNAME={EASE:'EASE',EMAC:'EMAC',ECHOA:'ECHO-A',ADAMA:'ADAM-A',UGRA:'UGRA',ADAMD:'ADAM-D',ASSW:'ASSW',BSC:'Basic Sciences Course',IMV:'Intermediate Mock Viva',RTB:'Revision Tutorial (Basic Sciences)',HTC:'Higher Training Course',CRASH:'Crash Course',RTC:'Revision Tutorial (Clinical)'};
+const MAND=['EASE','EMAC','ADAMA','ECHOA','UGRA'];
+const CSC=['EASE','EMAC','ADAMA','UGRA','ADAMD','ASSW'];
+const FORMATS=['Face-to-face','Online','Online and face-to-face'];
 
 function seedState(){
   const T=(id,name,stage,m,hosp,status,extra)=>Object.assign({id,name,stage,months:m,hosp,status:status||'Active',edition:'2017 v1.1',start:addDays(TODAY,-Math.round(m*30.4)),courses:[],exam:{}},extra||{});
@@ -267,7 +270,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:6,
+    v:7,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -290,12 +293,19 @@ function seedState(){
         trail:[{d:'2026-07-02',who:'Dr. Sam Fok',ev:'Asked for retrospective recognition'},{d:'2026-07-03',who:'Secretariat',ev:'Application enabled'},{d:'2026-08-20',who:'Dr. Sam Fok',ev:'Submitted form and documents'},{d:'2026-08-25',who:'Secretariat',ev:'Documents checked, sent to the Training Officer'},{d:'2026-09-08',who:'Training Officer',ev:'Approved with different figures',note:'Cases reduced from 120 to 110: ten could not be matched to the logbook summary.'},{d:'2026-09-08',who:'Secretariat',ev:'Credit written to the ledger'}]}
     ],
     rounds:[
-      {id:'EASE-1114',course:'EASE',date:'2026-11-14',seats:12,status:'open',apps:[
-        ['HKCA-2025-004','2026-09-14','Accepted'],['HKCA-2025-009','2026-09-14','Accepted'],['HKCA-2025-013','2026-09-16','Requested'],['HKCA-2025-021','2026-09-17','Requested'],['HKCA-2024-014','2026-09-20','Requested'],['HKCA-2024-008','2026-09-21','Requested'],['HKCA-2024-023','2026-09-29','Requested'],['HKCA-2024-031','2026-10-02','Deferred']]},
-      {id:'ADAM-1128',course:'ADAMA',date:'2026-11-28',seats:6,status:'open',apps:[
+      {id:'EASE-0614',course:'EASE',date:'2026-06-14',venue:'',format:'Face-to-face',feeM:null,feeN:null,seats:12,opens:'2026-04-20',closes:'2026-05-31',recorded:'2026-06-15',coord:'',apps:[
+        ['HKCA-2024-014','2026-05-02','Accepted'],['HKCA-2024-019','2026-05-03','Accepted'],['HKCA-2023-022','2026-05-05','Accepted'],['HKCA-2024-023','2026-05-20','Waitlisted'],['HKCA-2024-008','2026-05-22','Waitlisted']]},
+      {id:'EASE-1114',course:'EASE',date:'2026-11-14',venue:'',format:'Face-to-face',feeM:null,feeN:null,seats:12,opens:'2026-09-01',closes:'2026-10-31',coord:'',apps:[
+        ['HKCA-2025-004','2026-09-14','Accepted'],['HKCA-2025-009','2026-09-14','Accepted'],['HKCA-2025-013','2026-09-16','Requested'],['HKCA-2025-021','2026-09-17','Requested'],['HKCA-2024-011','2026-09-20','Requested'],['HKCA-2024-008','2026-09-21','Requested'],['HKCA-2024-023','2026-09-29','Requested'],['HKCA-2024-031','2026-10-02','Rejected']]},
+      {id:'ADAM-1128',course:'ADAMA',date:'2026-11-28',venue:'',format:'Face-to-face',feeM:null,feeN:null,seats:6,opens:'2026-09-15',closes:'2026-11-13',coord:'',apps:[
         ['HKCA-2023-022','2026-09-30','Requested'],['HKCA-2022-013','2026-10-01','Requested'],['HKCA-2024-023','2026-10-03','Requested'],['HKCA-2024-019','2026-10-04','Requested'],['HKCA-2022-010','2026-10-04','Requested'],['HKCA-2023-017','2026-10-06','Requested'],['HKCA-2023-009','2026-10-10','Requested'],['HKCA-2024-011','2026-10-12','Requested']]},
-      {id:'EMAC-1011',course:'EMAC',date:'2026-10-11',seats:10,status:'done',apps:[
-        ['HKCA-2022-006','2026-08-10','Accepted'],['HKCA-2022-010','2026-08-11','Accepted'],['HKCA-2022-013','2026-08-12','Accepted'],['HKCA-2022-019','2026-08-14','Accepted'],['HKCA-2023-004','2026-08-20','Accepted'],['HKCA-2023-015','2026-08-22','Accepted']]}
+      {id:'EMAC-1011',course:'EMAC',date:'2026-10-11',venue:'',format:'Face-to-face',feeM:null,feeN:null,seats:10,opens:'2026-07-20',closes:'2026-09-30',coord:'',apps:[
+        ['HKCA-2022-006','2026-08-10','Accepted'],['HKCA-2022-010','2026-08-11','Accepted'],['HKCA-2022-013','2026-08-12','Accepted'],['HKCA-2022-019','2026-08-14','Accepted'],['HKCA-2023-004','2026-08-20','Accepted'],['HKCA-2023-015','2026-08-22','Accepted']]},
+      {id:'RTB-1102',course:'RTB',date:'2026-11-02',end:'2026-11-13',venue:'Function Rooms 1\u20133, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:6500,feeN:13000,seats:null,opens:'2026-09-01',closes:'2026-10-20',coord:'Dr FOK King Tak Douglas',apps:[
+        ['HKCA-2023-022','2026-09-10','Accepted'],['HKCA-2024-019','2026-09-12','Accepted'],['HKCA-2024-027','2026-09-18','Accepted'],['HKCA-2024-008','2026-10-02','Waitlisted'],['HKCA-2024-023','2026-10-15','Requested']]},
+      {id:'RTC-1116',course:'RTC',date:'2026-11-16',end:'2026-11-21',venue:'Function Rooms 1\u20132, 2/F, Hotel Stage, Jordon',format:'Face-to-face',feeM:5500,feeN:11000,seats:50,opens:'2026-09-15',closes:'2026-11-02',coord:'Dr FOK King Tak Douglas',apps:[
+        ['HKCA-2022-013','2026-10-01','Requested'],['HKCA-2022-019','2026-10-03','Requested'],['HKCA-2022-006','2026-10-05','Requested'],['HKCA-2022-010','2026-10-08','Requested'],['HKCA-2023-004','2026-10-12','Requested']]},
+      {id:'BSC-0425',course:'BSC',date:'2027-04-25',end:'2027-07-25',venue:'Seminar Room 113-115, 1/F, School of General Nursing, Queen Elizabeth Hospital',format:'Online and face-to-face',feeM:2000,feeN:4000,seats:null,opens:'2027-03-01',closes:'2027-04-14',coord:'Dr TAM Suet Yee Zoey',apps:[]}
     ],
     exCands:[
       {id:'HKCA-2024-019',exam:'Intermediate',sot:true,fail:[]},
@@ -358,9 +368,9 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==6)S=seedState();
+if(!S||S.v!==7)S=seedState();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
-const ui={tab:'home',sub:{trainees:'registry',courses:'seats',exams:'cands',projects:'dispatch',centres:'accred',wba:'link'},
+const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'cands',projects:'dispatch',centres:'accred',wba:'link'},
   q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
 const T=id=>S.trainees.find(t=>t.id===id);
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
@@ -378,7 +388,7 @@ function critOf(t){
 }
 const docketRows=()=>S.trainees.filter(t=>t.status==='Active'&&S.GATES[t.stage]&&t.months>=S.GATES[t.stage].from&&t.months<=S.GATES[t.stage].to).map(t=>({t,c:critOf(t)}));
 function counts(){
-  const rr=S.rounds.filter(r=>r.status==='open');
+  const rr=S.rounds.filter(r=>['open','closed'].includes(rState(r)));
   const triage=rr.reduce((n,r)=>n+r.apps.filter(a=>a[2]==='Requested').length,0);
   const dk=docketRows();
   return {
@@ -431,7 +441,8 @@ function vHome(){
   const wRev=S.projects.filter(p=>p.state==='review'&&p.due>=TODAY).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
   waiting.push('JCIMED: '+S.jcimed.length+' questions sent 23 Oct');
   const dk=c.dkReady+c.dkAttn;
-  const cal=[['14 Nov','EASE round','of '+S.rounds[0].seats+' seats: '+S.rounds[0].apps.filter(a=>a[2]==='Accepted').length+' allocated'],['28 Nov','ADAM-A round',''],['1 Dec','Roster attestation opens','SOTs confirm trainee lists'],['Dec','Training Progression',dk+' trainees in a gate window'],['31 Dec','TKOH SOT term ends','Replacement endorsed'],['Mar 2027','PYNEH accreditation expires','Renewal inspection due']];
+  const calR=S.rounds.filter(r=>['open','closed'].includes(rState(r))).sort((a,b)=>a.date>b.date?1:-1).slice(0,2).map(r=>[fmtS(r.date),CNAME[r.course]+' round',seatTxt(r)+(rState(r)==='open'?'. Registration closes '+fmtS(r.closes):'. Registration closed')]);
+  const cal=[...calR,['1 Dec','Roster attestation opens','SOTs confirm trainee lists'],['Dec','Training Progression',dk+' trainees in a gate window'],['31 Dec','TKOH SOT term ends','Replacement endorsed'],['Mar 2027','PYNEH accreditation expires','Renewal inspection due']];
   return head('Friday 24 October 2026','Work queue','What needs the Secretariat, most time-sensitive first.')+
   `<div class="hm"><div class="card"><div class="q-h"><div class="h3">Needs you</div><span class="meta">${q.length?plural(q.length,'item'):'Nothing open'}</span></div>
   ${q.length?q.map(x=>`<div class="q-item"><div class="q-bar" style="background:var(${x.col})"></div><div><div class="q-title">${x.t}</div><div class="q-why">${x.w}</div></div><button class="btn pri sm" data-a="go" data-t="${x.go[0]}" data-k="${x.go[1]}">${x.b}</button></div>`).join(''):'<div class="q-clear">Everything is cleared. New items appear here as trainees, SOTs and iWBA create them.</div>'}
@@ -662,41 +673,181 @@ function reviewCredit(id){
 function execCredit(){const {id,g}=ui.pendingCredit;const r=S.recog.find(x=>x.id===id);r.credit=g;r.state='done';rtr(r,'Secretariat','Credit written to the ledger',g.by+' decision of '+fmtS(g.date));logAct('Retrospective credit executed',`${r.name}: CA ${g.CA}, ICU ${g.ICU}, EL ${g.EL} months, ${g.cases} cases. ${g.reason}. Decided by ${g.by}`);closeModal();closeDrawer();render();toast('Credit written for '+r.name+'.')}
 
 /* ============ COURSES ============ */
-const PR={h:['High','pri-h'],m:['Medium','pri-m'],l:['Low','pri-l']};
+const PR={h:['High','pri-h'],m:['Medium','pri-m'],l:['Low','pri-l'],n:['Standard','pri-l']};
+const hk=n=>'HK$'+Number(n).toLocaleString('en-US');
+const rEnd=r=>r.end||r.date;
+const isMand=k=>MAND.includes(k);
+const orgOf=k=>CSC.includes(k)?'Clinical Simulation Committee':'HKCA';
+function rState(r){
+  if(r.recorded)return 'recorded';
+  if(rEnd(r)<TODAY)return 'held';
+  if(r.shut||(r.closes&&r.closes<TODAY))return 'closed';
+  if(r.opens>TODAY)return 'scheduled';
+  return 'open';
+}
+const undecided=r=>r.apps.filter(a=>a[2]==='Requested').length;
+function rPill(r){
+  const s=rState(r);
+  if(s==='scheduled')return pill('Opens '+fmtS(r.opens),'info');
+  if(s==='open')return pill('Open until '+fmtS(r.closes),'ok');
+  if(s==='closed'){const u=undecided(r);return u?pill('Closed, '+u+' to decide','warn'):pill('Closed','mute')}
+  if(s==='held')return pill('Held, record attendance','warn');
+  return pill('Attendance recorded','mute');
+}
 function prio(id,course){
   const t=T(id);if(!t)return ['l','Not on file'];
   if(course==='EASE')return t.stage==='BAT'?['h','Needed early in basic training']:['m','Past the usual stage'];
   if(course==='EMAC'||course==='ECHOA')return t.stage==='BAT'?['l','Not yet needed']:['h','Needed before the exit examination'];
   return t.stage==='PFY'?['h','Few sittings left before exit']:t.stage==='HAT'?['m','Needed before the exit examination']:['l','Not yet needed'];
 }
-const PRK={h:0,m:1,l:2};
-function sortedApps(r){return r.apps.map((a,i)=>({i,id:a[0],req:a[1],st:a[2],p:prio(a[0],r.course)})).sort((a,b)=>PRK[a.p[0]]-PRK[b.p[0]]||(a.req>b.req?1:-1))}
+function aboutToProgress(t,key){
+  if(!isMand(key)||t.status!=='Active')return null;
+  const g=S.GATES[t.stage];if(!g||t.months<g.from||t.months>g.to)return null;
+  return critOf(t).miss.includes(key)?g.label:null;
+}
+const wlBefore=(r,id)=>S.rounds.some(x=>x.course===r.course&&x.id!==r.id&&x.date<r.date&&x.apps.some(a=>a[0]===id&&a[2]==='Waitlisted'));
+function appInfo(r,a){
+  const t=T(a[0]);const wl=wlBefore(r,a[0]);const pg=t?aboutToProgress(t,r.course):null;
+  let lvl='n',base='';if(isMand(r.course)){const p=prio(a[0],r.course);lvl=p[0];base=p[1]}
+  if(wl||pg)lvl='h';
+  const why=[];if(wl)why.push('Waitlisted for an earlier round');if(pg)why.push('About to progress ('+pg+')');if(base&&!pg)why.push(base);
+  const score=(wl?100:0)+(pg?50:0)+{h:30,m:20,n:15,l:10}[lvl];
+  return {lvl,why,score,wl,pg};
+}
+function sortedApps(r){return r.apps.map((a,i)=>Object.assign({i,id:a[0],req:a[1],st:a[2]},{p:appInfo(r,a)})).sort((a,b)=>b.p.score-a.p.score||(a.req>b.req?1:-1))}
 const accepted=r=>r.apps.filter(a=>a[2]==='Accepted').length;
+const seatTxt=r=>r.seats?accepted(r)+' of '+r.seats+' seats':accepted(r)+' accepted, no seat limit';
 function vCourses(){
-  const s=ui.sub.courses;
-  const seg=subSeg('courses',[['seats','Seat allocation',counts().triage],['attend','Record attendance']]);
-  return head('Courses',s==='seats'?'Seat allocation':'Record attendance',s==='seats'?'Allocate seats in each round. Higher need goes first, then earlier request.':'Check an attendance sheet before it changes any trainee record.',seg)+(s==='seats'?vSeats():vAttend());
+  const s=ui.sub.courses;const c=counts();
+  const seg=subSeg('courses',[['rounds','Course rounds'],['seats','Seat allocation',c.triage],['attend','Record attendance']]);
+  const T3={rounds:['Course rounds','Set up each round: date, fees, and when registration opens and closes. Trainees apply in the portfolio while it is open.'],seats:['Seat allocation','Decide each application. Trainees waitlisted before and trainees about to progress are shown first. The decision is yours.'],attend:['Record attendance','Check an attendance sheet before it changes any trainee record.']}[s];
+  return head('Courses',T3[0],T3[1],seg)+(s==='rounds'?vRounds():s==='seats'?vSeats():vAttend());
 }
+const RS_RANK={open:0,closed:1,scheduled:2,held:3,recorded:4};
+function vRounds(){
+  const f=ui.rdF||'All',st=ui.rdS||'All';
+  const all=S.rounds.slice().sort((a,b)=>RS_RANK[rState(a)]-RS_RANK[rState(b)]||(RS_RANK[rState(a)]>=3?(a.date<b.date?1:-1):(a.date>b.date?1:-1)));
+  const list=all.filter(r=>(f==='All'||(f==='Mandatory'?isMand(r.course):!isMand(r.course)))&&(st==='All'||rState(r)===st));
+  const stOpts=[['All','All statuses'],['open','Open'],['closed','Closed'],['scheduled','Not open yet'],['held','Held'],['recorded','Attendance recorded']];
+  const act=r=>{const s=rState(r);
+    const p=s==='scheduled'?`<button class="btn sec sm" data-a="openNow" data-id="${r.id}">Open now</button>`:s==='open'?`<button class="btn sec sm" data-a="closeNow" data-id="${r.id}">Close now</button>`:s==='closed'?`<button class="btn pri sm" data-a="decideRound" data-id="${r.id}">Decide seats</button>`:s==='held'?`<button class="btn pri sm" data-a="attendRound" data-id="${r.id}">Record attendance</button>`:'';
+    return `<div class="btn-row" style="flex-wrap:nowrap;justify-content:flex-end">${p}<button class="btn sec sm" data-a="editRound" data-id="${r.id}" aria-label="Edit ${esc(CNAME[r.course])} ${fmtS(r.date)}">Edit</button></div>`};
+  return `<div class="toolbar"><div class="chips">${['All','Mandatory','Other courses'].map(x=>{const v=x==='Other courses'?'Other':x;return `<button class="chip ${f===v?'on':''}" aria-pressed="${f===v}" data-a="rdF" data-v="${v}">${x}</button>`}).join('')}</div>
+  <select data-c="rdS" aria-label="Filter by status" style="width:auto">${stOpts.map(([k,l])=>`<option value="${k}" ${st===k?'selected':''}>${l}</option>`).join('')}</select>
+  <span class="meta grow" style="text-align:right">${plural(list.length,'round')}</span><button class="btn pri sm" data-a="newRound">New round</button></div>
+  <div class="card"><div class="tbl-scroll"><table><thead><tr><th>Course</th><th>Course date</th><th>Registration</th><th>Fee</th><th>Applications</th><th></th></tr></thead><tbody>
+  ${list.length?list.map(r=>{const s=rState(r);const u=undecided(r);
+    return `<tr><td><div class="cell-name">${esc(COURSES[r.course])}</div><div class="cell-sub">${isMand(r.course)?'Mandatory':'Other course'} &middot; ${orgOf(r.course)}</div></td>
+    <td>${fmt(r.date)}${r.end?` <span class="cell-sub" style="display:inline">to ${fmt(r.end)}</span>`:''}${r.venue?`<div class="cell-sub">${esc(r.venue)}</div>`:''}</td>
+    <td>${rPill(r)}<div class="cell-sub">${fmtS(r.opens)} to ${fmtS(r.closes)}</div></td>
+    <td>${r.feeM==null?'<span class="pill warn">Fee not set</span>':`${hk(r.feeM)}<div class="cell-sub">${hk(r.feeN)} non-member</div>`}</td>
+    <td>${s==='scheduled'?'<span class="meta">Not open yet</span>':`${r.apps.length} applied<div class="cell-sub">${esc(seatTxt(r))}${u&&['open','closed'].includes(s)?', '+u+' to decide':''}</div>`}</td>
+    <td>${act(r)}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">No rounds match.</div></td></tr>'}</tbody></table></div></div>`;
+}
+function roundForm(r){
+  const v=r||{course:'',date:'',end:'',venue:'',format:'Face-to-face',feeM:'',feeN:'',seats:'',opens:'',closes:'',coord:''};
+  const opt=k=>`<option value="${k}" ${v.course===k?'selected':''}>${esc(COURSES[k])}${CNAME[k]!==COURSES[k]&&k.length<=5&&isMand(k)?' ('+CNAME[k]+')':''}</option>`;
+  const g2='display:grid;grid-template-columns:1fr 1fr;gap:12px';
+  return `<div class="fld"><label for="rfCourse">Course</label>${r?`<input type="text" id="rfCourse" value="${esc(COURSES[r.course])}" disabled>`:`<select id="rfCourse"><option value="">Choose a course</option><optgroup label="Mandatory">${MAND.map(opt).join('')}</optgroup><optgroup label="Other courses">${Object.keys(COURSES).filter(k=>!isMand(k)).map(opt).join('')}</optgroup></select>`}</div>
+  <div style="${g2}"><div class="fld"><label for="rfDate">Course date (first day)</label><input type="date" id="rfDate" value="${v.date||''}"></div><div class="fld"><label for="rfEnd">Last day, if more than one</label><input type="date" id="rfEnd" value="${v.end||''}"></div></div>
+  <div class="fld"><label for="rfVenue">Venue</label><input type="text" id="rfVenue" value="${esc(v.venue||'')}" placeholder="Leave blank if not confirmed"></div>
+  <div style="${g2}"><div class="fld"><label for="rfFormat">Format</label><select id="rfFormat">${FORMATS.map(x=>`<option ${v.format===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="fld"><label for="rfSeats">Seats</label><input type="number" id="rfSeats" min="1" value="${v.seats||''}" placeholder="No limit"></div></div>
+  <div style="${g2}"><div class="fld"><label for="rfFeeM">Fee, HKCA member (HK$)</label><input type="number" id="rfFeeM" min="0" value="${v.feeM==null?'':v.feeM}"></div><div class="fld"><label for="rfFeeN">Fee, non-member (HK$)</label><input type="number" id="rfFeeN" min="0" value="${v.feeN==null?'':v.feeN}"></div></div>
+  <div style="${g2}"><div class="fld"><label for="rfOpens">Registration opens</label><input type="date" id="rfOpens" value="${v.opens||''}"></div><div class="fld"><label for="rfCloses">Registration closes (deadline)</label><input type="date" id="rfCloses" value="${v.closes||''}"></div></div>
+  <div class="fld"><label for="rfCoord">Coordinators</label><input type="text" id="rfCoord" value="${esc(v.coord||'')}" placeholder="Optional"></div>`;
+}
+function regBox(r){
+  const s=rState(r);
+  const msg={scheduled:'Not open yet. It opens on '+fmt(r.opens)+'.',open:'Open. Trainees can apply until '+fmt(r.closes)+'.',closed:r.shut?'Closed by the Secretariat. Applications have stopped.':'Closed. The deadline was '+fmt(r.closes)+'.',held:'The course has been held.',recorded:'The course has been held and attendance recorded.'}[s];
+  const b=s==='scheduled'?`<button class="btn sec sm" data-a="openNow" data-id="${r.id}">Open registration now</button>`:s==='open'?`<button class="btn sec sm" data-a="closeNow" data-id="${r.id}">Close registration now</button>`:s==='closed'?`<button class="btn sec sm" data-a="reopen" data-id="${r.id}">Reopen registration</button>`:'';
+  return `<div class="sect">Registration</div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">${rPill(r)}<span class="meta">${msg}</span>${b}</div>`;
+}
+function newRound(){openDrawer('Courses','New round',roundForm(null),`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="saveRound" data-id="">Create round</button>`)}
+function editRound(id){const r=S.rounds.find(x=>x.id===id);openDrawer(isMand(r.course)?'Mandatory course':'Other course',CNAME[r.course]+' \u00b7 '+fmtS(r.date),regBox(r)+`<div class="sect">Details</div>`+roundForm(r),`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="saveRound" data-id="${id}">Save changes</button>`)}
+function saveRound(id){
+  const r=id?S.rounds.find(x=>x.id===id):null;const g=k=>$('#'+k).value.trim();
+  const course=r?r.course:g('rfCourse'),date=g('rfDate'),end=g('rfEnd'),opens=g('rfOpens'),closes=g('rfCloses');
+  const feeM=g('rfFeeM'),feeN=g('rfFeeN'),seats=g('rfSeats');
+  if(!course){toast('Choose a course.');return}
+  if(!date){toast('Enter the course date.');return}
+  if(!r&&date<=TODAY){toast('The course date must be in the future.');return}
+  if(end&&end<date){toast('The last day cannot be before the first day.');return}
+  if(feeM===''||feeN===''||+feeM<0||+feeN<0){toast('Enter both fees. Use 0 if there is no charge.');return}
+  if(!opens||!closes){toast('Enter when registration opens and closes.');return}
+  if(opens>closes){toast('Registration cannot close before it opens.');return}
+  if(closes>date){toast('The deadline must be on or before the first day of the course.');return}
+  if(seats!==''&&(+seats<1||!Number.isInteger(+seats))){toast('Seats must be a whole number, or blank for no limit.');return}
+  if(r&&seats!==''&&+seats<accepted(r)){toast(accepted(r)+' trainees are already accepted. Seats cannot go below that.');return}
+  const v={date,end:end||undefined,venue:g('rfVenue'),format:$('#rfFormat').value,feeM:+feeM,feeN:+feeN,seats:seats===''?null:+seats,opens,closes,coord:g('rfCoord')};
+  if(!r){
+    let nid=course+'-'+date.slice(5,7)+date.slice(8),n=2;const base=nid;while(S.rounds.find(x=>x.id===nid))nid=base+'-'+n++;
+    S.rounds.push(Object.assign({id:nid,course,apps:[]},v));
+    logAct('Course round created',`${CNAME[course]} ${fmt(date)}: registration ${fmtS(opens)} to ${fmtS(closes)}, ${hk(feeM)} member / ${hk(feeN)} non-member`);
+    closeDrawer();ui.rdF='All';ui.rdS='All';render();toast(CNAME[course]+' round created.');return;
+  }
+  const lab={date:'date',end:'last day',venue:'venue',format:'format',feeM:'member fee',feeN:'non-member fee',seats:'seats',opens:'opening date',closes:'deadline',coord:'coordinators'};
+  const ch=Object.keys(v).filter(k=>String(v[k]==null?'':v[k])!==String(r[k]==null?'':r[k])).map(k=>lab[k]);
+  Object.assign(r,v);if(v.end===undefined)delete r.end;
+  if(ch.length)logAct('Course round updated',`${CNAME[r.course]} ${fmt(r.date)}: changed ${ch.join(', ')}`);
+  closeDrawer();render();toast(ch.length?'Round updated.':'No changes.');
+}
+function openNow(id){
+  const r=S.rounds.find(x=>x.id===id);
+  if(r.closes<TODAY){toast('The deadline has passed. Edit the dates first.');return}
+  r.opens=TODAY;r.shut=false;logAct('Registration opened',`${CNAME[r.course]} ${fmt(r.date)}: open until ${fmtS(r.closes)}`);closeDrawer();render();toast('Registration is open for '+CNAME[r.course]+'.');
+}
+function closeNow(id){const r=S.rounds.find(x=>x.id===id);r.shut=true;logAct('Registration closed',`${CNAME[r.course]} ${fmt(r.date)}: closed by the Secretariat, ${r.apps.length} applications`);closeDrawer();render();toast('Registration closed for '+CNAME[r.course]+'.')}
+function reopen(id){
+  const r=S.rounds.find(x=>x.id===id);const def=r.closes>TODAY?r.closes:(addDays(TODAY,7)>r.date?r.date:addDays(TODAY,7));
+  openModal(`<h3>Reopen registration</h3><p class="meta" style="margin-bottom:12px">${esc(COURSES[r.course])}, ${fmt(r.date)}. Trainees can apply again until the new deadline.</p><div class="fld"><label for="roDate">New deadline</label><input type="date" id="roDate" value="${def}" min="${TODAY}" max="${r.date}"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doReopen" data-id="${id}">Reopen</button></div>`);
+}
+function doReopen(id){
+  const r=S.rounds.find(x=>x.id===id);const v=$('#roDate').value;
+  if(!v||v<TODAY||v>r.date){toast('Choose a deadline from today up to the first day of the course.');return}
+  r.shut=false;r.closes=v;logAct('Registration reopened',`${CNAME[r.course]} ${fmt(r.date)}: new deadline ${fmtS(v)}`);closeModal();closeDrawer();render();toast('Registration reopened until '+fmtS(v)+'.');
+}
+function decideRound(id){ui.round=id;go('courses','seats')}
+function attendRound(id){ui.cn=id;ui.sheetOut=null;go('courses','attend')}
+
 function vSeats(){
-  const open=S.rounds.filter(r=>r.status==='open');if(!ui.round||!S.rounds.find(r=>r.id===ui.round&&r.status==='open'))ui.round=open[0]&&open[0].id;
-  const r=S.rounds.find(x=>x.id===ui.round);if(!r)return '<div class="card"><div class="empty">No open rounds.</div></div>';
-  const full=accepted(r)>=r.seats;
-  return `<div class="split"><div class="card">${open.map(o=>`<button class="round ${o.id===r.id?'on':''}" data-a="pickRound" data-id="${o.id}"><b>${CNAME[o.course]}</b> <span class="meta">${fmt(o.date)}</span><div class="meta" style="margin-top:2px">${accepted(o)} of ${o.seats} seats allocated &middot; ${o.apps.filter(a=>a[2]==='Requested').length} undecided</div><div class="seatbar"><i class="${accepted(o)>=o.seats?'full':''}" style="width:${Math.min(100,accepted(o)/o.seats*100)}%"></i></div></button>`).join('')}</div>
-  <div class="card"><div class="q-h"><div><div class="h3">${esc(COURSES[r.course])}</div><div class="meta">${fmt(r.date)} &middot; ${accepted(r)} of ${r.seats} seats allocated</div></div><button class="btn pri sm" data-a="autoFill">Fill seats by priority</button></div>
-  <div class="tbl-scroll"><table><thead><tr><th>Trainee</th><th>Need</th><th>Requested</th><th>Decision</th></tr></thead><tbody>${sortedApps(r).map(a=>{const t=T(a.id);return `<tr><td><div class="cell-name">${esc(t?t.name:a.id)}</div><div class="cell-sub">${t?stg(t.stage)+' '+t.hosp:''}</div></td><td><span class="${PR[a.p[0]][1]}">${PR[a.p[0]][0]}</span><div class="cell-sub">${a.p[1]}</div></td><td class="meta">${fmtS(a.req)}</td><td><select data-c="setApp" data-i="${a.i}" aria-label="Decision for ${esc(t?t.name:a.id)}"><option value="Requested" ${a.st==='Requested'?'selected':''}>Not decided</option><option ${a.st==='Accepted'?'selected':''} ${full&&a.st!=='Accepted'?'disabled':''}>Accepted</option><option ${a.st==='Waitlisted'?'selected':''}>Waitlisted</option><option ${a.st==='Deferred'?'selected':''}>Deferred</option></select></td></tr>`}).join('')}</tbody></table></div>${full?'<div class="q-wait">All seats are allocated. Others can be waitlisted or deferred.</div>':''}</div></div>`;
+  const open=S.rounds.filter(r=>['open','closed'].includes(rState(r))).sort((a,b)=>a.date>b.date?1:-1);
+  if(!open.length)return '<div class="card"><div class="empty">No round is open or waiting for decisions.</div></div>';
+  if(!ui.round||!open.find(r=>r.id===ui.round))ui.round=open[0].id;
+  const r=open.find(x=>x.id===ui.round);
+  const over=r.seats&&accepted(r)>r.seats;const full=r.seats&&accepted(r)>=r.seats;const und=undecided(r);
+  return `<div class="split"><div class="card">${open.map(o=>`<button class="round ${o.id===r.id?'on':''}" data-a="pickRound" data-id="${o.id}"><b>${esc(CNAME[o.course])}</b> <span class="meta">${fmt(o.date)}</span><div class="meta" style="margin-top:2px">${esc(seatTxt(o))} &middot; ${undecided(o)} undecided</div>${o.seats?`<div class="seatbar"><i class="${accepted(o)>=o.seats?'full':''}" style="width:${Math.min(100,accepted(o)/o.seats*100)}%"></i></div>`:''}</button>`).join('')}</div>
+  <div class="card"><div class="q-h"><div><div class="h3">${esc(COURSES[r.course])}</div><div class="meta">${fmt(r.date)}${r.end?' to '+fmt(r.end):''} &middot; ${esc(seatTxt(r))}${r.feeM==null?'':' &middot; '+hk(r.feeM)+' member / '+hk(r.feeN)+' non-member'}</div><div style="margin-top:6px">${rPill(r)}</div></div><button class="btn sec sm" data-a="suggestSeats" ${und?'':'disabled'}>Review a suggestion</button></div>
+  <div class="tbl-scroll"><table><thead><tr><th>Trainee</th><th>Priority</th><th>Requested</th><th>Decision</th></tr></thead><tbody>${r.apps.length?sortedApps(r).map(a=>{const t=T(a.id);return `<tr><td><div class="cell-name">${esc(t?t.name:a.id)}</div><div class="cell-sub">${t?stg(t.stage)+' '+t.hosp:''}</div></td><td><span class="${PR[a.p.lvl][1]}">${PR[a.p.lvl][0]}</span>${a.p.why.map(w=>`<div class="cell-sub">${esc(w)}</div>`).join('')}</td><td class="meta">${fmtS(a.req)}</td><td><select data-c="setApp" data-i="${a.i}" aria-label="Decision for ${esc(t?t.name:a.id)}"><option value="Requested" ${a.st==='Requested'?'selected':''}>Not decided</option><option ${a.st==='Accepted'?'selected':''}>Accepted</option><option ${a.st==='Waitlisted'?'selected':''}>Waitlisted</option><option ${a.st==='Rejected'?'selected':''}>Rejected</option></select></td></tr>`}).join(''):'<tr><td colspan="4"><div class="empty">No applications yet.</div></td></tr>'}</tbody></table></div>
+  <div class="q-wait">${over?`<b>${accepted(r)} accepted for ${r.seats} seats.</b> You can keep this, or change a decision.`:full?'All seats are taken. You can still accept more, waitlist or reject.':'Waitlisted trainees are tagged as priority when the next round of this course opens.'}</div></div></div>`;
 }
-function autoFill(){
-  const r=S.rounds.find(x=>x.id===ui.round);let n=0;
-  sortedApps(r).filter(a=>a.st==='Requested').forEach(a=>{if(accepted(r)<r.seats){r.apps[a.i][2]='Accepted';n++}else r.apps[a.i][2]='Waitlisted'});
-  logAct('Seats allocated',`${CNAME[r.course]} ${fmt(r.date)}: ${n} accepted by priority, rest waitlisted`);render();toast(n+' seats filled. The rest are waitlisted.')
+function suggestPlan(r){
+  const todo=sortedApps(r).filter(a=>a.st==='Requested');let free=r.seats?Math.max(0,r.seats-accepted(r)):Infinity;const acc=[],wl=[];
+  todo.forEach(a=>{if(free>0){acc.push(a);free--}else wl.push(a)});return {acc,wl};
+}
+function suggestSeats(){
+  const r=S.rounds.find(x=>x.id===ui.round);const p=suggestPlan(r);
+  if(!p.acc.length&&!p.wl.length){toast('Nobody is waiting for a decision.');return}
+  const li=a=>{const t=T(a.id);return `<li><b>${esc(t?t.name:a.id)}</b> <span class="meta">${a.p.why.length?esc(a.p.why[0]):'No special priority'}</span></li>`};
+  openModal(`<h3>Suggested decisions</h3><p class="meta" style="margin:6px 0 12px">Ordered by priority, then by request time. Nothing changes until you apply, and you can still change any row afterwards. Rejections are never suggested.</p>
+  <div class="sect" style="margin-top:0">Would accept (${p.acc.length})</div><ul style="margin:6px 0 12px 18px;font-size:13px;display:grid;gap:4px">${p.acc.map(li).join('')||'<li class="meta">None</li>'}</ul>
+  <div class="sect" style="margin-top:0">Would waitlist (${p.wl.length})</div><ul style="margin:6px 0 4px 18px;font-size:13px;display:grid;gap:4px">${p.wl.map(li).join('')||'<li class="meta">None</li>'}</ul>
+  <div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="applySuggest">Apply this suggestion</button></div>`);
+}
+function applySuggest(){
+  const r=S.rounds.find(x=>x.id===ui.round);const p=suggestPlan(r);
+  p.acc.forEach(a=>{r.apps[a.i][2]='Accepted'});p.wl.forEach(a=>{r.apps[a.i][2]='Waitlisted'});
+  logAct('Seat suggestion applied',`${CNAME[r.course]} ${fmt(r.date)}: ${p.acc.length} accepted, ${p.wl.length} waitlisted, as reviewed by the Secretariat`);closeModal();render();toast(p.acc.length+' accepted, '+p.wl.length+' waitlisted.');
 }
 const SHEET=`HKCA-2022-006\nHKCA-2022-010\nHKCA-2022-019\nHKCA-2023-004\nHKCA-2023-015\nHKCA-2023-009\nHKCA-2022-099`;
+function attendRounds(){return S.rounds.filter(r=>['held','recorded'].includes(rState(r))).sort((a,b)=>a.date<b.date?1:-1)}
 function vAttend(){
-  const done=S.rounds;if(!ui.cn)ui.cn='EMAC-1011';
-  const r=S.rounds.find(x=>x.id===ui.cn)||S.rounds[2];const o=ui.sheetOut;
+  const done=attendRounds();if(!done.length)return '<div class="card"><div class="empty">No round has been held yet.</div></div>';
+  if(!ui.cn||!done.find(x=>x.id===ui.cn))ui.cn=done[0].id;
+  const r=done.find(x=>x.id===ui.cn);const o=ui.sheetOut;
   const rows=o&&o.round===r.id?o.rows:null;
   return `<div class="card pad"><div class="steps"><span class="${rows?'done':'on'}">1 Paste the sheet</span><span class="${rows?'on':''}">2 Check it</span><span>3 Mark attended</span></div>
-  <div class="fld" style="max-width:340px"><label for="cnSel">Round</label><select id="cnSel" data-c="cn">${done.map(x=>`<option value="${x.id}" ${x.id===r.id?'selected':''}>${CNAME[x.course]} &middot; ${fmt(x.date)}${x.status==='done'?' (held)':''}</option>`).join('')}</select></div>
+  <div class="fld" style="max-width:420px"><label for="cnSel">Round</label><select id="cnSel" data-c="cn">${done.map(x=>`<option value="${x.id}" ${x.id===r.id?'selected':''}>${esc(CNAME[x.course])} &middot; ${fmt(x.date)}${x.recorded?' (attendance recorded)':''}</option>`).join('')}</select></div>
+  ${isMand(r.course)?'':'<p class="meta" style="margin-bottom:12px">This is not a mandatory course. Attendance is kept on the round and does not change the trainee\'s mandatory course record.</p>'}
   <div class="fld"><label for="sheet">HKCA numbers, one per line, from the attendance sheet</label><textarea id="sheet" rows="7" class="mono" style="font-size:12.5px">${esc(ui.sheet==null?'':ui.sheet)}</textarea></div>
   <div class="btn-row"><button class="btn sec" data-a="loadSheet">Load a sample sheet</button><button class="btn pri" data-a="checkSheet">Check the sheet</button></div></div>
   ${rows?attendOut(r,rows):''}`;
@@ -711,17 +862,19 @@ function checkSheet(){
   const seen={};const rows=ui.sheet.split(/\n/).map(s=>s.trim()).filter(Boolean).map(id=>{
     const t=T(id);if(!t)return {id,k:'err',msg:'Not a known HKCA number'};
     if(seen[id])return {id,name:t.name,k:'skip',msg:'Listed twice on the sheet'};seen[id]=1;
-    if(t.courses.includes(r.course))return {id,name:t.name,k:'skip',msg:'Already has '+CNAME[r.course]+' recorded'};
+    if(isMand(r.course)&&t.courses.includes(r.course))return {id,name:t.name,k:'skip',msg:'Already has '+CNAME[r.course]+' recorded'};
+    if((r.attended||[]).includes(id))return {id,name:t.name,k:'skip',msg:'Already recorded for this round'};
     const a=r.apps.find(x=>x[0]===id);
-    if(a&&a[2]==='Accepted')return {id,name:t.name,k:'ok',msg:'Accepted for this round. Will be marked completed'};
-    return {id,name:t.name,k:'warn',on:false,msg:a?'Was '+a[2].toLowerCase()+' for this round. Tick to include':'Never requested a seat. Tick to include'};
+    if(a&&a[2]==='Accepted')return {id,name:t.name,k:'ok',msg:isMand(r.course)?'Accepted for this round. Will be marked completed':'Accepted for this round. Will be marked as attended'};
+    return {id,name:t.name,k:'warn',on:false,msg:a?'Was '+a[2].toLowerCase()+' for this round. Tick to include':'Never applied for this round. Tick to include'};
   });
   ui.sheetOut={round:r.id,rows};render();
 }
 function commitSheet(){
   const r=S.rounds.find(x=>x.id===ui.cn);const rows=ui.sheetOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));
-  rows.forEach(x=>{T(x.id).courses.push(r.course)});r.recorded=TODAY;
-  logAct('Course attendance recorded',`${CNAME[r.course]} ${fmt(r.date)}: ${rows.length} trainees marked completed`);ui.sheetOut=null;ui.sheet=null;render();toast(plural(rows.length,'trainee')+' marked as completed '+CNAME[r.course]+'.')
+  if(isMand(r.course))rows.forEach(x=>{T(x.id).courses.push(r.course)});
+  r.attended=(r.attended||[]).concat(rows.map(x=>x.id));r.recorded=TODAY;
+  logAct('Course attendance recorded',`${CNAME[r.course]} ${fmt(r.date)}: ${rows.length} trainees ${isMand(r.course)?'marked completed':'marked as attended'}`);ui.sheetOut=null;ui.sheet=null;render();toast(plural(rows.length,'trainee')+(isMand(r.course)?' marked as completed ':' marked as attended ')+CNAME[r.course]+'.')
 }
 
 /* ============ EXAMS ============ */
@@ -920,7 +1073,7 @@ const ACT={
   dkAll:e=>{dkVisible().filter(x=>x.c.ready&&(!e.dataset.g||x.t.stage===e.dataset.g)).forEach(x=>ui.docketSel[x.t.id]=true);render()},dkGo,dkDo,fDkGate:e=>{ui.dkGate=e.dataset.v;render()},fDkStat:e=>{ui.dkStat=e.dataset.v;render()},
   sigRemind:e=>sigRemind(e.dataset.id,e.dataset.w),sigPdf:e=>sigPdf(e.dataset.id,e.dataset.w),simSign,
   openRecog:e=>openRecog(e.dataset.id),sendTO:e=>sendTO(e.dataset.id),returnRecog:e=>returnRecog(e.dataset.id),doRecogReturn:e=>doRecogReturn(e.dataset.id),openToForm:e=>openToForm(e.dataset.id,e.dataset.b==='1'),toSubmit:e=>toSubmit(e.dataset.id,e.dataset.b==='1'),openToView:e=>openToView(e.dataset.id),simSubmit,unlockRecog:e=>unlockRecog(e.dataset.id),reviewCredit:e=>reviewCredit(e.dataset.id),execCredit,
-  pickRound:e=>{ui.round=e.dataset.id;render()},autoFill,loadSheet:()=>{ui.sheet=SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
+  pickRound:e=>{ui.round=e.dataset.id;render()},rdF:e=>{ui.rdF=e.dataset.v;render()},newRound,editRound:e=>editRound(e.dataset.id),saveRound:e=>saveRound(e.dataset.id),openNow:e=>openNow(e.dataset.id),closeNow:e=>closeNow(e.dataset.id),reopen:e=>reopen(e.dataset.id),doReopen:e=>doReopen(e.dataset.id),decideRound:e=>decideRound(e.dataset.id),attendRound:e=>attendRound(e.dataset.id),suggestSeats,applySuggest,loadSheet:()=>{ui.sheet=SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
   exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=EX_SAMPLE;ui.exOut=null;render()},checkEx,commitEx,
   pjF:e=>{ui.pjFilter=e.dataset.v;render()},openProject:e=>openProject(e.dataset.id),dispatch:e=>dispatchPj(e.dataset.id),replaceRev:e=>replaceRev(e.dataset.id,+e.dataset.i),recordPj:e=>recordPj(e.dataset.id),escalate:e=>escalate(e.dataset.id),
   addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),
@@ -937,6 +1090,7 @@ document.addEventListener('change',ev=>{
   else if(c==='role'){ui.role=e.value;closeDrawer();$('#demoPop').classList.remove('on');window.scrollTo(0,0);render()}
   else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
   else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);r.apps[+e.dataset.i][2]=e.value;save();render()}
+  else if(c==='rdS'){ui.rdS=e.value;render()}
   else if(c==='cn'){ui.cn=e.value;ui.sheetOut=null;render()}
   else if(c==='warnOn'){ui.sheetOut.rows[+e.dataset.i].on=e.checked;render()}
   else if(c==='exWarn'){ui.exOut.rows[+e.dataset.i].on=e.checked;render()}
