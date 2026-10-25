@@ -462,7 +462,7 @@ model TrainerProfile {
 
 model Cluster {
   id          String  @id @default(uuid())
-  code        String  @unique // "NTEC", "KWC", "HKWC", "KCC", "HKE", "NTWC", "KEC"
+  code        String  @unique // "NTEC", "KWC", "HKIC (W)", "KCC", "HKIC (E)", "NTWC", "KEC"
   name        String
   description String?
 

@@ -2678,7 +2678,7 @@ function _oldTimeline(){
 
 /* ================= rotations: plan privately, confirm, handshake ================= */
 const HOSP = {PWH:'Prince of Wales Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital',NDH:'North District Hospital',PYNEH:'Pamela Youde Nethersole Eastern Hospital',QMH:'Queen Mary Hospital',QEH:'Queen Elizabeth Hospital',POH:'Pok Oi Hospital',KWH:'Kwong Wah Hospital',UCH:'United Christian Hospital',TKOH:'Tseung Kwan O Hospital',PMH:'Princess Margaret Hospital',CMC:'Caritas Medical Centre',YCH:'Yan Chai Hospital',TMH:'Tuen Mun Hospital',HKCH:"Hong Kong Children's Hospital",OTHER:'Other (say which in Focus)'};
-const HOSP_GROUPS = [['NTEC, your cluster',['PWH','AHNH','NDH']],['Hong Kong East',['PYNEH']],['Hong Kong West',['QMH']],['Kowloon Central',['QEH','KWH']],['Kowloon East',['UCH','TKOH']],['Kowloon West',['PMH','CMC','YCH']],['New Territories West',['TMH','POH']],['Other centres',['HKCH','OTHER']]];
+const HOSP_GROUPS = [['NTEC, your cluster',['PWH','AHNH','NDH']],['HKIC (E)',['PYNEH']],['HKIC (W)',['QMH']],['Kowloon Central',['QEH','KWH']],['Kowloon East',['UCH','TKOH']],['Kowloon West',['PMH','CMC','YCH']],['New Territories West',['TMH','POH']],['Other centres',['HKCH','OTHER']]];
 function hospOpts(cur, home){ return HOSP_GROUPS.map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}" ${k===cur?'selected':''}>${k===home?'Stay at '+k+' (parent hospital)':k+' \u00b7 '+HOSP[k]}</option>`).join('')}</optgroup>`).join(''); }
 const ACC_LIMIT = {def:36};
 /* HKCA Intensive Care approved training units (hkca.edu.hk/intensive_care/training_centres). Checked 17 Oct 2026: re-check against the College page before relying on it. */

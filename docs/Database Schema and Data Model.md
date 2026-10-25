@@ -186,7 +186,7 @@ CREATE TABLE hospitals (
   id                    SERIAL PRIMARY KEY,
   hospital_code         TEXT UNIQUE NOT NULL,
   hospital_name         TEXT NOT NULL,
-  cluster               TEXT NOT NULL,    -- NTEC, KWC, HKE, KCC, HKWC, NTWC, KEC
+  cluster               TEXT NOT NULL,    -- NTEC, KWC, HKIC (E), KCC, HKIC (W), NTWC, KEC
   
   is_ha_hospital        BOOLEAN DEFAULT true,
   

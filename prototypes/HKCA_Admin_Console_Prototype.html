@@ -294,11 +294,11 @@ const ago=n=>n<=0?'today':n===1?'1 day':n+' days';
 const plural=(n,a,b)=>n+' '+(n===1?a:(b||a+'s'));
 
 /* ============ reference data ============ */
-const HOSP=[['HKE','PYNEH'],['HKE','RH'],['HKW','QMH'],['HKW','GH'],['KCC','HKBH'],['KCC','HKEH'],['KCC','KWH'],['KCC','QEH'],['KEC','TKOH'],['KEC','UCH'],['KWC','CMC'],['KWC','NLTH'],['KWC','PMH'],['KWC','YCH'],['NTE','AHNH'],['NTE','NDH'],['NTE','PWH'],['NTW','POH'],['NTW','TMH'],['NTW','TSWH']];
+const HOSP=[['HKIC (E)','PYNEH'],['HKIC (E)','RH'],['HKIC (W)','QMH'],['HKIC (W)','GH'],['KCC','HKBH'],['KCC','HKEH'],['KCC','KWH'],['KCC','QEH'],['KEC','TKOH'],['KEC','UCH'],['KWC','CMC'],['KWC','NLTH'],['KWC','PMH'],['KWC','YCH'],['NTE','AHNH'],['NTE','NDH'],['NTE','PWH'],['NTW','POH'],['NTW','TMH'],['NTW','TSWH']];
 const CLUSTER=Object.fromEntries(HOSP.map(([c,h])=>[h,c]));
 const CLUSTER0={...CLUSTER};
-const CLUSTERS=['HKE','HKW','KCC','KEC','KWC','NTE','NTW'];
-const CLNAME={HKE:'Hong Kong East',HKW:'Hong Kong West',KCC:'Kowloon Central',KEC:'Kowloon East',KWC:'Kowloon West',NTE:'New Territories East',NTW:'New Territories West'};
+const CLUSTERS=['HKIC (E)','HKIC (W)','KCC','KEC','KWC','NTE','NTW'];
+const CLNAME={'HKIC (E)':'Hong Kong Island Cluster (East)','HKIC (W)':'Hong Kong Island Cluster (West)',KCC:'Kowloon Central',KEC:'Kowloon East',KWC:'Kowloon West',NTE:'New Territories East',NTW:'New Territories West'};
 const syncCluster=()=>{Object.assign(CLUSTER,CLUSTER0);(S&&S.centres||[]).forEach(c=>{if(c.cluster)CLUSTER[c.hosp]=c.cluster})};
 const COURSES={EASE:'Exposure to Anaesthetic Safety & Emergencies',EMAC:'Effective Management of Anaesthetic Crises',ADAMA:'Advanced & Difficult Airway Workshop for Anaesthesiologists',ECHOA:'Focused Transthoracic Echocardiography Workshop for Anaesthetists',UGRA:'Ultrasound-Guided Regional Anaesthesia \u2013 Elementary',ADAMD:'Advanced Difficult Airway Management for Doctors',ASSW:'Advanced Sedation Safety Workshop',BSC:'Basic Sciences Course in Anaesthesiology',IMV:'Intermediate Examination Mock Viva',RTB:'Revision Tutorial Course in Basic Sciences in Anaesthesiology',HTC:'Higher Training Course in Clinical Anaesthesia',CRASH:'Crash Course for Clinical Anaesthesiology',RTC:'Revision Tutorial Course in Clinical Anaesthesiology'};
 const CNAME={EASE:'EASE',EMAC:'EMAC',ECHOA:'ECHO-A',ADAMA:'ADAM-A',UGRA:'UGRA',ADAMD:'ADAM-D',ASSW:'ASSW',BSC:'Basic Sciences Course',IMV:'Intermediate Mock Viva',RTB:'Revision Tutorial (Basic Sciences)',HTC:'Higher Training Course',CRASH:'Crash Course',RTC:'Revision Tutorial (Clinical)'};
@@ -344,7 +344,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:13,
+    v:14,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -410,7 +410,7 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==13)S=seedState();
+if(!S||S.v!==14)S=seedState();
 S.rounds=HKC.get().rounds;
 S.exams=HKC.get().exams;
 syncCluster();

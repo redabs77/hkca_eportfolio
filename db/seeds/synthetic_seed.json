@@ -8,8 +8,8 @@
     },
     {
       "id": "08d26475-1785-580c-961e-fbe01ee7fae8",
-      "code": "HKWC",
-      "name": "Hong Kong West Cluster",
+      "code": "HKIC (W)",
+      "name": "Hong Kong Island Cluster (West)",
       "description": "Includes QMH, TWEH, DKCH"
     },
     {
