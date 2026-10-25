@@ -201,6 +201,8 @@ CREATE TABLE hospitals (
 CREATE INDEX idx_hospitals_cluster ON hospitals(cluster);
 ```
 
+**Re-clustering (2026-10-25).** The Admin console edits a centre's cluster with an effective date and a reason. The Prisma model `HospitalClusterHistory` is the record: the current row gets `effectiveUntil` and a new row opens for the new cluster, so a trainee's or SOT's cluster at any past date can be read. `hospitals.cluster` above is the current value only. No migration.
+
 ### `accredited_centres`
 College-accredited training centers
 

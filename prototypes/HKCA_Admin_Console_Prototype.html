@@ -160,9 +160,11 @@ td.act,th.act{text-align:right;white-space:nowrap}
 .modal .btn-row{justify-content:flex-end;margin-top:18px}
 .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13px;font-weight:550;z-index:200;opacity:0;pointer-events:none;transition:all .2s;max-width:min(560px,92vw)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
-.demo-btn{position:fixed;right:16px;bottom:16px;z-index:90}
-.demo-pop{position:fixed;right:16px;bottom:56px;z-index:91;width:240px;padding:14px;display:none}
+.demo-btn{position:static;white-space:nowrap}
+.demo-pop{position:fixed;right:16px;top:62px;z-index:91;width:290px;max-width:calc(100vw - 32px);padding:14px;display:none}
 .demo-pop.on{display:block}
+.demo-pop .btn{display:block;width:100%;white-space:normal;text-align:left;line-height:1.35;margin:0 0 8px}
+.demo-pop .btn:last-child{margin-bottom:0}
 
 /* course rounds, projects, small bars */
 .split{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
@@ -204,6 +206,7 @@ table.dk{table-layout:fixed}
   .brand p{display:none}
   .top-right{gap:7px}
   .top-right .btn{padding:6px 10px;font-size:12px;white-space:nowrap}
+  .demo-pop{top:58px}
   .who{border-left:0;padding-left:0}.who .nm,.who .rl{display:none}
   .tab{padding:12px 12px 11px}
   .seg{display:flex;width:100%}.seg button{flex:1 1 auto;justify-content:center;padding:7px 10px}
@@ -240,8 +243,8 @@ table.dk{table-layout:fixed}
   .tbl-scroll>table:not(.dk):not(.stk) thead{display:none}
   .tbl-scroll>table:not(.dk):not(.stk) tr{padding:12px 14px;border-bottom:1px solid var(--border-sub)}
   .tbl-scroll>table:not(.dk):not(.stk) tr:last-child{border-bottom:0}
-  .tbl-scroll>table:not(.dk):not(.stk) td{display:block;position:relative;border:0!important;padding:4px 0 4px 100px!important;width:auto!important;min-width:0;min-height:26px}
-  .tbl-scroll>table:not(.dk):not(.stk) td::before{content:attr(data-l);position:absolute;left:0;top:7px;width:90px;font-size:11px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);line-height:1.25}
+  .tbl-scroll>table:not(.dk):not(.stk) td{display:flow-root;position:relative;border:0!important;padding:4px 0!important;width:auto!important;min-width:0;min-height:26px}
+  .tbl-scroll>table:not(.dk):not(.stk) td::before{content:attr(data-l);float:left;width:96px;margin:2px 12px 0 0;font-size:11px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);line-height:1.25}
   .tbl-scroll>table:not(.dk):not(.stk) td:first-child,.tbl-scroll>table:not(.dk):not(.stk) td[data-l=""]{padding-left:0!important}
   .tbl-scroll>table:not(.dk):not(.stk) td:first-child::before,.tbl-scroll>table:not(.dk):not(.stk) td[data-l=""]::before{content:none}
   .tbl-scroll>table:not(.dk):not(.stk) td:empty{display:none}
@@ -260,6 +263,7 @@ table.dk{table-layout:fixed}
 <header class="top"><div class="wrap top-row">
   <div class="brand"><div class="mark">H</div><div><h1>HKCA e-Portfolio</h1><p id="brandSub">College Secretariat Console</p></div></div>
   <div class="top-right">
+    <button class="btn sec sm demo-btn" data-a="demoPop" title="Demo controls">Demo</button>
     <button class="btn sec sm" data-a="openLog" title="Every action you take here is recorded">Activity log</button>
     <button class="icon-btn" id="themeBtn" data-a="theme" title="Toggle theme" aria-label="Toggle theme">&#9788;</button>
     <div class="who"><div><div class="nm" id="whoNm">College Secretariat</div><div class="rl" id="whoRl">Administrator</div></div><div class="av" id="whoAv">CS</div></div>
@@ -272,7 +276,6 @@ table.dk{table-layout:fixed}
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle"><div class="dr-h"><div><div class="eyebrow" id="drEye"></div><h2 id="drTitle"></h2></div><button class="icon-btn" data-a="closeDrawer" aria-label="Close">&times;</button></div><div class="dr-b" id="drBody"></div><div class="dr-f" id="drFoot"></div></aside>
 <div class="modal-bg" id="modalBg"><div class="modal" role="dialog" aria-modal="true" id="modal"></div></div>
 <div class="toast" id="toast" role="status"></div>
-<button class="btn sec sm demo-btn" data-a="demoPop">Demo controls</button>
 <div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><div class="fld" style="margin-bottom:10px"><label for="roleSel">View as</label><select id="roleSel" data-c="role"><option value="admin">College Secretariat</option><option value="to">Training Officer</option><option value="sot">Supervisor of Training</option></select></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><button class="btn sec sm" data-a="simSign">Simulate pending signatures arriving</button><button class="btn sec sm" data-a="simSubmit">Simulate applicants submitting documents</button><button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div></div>
 <script src="hkca-courses-store.js"></script>
 <script>
@@ -293,6 +296,10 @@ const plural=(n,a,b)=>n+' '+(n===1?a:(b||a+'s'));
 /* ============ reference data ============ */
 const HOSP=[['HKE','PYNEH'],['HKE','RH'],['HKW','QMH'],['HKW','GH'],['KCC','HKBH'],['KCC','HKEH'],['KCC','KWH'],['KCC','QEH'],['KEC','TKOH'],['KEC','UCH'],['KWC','CMC'],['KWC','NLTH'],['KWC','PMH'],['KWC','YCH'],['NTE','AHNH'],['NTE','NDH'],['NTE','PWH'],['NTW','POH'],['NTW','TMH'],['NTW','TSWH']];
 const CLUSTER=Object.fromEntries(HOSP.map(([c,h])=>[h,c]));
+const CLUSTER0={...CLUSTER};
+const CLUSTERS=['HKE','HKW','KCC','KEC','KWC','NTE','NTW'];
+const CLNAME={HKE:'Hong Kong East',HKW:'Hong Kong West',KCC:'Kowloon Central',KEC:'Kowloon East',KWC:'Kowloon West',NTE:'New Territories East',NTW:'New Territories West'};
+const syncCluster=()=>{Object.assign(CLUSTER,CLUSTER0);(S&&S.centres||[]).forEach(c=>{if(c.cluster)CLUSTER[c.hosp]=c.cluster})};
 const COURSES={EASE:'Exposure to Anaesthetic Safety & Emergencies',EMAC:'Effective Management of Anaesthetic Crises',ADAMA:'Advanced & Difficult Airway Workshop for Anaesthesiologists',ECHOA:'Focused Transthoracic Echocardiography Workshop for Anaesthetists',UGRA:'Ultrasound-Guided Regional Anaesthesia \u2013 Elementary',ADAMD:'Advanced Difficult Airway Management for Doctors',ASSW:'Advanced Sedation Safety Workshop',BSC:'Basic Sciences Course in Anaesthesiology',IMV:'Intermediate Examination Mock Viva',RTB:'Revision Tutorial Course in Basic Sciences in Anaesthesiology',HTC:'Higher Training Course in Clinical Anaesthesia',CRASH:'Crash Course for Clinical Anaesthesiology',RTC:'Revision Tutorial Course in Clinical Anaesthesiology'};
 const CNAME={EASE:'EASE',EMAC:'EMAC',ECHOA:'ECHO-A',ADAMA:'ADAM-A',UGRA:'UGRA',ADAMD:'ADAM-D',ASSW:'ASSW',BSC:'Basic Sciences Course',IMV:'Intermediate Mock Viva',RTB:'Revision Tutorial (Basic Sciences)',HTC:'Higher Training Course',CRASH:'Crash Course',RTC:'Revision Tutorial (Clinical)'};
 const MAND=['EASE','EMAC','ADAMA','ECHOA','UGRA'];
@@ -369,7 +376,7 @@ function seedState(){
     assessors:[['A-01','Dr. Wing Fai Tong','NDH'],['A-02','Dr. Irene Shum','QMH'],['A-03','Dr. Ken Sit','QEH'],['A-04','Dr. Dora Yau','TMH'],['A-05','Dr. Paul Luk','PYNEH'],['A-06','Dr. Janet Ma','PWH'],['A-07','Dr. Colin Ip','UCH'],['A-08','Dr. Rita Hon','KWH'],['A-09','Dr. Terry Cho','YCH'],['A-10','Dr. Nancy Ling','PMH'],['A-11','Dr. Oscar Wu','TKOH'],['A-12','Dr. Lena Fu','POH']].map(([id,name,hosp])=>({id,name,hosp})),
     centres:[
       ['PWH',60,'2029-06-30'],['NDH',36,'2028-03-31'],['AHNH',30,'2028-09-30'],['PYNEH',36,'2027-03-31'],['QMH',48,'2029-01-31'],['QEH',48,'2028-11-30'],['KWH',36,'2027-08-31'],['UCH',36,'2029-04-30'],['TKOH',36,'2028-05-31'],['PMH',48,'2028-12-31'],['YCH',30,'2029-02-28'],['CMC',24,'2028-07-31'],['TMH',36,'2027-12-31'],['POH',30,'2029-03-31']
-    ].map(([h,lim,exp])=>({hosp:h,cluster:CLUSTER[h],limit:lim,exp})),
+    ].map(([h,lim,exp])=>({hosp:h,cluster:CLUSTER0[h],limit:lim,exp})),
     appts:[
       ['PWH','SOT','2024-01-01',null],['PWH','Assistant SOT','2025-07-01',null],['NDH','SOT','2023-07-01',null],['NDH','Assistant SOT','2024-07-01',null],
       ['QMH','SOT','2022-01-01',null],['QEH','SOT','2025-01-01',null],['TKOH','SOT','2021-07-01','2026-12-31'],['TKOH','Assistant SOT','2025-07-01',null],['PYNEH','SOT','2024-07-01',null],['KWH','SOT','2023-01-01',null]
@@ -406,6 +413,7 @@ try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
 if(!S||S.v!==13)S=seedState();
 S.rounds=HKC.get().rounds;
 S.exams=HKC.get().exams;
+syncCluster();
 const doneMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]=t.courses.slice()});return m};
 const profMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]={stage:t.stage,hosp:t.hosp,status:t.status,regFee:t.regFee!==false,trainFee:t.trainFee!==false,inter:t.exam.Intermediate||null,final:t.exam.Final||null,exempt:t.exempt?t.exempt.basis:null,cf:t.cf||{},accred:S.centres.some(c=>c.hosp===t.hosp&&c.exp>=TODAY)}});return m};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}HKC.setRounds(S.rounds);HKC.setDone(doneMap());HKC.setExams(S.exams);HKC.setProfiles(profMap())};
@@ -492,7 +500,7 @@ function closeModal(){$('#modalBg').classList.remove('on')}
 const pill=(t,c)=>`<span class="pill ${c||'mute'}">${esc(t)}</span>`;
 const dt=(t,c)=>`<span class="dt ${c||''}">${esc(t)}</span>`;
 const stg=s=>`<span class="stg ${s}">${s}</span>`;
-const hospOpts=(sel)=>{let o='',c='';HOSP.forEach(([cl,h])=>{if(cl!==c){if(c)o+='</optgroup>';o+=`<optgroup label="${cl}">`;c=cl}o+=`<option ${h===sel?'selected':''}>${h}</option>`});return o+'</optgroup>'};
+const hospOpts=(sel)=>CLUSTERS.map(cl=>{const hs=HOSP.filter(([c0,h])=>CLUSTER[h]===cl);return hs.length?`<optgroup label="${cl}">${hs.map(([c0,h])=>`<option ${h===sel?'selected':''}>${h}</option>`).join('')}</optgroup>`:''}).join('');
 const thSort=(k,l)=>`<th aria-sort="${ui.sort[0]===k?(ui.sort[1]>0?'ascending':'descending'):'none'}"><button data-a="sort" data-k="${k}">${l}<span aria-hidden="true">${ui.sort[0]===k?(ui.sort[1]>0?'\u2191':'\u2193'):''}</span></button></th>`;
 const subSeg=(tab,items)=>`<div class="seg" role="tablist">${items.map(([k,l,n])=>`<button role="tab" aria-selected="${ui.sub[tab]===k}" class="${ui.sub[tab]===k?'on':''}" data-a="sub" data-t="${tab}" data-k="${k}">${l}${n?` <span class="cnt${n>0?' hot':''}">${n}</span>`:''}</button>`).join('')}</div>`;
 const head=(eye,title,sub,right)=>`<div class="pghead"><div><div class="eyebrow">${eye}</div><h1 class="pgtitle">${title}</h1>${sub?`<p class="pgsub">${sub}</p>`:''}</div><div>${right||''}</div></div>`;
@@ -1519,11 +1527,34 @@ function vAccred(){
   const rows=S.centres.slice().sort((a,b)=>a.exp>b.exp?1:-1);
   return `<div class="toolbar"><span class="meta grow">${rows.length} accredited centres</span><button class="btn pri sm" data-a="addCentre">Add a centre</button></div><div class="card"><div class="tbl-scroll"><table><thead><tr><th>Centre</th><th>Cluster</th><th>Longest stay per trainee</th><th>Accreditation expires</th><th class="act"></th></tr></thead><tbody>${rows.map(c=>{const d=days(TODAY,c.exp);const m=Math.floor(d/30.4);return `<tr><td class="cell-name">${c.hosp}</td><td>${c.cluster}</td><td>${c.limit} months</td><td>${fmt(c.exp)} ${d<=366?dt('in '+m+' months','warn'):''}</td><td class="act"><button class="btn sec sm" data-a="editCentre" data-h="${c.hosp}">Edit</button></td></tr>`}).join('')}</tbody></table></div></div>`;
 }
-function editCentre(h){const c=S.centres.find(x=>x.hosp===h);ui.dr={type:'centre',h};openDrawer(c.cluster,c.hosp,`<div class="fld"><label for="cLim">Longest stay per trainee (months)</label><input type="number" id="cLim" min="0" max="72" value="${c.limit}"></div><div class="fld"><label for="cExp">Accreditation expires</label><input type="date" id="cExp" value="${c.exp}"></div><p class="note">Changes apply from today. Trainees already allocated stay allocated. The reason is recorded.</p><div class="fld"><label for="cWhy">Reason</label><textarea id="cWhy" rows="2"></textarea></div>`,`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="saveCentre" data-h="${h}">Save</button>`)}
-function saveCentre(h){const c=S.centres.find(x=>x.hosp===h);const l=+$('#cLim').value,e=$('#cExp').value,w=$('#cWhy').value.trim();if(!e||l<0){toast('Enter a limit and an expiry date.');return}if(!w){toast('Add a reason for the record.');return}logAct('Accreditation changed',`${h}: longest stay ${c.limit} to ${l} months, expiry ${fmt(c.exp)} to ${fmt(e)}. ${w}`);c.limit=l;c.exp=e;closeDrawer();render();toast(h+' updated.')}
-function addCentre(){const free=HOSP.filter(([c,h])=>!S.centres.find(x=>x.hosp===h));openModal(`<h3>Add an accredited centre</h3><div class="fld" style="margin-top:12px"><label for="nHosp">Hospital</label><select id="nHosp">${free.map(([c,h])=>`<option>${h}</option>`).join('')}</select></div><div class="fld"><label for="nLim">Longest stay per trainee (months)</label><input type="number" id="nLim" value="24" min="0" max="72"></div><div class="fld"><label for="nExp">Accreditation expires</label><input type="date" id="nExp"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAddCentre">Add centre</button></div>`)}
-function doAddCentre(){const h=$('#nHosp').value,l=+$('#nLim').value,e=$('#nExp').value;if(!e||e<=TODAY){toast('Enter an expiry date in the future.');return}S.centres.push({hosp:h,cluster:CLUSTER[h],limit:l,exp:e});logAct('Centre added',`${h}: ${l} months, expires ${fmt(e)}`);closeModal();render();toast(h+' added.')}
-
+const clOpts=sel=>CLUSTERS.map(k=>`<option value="${k}" ${k===sel?'selected':''}>${k}, ${CLNAME[k]}</option>`).join('');
+function editCentre(h){
+  const c=S.centres.find(x=>x.hosp===h);ui.dr={type:'centre',h};
+  openDrawer(c.cluster,c.hosp,
+  `<div class="fld"><label for="cCl">Hospital cluster</label><select id="cCl" data-c="cCl">${clOpts(c.cluster)}</select></div>
+  <div class="fld" id="cClRow" style="display:none"><label for="cClDate">Cluster change effective from</label><input type="date" id="cClDate" value="${TODAY}" max="${TODAY}"></div>
+  <p class="meta" style="margin:-4px 0 16px">Change the cluster when the hospital moves to another one. Its trainees and SOTs follow, and the earlier cluster stays in the history.</p>
+  ${c.moved&&c.moved.length?`<div class="sect">Cluster history</div><div class="rtrail">${c.moved.slice().reverse().map(m=>`<div class="rt-d">${fmtS(m.eff)}</div><div><b>${m.from} to ${m.to}</b>${m.why?`<div class="meta">${esc(m.why)}</div>`:''}</div>`).join('')}</div>`:''}
+  <div class="fld"><label for="cLim">Longest stay per trainee (months)</label><input type="number" id="cLim" min="0" max="72" value="${c.limit}"></div>
+  <div class="fld"><label for="cExp">Accreditation expires</label><input type="date" id="cExp" value="${c.exp}"></div>
+  <p class="note">Changes apply from today. Trainees already allocated stay allocated. The reason is recorded.</p>
+  <div class="fld"><label for="cWhy">Reason</label><textarea id="cWhy" rows="2"></textarea></div>`,
+  `<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="saveCentre" data-h="${h}">Save</button>`)
+}
+function saveCentre(h){
+  const c=S.centres.find(x=>x.hosp===h);const l=+$('#cLim').value,e=$('#cExp').value,w=$('#cWhy').value.trim(),cl=$('#cCl').value,cd=$('#cClDate').value;
+  if(!e||l<0){toast('Enter a limit and an expiry date.');return}
+  const moved=cl!==c.cluster;
+  if(moved&&(!cd||cd>TODAY)){toast('Choose the date the cluster change took effect. It cannot be in the future.');return}
+  if(!moved&&l===c.limit&&e===c.exp){toast('Nothing has changed.');return}
+  if(!w){toast('Add a reason for the record.');return}
+  const bits=[];if(l!==c.limit)bits.push(`longest stay ${c.limit} to ${l} months`);if(e!==c.exp)bits.push(`expiry ${fmt(c.exp)} to ${fmt(e)}`);if(moved)bits.push(`cluster ${c.cluster} to ${cl} from ${fmt(cd)}`);
+  logAct(moved&&bits.length===1?'Cluster changed':'Accreditation changed',`${h}: ${bits.join(', ')}. ${w}`);
+  if(moved){c.moved=(c.moved||[]).concat([{from:c.cluster,to:cl,eff:cd,why:w}]);c.cluster=cl;CLUSTER[h]=cl}
+  c.limit=l;c.exp=e;closeDrawer();render();toast(h+' updated.')
+}
+function addCentre(){const free=HOSP.filter(([c,h])=>!S.centres.find(x=>x.hosp===h));openModal(`<h3>Add an accredited centre</h3><div class="fld" style="margin-top:12px"><label for="nHosp">Hospital</label><select id="nHosp" data-c="nHosp">${free.map(([c,h])=>`<option>${h}</option>`).join('')}</select></div><div class="fld"><label for="nCl">Hospital cluster</label><select id="nCl">${clOpts(free.length?CLUSTER[free[0][1]]:'')}</select></div><div class="fld"><label for="nLim">Longest stay per trainee (months)</label><input type="number" id="nLim" value="24" min="0" max="72"></div><div class="fld"><label for="nExp">Accreditation expires</label><input type="date" id="nExp"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAddCentre">Add centre</button></div>`)}
+function doAddCentre(){const h=$('#nHosp').value,l=+$('#nLim').value,e=$('#nExp').value,cl=$('#nCl').value;if(!e||e<=TODAY){toast('Enter an expiry date in the future.');return}S.centres.push({hosp:h,cluster:cl,limit:l,exp:e});CLUSTER[h]=cl;logAct('Centre added',`${h} (${cl}): ${l} months, expires ${fmt(e)}`);closeModal();render();toast(h+' added.')}
 function vAppts(){
   const cur=S.appts.filter(a=>!a.ended).sort((a,b)=>a.hosp>b.hosp?1:a.hosp<b.hosp?-1:a.role>b.role?1:-1);
   const pend=S.pendingAppt.map(p=>`<div class="q-item" style="padding-left:0"><div class="q-bar" style="background:var(--t2f)"></div><div><div class="q-title">${esc(p.nominee)} as ${p.role} at ${p.hosp}</div><div class="q-why">Endorsed by the Board on ${fmt(p.boe)}. Replaces the current term, which ends ${fmt(S.appts.find(a=>a.hosp===p.hosp&&a.role===p.role&&a.until).until)}. Effective ${fmt(p.eff)}.</div></div><button class="btn pri sm" data-a="enterAppt" data-id="${p.id}">Enter appointment</button></div>`).join('');
@@ -1604,7 +1635,7 @@ const ACT={
   go:e=>go(e.dataset.t,e.dataset.k),sub:e=>{ui.sub[e.dataset.t]=e.dataset.k;if(e.dataset.t==='exams'){ui.exOut=null;ui.exRaw=null;ui.exFilter='All';ui.exSit=null}render()},
   theme:()=>{document.documentElement.classList.toggle('dark');try{localStorage.setItem('hkca.admin.dark',document.documentElement.classList.contains('dark')?1:0)}catch(x){}},
   closeDrawer,closeModal,openLog,toast:e=>toast(e.dataset.m),demoPop:()=>$('#demoPop').classList.toggle('on'),
-  resetDemo:()=>{HKC.reset();S=seedState();S.rounds=HKC.get().rounds;S.exams=HKC.get().exams;ui.q='';ui.docketSel={};ui.provSel={};ui.provF='All';ui.role='admin';ui.dkGate='All';ui.dkStat='All';ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
+  resetDemo:()=>{HKC.reset();S=seedState();S.rounds=HKC.get().rounds;S.exams=HKC.get().exams;ui.q='';syncCluster();ui.docketSel={};ui.provSel={};ui.provF='All';ui.role='admin';ui.dkGate='All';ui.dkStat='All';ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
   sort:e=>{const k=e.dataset.k;ui.sort=[k,ui.sort[0]===k?-ui.sort[1]:1];render()},
   fStage:e=>{ui.stage=e.dataset.v;render()},openTrainee:e=>openTrainee(e.dataset.id),saveStatus:e=>saveStatus(e.dataset.id),
   openIntake:e=>openIntake(e.dataset.id),approveIntake:e=>approveIntake(e.dataset.id),returnIntake:e=>returnIntake(e.dataset.id),doReturn:e=>doReturn(e.dataset.id),
@@ -1627,6 +1658,8 @@ document.addEventListener('change',ev=>{
   else if(c==='toOut'){toOutChange(e.value)}
   else if(c==='role'){ui.role=e.value;closeDrawer();$('#demoPop').classList.remove('on');window.scrollTo(0,0);render()}
   else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
+  else if(c==='cCl'){const c0=S.centres.find(x=>x.hosp===ui.dr.h);$('#cClRow').style.display=e.value!==c0.cluster?'':'none'}
+  else if(c==='nHosp'){$('#nCl').value=CLUSTER[e.value]}
   else if(c==='pvSel'){ui.provSel[e.dataset.id]=e.checked;render()}
   else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);const a=r.apps[+e.dataset.i];a[2]=e.value;if(e.value!=='Requested'){const t=T(a[0]);logAct('Course decision',`${t?t.name:a[0]}: ${e.value} for ${CNAME[r.course]} ${fmt(r.date)}${e.value==='Accepted'?'. Notice of acceptance queued by email':''}`)}save();render()}
   else if(c==='rfCourse'){$('#rfRank').value=['RTB','RTC'].includes(e.value)?'fcfs':'priority';if(isMand(e.value))['rfFeeM','rfFeeN'].forEach(i=>{if($('#'+i).value==='')$('#'+i).value=0})}
