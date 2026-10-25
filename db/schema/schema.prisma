@@ -1796,7 +1796,7 @@ model CourseNotice {
   roundId     String
   traineeId   String
   ratePercent Int
-  noticeType  String    @default("UNDER_50_REPORT") // reported to the trainee's Chief of Service and SOT
+  noticeType  String    @default("UNDER_50_REPORT") // UNDER_50_REPORT (HKCA courses: Chief of Service and SOT) | UNDER_100_CSC (CSC courses: the SOT)
   queuedAt    DateTime  @default(now())
   sentAt      DateTime?
 

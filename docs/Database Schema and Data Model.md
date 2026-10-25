@@ -1511,14 +1511,15 @@ CREATE TABLE course_attendance (               -- one row per trainee per round;
   recorded_at TIMESTAMP DEFAULT now(), recorded_by TEXT REFERENCES users(id), source_batch_id INTEGER,
   UNIQUE (round_id, trainee_id)
 );
-CREATE TABLE course_notices (                  -- below 50% is reported to the trainee's Chief of Service and SOT
+CREATE TABLE course_notices (                  -- HKCA courses: below 50% is reported to the trainee's Chief of Service and SOT; CSC courses: below 100% is reported to the SOT
   id SERIAL PRIMARY KEY,
   round_id INTEGER NOT NULL, trainee_id INTEGER NOT NULL, rate_percent INTEGER NOT NULL CHECK (rate_percent BETWEEN 0 AND 100),
-  notice_type TEXT NOT NULL DEFAULT 'UNDER_50_REPORT', queued_at TIMESTAMP DEFAULT now(), sent_at TIMESTAMP,
+  notice_type TEXT NOT NULL DEFAULT 'UNDER_50_REPORT',  -- UNDER_50_REPORT (HKCA courses, to Chief of Service and SOT) | UNDER_100_CSC (CSC courses, to the SOT)
+   queued_at TIMESTAMP DEFAULT now(), sent_at TIMESTAMP,
   UNIQUE (round_id, trainee_id, notice_type)
 );
 ```
-Rules: the pass mark depends on the organiser (`course_catalogue.organiser`). **HKCA courses:** 70% or more earns the Certificate of Attendance and marks a mandatory course completed (a `mandatory_courses` row linked by `round_id`); below 70% gives none; below 50% queues a notice. **CSC courses** (Clinical Simulation Committee: EASE, EMAC, ADAM-A, UGRA, ADAM-D, ASSW; one to three days): only 100% earns the certificate and completes the course; anything less gives none; the 70% rule and the under-50% notice do not apply (Dr. Chan, 2026-10-25). The pass mark is application logic, not a database constraint. Attendance for a non-mandatory course stays here and does not touch `mandatory_courses`. A line with no rate on the attendance sheet means full attendance (prototype assumption, to confirm with the College).
+Rules: the pass mark depends on the organiser (`course_catalogue.organiser`). **HKCA courses:** 70% or more earns the Certificate of Attendance and marks a mandatory course completed (a `mandatory_courses` row linked by `round_id`); below 70% gives none; below 50% queues a notice. **CSC courses** (Clinical Simulation Committee: EASE, EMAC, ADAM-A, UGRA, ADAM-D, ASSW; one to three days): only 100% earns the certificate and completes the course; anything less gives none and queues a notice to the trainee's SOT (`course_notices`, `notice_type` UNDER_100_CSC); the 70% rule and the under-50% notice do not apply (Dr. Chan, 2026-10-25). The pass mark is application logic, not a database constraint. Attendance for a non-mandatory course stays here and does not touch `mandatory_courses`. A line with no rate on the attendance sheet means full attendance (prototype assumption, to confirm with the College).
 
 ### Exams
 

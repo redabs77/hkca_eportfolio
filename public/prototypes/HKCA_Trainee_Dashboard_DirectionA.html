@@ -1142,7 +1142,7 @@ function crStatus(r,a){
   if(st==='recorded' && (a[2]==='Accepted' || rate!=null)){
     if(rate==null) return {c:'',l:'Attendance not recorded',sub:'Ask College Admin if you attended.'};
     if(rate>=HKC.passPct(r.course)) return {c:'ok',l:mand?'Completed':'Attended',sub:'Attendance '+rate+'%. Eligible for the Certificate of Attendance.'};
-    return {c:'bad',l:'Attendance '+rate+'%',sub:'Below the '+HKC.passPct(r.course)+'% needed for the certificate'+(mand?', so the course is not complete. You will need another round.':'.')+(HKC.noticeOn(r.course)&&rate<50?' Your Chief of Service and SOT have been told.':'')};
+    return {c:'bad',l:'Attendance '+rate+'%',sub:'Below the '+HKC.passPct(r.course)+'% needed for the certificate'+(mand?', so the course is not complete. You will need another round.':'.')+(rate<HKC.noticeBelow(r.course)?(HKC.noticeOn(r.course)?' Your Chief of Service and SOT have been told.':' Your SOT has been told.'):'')};
   }
   if(a[2]==='Accepted') return {c:'ok',l:'Accepted',sub:'Notice of acceptance sent to your email.'};
   if(a[2]==='Waitlisted') return {c:'warn',l:'Waitlisted',sub:'You get priority for the next round.'};
