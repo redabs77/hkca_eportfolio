@@ -1776,7 +1776,7 @@ model CourseAttendance {
   id                String   @id @default(uuid())
   roundId           String
   traineeId         String
-  ratePercent       Int // 0 to 100. 70 or more earns the Certificate of Attendance; below 50 is reported
+  ratePercent       Int // 0 to 100. 70 or more earns the Certificate of Attendance; below 50 is reported (HKCA courses only)
   certificateIssued Boolean  @default(false)
   recordedAt        DateTime @default(now())
   recordedById      String?

@@ -1,7 +1,7 @@
 ---
 type: prd
 project: "[[HKCA Portfolio Revamp]]"
-version: "1.6.0"
+version: "1.6.1"
 date: 2026-10-25
 aliases:
   - "HKCA ePortfolio Master PRD v1.0"
@@ -21,6 +21,7 @@ The version number is in the front matter above. Every release is tagged in git 
 
 | Version | Date | Tag | What changed |
 |---|---|---|---|
+| 1.6.1 | 2026-10-25 | `prd-v1.6.1` | Course attendance (§11.5): Clinical Simulation Committee courses need 100% attendance for the certificate; the 70% rule and the under-50% report apply to HKCA courses only. |
 | 1.6.0 | 2026-10-25 | `prd-v1.6.0` | College Secretariat console added as Feature 11 and listed in scope (§4.1); formal project review rules replace the 30-day timer (two-month review, three outcomes, Team hand-over, one appeal, accepted-paper route) in §6.1; exam gating, fees, exemptions and carry-forward in §6.2; course registration and exam applications moved from Phase 2 into the first release; ingestion streams add attendance rates (§7.2). |
 | 1.5.0 | 2026-10-24 | `prd-v1.5.0` | Board-recognised cases: recognised cases bypass hospital scoping and the 2-year lock (§3.10; exceptions noted in §3.1 and §3.2). |
 | 1.4.0 | 2026-10-23 | `prd-v1.4.0` | Formal project number, title and dated submission record (§6.1); trainee logbook shows four states, "under review" merged into "waiting for verifier" (§3.8); course name corrected to UGRA; iWBA read API refresh 2026-10-20: modalities, sync algorithm, identity linking, curriculum mapping, backfill (§4.1 to 4.5). WBA and iWBA sync build on hold (see §4). |
@@ -364,7 +365,7 @@ To absorb Hospital Authority (HA) cluster realignments, hospital mergers, and Co
 * **11.2 Home:** a work queue of what needs Secretariat action now, grouped by area, with counts that link to the work.
 * **11.3 Membership application and trainee registry:** the applicant states full or limited registration with the Medical Council number; the Chief of Service and the SOT each endorse by e-signature in their own portfolio login, or Admin attaches a signed PDF. Approval needs the three checks (endorsement, registration, fee) and issues the HKCA number in one step. The registry shows status and a status-to-confirm list; a trainee's status is never inferred from the legacy data.
 * **11.4 Retrospective recognition (§3.10):** the applicant's form is locked until Admin enables it; the case then moves through the applicant, document check, the Training Officer, and (only when there is a problem) the Board. The Training Officer's vetting is the decision when nothing is in question; **only the Board rejects**. An outcome received outside the system is recorded by Admin on the decider's behalf and the trail says so. Approved credit is then executed by Admin, writing the ledger and case credit with the deciding body and date. Every step is kept in an append-only trail.
-* **11.5 Courses:** the Secretariat opens course **rounds** (dates, venue, seats or no cap, fees, registration window, coordinators, and the ranking mode: priority, or first come first served). Trainees register; Admin decides every place with the system's ranking as a guide and may close and reopen registration. After the course the Secretariat records the **attendance rate** per trainee: 70% or more earns the certificate and completes a mandatory course; below 70% earns none; below 50% is reported to the trainee's Chief of Service and SOT. Mandatory courses carry no fee now; the fee fields exist so charging can start later.
+* **11.5 Courses:** the Secretariat opens course **rounds** (dates, venue, seats or no cap, fees, registration window, coordinators, and the ranking mode: priority, or first come first served). Trainees register; Admin decides every place with the system's ranking as a guide and may close and reopen registration. After the course the Secretariat records the **attendance rate** per trainee. **HKCA courses** (College Regulations for Courses, May 2026): 70% or more earns the certificate and completes a mandatory course; below 70% earns none; below 50% is reported to the trainee's Chief of Service and SOT. **Clinical Simulation Committee courses** (EASE, EMAC, ADAM-A, UGRA, ADAM-D, ASSW; one to three days): full attendance is expected, so only 100% earns the certificate and completes the course; anything less earns none and the trainee needs another round. The 70% rule and the under-50% report do not apply to them. Mandatory courses carry no fee now; the fee fields exist so charging can start later.
 * **11.6 Exams:** sittings, applications, fees, exemptions, results and carry-forward as in §6.2, with the Secretariat's list showing each application's next step (Waiting for SOT, Awaiting fee, Criteria not met, Complete, Lapsed).
 * **11.7 Formal projects:** the review rules in §6.1, with reviewer assignment, reminder, hand-over to the Team, late-report override, reassignment, decision, appeal and certification advice, and the trainee-visible and internal timelines kept apart.
 * **11.8 Centres, SOTs and iWBA sync:** accreditation and capacity of centres, SOT assignments, and the HKAM iWBA synchronisation with its conflicts queue (§5.4).

@@ -1507,7 +1507,7 @@ CREATE TABLE course_attendance (               -- one row per trainee per round;
   round_id   INTEGER NOT NULL REFERENCES course_rounds(id) ON DELETE RESTRICT,
   trainee_id INTEGER NOT NULL REFERENCES trainee_profiles(id) ON DELETE RESTRICT,
   rate_percent INTEGER NOT NULL CHECK (rate_percent BETWEEN 0 AND 100),
-  certificate_issued BOOLEAN NOT NULL DEFAULT false,   -- 70% or more (College Regulations for Courses, May 2026)
+  certificate_issued BOOLEAN NOT NULL DEFAULT false,   -- HKCA courses: 70% or more (College Regulations for Courses, May 2026); CSC courses: 100% only
   recorded_at TIMESTAMP DEFAULT now(), recorded_by TEXT REFERENCES users(id), source_batch_id INTEGER,
   UNIQUE (round_id, trainee_id)
 );
@@ -1518,7 +1518,7 @@ CREATE TABLE course_notices (                  -- below 50% is reported to the t
   UNIQUE (round_id, trainee_id, notice_type)
 );
 ```
-Rules: 70% or more earns the Certificate of Attendance and marks a mandatory course completed (a `mandatory_courses` row linked by `round_id`); below 70% gives none; below 50% queues a notice. Attendance for a non-mandatory course stays here and does not touch `mandatory_courses`. A line with no rate on the attendance sheet means full attendance (prototype assumption, to confirm with the College). The 70% rule is applied to every course including the CSC courses (assumption, to confirm).
+Rules: the pass mark depends on the organiser (`course_catalogue.organiser`). **HKCA courses:** 70% or more earns the Certificate of Attendance and marks a mandatory course completed (a `mandatory_courses` row linked by `round_id`); below 70% gives none; below 50% queues a notice. **CSC courses** (Clinical Simulation Committee: EASE, EMAC, ADAM-A, UGRA, ADAM-D, ASSW; one to three days): only 100% earns the certificate and completes the course; anything less gives none; the 70% rule and the under-50% notice do not apply (Dr. Chan, 2026-10-25). The pass mark is application logic, not a database constraint. Attendance for a non-mandatory course stays here and does not touch `mandatory_courses`. A line with no rate on the attendance sheet means full attendance (prototype assumption, to confirm with the College).
 
 ### Exams
 

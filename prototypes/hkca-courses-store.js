@@ -6,6 +6,9 @@
   var KEY='hkca.courses.v1', VER=4, TODAY='2026-10-24';
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var MAND=['EASE','EMAC','ADAMA','ECHOA','UGRA'];
+  // CSC (Clinical Simulation Committee) courses are 1 to 3 days: full attendance is expected, so 100% earns the certificate.
+  // HKCA courses follow the College rule: 70% or more earns it, and below 50% is reported to the Chief of Service and SOT.
+  var CSC=['EASE','EMAC','ADAMA','UGRA','ADAMD','ASSW'];
   var STAGE_COURSES={BAT:['BSC','IMV','RTB'],HAT:['HTC','CRASH','RTC'],PFY:[]};
   var NAMES={EASE:'Exposure to Anaesthetic Safety & Emergencies',EMAC:'Effective Management of Anaesthetic Crises',ADAMA:'Advanced & Difficult Airway Workshop for Anaesthesiologists',ECHOA:'Focused Transthoracic Echocardiography Workshop for Anaesthetists',UGRA:'Ultrasound-Guided Regional Anaesthesia \u2013 Elementary',ADAMD:'Advanced Difficult Airway Management for Doctors',ASSW:'Advanced Sedation Safety Workshop',BSC:'Basic Sciences Course in Anaesthesiology',IMV:'Intermediate Examination Mock Viva',RTB:'Revision Tutorial Course in Basic Sciences in Anaesthesiology',HTC:'Higher Training Course in Clinical Anaesthesia',CRASH:'Crash Course for Clinical Anaesthesiology',RTC:'Revision Tutorial Course in Clinical Anaesthesiology'};
   var SHORT={EASE:'EASE',EMAC:'EMAC',ECHOA:'ECHO-A',ADAMA:'ADAM-A',UGRA:'UGRA',ADAMD:'ADAM-D',ASSW:'ASSW',BSC:'Basic Sciences Course',IMV:'Intermediate Mock Viva',RTB:'Revision Tutorial (Basic Sciences)',HTC:'Higher Training Course',CRASH:'Crash Course',RTC:'Revision Tutorial (Clinical)'};
@@ -159,7 +162,7 @@
     return (STAGE_COURSES[tr.stage]||[]).indexOf(r.course)>=0?'stage':null;
   }
   function event(s,type,id,rid){s.seq=(s.seq||0)+1;s.events=(s.events||[]).concat([{seq:s.seq,type:type,id:id,round:rid,d:TODAY}]).slice(-60);}
-  window.HKC={KEY:KEY,TODAY:TODAY,MAND:MAND,NAMES:NAMES,SHORT:SHORT,STAGE_LABEL:STAGE_LABEL,
+  window.HKC={KEY:KEY,TODAY:TODAY,MAND:MAND,CSC:CSC,passPct:function(k){return CSC.indexOf(k)>=0?100:70},noticeOn:function(k){return CSC.indexOf(k)<0},NAMES:NAMES,SHORT:SHORT,STAGE_LABEL:STAGE_LABEL,
     seedRounds:seedRounds,get:load,reset:function(){try{localStorage.removeItem(KEY);}catch(e){}},
     setRounds:function(rounds){var s=load();if(JSON.stringify(s.rounds)===JSON.stringify(rounds))return;s.rounds=rounds;put(s);},
     setDone:function(map){var s=load();if(JSON.stringify(s.done)===JSON.stringify(map))return;s.done=map;put(s);},

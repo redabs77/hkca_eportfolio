@@ -935,16 +935,16 @@ function vAttend(){
   return `<div class="card pad"><div class="steps"><span class="${rows?'done':'on'}">1 Paste the sheet</span><span class="${rows?'on':''}">2 Check it</span><span>3 Record attendance</span></div>
   <div class="fld" style="max-width:420px"><label for="cnSel">Round</label><select id="cnSel" data-c="cn">${done.map(x=>`<option value="${x.id}" ${x.id===r.id?'selected':''}>${esc(CNAME[x.course])} &middot; ${fmt(x.date)}${x.recorded?' (attendance recorded)':''}</option>`).join('')}</select></div>
   ${isMand(r.course)?'':'<p class="meta" style="margin-bottom:12px">This is not a mandatory course. Attendance is kept on the round and does not change the trainee\'s mandatory course record.</p>'}
-  <p class="meta" style="margin-bottom:12px">College rule: <b>70% or more</b> earns the Certificate of Attendance. Below 70% gets no certificate. Below <b>50%</b> is reported to the trainee's Chief of Service and SOT. After the number, add a comma and the attendance rate if the trainee missed sessions, for example <span class="mono">HKCA-2022-006, 60</span>. A line with no rate means full attendance.</p>
+  <p class="meta" style="margin-bottom:12px">${HKC.noticeOn(r.course)?`College rule: <b>70% or more</b> earns the Certificate of Attendance. Below 70% gets no certificate. Below <b>50%</b> is reported to the trainee\'s Chief of Service and SOT.`:`This is a Clinical Simulation Committee course of one to three days, so full attendance is expected: only <b>100%</b> earns the Certificate of Attendance. Anything less gets no certificate and the course is not marked completed.`} After the number, add a comma and the attendance rate if the trainee missed sessions, for example <span class="mono">HKCA-2022-006, ${HKC.noticeOn(r.course)?60:67}</span>. A line with no rate means full attendance.</p>
   <div class="fld"><label for="sheet">HKCA numbers from the attendance sheet, one per line</label><textarea id="sheet" rows="7" class="mono" style="font-size:12.5px">${esc(ui.sheet==null?'':ui.sheet)}</textarea></div>
   <div class="btn-row"><button class="btn sec" data-a="loadSheet">Load a sample sheet</button><button class="btn pri" data-a="checkSheet">Check the sheet</button></div></div>
   ${rows?attendOut(r,rows):''}`;
 }
 function attendOut(r,rows){
   const n=k=>rows.filter(x=>x.k===k).length;const nOk=n('ok'),nW=n('warn'),nS=n('skip'),nE=n('err'),nB=n('below');
-  const inc=nOk+rows.filter(x=>x.k==='warn'&&x.on).length,n50=rows.filter(x=>x.k==='below'&&x.rate<50).length,tot=inc+nB;
-  const tone=x=>x.k==='below'?(x.rate<50?'bad':'warn'):{ok:'ok',warn:'warn',skip:'none',err:'bad'}[x.k];
-  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${nOk} ready &middot; ${nW} need your decision &middot; ${nB} below 70% &middot; ${nS} already done &middot; ${nE} not recognised</div>${nB?`<div class="meta" style="margin-top:4px">${inc} will ${isMand(r.course)?'be marked completed':'be marked as attended'}. ${nB} below 70% get no certificate${n50?`; ${n50} below 50% will be reported to the Chief of Service and SOT`:''}.</div>`:''}</div><button class="btn pri sm" data-a="commitSheet" ${tot?'':'disabled'}>Record attendance${tot?' for '+tot:''}</button></div>
+  const need=HKC.passPct(r.course),inc=nOk+rows.filter(x=>x.k==='warn'&&x.on).length,n50=rows.filter(x=>x.k==='below'&&x.note).length,tot=inc+nB;
+  const tone=x=>x.k==='below'?(x.note?'bad':'warn'):{ok:'ok',warn:'warn',skip:'none',err:'bad'}[x.k];
+  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${nOk} ready &middot; ${nW} need your decision &middot; ${nB} below ${need}% &middot; ${nS} already done &middot; ${nE} not recognised</div>${nB?`<div class="meta" style="margin-top:4px">${inc} will ${isMand(r.course)?'be marked completed':'be marked as attended'}. ${nB} below ${need}% get no certificate${n50?`; ${n50} below 50% will be reported to the Chief of Service and SOT`:''}.</div>`:''}</div><button class="btn pri sm" data-a="commitSheet" ${tot?'':'disabled'}>Record attendance${tot?' for '+tot:''}</button></div>
   <div class="tbl-scroll"><table><thead><tr><th></th><th>Number</th><th>Trainee</th><th>Result</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td style="width:34px">${x.k==='warn'?`<input type="checkbox" data-c="warnOn" data-i="${i}" ${x.on?'checked':''} aria-label="Include ${esc(x.id)}">`:''}</td><td class="mono">${esc(x.id)}</td><td>${esc(x.name||'')}</td><td>${dt(x.msg,tone(x))}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 function checkSheet(){
@@ -956,7 +956,8 @@ function checkSheet(){
     if(seen[id])return {id,name:t.name,k:'skip',msg:'Listed twice on the sheet'};seen[id]=1;
     if(isMand(r.course)&&t.courses.includes(r.course))return {id,name:t.name,k:'skip',msg:'Already has '+CNAME[r.course]+' recorded'};
     if((r.attended||[]).includes(id))return {id,name:t.name,k:'skip',msg:'Already recorded for this round'};
-    if(rate<70)return {id,name:t.name,k:'below',rate,msg:'Attendance '+rate+'%. Below 70%: no certificate'+(isMand(r.course)?' and not marked completed':'')+(rate<50?'. Chief of Service and SOT will be told':'')};
+    const need=HKC.passPct(r.course),note=HKC.noticeOn(r.course)&&rate<50;
+    if(rate<need)return {id,name:t.name,k:'below',rate,note,msg:'Attendance '+rate+'%. Below '+need+'%: no certificate'+(isMand(r.course)?' and not marked completed':'')+(note?'. Chief of Service and SOT will be told':'')};
     const a=r.apps.find(x=>x[0]===id);const rt=stated?' ('+rate+'%)':'';
     if(a&&a[2]==='Accepted')return {id,name:t.name,rate,k:'ok',msg:(isMand(r.course)?'Accepted for this round. Will be marked completed':'Accepted for this round. Will be marked as attended')+rt};
     return {id,name:t.name,rate,k:'warn',on:false,msg:(a?'Was '+a[2].toLowerCase()+' for this round. Tick to include':'Never applied for this round. Tick to include')+rt};
@@ -970,10 +971,10 @@ function commitSheet(){
   r.att=r.att||{};good.concat(below).forEach(x=>{r.att[x.id]=x.rate});
   r.attended=(r.attended||[]).concat(good.map(x=>x.id));r.recorded=TODAY;
   S.notices=S.notices||[];let nn=0;
-  below.filter(x=>x.rate<50).forEach(x=>{const t=T(x.id);S.notices.push({d:TODAY,id:x.id,round:r.id,rate:x.rate});nn++;logAct('Attendance below 50%',`${t.name} (${x.id}), ${CNAME[r.course]} ${fmt(r.date)}: ${x.rate}%. Notice queued to ${noticeTo(t)}`)});
-  logAct('Course attendance recorded',`${CNAME[r.course]} ${fmt(r.date)}: ${good.length} ${isMand(r.course)?'marked completed':'marked as attended'}, ${below.length} below 70% without certificate`);
+  below.filter(x=>x.note).forEach(x=>{const t=T(x.id);S.notices.push({d:TODAY,id:x.id,round:r.id,rate:x.rate});nn++;logAct('Attendance below 50%',`${t.name} (${x.id}), ${CNAME[r.course]} ${fmt(r.date)}: ${x.rate}%. Notice queued to ${noticeTo(t)}`)});
+  logAct('Course attendance recorded',`${CNAME[r.course]} ${fmt(r.date)}: ${good.length} ${isMand(r.course)?'marked completed':'marked as attended'}, ${below.length} below ${HKC.passPct(r.course)}% without certificate`);
   ui.sheetOut=null;ui.sheet=null;render();
-  toast(plural(good.length,'trainee')+(isMand(r.course)?' marked completed':' marked as attended')+(below.length?'. '+below.length+' below 70%':'')+(nn?'. '+plural(nn,'notice')+' queued.':'.'))
+  toast(plural(good.length,'trainee')+(isMand(r.course)?' marked completed':' marked as attended')+(below.length?'. '+below.length+' below '+HKC.passPct(r.course)+'%':'')+(nn?'. '+plural(nn,'notice')+' queued.':'.'))
 }
 
 /* ============ EXAMS ============ */

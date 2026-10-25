@@ -902,7 +902,7 @@ function nsItems(){
   HKC.get().rounds.forEach(r=>{
     const a = HKC.appOf(r,TR_KEY); if(!a || a[2]==='Withdrawn') return;
     const st = HKC.rState(r), nm = HKC.SHORT[r.course], d = HKC.fmtS(r.date), rate = (r.att||{})[TR_KEY];
-    if(st==='recorded'){ if(rate!=null && rate<70 && HKC.daysTo(r.recorded)>-30) it.push({r:2.5, t:nm+': attendance '+rate+'%, below the 70% needed', s:'No certificate was issued'+(HKC.MAND.includes(r.course)?'. You will need another round.':'.'), cta:'View', act:()=>showTab('courses')}); return; }
+    if(st==='recorded'){ if(rate!=null && rate<HKC.passPct(r.course) && HKC.daysTo(r.recorded)>-30) it.push({r:2.5, t:nm+': attendance '+rate+'%, below the '+HKC.passPct(r.course)+'% needed', s:'No certificate was issued'+(HKC.MAND.includes(r.course)?'. You will need another round.':'.'), cta:'View', act:()=>showTab('courses')}); return; }
     if(st==='held') return;
     if(a[2]==='Accepted') it.push({r:6, t:'You have a place on '+nm+', '+d, s:'Notice of acceptance sent to your email.', cta:'View', act:()=>showTab('courses')});
     else if(a[2]==='Rejected') it.push({r:6, t:'Your '+nm+' application was not accepted', s:'You can apply again when the next round opens.', cta:'View', act:()=>showTab('courses')});
@@ -1141,8 +1141,8 @@ function crStatus(r,a){
   const st = HKC.rState(r), rate = (r.att||{})[TR_KEY], mand = HKC.MAND.includes(r.course);
   if(st==='recorded' && (a[2]==='Accepted' || rate!=null)){
     if(rate==null) return {c:'',l:'Attendance not recorded',sub:'Ask College Admin if you attended.'};
-    if(rate>=70) return {c:'ok',l:mand?'Completed':'Attended',sub:'Attendance '+rate+'%. Eligible for the Certificate of Attendance.'};
-    return {c:'bad',l:'Attendance '+rate+'%',sub:'Below the 70% needed for the certificate'+(mand?', so the course is not complete. You will need another round.':'.')+(rate<50?' Your Chief of Service and SOT have been told.':'')};
+    if(rate>=HKC.passPct(r.course)) return {c:'ok',l:mand?'Completed':'Attended',sub:'Attendance '+rate+'%. Eligible for the Certificate of Attendance.'};
+    return {c:'bad',l:'Attendance '+rate+'%',sub:'Below the '+HKC.passPct(r.course)+'% needed for the certificate'+(mand?', so the course is not complete. You will need another round.':'.')+(HKC.noticeOn(r.course)&&rate<50?' Your Chief of Service and SOT have been told.':'')};
   }
   if(a[2]==='Accepted') return {c:'ok',l:'Accepted',sub:'Notice of acceptance sent to your email.'};
   if(a[2]==='Waitlisted') return {c:'warn',l:'Waitlisted',sub:'You get priority for the next round.'};
