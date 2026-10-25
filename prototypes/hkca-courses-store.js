@@ -3,7 +3,7 @@
    applies and withdraws. Both pages use this one store, so a change on one side shows on the other.
    Illustrative only; production reads the database. Demo date is fixed at 24 Oct 2026. */
 (function(){
-  var KEY='hkca.courses.v1', VER=3, TODAY='2026-10-24';
+  var KEY='hkca.courses.v1', VER=4, TODAY='2026-10-24';
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var MAND=['EASE','EMAC','ADAMA','ECHOA','UGRA'];
   var STAGE_COURSES={BAT:['BSC','IMV','RTB'],HAT:['HTC','CRASH','RTC'],PFY:[]};
@@ -98,6 +98,24 @@
     });
   }
   function exWeeksBefore(x){var first=x.mcq&&x.mcq<x.written?x.mcq:x.written;return Math.round((d2(first)-d2(x.closes))/864e5);}
+  // Carry-forward of section passes (Intermediate FAQ; Final FAQ). Intermediate: one subject (Physiology or Pharmacology).
+  // Final: the written section. Up to four subsequent consecutive exams. Counting every sitting the College holds is OUR READING; confirm with the College.
+  function exSections(id,exam){
+    var p=(load().prof||{})[id],cf=p&&p.cf&&p.cf[exam];
+    if(!cf)return {sit:exam==='Intermediate'?['Physiology','Pharmacology']:['Written','Oral','OSCE'],carried:null};
+    if(exam==='Intermediate')return {sit:[cf.subject==='Physiology'?'Pharmacology':'Physiology'],carried:{label:cf.subject,from:cf.from,left:cf.left}};
+    return {sit:['Oral','OSCE'],carried:{label:'Written',from:cf.from,left:cf.left}};
+  }
+  function exSecTxt(sec){
+    if(!sec||!sec.carried)return 'All sections';
+    return sec.sit.length===1?sec.sit[0]+' only':sec.sit.join(' and ')+' only';
+  }
+  function exCarryTxt(sec){
+    if(!sec||!sec.carried)return '';
+    var c=sec.carried,n=c.left;
+    return c.label+' passed at the '+fmtShort(c.from)+' sitting and carried forward; '+n+(n===1?' sitting':' sittings')+' left. The fee is the same.';
+  }
+  function fmtShort(d){var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],a=d.split('-');return +a[2]+' '+m[+a[1]-1]+' '+a[0];}
   function seedExams(){return [
     {id:'INT-2702',exam:'Intermediate',name:'Feb / Apr 2027',opens:'2026-10-05',closes:'2027-01-08',written:'2027-02-19',oral:'2027-04-09',oralEnd:'2027-04-10',fee:8000,apps:[
       {id:'HKCA-2024-019',at:'2026-10-12',sot:{d:'2026-10-14',by:'Supervisor of Training, NDH'},fee:{d:'2026-10-16',how:'Faster Payment System',ref:'FPS 2026101688124'},slip:'FPS_confirmation.pdf'},
@@ -105,11 +123,11 @@
       {id:'HKCA-2023-022',at:'2026-10-16',sot:{d:'2026-10-20',by:'Supervisor of Training, PWH'},fee:null,slip:null},
       {id:'HKCA-2024-023',at:'2026-10-17',sot:{d:'2026-10-21',by:'Supervisor of Training, QEH'},fee:{d:'2026-10-22',how:'Bank deposit',ref:'HSBC slip 5580-4471'},slip:null},
       {id:'HKCA-2024-008',at:'2026-10-21',sot:null,fee:null,slip:null},
-      {id:'HKCA-2024-014',at:'2026-10-22',sot:null,fee:null,slip:null}]},
+      {id:'HKCA-2024-014',at:'2026-10-22',sot:null,fee:null,slip:null,sec:{sit:['Pharmacology'],carried:{label:'Physiology',from:'2026-04-18',left:4}}}]},
     {id:'INT-2707',exam:'Intermediate',name:'Jul / Sep 2027',opens:'2027-04-12',closes:'2027-06-10',written:'2027-07-22',oral:'2027-09-10',oralEnd:'2027-09-11',fee:8000,apps:[]},
     {id:'FIN-2703',exam:'Final',name:'Mar / May 2027',opens:'2026-10-12',closes:'2027-02-02',mcq:'2027-03-16',written:'2027-03-23',oral:'2027-05-14',oralEnd:'2027-05-15',osce:'2027-05-16',fee:16000,apps:[
       {id:'HKCA-2022-006',at:'2026-10-14',sot:{d:'2026-10-15',by:'Supervisor of Training, PWH'},fee:{d:'2026-10-19',how:'Faster Payment System',ref:'FPS 2026101990211'},slip:null},
-      {id:'HKCA-2022-010',at:'2026-10-16',sot:{d:'2026-10-20',by:'Supervisor of Training, QMH'},fee:null,slip:null},
+      {id:'HKCA-2022-010',at:'2026-10-16',sot:{d:'2026-10-20',by:'Supervisor of Training, QMH'},fee:null,slip:null,sec:{sit:['Oral','OSCE'],carried:{label:'Written',from:'2026-05-10',left:4}}},
       {id:'HKCA-2022-013',at:'2026-10-13',sot:{d:'2026-10-14',by:'Supervisor of Training, TKOH'},fee:{d:'2026-10-18',how:'E-cheque',ref:'cheque no. 004512'},slip:null},
       {id:'HKCA-2023-015',at:'2026-10-22',sot:null,fee:null,slip:null}]},
     {id:'FIN-2708',exam:'Final',name:'Aug / Oct 2027',opens:'2027-05-03',closes:'2027-07-06',mcq:'2027-08-17',written:'2027-08-24',oral:'2027-10-15',oralEnd:'2027-10-16',osce:'2027-10-17',fee:16000,apps:[]}
@@ -148,7 +166,7 @@
 
     setExams:function(list){var s=load();if(JSON.stringify(s.exams)===JSON.stringify(list))return;s.exams=list;put(s);},
     setProfiles:function(map){var s=load();var m=JSON.parse(JSON.stringify(map));var seed=s.prof||{};Object.keys(seed).forEach(function(k){if(!m[k])m[k]=seed[k];});if(JSON.stringify(s.prof)===JSON.stringify(m))return;s.prof=m;put(s);},
-    EX_LONG:EX_LONG,EX_RULES:EX_RULES,PAY:PAY,DECL:DECL,exElig:exElig,exState:exState,exAppOf:exAppOf,exAppState:exAppState,exEntered:exEntered,exWeeksBefore:exWeeksBefore,
+    EX_LONG:EX_LONG,EX_RULES:EX_RULES,PAY:PAY,DECL:DECL,exElig:exElig,exState:exState,exAppOf:exAppOf,exAppState:exAppState,exEntered:exEntered,exWeeksBefore:exWeeksBefore,exSecTxt:exSecTxt,exCarryTxt:exCarryTxt,exSections:exSections,
     exApply:function(id,sid){
       var s=load(),x=exFind(s,sid);
       if(!x)return {ok:false,msg:'That sitting no longer exists.'};
@@ -157,7 +175,7 @@
       var other=s.exams.filter(function(y){if(y.exam!==x.exam||y.id===x.id)return false;var b=exAppOf(y,id);return b&&!b.wd&&!b.no&&!b.sotNo&&exState(y)!=='held';})[0];
       if(other)return {ok:false,msg:'You already have an application for the '+other.name+' sitting.'};
       var a=exAppOf(x,id);if(a&&!a.wd&&!a.sotNo)return {ok:false,msg:'You have already applied.'};
-      var n={id:id,at:TODAY,sot:null,fee:null,slip:null};
+      var n={id:id,at:TODAY,sot:null,fee:null,slip:null,sec:exSections(id,x.exam)};
       if(a){x.apps[x.apps.indexOf(a)]=n;}else x.apps.push(n);
       eevent(s,'exApply',id,sid);put(s);return {ok:true};
     },

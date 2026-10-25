@@ -315,7 +315,9 @@ function seedState(){
     T('HKCA-2021-009','Dr. Louis Hung','PFY',60,'TSWH'),T('HKCA-2023-026','Dr. Anna Pang','HAT',31,'KWH','On leave'),
     T('HKCA-2024-031','Dr. Joey Tse','BAT',15,'HKEH','On leave'),T('HKCA-2019-012','Dr. Roy Man','PFY',75,'RH','Deactivated')
   ];
-  trainees.forEach(t=>{t.regFee=true;t.trainFee=t.id!=='HKCA-2022-013';t.exempt=null;if(t.stage!=='BAT')t.exam.Intermediate='Pass';if(t.stage==='PFY')t.exam.Final='Pass'});
+  trainees.forEach(t=>{t.regFee=true;t.trainFee=t.id!=='HKCA-2022-013';t.exempt=null;t.cf={};if(t.stage!=='BAT')t.exam.Intermediate='Pass';if(t.stage==='PFY')t.exam.Final='Pass'});
+  trainees.find(t=>t.id==='HKCA-2024-014').cf={Intermediate:{subject:'Physiology',from:'2026-04-18',left:4}};
+  trainees.find(t=>t.id==='HKCA-2022-010').cf={Final:{from:'2026-05-10',left:4}};
   /* docket detail: which gate criteria fail and why (illustrative) */
   const dk={
     'HKCA-2023-022':{fail:{}},
@@ -330,7 +332,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:10,
+    v:11,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -404,11 +406,11 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==10)S=seedState();
+if(!S||S.v!==11)S=seedState();
 S.rounds=HKC.get().rounds;
 S.exams=HKC.get().exams;
 const doneMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]=t.courses.slice()});return m};
-const profMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]={stage:t.stage,hosp:t.hosp,status:t.status,regFee:t.regFee!==false,trainFee:t.trainFee!==false,inter:t.exam.Intermediate||null,final:t.exam.Final||null,exempt:t.exempt?t.exempt.basis:null,accred:S.centres.some(c=>c.hosp===t.hosp&&c.exp>=TODAY)}});return m};
+const profMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]={stage:t.stage,hosp:t.hosp,status:t.status,regFee:t.regFee!==false,trainFee:t.trainFee!==false,inter:t.exam.Intermediate||null,final:t.exam.Final||null,exempt:t.exempt?t.exempt.basis:null,cf:t.cf||{},accred:S.centres.some(c=>c.hosp===t.hosp&&c.exp>=TODAY)}});return m};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}HKC.setRounds(S.rounds);HKC.setDone(doneMap());HKC.setExams(S.exams);HKC.setProfiles(profMap())};
 const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'int',projects:'dispatch',centres:'accred',wba:'link'},
   q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',exView:'apps',exSit:null,pjFilter:'dispatch',docketSel:{},role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
@@ -961,7 +963,7 @@ function examCounts(){
 function exDateTxt(s){const p=[];if(s.mcq)p.push('MCQ '+fmt(s.mcq));p.push('Written '+fmt(s.written));p.push('Oral '+(s.oralEnd&&s.oralEnd!==s.oral?fmtS(s.oral)+' to '+fmt(s.oralEnd):fmt(s.oral)));if(s.osce)p.push('OSCE '+fmt(s.osce));return p}
 const exPill=s=>({scheduled:pill('Not open yet','mute'),open:pill('Open','ok'),closed:pill('Closed','warn'),held:pill('Held','mute')})[HKC.exState(s)];
 const exStLabel=s=>({scheduled:'not open yet',open:'open',closed:'closed',held:'held'})[HKC.exState(s)];
-const exTxt=t=>{const i=t.exam.Intermediate==='Pass'?'Intermediate passed':t.exempt?'Intermediate exempt ('+t.exempt.basis+')':'Intermediate not yet passed';const f=t.exam.Final==='Pass'?'Final passed':'Final not yet passed';return i+'. '+f+'.'};
+const exTxt=t=>{const i=t.exam.Intermediate==='Pass'?'Intermediate passed':t.exempt?'Intermediate exempt ('+t.exempt.basis+')':'Intermediate not yet passed';const f=t.exam.Final==='Pass'?'Final passed':'Final not yet passed';const cf=t.cf||{};const cfx=(cf.Intermediate?' '+cf.Intermediate.subject+' carried forward ('+plural(cf.Intermediate.left,'sitting')+' left).':'')+(cf.Final?' Final written carried forward ('+plural(cf.Final.left,'sitting')+' left).':'');return i+'. '+f+'.'+cfx};
 
 function vExams(){
   if(!['int','fin'].includes(ui.sub.exams))ui.sub.exams='int';
@@ -1036,9 +1038,9 @@ function vExApps(){
   const n=HKC.daysTo(s.closes);
   return `<div class="toolbar"><div class="fld" style="margin:0;min-width:240px"><select id="exSitSel" data-c="exSit" aria-label="Sitting">${l.map(x=>`<option value="${x.id}" ${x.id===s.id?'selected':''}>${esc(x.name)} (${exStLabel(x)})</option>`).join('')}</select></div><div class="chips">${chips.map(x=>`<button class="chip ${f===x?'on':''}" aria-pressed="${f===x}" data-a="exF" data-v="${x}">${x} ${cnt(x)}</button>`).join('')}</div><span class="grow"></span><button class="btn sec sm" data-a="toast" data-m="Complete applications exported for the examiners (demo)" ${done?'':'disabled'}>Export complete list (${done})</button></div>
   <div class="card"><div class="q-h"><div><div class="h3">${esc(s.name)} ${exPill(s)}</div><div class="meta">Applications close ${fmt(s.closes)}${HKC.exState(s)==='open'?' ('+(n===0?'today':'in '+plural(n,'day'))+')':''} &middot; Fee ${HKC.hk(s.fee)}</div></div></div>
-  ${vis.length?`<div class="tbl-scroll"><table><thead><tr><th>Candidate</th><th>SOT endorsement</th><th>Application fee</th><th>Criteria not met</th><th>Status</th><th class="act"></th></tr></thead><tbody>${rows.map(a=>{
+  ${vis.length?`<div class="tbl-scroll"><table><thead><tr><th>Candidate</th><th>Sections</th><th>SOT endorsement</th><th>Application fee</th><th>Criteria not met</th><th>Status</th><th class="act"></th></tr></thead><tbody>${rows.map(a=>{
     const t=T(a.id),stt=stOf(a),fails=(a.exc||HKC.exState(s)==='held')?[]:HKC.exElig(a.id,s.exam).fails.map(x=>x.why);
-    return `<tr><td><div class="cell-name">${esc(t.name)}</div><div class="cell-sub">${stg(t.stage)} ${t.hosp} &middot; <span class="mono">${t.id}</span></div></td><td>${dt('Endorsed '+fmtS(a.sot.d),'ok')}<div class="cell-sub">${esc(a.sot.by)}</div></td><td>${a.fee?dt('Received '+fmtS(a.fee.d),'ok')+`<div class="cell-sub">${esc(a.fee.how)}, ${esc(a.fee.ref)}</div>`:dt('Not yet received','none')+(a.slip?'<div class="cell-sub">Payment slip attached</div>':'')}</td><td class="meta">${fails.length?fails.map(esc).join('<br>'):a.exc?'Board exception':'<span class="muted">None</span>'}</td><td>${pill(stt.l,stt.c)}</td><td class="act"><button class="btn sec sm" data-a="openExApp" data-s="${s.id}" data-id="${a.id}">Open</button></td></tr>`}).join('')}</tbody></table></div>`:`<p class="meta" style="padding:18px 20px">No endorsed applications yet. An application reaches you once the trainee's SOT has endorsed it.</p>`}</div>`;
+    return `<tr><td><div class="cell-name">${esc(t.name)}</div><div class="cell-sub">${stg(t.stage)} ${t.hosp} &middot; <span class="mono">${t.id}</span></div></td><td>${esc(HKC.exSecTxt(a.sec))}${a.sec&&a.sec.carried?`<div class="cell-sub">${esc(a.sec.carried.label)} carried forward, ${plural(a.sec.carried.left,'sitting')} left</div>`:''}</td><td>${dt('Endorsed '+fmtS(a.sot.d),'ok')}<div class="cell-sub">${esc(a.sot.by)}</div></td><td>${a.fee?dt('Received '+fmtS(a.fee.d),'ok')+`<div class="cell-sub">${esc(a.fee.how)}, ${esc(a.fee.ref)}</div>`:dt('Not yet received','none')+(a.slip?'<div class="cell-sub">Payment slip attached</div>':'')}</td><td class="meta">${fails.length?fails.map(esc).join('<br>'):a.exc?'Board exception':'<span class="muted">None</span>'}</td><td>${pill(stt.l,stt.c)}</td><td class="act"><button class="btn sec sm" data-a="openExApp" data-s="${s.id}" data-id="${a.id}">Open</button></td></tr>`}).join('')}</tbody></table></div>`:`<p class="meta" style="padding:18px 20px">No endorsed applications yet. An application reaches you once the trainee's SOT has endorsed it.</p>`}</div>`;
 }
 
 function openExApp(sid,id){
@@ -1058,7 +1060,7 @@ function openExApp(sid,id){
     <p class="meta" style="margin-bottom:10px">Medical with proof: fee refunded less a 10% administrative charge (${HKC.hk(Math.round(s.fee*0.9))}). Otherwise the fee is forfeited.</p><button class="btn sec sm" data-a="exWd" data-s="${sid}" data-id="${id}">Record withdrawal</button></details>`:'';
   const wdTxt=a.wd?(a.wd.kind==='trainee'?'Withdrawn by the trainee on '+fmt(a.wd.d):'Withdrawn after the closing date on '+fmt(a.wd.d)+'. '+(a.wd.kind==='medical'?'Medical, refund '+HKC.hk(a.wd.refund)+' (fee less 10%)':'Fee forfeited')):'';
   openDrawer(EXT[s.exam]+', '+s.name,t.name,
-  `<div class="sect">Application</div><dl class="kv"><dt>Candidate</dt><dd>${stg(t.stage)} month ${t.months}, ${t.hosp} <span class="mono meta">${t.id}</span></dd><dt>Applied</dt><dd>${fmt(a.at)}</dd><dt>SOT endorsement</dt><dd>Endorsed ${fmt(a.sot.d)} by ${esc(a.sot.by)}</dd><dt>Fee</dt><dd>${a.fee?`${HKC.hk(s.fee)} received ${fmt(a.fee.d)}. ${esc(a.fee.how)}, ${esc(a.fee.ref)}`:`Not yet received (${HKC.hk(s.fee)})${a.slip?'. The trainee attached a payment slip: '+esc(a.slip):''}`}</dd><dt>Status</dt><dd>${pill(stt.l,stt.c)}</dd>${wdTxt?`<dt>Outcome</dt><dd>${esc(wdTxt)}</dd>`:''}${a.no?`<dt>Board</dt><dd>Not admitted ${fmt(a.no.d)}: ${esc(a.no.why)}</dd>`:''}</dl>
+  `<div class="sect">Application</div><dl class="kv"><dt>Candidate</dt><dd>${stg(t.stage)} month ${t.months}, ${t.hosp} <span class="mono meta">${t.id}</span></dd><dt>Applied</dt><dd>${fmt(a.at)}</dd><dt>Sections</dt><dd>${esc(HKC.exSecTxt(a.sec))}${a.sec&&a.sec.carried?'. '+esc(HKC.exCarryTxt(a.sec)):''}</dd><dt>SOT endorsement</dt><dd>Endorsed ${fmt(a.sot.d)} by ${esc(a.sot.by)}</dd><dt>Fee</dt><dd>${a.fee?`${HKC.hk(s.fee)} received ${fmt(a.fee.d)}. ${esc(a.fee.how)}, ${esc(a.fee.ref)}`:`Not yet received (${HKC.hk(s.fee)})${a.slip?'. The trainee attached a payment slip: '+esc(a.slip):''}`}</dd><dt>Status</dt><dd>${pill(stt.l,stt.c)}</dd>${wdTxt?`<dt>Outcome</dt><dd>${esc(wdTxt)}</dd>`:''}${a.no?`<dt>Board</dt><dd>Not admitted ${fmt(a.no.d)}: ${esc(a.no.why)}</dd>`:''}</dl>
   <div class="sect">Criteria</div><ul class="chk-list">${chk}</ul>${a.exc?`<p class="note">Board exception recorded ${fmt(a.exc.d)}: ${esc(a.exc.why)}</p>`:''}
   ${feeForm}${board}${wd}`,
   `<button class="btn sec" data-a="closeDrawer">Close</button>`);
@@ -1112,63 +1114,140 @@ function doSotNo(sid,id){const t=T(id),w=$('#snW').value.trim();if(!w){toast('Gi
 
 function saveElig(id){
   const t=T(id),rf=$('#elRf').checked,tf=$('#elTf').checked,ex=$('#elEx').value,why=$('#elWhy').value.trim();
+  const ci=$('#elCfI').value,cid=$('#elCfID').value,cil=+$('#elCfIL').value,cf=$('#elCfF').checked,cfd=$('#elCfFD').value,cfl=+$('#elCfFL').value;
   if(ex&&!why){toast('Add the Board decision or reference for the exemption.');return}
+  if((ci&&(!cid||cid>TODAY||!(cil>=1&&cil<=4)))||(cf&&(!cfd||cfd>TODAY||!(cfl>=1&&cfl<=4)))){toast('For a carried-forward pass, give a past sitting date and 1 to 4 sittings left.');return}
   const ch=[];if(rf!==(t.regFee!==false))ch.push('registration fee '+(rf?'paid':'not paid'));if(tf!==(t.trainFee!==false))ch.push('training fee '+(tf?'paid':'not paid'));
   const old=t.exempt?t.exempt.basis:'';if(ex!==old)ch.push(ex?'Intermediate exemption: '+ex:'Intermediate exemption removed');
+  const oi=(t.cf&&t.cf.Intermediate)||null,of=(t.cf&&t.cf.Final)||null;
+  if((oi?oi.subject:'')!==ci||(ci&&(oi.from!==cid||oi.left!==cil)))ch.push(ci?'Intermediate '+ci+' carried forward, '+plural(cil,'sitting')+' left':'Intermediate carry-forward removed');
+  if(!!of!==cf||(cf&&(of.from!==cfd||of.left!==cfl)))ch.push(cf?'Final written carried forward, '+plural(cfl,'sitting')+' left':'Final carry-forward removed');
   if(!ch.length){toast('Nothing has changed.');return}
   t.regFee=rf;t.trainFee=tf;t.exempt=ex?{basis:ex,d:TODAY,why}:null;
+  t.cf=Object.assign({},ci?{Intermediate:{subject:ci,from:cid,left:cil}}:{},cf?{Final:{from:cfd,left:cfl}}:{});
   logAct('Examination eligibility record changed',`${t.name} (${t.id}): ${ch.join('; ')}${why?'. '+why:''}`);closeDrawer();render();toast(t.name+': eligibility record saved.');
 }
 const EX_OPTS=['','ANZCA primary exam','FRCA primary exam','Other overseas qualification, by Board of Examinations decision'];
 function eligSection(t){
-  const ex=t.exempt?t.exempt.basis:'';
+  const ex=t.exempt?t.exempt.basis:'',cfI=(t.cf&&t.cf.Intermediate)||{},cfF=(t.cf&&t.cf.Final)||{};
   return `<div class="sect">Examination eligibility</div>
   <label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="elRf" ${t.regFee!==false?'checked':''}> Registration fee paid</label>
   <label style="display:flex;gap:8px;align-items:center;margin:6px 0 12px"><input type="checkbox" id="elTf" ${t.trainFee!==false?'checked':''}> Training fee paid</label>
   <div class="fld"><label for="elEx">Exemption from the Intermediate</label><select id="elEx">${EX_OPTS.map(o=>`<option value="${esc(o)}" ${o===ex?'selected':''}>${o||'None'}</option>`).join('')}</select></div>
   <div class="fld"><label for="elWhy">Board decision or reference (needed for an exemption)</label><input type="text" id="elWhy" value="${esc(t.exempt?t.exempt.why:'')}"></div>
+  <div class="sect" style="margin-top:18px">Carried forward</div>
+  <p class="meta" style="margin:0 0 10px">A pass in one section carries forward for up to four subsequent consecutive exams (College FAQs). Uploading results sets and expires these. Edit here only to correct a record.</p>
+  <div class="fld"><label for="elCfI">Intermediate: subject carried forward</label><select id="elCfI"><option value="">None</option><option ${cfI.subject==='Physiology'?'selected':''}>Physiology</option><option ${cfI.subject==='Pharmacology'?'selected':''}>Pharmacology</option></select></div>
+  <div style="${G2}"><div class="fld"><label for="elCfID">Passed at the sitting on</label><input type="date" id="elCfID" value="${cfI.from||''}" max="${TODAY}"></div><div class="fld"><label for="elCfIL">Sittings left (1 to 4)</label><input type="number" id="elCfIL" min="1" max="4" value="${cfI.left||4}"></div></div>
+  <label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="elCfF" ${cfF.from?'checked':''}> Final: written passed and carried forward</label>
+  <div style="${G2}"><div class="fld"><label for="elCfFD">Written passed at the sitting on</label><input type="date" id="elCfFD" value="${cfF.from||''}" max="${TODAY}"></div><div class="fld"><label for="elCfFL">Sittings left (1 to 4)</label><input type="number" id="elCfFL" min="1" max="4" value="${cfF.left||4}"></div></div>
+  <p class="meta">${CF_NOTE}</p>
   <button class="btn sec sm" data-a="saveElig" data-id="${t.id}">Save eligibility record</button>
   <p class="meta" style="margin-top:8px">The examination application checks these records. Exemption is the Board of Examinations' decision.</p>`;
 }
 
-const EX_SAMPLES={Intermediate:`hkca_no,exam,sitting_date,result\nHKCA-2024-014,Intermediate,2026-09-05,Pass\nHKCA-2024-008,Intermediate,2026-09-05,Pass\nHKCA-2025-013,Intermediate,2026-09-05,Fail\nHKCA-2022-006,Final,2026-10-04,Pass`,Final:`hkca_no,exam,sitting_date,result\nHKCA-2023-009,Final,2026-10-04,Pass\nHKCA-2024-023,Final,2026-10-04,Pass\nHKCA-2023-017,Final,2026-10-04,Merit\nHKCA-2023-009,Final,2026-10-04,Pass\nHKCA-2024-099,Final,2026-10-04,Pass`};
+const EX_HEAD={Intermediate:'hkca_no,exam,sitting_date,physiology,pharmacology,minimum_met',Final:'hkca_no,exam,sitting_date,written,oral,osce'};
+const EX_SAMPLES={Intermediate:`${EX_HEAD.Intermediate}
+HKCA-2024-014,Intermediate,2026-09-05,,Pass,
+HKCA-2024-008,Intermediate,2026-09-05,Pass,Fail,Yes
+HKCA-2025-013,Intermediate,2026-09-05,Fail,Fail,
+HKCA-2025-009,Intermediate,2026-09-05,Pass,Fail,
+HKCA-2022-006,Final,2026-10-04,Pass,Pass,Pass`,Final:`${EX_HEAD.Final}
+HKCA-2023-009,Final,2026-10-04,Pass,Pass,Pass
+HKCA-2022-010,Final,2026-10-04,,Pass,Fail
+HKCA-2023-017,Final,2026-10-04,Pass,Fail,Pass
+HKCA-2024-023,Final,2026-10-04,Pass,Pass,Pass
+HKCA-2023-004,Final,2026-10-04,Merit,Pass,Pass
+HKCA-2023-009,Final,2026-10-04,Pass,Pass,Pass
+HKCA-2024-099,Final,2026-10-04,Pass,Pass,Pass`};
 const exSample=ex=>EX_SAMPLES[ex];
+const CF_NOTE='Counting every sitting the College holds towards the four-sitting limit is our reading of the FAQ. To be confirmed with the College.';
 function vResults(){
-  const o=ui.exOut;
+  const o=ui.exOut,ex=exName();
+  const help=ex==='Intermediate'?'<b>physiology</b> and <b>pharmacology</b> are Pass or Fail. Leave a subject blank if it is carried forward. <b>minimum_met</b> (Yes or No) is needed when one subject is passed and the other failed: a pass is carried forward only if the minimum score was met in the other subject.':'<b>written</b>, <b>oral</b> and <b>osce</b> are Pass or Fail (a single <b>oral_osce</b> column also works). Leave written blank if it is carried forward. If the written is failed, oral and OSCE can be left blank. A failed oral or OSCE with the written passed carries the written pass forward.';
   return `<div class="card pad"><div class="steps"><span class="${o?'done':'on'}">1 Paste the file</span><span class="${o?'on':''}">2 Check it</span><span>3 Record results</span></div>
-  <div class="fld"><label for="exRaw">CSV from the examiners for the ${exName()} examination, with a header row</label><textarea id="exRaw" rows="8" class="mono" style="font-size:12.5px" placeholder="hkca_no,exam,sitting_date,result">${esc(ui.exRaw==null?'':ui.exRaw)}</textarea></div>
+  <div class="fld"><label for="exRaw">CSV from the examiners for the ${ex} examination, with a header row</label><textarea id="exRaw" rows="8" class="mono" style="font-size:12.5px" placeholder="${EX_HEAD[ex]}">${esc(ui.exRaw==null?'':ui.exRaw)}</textarea></div>
+  <p class="meta" style="margin:0 0 6px">Results are per ${ex==='Intermediate'?'subject':'section'}. ${help}</p><p class="meta" style="margin:0 0 12px">A carried-forward pass lasts for up to four subsequent consecutive exams. ${CF_NOTE}</p>
   <div class="btn-row"><button class="btn sec" data-a="loadEx">Load a sample file</button><button class="btn pri" data-a="checkEx">Check the file</button></div></div>${o?exOut(o):''}`;
 }
+const okv=x=>x===''||x==='Pass'||x==='Fail';
+const cfLeftTxt=n=>n<=0?'ends with this sitting':plural(n,'sitting')+' left after this one';
+function evalInt(t,c){
+  const cur=t.cf&&t.cf.Intermediate;
+  if(!okv(c.a)||!okv(c.b))return {err:'Each subject must be Pass, Fail or blank'};
+  if(c.m&&!['Yes','No'].includes(c.m))return {err:'minimum_met must be Yes or No'};
+  if(cur&&(cur.subject==='Physiology'?c.a:c.b)!=='')return {err:cur.subject+' is carried forward for this trainee. Leave it blank'};
+  const ph=c.a||(cur&&cur.subject==='Physiology'?'Pass':''),pm=c.b||(cur&&cur.subject==='Pharmacology'?'Pass':'');
+  if(!ph||!pm)return {err:'Both subjects need a result unless one is carried forward'};
+  if(ph==='Pass'&&pm==='Pass')return {res:'Pass',cf:'clear',msg:cur?'Passes the remaining subject: Intermediate passed':'Passes both subjects: Intermediate passed'};
+  if(cur)return {res:'Fail',cf:'keep',msg:cur.subject+' stays carried forward ('+cfLeftTxt(cur.left-1)+')'};
+  if(ph!==pm){
+    if(!c.m)return {err:'Say whether the minimum score was met in the failed subject (minimum_met)'};
+    const sub=ph==='Pass'?'Physiology':'Pharmacology';
+    return c.m==='Yes'?{res:'Fail',cf:{subject:sub},msg:sub+' passed and the minimum was met in the other: carried forward for 4 sittings'}:{res:'Fail',cf:'none',msg:sub+' passed but the minimum was not met in the other: not carried forward, both subjects to rewrite'};
+  }
+  return {res:'Fail',cf:'none',msg:'Fail: both subjects to rewrite'};
+}
+function evalFin(t,c){
+  const cur=t.cf&&t.cf.Final;
+  if(!okv(c.w)||!okv(c.o)||!okv(c.s))return {err:'Each section must be Pass, Fail or blank'};
+  if(cur&&c.w!=='')return {err:'The written section is carried forward for this trainee. Leave it blank'};
+  const w=c.w||(cur?'Pass':'');
+  if(!w)return {err:'Written result missing'};
+  if(w==='Fail')return {res:'Fail',cf:'none',msg:'Written failed: all sections to be re-sat'};
+  if(!c.o||!c.s)return {err:'Oral and OSCE results are needed once the written is passed'};
+  if(c.o==='Pass'&&c.s==='Pass')return {res:'Pass',cf:'clear',msg:cur?'Passes oral and OSCE with the written carried forward: Final passed':'Passes all sections: Final passed'};
+  if(cur)return {res:'Fail',cf:'keep',msg:'Written stays carried forward ('+cfLeftTxt(cur.left-1)+')'};
+  return {res:'Fail',cf:{written:true},msg:'Written passed, oral or OSCE failed: written carried forward for 4 sittings'};
+}
 function checkEx(){
-  const raw=$('#exRaw').value;ui.exRaw=raw;const lines=raw.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  const ex0=exName(),raw=$('#exRaw').value;ui.exRaw=raw;const lines=raw.split(/\n/).map(s=>s.trim()).filter(Boolean);
   if(!lines.length){toast('Paste the results file first.');return}
-  if(lines[0].toLowerCase().replace(/\s/g,'')!=='hkca_no,exam,sitting_date,result'){ui.exOut={fatal:'The header row must be exactly: hkca_no,exam,sitting_date,result'};render();return}
+  const h=lines[0].toLowerCase().replace(/\s/g,''),comb=ex0==='Final'&&h==='hkca_no,exam,sitting_date,written,oral_osce';
+  if(h!==EX_HEAD[ex0].toLowerCase()&&!comb){ui.exOut={fatal:'The header row must be exactly: '+EX_HEAD[ex0]+(ex0==='Final'?' (or ending written,oral_osce)':'')};render();return}
   const seen={};const rows=lines.slice(1).map((l,n)=>{
-    const [id,ex,date,res]=l.split(',').map(s=>(s||'').trim());const t=T(id);const base={n:n+2,id,ex,date,res,name:t?t.name:''};
+    const p=l.split(',').map(s=>(s||'').trim()),[id,ex,date]=p,t=T(id);
+    const c=ex0==='Intermediate'?{a:p[3]||'',b:p[4]||'',m:p[5]||''}:{w:p[3]||'',o:p[4]||'',s:comb?(p[4]||''):(p[5]||'')};
+    const res=ex0==='Intermediate'?'Physiology: '+(c.a||'not sat')+' · Pharmacology: '+(c.b||'not sat'):'Written: '+(c.w||'not sat')+' · Oral: '+(c.o||'-')+' · OSCE: '+(c.s||'-');
+    const base={n:n+2,id,ex,date,res,name:t?t.name:''};
     if(!t)return Object.assign(base,{k:'err',msg:'Not a known HKCA number'});
     if(!['Intermediate','Final'].includes(ex))return Object.assign(base,{k:'err',msg:'Examination must be Intermediate or Final'});
-    if(ex!==exName())return Object.assign(base,{k:'err',msg:'This is the '+exName()+' tab. Upload '+ex+' results under the '+ex+' tab'});
-    if(!['Pass','Fail'].includes(res))return Object.assign(base,{k:'err',msg:'Result must be Pass or Fail, not "'+res+'"'});
+    if(ex!==ex0)return Object.assign(base,{k:'err',msg:'This is the '+ex0+' tab. Upload '+ex+' results under the '+ex+' tab'});
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date>TODAY)return Object.assign(base,{k:'err',msg:'Sitting date must be a past date as YYYY-MM-DD'});
     const key=id+ex;if(seen[key])return Object.assign(base,{k:'err',msg:'Duplicate of row '+seen[key]});seen[key]=n+2;
     if(t.exam[ex]==='Pass')return Object.assign(base,{k:'err',msg:'A pass is already recorded for this exam'});
-    if((ex==='Final'&&t.stage==='BAT')||(ex==='Intermediate'&&t.stage==='PFY'))return Object.assign(base,{k:'warn',on:false,msg:t.stage+' does not normally sit the '+ex+'. Tick to include'});
-    return Object.assign(base,{k:'ok',msg:res==='Pass'?'Will record a pass':'Will record a fail'});
+    const o=ex==='Intermediate'?evalInt(t,c):evalFin(t,c);
+    if(o.err)return Object.assign(base,{k:'err',msg:o.err});
+    if((ex==='Final'&&t.stage==='BAT')||(ex==='Intermediate'&&t.stage==='PFY'))return Object.assign(base,{k:'warn',on:false,out:o,msg:t.stage+' does not normally sit the '+ex+'. Tick to include'});
+    return Object.assign(base,{k:'ok',out:o,msg:o.msg});
   });
   ui.exOut={rows};render();
 }
 function exOut(o){
   if(o.fatal)return `<div class="note bad" style="margin-top:18px">${esc(o.fatal)}</div>`;
   const ok=o.rows.filter(x=>x.k==='ok').length,w=o.rows.filter(x=>x.k==='warn').length,e=o.rows.filter(x=>x.k==='err').length;const n=ok+o.rows.filter(x=>x.k==='warn'&&x.on).length;
-  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${ok} ready &middot; ${w} need your decision &middot; ${e} with errors, which will be skipped</div></div><button class="btn pri sm" data-a="commitEx" ${n?'':'disabled'}>Record ${n||''} results</button></div><div class="tbl-scroll"><table><thead><tr><th>Row</th><th></th><th>Candidate</th><th>Exam</th><th>Result</th><th>Check</th></tr></thead><tbody>${o.rows.map((x,i)=>`<tr><td class="meta mono">${x.n}</td><td style="width:34px">${x.k==='warn'?`<input type="checkbox" data-c="exWarn" data-i="${i}" ${x.on?'checked':''} aria-label="Include row ${x.n}">`:''}</td><td><div class="cell-name">${esc(x.name||x.id)}</div><div class="cell-sub mono">${esc(x.id)}</div></td><td>${esc(x.ex)}</td><td>${esc(x.res)}</td><td>${dt(x.msg,{ok:'ok',warn:'warn',err:'bad'}[x.k])}</td></tr>`).join('')}</tbody></table></div></div>`;
+  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${ok} ready &middot; ${w} need your decision &middot; ${e} with errors, which will be skipped</div></div><button class="btn pri sm" data-a="commitEx" ${n?'':'disabled'}>Record ${n||''} results</button></div><div class="tbl-scroll"><table><thead><tr><th>Row</th><th></th><th>Candidate</th><th>Exam</th><th>Per ${exName()==='Intermediate'?'subject':'section'}</th><th>Check</th></tr></thead><tbody>${o.rows.map((x,i)=>`<tr><td class="meta mono">${x.n}</td><td style="width:34px">${x.k==='warn'?`<input type="checkbox" data-c="exWarn" data-i="${i}" ${x.on?'checked':''} aria-label="Include row ${x.n}">`:''}</td><td><div class="cell-name">${esc(x.name||x.id)}</div><div class="cell-sub mono">${esc(x.id)}</div></td><td>${esc(x.ex)}</td><td class="meta">${esc(x.res)}</td><td>${dt(x.msg,{ok:'ok',warn:'warn',err:'bad'}[x.k])}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 function commitEx(){
-  const rows=ui.exOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));const by={};
-  rows.forEach(x=>{T(x.id).exam[x.ex]=x.res;S.exResults.push({id:x.id,ex:x.ex,date:x.date,res:x.res});const k=x.date+'|'+x.ex;(by[k]=by[k]||{sitting:x.date,exam:x.ex,cand:0,pass:0,fail:0,by:'Secretariat',at:TODAY});by[k].cand++;by[k][x.res==='Pass'?'pass':'fail']++});
+  const ex=exName(),rows=ui.exOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));const by={},expired=[];
+  [...new Set(rows.map(x=>x.date))].sort().forEach(date=>{
+    // every sitting the College holds uses up one of the four sittings of any carried-forward pass (our reading; confirm with the College)
+    S.trainees.forEach(t=>{const cf=t.cf&&t.cf[ex];if(cf){cf.left--;if(cf.left<=0){delete t.cf[ex];expired.push(t.name)}}});
+    rows.filter(x=>x.date===date).forEach(x=>{
+      const t=T(x.id),o=x.out;t.cf=t.cf||{};t.exam[ex]=o.res;
+      if(o.cf==='clear'||o.cf==='none')delete t.cf[ex];else if(o.cf&&o.cf!=='keep')t.cf[ex]=Object.assign({from:date,left:4},o.cf);
+      S.exResults.push({id:x.id,ex,date,res:o.res,detail:x.res});
+      const k=date+'|'+ex;(by[k]=by[k]||{sitting:date,exam:ex,cand:0,pass:0,fail:0,cf:0,by:'Secretariat',at:TODAY});by[k].cand++;by[k][o.res==='Pass'?'pass':'fail']++;if(o.cf&&typeof o.cf==='object')by[k].cf++;
+    });
+  });
   Object.values(by).forEach(h=>S.exHist.unshift(h));
-  logAct('Exam results recorded',`${rows.length} results from the examiners' file; ${ui.exOut.rows.length-rows.length} rows skipped`);ui.exOut=null;ui.exRaw=null;ui.exView='hist';render();toast(plural(rows.length,'result')+' recorded.')
+  logAct('Exam results recorded',`${ex}: ${rows.length} results from the examiners' file; ${ui.exOut.rows.length-rows.length} rows skipped`);
+  if(expired.length)logAct('Exam carry-forward expired',`${expired.join(', ')}: four sittings used, all sections to be re-sat`);
+  const nc=Object.values(by).reduce((n,h)=>n+h.cf,0);
+  ui.exOut=null;ui.exRaw=null;ui.exView='hist';render();toast(plural(rows.length,'result')+' recorded'+(nc?', '+nc+' carried forward':'')+'.')
 }
-function vHist(){return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Sitting</th><th>Examination</th><th>Candidates</th><th>Pass</th><th>Fail</th><th>Recorded</th></tr></thead><tbody>${S.exHist.filter(h=>h.exam===exName()).map(h=>`<tr><td>${fmt(h.sitting)}${h.label?`<div class="cell-sub">${esc(h.label)}</div>`:''}</td><td>${h.exam}</td><td>${h.cand}</td><td>${h.pass}</td><td>${h.fail}</td><td class="meta">${fmt(h.at)} by ${h.by}</td></tr>`).join('')}</tbody></table></div></div>`}
+
+function vHist(){return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Sitting</th><th>Examination</th><th>Candidates</th><th>Pass</th><th>Fail</th><th>Carried forward</th><th>Recorded</th></tr></thead><tbody>${S.exHist.filter(h=>h.exam===exName()).map(h=>`<tr><td>${fmt(h.sitting)}${h.label?`<div class="cell-sub">${esc(h.label)}</div>`:''}</td><td>${h.exam}</td><td>${h.cand}</td><td>${h.pass}</td><td>${h.fail}</td><td>${h.cf==null?'<span class="muted">-</span>':h.cf}</td><td class="meta">${fmt(h.at)} by ${h.by}</td></tr>`).join('')}</tbody></table></div></div>`}
 </script>
 <script>
 /* ============ FORMAL PROJECTS ============ */

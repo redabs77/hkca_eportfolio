@@ -911,7 +911,7 @@ function nsItems(){
   });
   exRel().forEach(({x,a,el,st})=>{
     const nm = EXN[x.exam]+', '+x.name, stt = a ? HKC.exAppState(x,a) : null;
-    if(!a){ if(st==='open' && el.ok) it.push({r:3.2, t:'Applications are open for the '+nm, s:'Closes '+HKC.fmtS(x.closes)+' \u00b7 fee '+HKC.hk(x.fee)+'. Your SOT endorses it and the College records your fee to complete it.', cta:'Apply', act:()=>exGo()}); return; }
+    if(!a){ const sc = HKC.exSections(TR_KEY,x.exam); if(st==='open' && el.ok) it.push({r:3.2, t:'Applications are open for the '+nm, s:'Closes '+HKC.fmtS(x.closes)+' \u00b7 fee '+HKC.hk(x.fee)+'. Your SOT endorses it and the College records your fee to complete it.'+(sc.carried?' You carry forward '+sc.carried.label+' and sit '+HKC.exSecTxt(sc)+'.':''), cta:'Apply', act:()=>exGo()}); return; }
     if(stt.k==='sotwait') wait.push('Your SOT has not yet endorsed your '+nm+' application');
     else if(stt.k==='fee') it.push({r:3.3, t:'Your '+nm+' application needs the fee', s:'Your SOT has endorsed it. Pay '+HKC.hk(x.fee)+' and attach the slip, or email it to the College.', cta:'View', act:()=>exGo()});
     else if(stt.k==='sotno') it.push({r:2.2, t:'Your SOT did not endorse your '+nm+' application', s:(a.sotNo.why||'Speak to your SOT.')+(st==='open'?' You can apply again before '+HKC.fmtS(x.closes)+'.':''), cta:'View', act:()=>exGo()});
@@ -1212,6 +1212,7 @@ function exRel(){
 }
 const exDatesTxt = x => [x.mcq?'MCQ '+HKC.fmt(x.mcq):'', 'Written '+HKC.fmt(x.written), 'Oral '+(x.oralEnd&&x.oralEnd!==x.oral?HKC.fmtS(x.oral)+' to '+HKC.fmt(x.oralEnd):HKC.fmt(x.oral)), x.osce?'OSCE '+HKC.fmt(x.osce):''].filter(Boolean).join(' \u00b7 ');
 const exChecks = el => `<ul class="ex-chk">${el.checks.map(c=>`<li><span class="t ${c.ok?'ok':'no'}" aria-hidden="true">${c.ok?'\u2713':'\u2717'}</span><span><span class="sr">${c.ok?'Met: ':'Not met: '}</span>${X(c.l)}${c.ok?'':`<span class="cwhy">${X(c.why)}</span>`}</span></li>`).join('')}</ul>`;
+const exCarry = x => { const sc = HKC.exSections(TR_KEY,x.exam); return sc.carried ? `<p class="qline" style="margin:12px 0 0;font-size:13px"><b>Carried forward.</b> ${X(HKC.exCarryTxt(sc))} You sit ${X(HKC.exSecTxt(sc))}.</p>` : ''; };
 function exPay(x,a){
   const P = HKC.PAY;
   return `Pay ${X(HKC.hk(x.fee))} by Faster Payment System (FPS ID ${X(P.fps)}), by deposit to ${X(P.bank)}, or by e-cheque payable to ${X(P.payee)}. Then attach your payment slip here, or email it to ${X(P.mail)} with your name and membership number.${a&&a.slip?' <b>Payment slip attached: '+X(a.slip)+'.</b> College Admin confirms receipt.':''}`;
@@ -1236,14 +1237,14 @@ function exSteps(x,a,stt,st){
   if(open && a.sotNo) acts.push(`<button type="button" class="btn pri sm" onclick="exApply('${x.id}')">Apply again</button>`);
   if(open && !a.no) acts.push(`<button type="button" class="btn sec sm" onclick="exWithdraw('${x.id}')">Withdraw</button>`);
   const note = !open && stt.k==='complete' ? `<p class="qline" style="margin:12px 0 0;font-size:12.5px">Applications have closed. To withdraw now, contact the Board of Examinations at ${X(HKC.PAY.mail)}. The fee is forfeited, or refunded less 10% for a medical reason with proof.</p>` : '';
-  return `<ol class="ex-steps"><li class="done"><span class="mk" aria-hidden="true"></span><span><b>Applied</b><span class="sub">Submitted ${X(HKC.fmt(a.at))}. You confirmed the examination regulations.</span></span></li>${li(sot)}${li(fee)}${li(last)}</ol>${acts.length?`<div class="ex-acts">${acts.join('')}</div>`:''}${note}`;
+  return `<ol class="ex-steps"><li class="done"><span class="mk" aria-hidden="true"></span><span><b>Applied</b><span class="sub">Submitted ${X(HKC.fmt(a.at))}. You confirmed the examination regulations. Sections: ${X(HKC.exSecTxt(a.sec))}.${a.sec&&a.sec.carried?' '+X(HKC.exCarryTxt(a.sec)):''}</span></span></li>${li(sot)}${li(fee)}${li(last)}</ol>${acts.length?`<div class="ex-acts">${acts.join('')}</div>`:''}${note}`;
 }
 function exCard({x,a,el,st}){
   const n = HKC.daysTo(x.closes), stt = a?HKC.exAppState(x,a):null, name = EXN[x.exam]+', '+x.name;
   const cl = st==='open' ? 'Applications close '+HKC.fmt(x.closes)+(n===0?' (today)':n===1?' (in 1 day)':' (in '+n+' days)') : 'Applications closed '+HKC.fmt(x.closes);
   const tone = {complete:'ok',fee:'warn',crit:'warn',sotno:'bad',no:'bad',sotwait:'info'};
   const lab = stt ? ({sotwait:'Waiting for your SOT',fee:'Waiting for your fee'}[stt.k]||stt.l) : 'Open';
-  const body = a ? exSteps(x,a,stt,st) : `${exChecks(el)}<p class="qline" style="margin:12px 0 0;font-size:13px">${el.ok?'You meet the College criteria. Applying asks your SOT to endorse it. Your application is complete when your SOT has endorsed it and the College has received your fee. If it is not complete by the closing date it lapses.':'You cannot apply until every criterion is met. If a record looks wrong, flag it to College Admin.'}</p><div class="ex-acts"><button type="button" class="btn pri sm" ${el.ok?'':'disabled'} onclick="exApply('${x.id}')">Apply</button></div>`;
+  const body = a ? exSteps(x,a,stt,st) : `${exChecks(el)}${exCarry(x)}<p class="qline" style="margin:12px 0 0;font-size:13px">${el.ok?'You meet the College criteria. Applying asks your SOT to endorse it. Your application is complete when your SOT has endorsed it and the College has received your fee. If it is not complete by the closing date it lapses.':'You cannot apply until every criterion is met. If a record looks wrong, flag it to College Admin.'}</p><div class="ex-acts"><button type="button" class="btn pri sm" ${el.ok?'':'disabled'} onclick="exApply('${x.id}')">Apply</button></div>`;
   return `<div class="card" data-exam="${x.id}"><div class="hd"><div><div class="eyebrow">Examination application</div><h2>${X(name)}</h2><p>${X(exDatesTxt(x))}</p></div><span class="pill ${a?(tone[stt.k]||''):'ok'}">${X(lab)}</span></div><p class="qline" style="margin:0;font-size:13.5px">${X(cl)} &middot; Fee ${X(HKC.hk(x.fee))}</p>${body}</div>`;
 }
 function renderExamCard(){
@@ -1256,7 +1257,7 @@ function exApply(sid){
   openModalX('modalExam', `<div class="xmodal"><div class="eyebrow">Apply for an examination</div><h3 id="mexT">${X(EXN[x.exam])}, ${X(x.name)}</h3>
     <p class="qline" style="margin:8px 0 0;font-size:13px">${X(exDatesTxt(x))}</p>
     <p class="qline" style="margin:6px 0 0;font-size:13px"><b>Fee:</b> ${X(HKC.hk(x.fee))}. <b>Applications close:</b> ${X(HKC.fmt(x.closes))}.</p>
-    ${exChecks(el)}
+    ${exChecks(el)}${exCarry(x)}
     <p class="qline" style="margin:12px 0 0;font-size:12.5px">Next: your SOT endorses your application, you pay the fee, and College Admin records it. The application is complete when both are done. You can withdraw until the closing date.</p>
     <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0 0;font-size:13px;line-height:1.45"><input type="checkbox" id="exDecl" style="margin-top:3px" onchange="document.getElementById('exGo').disabled=!this.checked"><span>${X(HKC.DECL.replace('{EX}',EXN[x.exam]))}</span></label>
     <p class="qline" id="exErr" style="margin:8px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
