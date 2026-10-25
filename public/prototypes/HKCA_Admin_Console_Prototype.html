@@ -297,6 +297,8 @@ const plural=(n,a,b)=>n+' '+(n===1?a:(b||a+'s'));
 const HOSP=[['HKIC (E)','PYNEH'],['HKIC (E)','RH'],['HKIC (W)','QMH'],['HKIC (W)','GH'],['KCC','HKBH'],['KCC','HKEH'],['KCC','KWH'],['KCC','QEH'],['KEC','TKOH'],['KEC','UCH'],['KWC','CMC'],['KWC','NLTH'],['KWC','PMH'],['KWC','YCH'],['NTE','AHNH'],['NTE','NDH'],['NTE','PWH'],['NTW','POH'],['NTW','TMH'],['NTW','TSWH']];
 const CLUSTER=Object.fromEntries(HOSP.map(([c,h])=>[h,c]));
 const CLUSTER0={...CLUSTER};
+const HNAME={PYNEH:'Pamela Youde Nethersole Eastern Hospital',RH:'Ruttonjee Hospital',QMH:'Queen Mary Hospital',GH:'Grantham Hospital',HKBH:'Hong Kong Buddhist Hospital',HKEH:'Hong Kong Eye Hospital',KWH:'Kwong Wah Hospital',QEH:'Queen Elizabeth Hospital',TKOH:'Tseung Kwan O Hospital',UCH:'United Christian Hospital',CMC:'Caritas Medical Centre',NLTH:'North Lantau Hospital',PMH:'Princess Margaret Hospital',YCH:'Yan Chai Hospital',AHNH:'Alice Ho Miu Ling Nethersole Hospital',NDH:'North District Hospital',PWH:'Prince of Wales Hospital',POH:'Pok Oi Hospital',TMH:'Tuen Mun Hospital',TSWH:'Tin Shui Wai Hospital'};
+const hn=h=>HNAME[h]||h;
 const CLUSTERS=['HKIC (E)','HKIC (W)','KCC','KEC','KWC','NTE','NTW'];
 const CLNAME={'HKIC (E)':'Hong Kong Island Cluster (East)','HKIC (W)':'Hong Kong Island Cluster (West)',KCC:'Kowloon Central',KEC:'Kowloon East',KWC:'Kowloon West',NTE:'New Territories East',NTW:'New Territories West'};
 const syncCluster=()=>{Object.assign(CLUSTER,CLUSTER0);(S&&S.centres||[]).forEach(c=>{if(c.cluster)CLUSTER[c.hosp]=c.cluster})};
@@ -344,7 +346,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:14,
+    v:15,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -379,9 +381,15 @@ function seedState(){
     ].map(([h,lim,exp])=>({hosp:h,cluster:CLUSTER0[h],limit:lim,exp})),
     appts:[
       ['PWH','SOT','2024-01-01',null],['PWH','Assistant SOT','2025-07-01',null],['NDH','SOT','2023-07-01',null],['NDH','Assistant SOT','2024-07-01',null],
-      ['QMH','SOT','2022-01-01',null],['QEH','SOT','2025-01-01',null],['TKOH','SOT','2021-07-01','2026-12-31'],['TKOH','Assistant SOT','2025-07-01',null],['PYNEH','SOT','2024-07-01',null],['KWH','SOT','2023-01-01',null]
-    ].map(([h,r,f,u],i)=>({id:'AP'+i,hosp:h,role:r,from:f,until:u,who:['Dr. Albert Chan','Dr. Mabel Ko','Dr. Ricky Fan','Dr. Selina Yim','Dr. Gordon Pau','Dr. Teresa Kam','Dr. Hugo Tin','Dr. Alice Ngai','Dr. Vincent Sze','Dr. Fiona Cho'][i],end:u?'planned':'',})),
-    pendingAppt:[{id:'PA1',hosp:'TKOH',role:'SOT',nominee:'Dr. Cora Lim',boe:'2026-10-20',eff:'2027-01-01'}],
+      ['QMH','SOT','2022-01-01',null],['QEH','SOT','2025-01-01',null],['TKOH','SOT','2021-07-01','2026-12-31'],['TKOH','Assistant SOT','2025-07-01',null],['PYNEH','SOT','2024-07-01',null],['KWH','SOT','2023-01-01',null],
+      ['AHNH','SOT','2023-07-01',null],['PMH','SOT','2024-01-01',null],['TMH','SOT','2022-07-01',null],['YCH','SOT','2025-01-01',null],['POH','SOT','2024-07-01',null]
+    ].map(([h,r,f,u],i)=>({id:'AP'+i,hosp:h,role:r,from:f,until:u,who:['Dr. Albert Chan','Dr. Mabel Ko','Dr. Ricky Fan','Dr. Selina Yim','Dr. Gordon Pau','Dr. Teresa Kam','Dr. Hugo Tin','Dr. Alice Ngai','Dr. Vincent Sze','Dr. Fiona Cho','Dr. Kelvin Yeung','Dr. Nora Lai','Dr. Edwin Mak','Dr. Yvonne Tse','Dr. Peter Wan'][i],end:u?'planned':'',})),
+    pendingAppt:[{id:'PA1',hosp:'TKOH',role:'SOT',nominee:'Dr. Cora Lim',boe:'2026-10-20',eff:'2027-01-01',nom:{recv:'2026-09-02',fellow:2013,courses:{wba:true,jcimed:true,bme:true}}}],
+    nominations:[
+      {id:'N1',hosp:'NDH',role:'Assistant SOT',nominee:'Dr. Janice Wong',recv:'2026-10-14',fellow:2014,courses:{wba:true,jcimed:true,bme:false},state:'check'},
+      {id:'N2',hosp:'QMH',role:'Assistant SOT',nominee:'Dr. Samuel Ho',recv:'2026-09-28',fellow:2019,courses:{wba:true,jcimed:true,bme:true},state:'board',sent:'2026-10-08'},
+      {id:'N3',hosp:'UCH',role:'SOT',nominee:'Dr. Wendy Chiu',recv:'2026-10-21',fellow:null,courses:{},state:'check'}
+    ],
     roster:[['PWH',true,'2026-07-12',2],['NDH',true,'2026-07-10',0],['AHNH',true,'2026-07-18',1],['PYNEH',true,'2026-07-11',0],['QMH',true,'2026-07-15',3],['QEH',true,'2026-07-09',0],['KWH',true,'2026-07-20',1],['UCH',true,'2026-07-14',0],['TKOH',true,'2026-07-22',1],['PMH',true,'2026-07-13',0]].map(([h,c,d,n])=>({hosp:h,conf:c,on:d,changes:n,what:({PWH:'1 joined, 1 left',AHNH:'1 left',QMH:'1 joined, 1 left, 1 moved to another hospital',KWH:'1 moved to another hospital',TKOH:'1 left'})[h]||'',reviewed:n===0})),
     people:[
       {id:'U-8812',iw:'LAU Sarah Wai-yee',hosp:'PWH',role:'Trainee',n:14,sug:{id:'HKCA-2024-011',why:'Name and hospital match'}},
@@ -410,7 +418,7 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==14)S=seedState();
+if(!S||S.v!==15)S=seedState();
 S.rounds=HKC.get().rounds;
 S.exams=HKC.get().exams;
 syncCluster();
@@ -418,7 +426,7 @@ const doneMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]=t.courses.slice()})
 const profMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]={stage:t.stage,hosp:t.hosp,status:t.status,regFee:t.regFee!==false,trainFee:t.trainFee!==false,inter:t.exam.Intermediate||null,final:t.exam.Final||null,exempt:t.exempt?t.exempt.basis:null,cf:t.cf||{},accred:S.centres.some(c=>c.hosp===t.hosp&&c.exp>=TODAY)}});return m};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}HKC.setRounds(S.rounds);HKC.setDone(doneMap());HKC.setExams(S.exams);HKC.setProfiles(profMap())};
 const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'int',projects:'prot',centres:'accred',wba:'link'},
-  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',exView:'apps',exSit:null,pjFilter:'active',pjUw:true,pjLogF:'all',docketSel:{},provSel:{},provF:'All',role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
+  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',exView:'apps',exSit:null,pjFilter:'active',pjUw:true,pjLogF:'all',docketSel:{},provSel:{},provF:'All',cSort:'cluster',aSort:'hosp',role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
 const T=id=>S.trainees.find(t=>t.id===id);
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
 function logAct(a,d){const t=new Date().toTimeString().slice(0,5);const prev=S.log[0]?S.log[0].h:'0';S.log.unshift({d:TODAY,t,a,det:d,h:hash(prev+a+d+t)});save()}
@@ -483,7 +491,7 @@ function counts(){
     triage,rounds:rr.length,
     ...(()=>{const pe=pjEvery(),n=fn=>pe.filter(fn).length,tb=fn=>(pe.find(fn)||{k:'prot'}).k;const fD=e=>e.p.state==='dispatch',fO=e=>pjOverdue(e.p),fI=e=>e.p.state==='reviewsIn',fA=e=>e.p.state==='appeal';return {pjDispatch:n(fD),pjDispatchT:tb(fD),pjOver:n(fO),pjOverT:tb(fO),pjIn:n(fI),pjInT:tb(fI),pjAppeal:n(fA),pjAppealT:tb(fA)}})(),
     accSoon:S.centres.filter(c=>days(TODAY,c.exp)<=366).length,
-    pend:S.pendingAppt.length,
+    pend:S.pendingAppt.length,nomAct:S.nominations.filter(n=>['check','board'].includes(n.state)).length,
     rosterOpen:S.roster.filter(r=>!r.reviewed).length,
     link:S.people.length,unm:S.unmapped.length,
     dkReady:dk.filter(x=>x.c.ready).length,dkAttn:dk.filter(x=>!x.c.ready).length
@@ -500,7 +508,7 @@ function closeModal(){$('#modalBg').classList.remove('on')}
 const pill=(t,c)=>`<span class="pill ${c||'mute'}">${esc(t)}</span>`;
 const dt=(t,c)=>`<span class="dt ${c||''}">${esc(t)}</span>`;
 const stg=s=>`<span class="stg ${s}">${s}</span>`;
-const hospOpts=(sel)=>CLUSTERS.map(cl=>{const hs=HOSP.filter(([c0,h])=>CLUSTER[h]===cl);return hs.length?`<optgroup label="${cl}">${hs.map(([c0,h])=>`<option ${h===sel?'selected':''}>${h}</option>`).join('')}</optgroup>`:''}).join('');
+const hospOpts=(sel)=>CLUSTERS.map(cl=>{const hs=HOSP.filter(([c0,h])=>CLUSTER[h]===cl);return hs.length?`<optgroup label="${cl}">${hs.map(([c0,h])=>`<option value="${h}" ${h===sel?'selected':''}>${hn(h)} (${h})</option>`).join('')}</optgroup>`:''}).join('');
 const thSort=(k,l)=>`<th aria-sort="${ui.sort[0]===k?(ui.sort[1]>0?'ascending':'descending'):'none'}"><button data-a="sort" data-k="${k}">${l}<span aria-hidden="true">${ui.sort[0]===k?(ui.sort[1]>0?'\u2191':'\u2193'):''}</span></button></th>`;
 const subSeg=(tab,items)=>`<div class="seg" role="tablist">${items.map(([k,l,n])=>`<button role="tab" aria-selected="${ui.sub[tab]===k}" class="${ui.sub[tab]===k?'on':''}" data-a="sub" data-t="${tab}" data-k="${k}">${l}${n?` <span class="cnt${n>0?' hot':''}">${n}</span>`:''}</button>`).join('')}</div>`;
 const head=(eye,title,sub,right)=>`<div class="pghead"><div><div class="eyebrow">${eye}</div><h1 class="pgtitle">${title}</h1>${sub?`<p class="pgsub">${sub}</p>`:''}</div><div>${right||''}</div></div>`;
@@ -522,6 +530,7 @@ function vHome(){
   if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects',c.pjDispatchT+':dispatch'],b:'Dispatch'});
   if(c.pjIn)q.push({col:'--t5f',t:plural(c.pjIn,'formal project')+' with both reviews in',w:'Record the Formal Project Team\u2019s decision.',go:['projects',c.pjInT+':reviewsIn'],b:'Record decisions'});
   if(c.pend)q.push({col:'--t2f',t:'SOT appointment to enter',w:'The Board endorsed the replacement at '+S.pendingAppt[0].hosp+'. Record the appointment before the current term ends.',go:['centres','appts'],b:'Open appointments'});
+  if(c.nomAct){const nc=S.nominations.filter(n=>n.state==='check').length,nb=c.nomAct-nc;q.push({col:'--t2f',t:plural(c.nomAct,'SOT nomination')+' open',w:[nc?nc+' to check (Fellow years and trainer courses)':'',nb?nb+' with the Board':''].filter(Boolean).join(', ')+'.',go:['centres','appts'],b:'Open nominations'})}
   if(c.unm)q.push({col:'--acc',t:plural(c.unm,'iWBA item')+' not mapped',w:'These assessments are held back until each is matched to a curriculum code.',go:['wba','unmapped'],b:'Map items'});
   const waiting=[];
   const wRecog=S.recog.filter(r=>r.state==='waiting').length;if(wRecog)waiting.push(plural(wRecog,'retrospective recognition request')+' with the applicant');const wTo=S.recog.filter(r=>r.state==='to').length;if(wTo)waiting.push(plural(wTo,'retrospective recognition request')+' with the Training Officer');
@@ -1519,23 +1528,30 @@ function pjSavePaper(){
 /* ============ CENTRES & SOTs ============ */
 function vCentres(){
   const s=ui.sub.centres;const c=counts();
-  const seg=subSeg('centres',[['accred','Accreditation',c.accSoon],['appts','SOT appointments',c.pend],['roster','Trainer lists',c.rosterOpen]]);
-  const t={accred:'Each centre\u2019s longest permitted stay and when its accreditation expires. Expiry within a year is flagged.',appts:'Who holds the SOT and Assistant SOT roles, from the date the Board endorsed them.',roster:'Each department\u2019s trainer list, updated by its SOT every January and July.'}[s];
-  return head('Centres and SOTs',{accred:'Accreditation',appts:'SOT appointments',roster:'Trainer lists'}[s],t,seg)+(s==='accred'?vAccred():s==='appts'?vAppts():vRoster());
+  const seg=subSeg('centres',[['accred','Accredited training centres',c.accSoon],['appts','SOT appointments',c.pend+c.nomAct],['roster','Trainer lists',c.rosterOpen]]);
+  const t={accred:'Each accredited training centre, grouped by cluster, with its accredited training period and when its accreditation expires. Expiry within a year is flagged.',appts:'SOT and Assistant SOT by hospital, and the nominations on the way: the Chief of Service nominates by email, Admin checks, the Board endorses.',roster:'Each department\u2019s trainer list, updated by its SOT every January and July.'}[s];
+  return head('Centres and SOTs',{accred:'Accredited training centres',appts:'SOT appointments',roster:'Trainer lists'}[s],t,seg)+(s==='accred'?vAccred():s==='appts'?vAppts():vRoster());
 }
+const clGroup=(k,n,cols)=>`<tr class="grp"><td colspan="${cols}">${k}, ${esc(CLNAME[k]||k)} <span class="cnt">${n}</span></td></tr>`;
+const byCluster=(list,hf)=>list.slice().sort((x,y)=>{const a=CLUSTERS.indexOf(CLUSTER[hf(x)]),b=CLUSTERS.indexOf(CLUSTER[hf(y)]);return a-b||(hn(hf(x))>hn(hf(y))?1:-1)});
 function vAccred(){
-  const rows=S.centres.slice().sort((a,b)=>a.exp>b.exp?1:-1);
-  return `<div class="toolbar"><span class="meta grow">${rows.length} accredited centres</span><button class="btn pri sm" data-a="addCentre">Add a centre</button></div><div class="card"><div class="tbl-scroll"><table><thead><tr><th>Centre</th><th>Cluster</th><th>Longest stay per trainee</th><th>Accreditation expires</th><th class="act"></th></tr></thead><tbody>${rows.map(c=>{const d=days(TODAY,c.exp);const m=Math.floor(d/30.4);return `<tr><td class="cell-name">${c.hosp}</td><td>${c.cluster}</td><td>${c.limit} months</td><td>${fmt(c.exp)} ${d<=366?dt('in '+m+' months','warn'):''}</td><td class="act"><button class="btn sec sm" data-a="editCentre" data-h="${c.hosp}">Edit</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+  const mode=ui.cSort;
+  const rows=mode==='expiry'?S.centres.slice().sort((a,b)=>a.exp>b.exp?1:-1):byCluster(S.centres,c=>c.hosp);
+  const row=c=>{const d=days(TODAY,c.exp);const m=Math.floor(d/30.4);return `<tr><td><div class="cell-name">${esc(hn(c.hosp))}</div><div class="cell-sub mono">${c.hosp}${mode==='expiry'?' &middot; '+c.cluster:''}</div></td><td>${c.limit} months</td><td>${fmt(c.exp)} ${d<=366?dt('in '+m+' months','warn'):''}</td><td class="act"><button class="btn sec sm" data-a="editCentre" data-h="${c.hosp}">Edit</button></td></tr>`};
+  let body='';
+  if(mode==='expiry')body=rows.map(row).join('');
+  else{let last='';rows.forEach(c=>{if(c.cluster!==last){last=c.cluster;body+=clGroup(last,rows.filter(x=>x.cluster===last).length,4)}body+=row(c)})}
+  return `<div class="toolbar"><span class="meta grow">${rows.length} accredited training centres</span><div class="chipgrp" role="group" aria-label="Order">${[['cluster','By cluster'],['expiry','By expiry date']].map(([k,l])=>`<button class="chip ${mode===k?'on':''}" aria-pressed="${mode===k}" data-a="fCSort" data-v="${k}">${l}</button>`).join('')}</div><button class="btn pri sm" data-a="addCentre">Add a centre</button></div><div class="card"><div class="tbl-scroll"><table><thead><tr><th>Centre</th><th>Accredited training period</th><th>Accreditation expires</th><th class="act"></th></tr></thead><tbody>${body}</tbody></table></div></div>`;
 }
 const clOpts=sel=>CLUSTERS.map(k=>`<option value="${k}" ${k===sel?'selected':''}>${k}, ${CLNAME[k]}</option>`).join('');
 function editCentre(h){
   const c=S.centres.find(x=>x.hosp===h);ui.dr={type:'centre',h};
-  openDrawer(c.cluster,c.hosp,
+  openDrawer(c.cluster,hn(c.hosp),
   `<div class="fld"><label for="cCl">Hospital cluster</label><select id="cCl" data-c="cCl">${clOpts(c.cluster)}</select></div>
   <div class="fld" id="cClRow" style="display:none"><label for="cClDate">Cluster change effective from</label><input type="date" id="cClDate" value="${TODAY}" max="${TODAY}"></div>
   <p class="meta" style="margin:-4px 0 16px">Change the cluster when the hospital moves to another one. Its trainees and SOTs follow, and the earlier cluster stays in the history.</p>
   ${c.moved&&c.moved.length?`<div class="sect">Cluster history</div><div class="rtrail">${c.moved.slice().reverse().map(m=>`<div class="rt-d">${fmtS(m.eff)}</div><div><b>${m.from} to ${m.to}</b>${m.why?`<div class="meta">${esc(m.why)}</div>`:''}</div>`).join('')}</div>`:''}
-  <div class="fld"><label for="cLim">Longest stay per trainee (months)</label><input type="number" id="cLim" min="0" max="72" value="${c.limit}"></div>
+  <div class="fld"><label for="cLim">Accredited training period (months)</label><input type="number" id="cLim" min="0" max="72" value="${c.limit}"></div>
   <div class="fld"><label for="cExp">Accreditation expires</label><input type="date" id="cExp" value="${c.exp}"></div>
   <p class="note">Changes apply from today. Trainees already allocated stay allocated. The reason is recorded.</p>
   <div class="fld"><label for="cWhy">Reason</label><textarea id="cWhy" rows="2"></textarea></div>`,
@@ -1543,25 +1559,82 @@ function editCentre(h){
 }
 function saveCentre(h){
   const c=S.centres.find(x=>x.hosp===h);const l=+$('#cLim').value,e=$('#cExp').value,w=$('#cWhy').value.trim(),cl=$('#cCl').value,cd=$('#cClDate').value;
-  if(!e||l<0){toast('Enter a limit and an expiry date.');return}
+  if(!e||l<0){toast('Enter an accredited training period and an expiry date.');return}
   const moved=cl!==c.cluster;
   if(moved&&(!cd||cd>TODAY)){toast('Choose the date the cluster change took effect. It cannot be in the future.');return}
   if(!moved&&l===c.limit&&e===c.exp){toast('Nothing has changed.');return}
   if(!w){toast('Add a reason for the record.');return}
-  const bits=[];if(l!==c.limit)bits.push(`longest stay ${c.limit} to ${l} months`);if(e!==c.exp)bits.push(`expiry ${fmt(c.exp)} to ${fmt(e)}`);if(moved)bits.push(`cluster ${c.cluster} to ${cl} from ${fmt(cd)}`);
+  const bits=[];if(l!==c.limit)bits.push(`accredited training period ${c.limit} to ${l} months`);if(e!==c.exp)bits.push(`expiry ${fmt(c.exp)} to ${fmt(e)}`);if(moved)bits.push(`cluster ${c.cluster} to ${cl} from ${fmt(cd)}`);
   logAct(moved&&bits.length===1?'Cluster changed':'Accreditation changed',`${h}: ${bits.join(', ')}. ${w}`);
   if(moved){c.moved=(c.moved||[]).concat([{from:c.cluster,to:cl,eff:cd,why:w}]);c.cluster=cl;CLUSTER[h]=cl}
   c.limit=l;c.exp=e;closeDrawer();render();toast(h+' updated.')
 }
-function addCentre(){const free=HOSP.filter(([c,h])=>!S.centres.find(x=>x.hosp===h));openModal(`<h3>Add an accredited centre</h3><div class="fld" style="margin-top:12px"><label for="nHosp">Hospital</label><select id="nHosp" data-c="nHosp">${free.map(([c,h])=>`<option>${h}</option>`).join('')}</select></div><div class="fld"><label for="nCl">Hospital cluster</label><select id="nCl">${clOpts(free.length?CLUSTER[free[0][1]]:'')}</select></div><div class="fld"><label for="nLim">Longest stay per trainee (months)</label><input type="number" id="nLim" value="24" min="0" max="72"></div><div class="fld"><label for="nExp">Accreditation expires</label><input type="date" id="nExp"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAddCentre">Add centre</button></div>`)}
+function addCentre(){const free=HOSP.filter(([c,h])=>!S.centres.find(x=>x.hosp===h)).sort((a,b)=>hn(a[1])>hn(b[1])?1:-1);openModal(`<h3>Add an accredited training centre</h3><div class="fld" style="margin-top:12px"><label for="nHosp">Hospital</label><select id="nHosp" data-c="nHosp">${free.map(([c,h])=>`<option value="${h}">${esc(hn(h))} (${h})</option>`).join('')}</select></div><div class="fld"><label for="nCl">Hospital cluster</label><select id="nCl">${clOpts(free.length?CLUSTER[free[0][1]]:'')}</select></div><div class="fld"><label for="nLim">Accredited training period (months)</label><input type="number" id="nLim" value="24" min="0" max="72"></div><div class="fld"><label for="nExp">Accreditation expires</label><input type="date" id="nExp"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAddCentre">Add centre</button></div>`)}
 function doAddCentre(){const h=$('#nHosp').value,l=+$('#nLim').value,e=$('#nExp').value,cl=$('#nCl').value;if(!e||e<=TODAY){toast('Enter an expiry date in the future.');return}S.centres.push({hosp:h,cluster:cl,limit:l,exp:e});CLUSTER[h]=cl;logAct('Centre added',`${h} (${cl}): ${l} months, expires ${fmt(e)}`);closeModal();render();toast(h+' added.')}
+const NOMCH=[['wba','WBA course for trainers'],['jcimed','JCIMED SOT course'],['bme','Basic medical education course']];
+const nomYrs=n=>n.fellow?(+TODAY.slice(0,4))-n.fellow:null;
+const nomSum=n=>{const y=nomYrs(n),c=NOMCH.filter(([k])=>n.courses[k]).length;return `${y==null?'Fellow year not recorded':y+' years as a Fellow'}, ${c} of 3 trainer courses`};
+const nomOk=n=>nomYrs(n)!=null&&NOMCH.every(([k])=>n.courses[k]);
 function vAppts(){
-  const cur=S.appts.filter(a=>!a.ended).sort((a,b)=>a.hosp>b.hosp?1:a.hosp<b.hosp?-1:a.role>b.role?1:-1);
-  const pend=S.pendingAppt.map(p=>`<div class="q-item" style="padding-left:0"><div class="q-bar" style="background:var(--t2f)"></div><div><div class="q-title">${esc(p.nominee)} as ${p.role} at ${p.hosp}</div><div class="q-why">Endorsed by the Board on ${fmt(p.boe)}. Replaces the current term, which ends ${fmt(S.appts.find(a=>a.hosp===p.hosp&&a.role===p.role&&a.until).until)}. Effective ${fmt(p.eff)}.</div></div><button class="btn pri sm" data-a="enterAppt" data-id="${p.id}">Enter appointment</button></div>`).join('');
-  return `${pend?`<div class="card" style="margin-bottom:18px"><div class="q-h"><div class="h3">Waiting to be entered <span class="cnt hot">${S.pendingAppt.length}</span></div></div>${pend}</div>`:''}
-  <div class="toolbar"><span class="meta grow">${cur.length} current role holders</span><button class="btn sec sm" data-a="newAppt">Appoint someone else</button></div>
-  <div class="card"><div class="tbl-scroll"><table><thead><tr><th>Hospital</th><th>Role</th><th>Name</th><th>From</th><th>Until</th><th class="act"></th></tr></thead><tbody>${cur.map(a=>`<tr><td class="cell-name">${a.hosp}</td><td>${a.role}</td><td>${esc(a.who)}</td><td>${fmt(a.from)}</td><td>${a.until?fmt(a.until):'<span class="muted">Open-ended</span>'}</td><td class="act"><button class="btn sec sm" data-a="endAppt" data-id="${a.id}">${a.until?'Change end date':'End term'}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  const noms=S.nominations.filter(n=>['check','board'].includes(n.state)).sort((a,b)=>a.recv>b.recv?1:-1);
+  const nom=noms.map(n=>`<div class="q-item" style="padding-left:0"><div class="q-bar" style="background:var(--t2f)"></div><div><div class="q-title">${esc(n.nominee)} as ${n.role}, ${esc(hn(n.hosp))}</div><div class="q-why">Nominated by the Chief of Service by email, received ${fmt(n.recv)}. ${nomSum(n)}. ${n.state==='check'?'Waiting for your checks.':'With the Board since '+fmt(n.sent)+'.'}</div></div><button class="btn ${n.state==='check'?'pri':'sec'} sm" data-a="nomOpen" data-id="${n.id}">${n.state==='check'?'Check':'Record decision'}</button></div>`).join('');
+  const pend=S.pendingAppt.map(p=>{const cur=S.appts.find(a=>a.hosp===p.hosp&&a.role===p.role&&!a.ended);const rep=cur?(cur.until?`Replaces the current term, which ends ${fmt(cur.until)}.`:'The current term has no end date: end it before entering this one.'):'The post is vacant.';return `<div class="q-item" style="padding-left:0"><div class="q-bar" style="background:var(--t2f)"></div><div><div class="q-title">${esc(p.nominee)} as ${p.role}, ${esc(hn(p.hosp))}</div><div class="q-why">Endorsed by the Board on ${fmt(p.boe)}. ${rep} Effective ${fmt(p.eff)}.${p.nom?' '+nomSum(p.nom)+'.':''}</div></div><button class="btn pri sm" data-a="enterAppt" data-id="${p.id}">Enter appointment</button></div>`}).join('');
+  const hs=[...new Set(S.centres.map(c=>c.hosp).concat(S.appts.filter(a=>!a.ended).map(a=>a.hosp)))];
+  const order=ui.aSort==='cluster'?byCluster(hs,h=>h):hs.slice().sort((a,b)=>hn(a)>hn(b)?1:-1);
+  const cur=S.appts.filter(a=>!a.ended);
+  const arow=(h,r,a)=>a?`<tr><td><div class="cell-name">${esc(hn(h))}</div><div class="cell-sub mono">${h}${ui.aSort==='hosp'?' &middot; '+(CLUSTER[h]||''):''}</div></td><td>${r}</td><td>${esc(a.who)}</td><td>${fmt(a.from)}</td><td>${a.until?fmt(a.until):'<span class="muted">Open-ended</span>'}</td><td class="act"><button class="btn sec sm" data-a="endAppt" data-id="${a.id}">${a.until?'Change end date':'End term'}</button></td></tr>`:
+    `<tr><td><div class="cell-name">${esc(hn(h))}</div><div class="cell-sub mono">${h}${ui.aSort==='hosp'?' &middot; '+(CLUSTER[h]||''):''}</div></td><td>${r}</td><td><span class="muted">None appointed</span></td><td></td><td></td><td class="act"><button class="btn sec sm" data-a="newNom" data-h="${h}" data-r="${r}">Record a nomination</button></td></tr>`;
+  let body='',last='';
+  order.forEach(h=>{
+    if(ui.aSort==='cluster'&&CLUSTER[h]!==last){last=CLUSTER[h];body+=clGroup(last,order.filter(x=>CLUSTER[x]===last).length,6)}
+    const sots=cur.filter(a=>a.hosp===h&&a.role==='SOT').sort((x,y)=>x.from>y.from?1:-1),as=cur.filter(a=>a.hosp===h&&a.role==='Assistant SOT').sort((x,y)=>x.from>y.from?1:-1);
+    const isCentre=S.centres.some(c=>c.hosp===h);
+    if(sots.length)sots.forEach(a=>body+=arow(h,'SOT',a));else if(isCentre)body+=arow(h,'SOT',null);
+    as.forEach(a=>body+=arow(h,'Assistant SOT',a));
+  });
+  return `${noms.length?`<div class="card" style="margin-bottom:18px"><div class="q-h"><div class="h3">Nominations <span class="cnt hot">${noms.length}</span></div><span class="meta">The Chief of Service nominates by email. Admin checks the years as a Fellow and the three trainer courses, then the Board endorses.</span></div>${nom}</div>`:''}
+  ${pend?`<div class="card" style="margin-bottom:18px"><div class="q-h"><div class="h3">Waiting to be entered <span class="cnt hot">${S.pendingAppt.length}</span></div></div>${pend}</div>`:''}
+  <div class="toolbar"><span class="meta grow">${cur.length} current role holders in ${order.length} hospitals</span><div class="chipgrp" role="group" aria-label="Order">${[['hosp','By hospital'],['cluster','By cluster']].map(([k,l])=>`<button class="chip ${ui.aSort===k?'on':''}" aria-pressed="${ui.aSort===k}" data-a="fASort" data-v="${k}">${l}</button>`).join('')}</div><button class="btn pri sm" data-a="newNom">Record a nomination</button></div>
+  <div class="card"><div class="tbl-scroll"><table><thead><tr><th>Hospital</th><th>Role</th><th>Name</th><th>From</th><th>Until</th><th class="act"></th></tr></thead><tbody>${body}</tbody></table></div></div>`;
 }
+function newNom(h,r){
+  const free=h||'PWH';
+  openModal(`<h3>Record a nomination</h3><p class="meta" style="margin:6px 0 12px">The Chief of Service has emailed a nominee for the SOT or Assistant SOT post. Record it here, then check the nominee.</p>
+  <div class="fld"><label for="nmH">Hospital</label><select id="nmH">${hospOpts(free)}</select></div>
+  <div class="fld"><label for="nmR">Role</label><select id="nmR">${['SOT','Assistant SOT'].map(x=>`<option ${x===(r||'SOT')?'selected':''}>${x}</option>`).join('')}</select></div>
+  <div class="fld"><label for="nmN">Nominee</label><input type="text" id="nmN" placeholder="Full name"></div>
+  <div class="fld"><label for="nmD">Date the email was received</label><input type="date" id="nmD" value="${TODAY}" max="${TODAY}"></div>
+  <div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doNewNom">Record nomination</button></div>`)
+}
+function doNewNom(){
+  const h=$('#nmH').value,r=$('#nmR').value,w=$('#nmN').value.trim(),d=$('#nmD').value;
+  if(!w){toast('Enter the nominee\u2019s name.');return}if(!d||d>TODAY){toast('Enter the date the email was received. It cannot be in the future.');return}
+  S.nominations.push({id:'N'+Date.now(),hosp:h,role:r,nominee:w,recv:d,fellow:null,courses:{},state:'check'});
+  logAct('SOT nomination recorded',`${w}, ${r}, ${h}. Nominated by the Chief of Service by email, received ${fmt(d)}`);closeModal();render();toast('Nomination recorded. Check the nominee next.')
+}
+function nomOpen(id){
+  const n=S.nominations.find(x=>x.id===id);ui.dr={type:'nom',id};const yr=+TODAY.slice(0,4);
+  const head=`<dl class="kv"><dt>Post</dt><dd>${n.role}, ${esc(hn(n.hosp))}</dd><dt>Nominated by</dt><dd>Chief of Service, ${n.hosp}, by email</dd><dt>Received</dt><dd>${fmt(n.recv)}</dd><dt>Stage</dt><dd>${n.state==='check'?'Admin checks':'With the Board since '+fmt(n.sent)}</dd></dl>`;
+  if(n.state==='check')
+    openDrawer('SOT nomination',n.nominee,head+`<div class="sect">Checks</div>
+    <div class="fld"><label for="nmY">Year the nominee became a Fellow</label><input type="number" id="nmY" data-c="nmY" min="1980" max="${yr}" value="${n.fellow||''}"><div class="cell-sub" id="nmYrs">${n.fellow?(yr-n.fellow)+' years as a Fellow':'Not recorded'}</div></div>
+    ${NOMCH.map(([k,l])=>`<label class="chk ${n.courses[k]?'done':''}"><input type="checkbox" id="nm_${k}" ${n.courses[k]?'checked':''}><span>${l}<small>Attended</small></span></label>`).join('')}
+    <p class="note">The Board sees these checks with the nomination. If something is missing you can still send it, and the Board will see what is missing.</p>`,
+    `<button class="btn sec" data-a="nomClose" data-id="${n.id}">Close nomination</button><button class="btn sec" data-a="nomSave" data-id="${n.id}">Save checks</button><button class="btn pri" data-a="nomSend" data-id="${n.id}">Send to the Board</button>`);
+  else
+    openDrawer('SOT nomination',n.nominee,head+`<div class="sect">Checks</div><dl class="kv"><dt>Fellow</dt><dd>${n.fellow?(yr-n.fellow)+' years (since '+n.fellow+')':'Not recorded'}</dd>${NOMCH.map(([k,l])=>`<dt>${l.split(' ')[0]==='WBA'?'WBA':l.split(' ')[0]}</dt><dd>${n.courses[k]?'Attended':'<span style="color:var(--bd-f)">Not attended</span>'}</dd>`).join('')}</dl>`,
+    `<button class="btn sec" data-a="nomClose" data-id="${n.id}">Board did not endorse</button><button class="btn pri" data-a="nomEndorse" data-id="${n.id}">Record Board endorsement</button>`)
+}
+function nomRead(n){n.fellow=+$('#nmY').value||null;NOMCH.forEach(([k])=>{n.courses[k]=$('#nm_'+k).checked})}
+function nomSave(id){const n=S.nominations.find(x=>x.id===id);nomRead(n);save();nomOpen(id);render();toast('Checks saved.')}
+function nomSend(id){const n=S.nominations.find(x=>x.id===id);nomRead(n);n.state='board';n.sent=TODAY;logAct('SOT nomination sent to the Board',`${n.nominee}, ${n.role}, ${n.hosp}. ${nomSum(n)}`);closeDrawer();render();toast(n.nominee+' sent to the Board.')}
+function nomEndorse(id){const n=S.nominations.find(x=>x.id===id);ui.nid=id;closeDrawer();openModal(`<h3>Board endorsement</h3><p class="meta" style="margin:6px 0 12px">${esc(n.nominee)}, ${n.role}, ${esc(hn(n.hosp))}. Check the date against the Board minute.</p><div class="fld"><label for="neB">Date the Board endorsed it</label><input type="date" id="neB" max="${TODAY}" value="${TODAY}"></div><div class="fld"><label for="neE">Effective from</label><input type="date" id="neE" value="${TODAY}"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="nomDoEndorse">Record endorsement</button></div>`)}
+function nomDoEndorse(){const n=S.nominations.find(x=>x.id===ui.nid);const b=$('#neB').value,e=$('#neE').value;if(!b||b>TODAY){toast('Enter the Board endorsement date. It cannot be in the future.');return}if(!e){toast('Enter the effective date.');return}
+  n.state='endorsed';S.pendingAppt.push({id:'PA'+Date.now(),nomId:n.id,hosp:n.hosp,role:n.role,nominee:n.nominee,boe:b,eff:e,nom:{recv:n.recv,fellow:n.fellow,courses:n.courses}});
+  logAct('Board endorsement recorded',`${n.nominee}, ${n.role}, ${n.hosp}. Board endorsement ${fmt(b)}, effective ${fmt(e)}`);closeModal();render();toast('Endorsement recorded. Enter the appointment next.')}
+function nomClose(id){const n=S.nominations.find(x=>x.id===id);ui.nid=id;closeDrawer();openModal(`<h3>${n.state==='board'?'Board did not endorse':'Close the nomination'}</h3><p class="meta" style="margin:6px 0 12px">${esc(n.nominee)}, ${n.role}, ${esc(hn(n.hosp))}</p><div class="fld"><label for="ncW">Reason</label><input type="text" id="ncW" placeholder="For the record"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="nomDoClose">Close nomination</button></div>`)}
+function nomDoClose(){const n=S.nominations.find(x=>x.id===ui.nid);const w=$('#ncW').value.trim();if(!w){toast('Add a reason for the record.');return}
+  const was=n.state;n.state=was==='board'?'notendorsed':'withdrawn';logAct('SOT nomination closed',`${n.nominee}, ${n.role}, ${n.hosp}: ${was==='board'?'not endorsed by the Board':'closed before the Board'}. ${w}`);closeModal();render();toast('Nomination closed.')}
 function apptForm(h,r,who,eff,boe,idp){return `<div class="fld"><label for="aH">Hospital</label><select id="aH">${hospOpts(h)}</select></div><div class="fld"><label for="aR">Role</label><select id="aR">${['SOT','Assistant SOT'].map(x=>`<option ${x===r?'selected':''}>${x}</option>`).join('')}</select></div><div class="fld"><label for="aW">Name</label><input type="text" id="aW" value="${esc(who)}" placeholder="Full name"></div><div class="fld"><label for="aE">Effective from</label><input type="date" id="aE" value="${eff}"></div><div class="fld"><label for="aB">Date the Board endorsed it</label><input type="date" id="aB" max="${TODAY}" value="${boe}"></div>`}
 function enterAppt(id){const p=S.pendingAppt.find(x=>x.id===id);ui.pa=id;openModal(`<h3>Enter the appointment</h3><p class="meta" style="margin-bottom:12px">Check the details against the Board minute.</p>${apptForm(p.hosp,p.role,p.nominee,p.eff,p.boe)}<div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAppt">Enter appointment</button></div>`)}
 function newAppt(){ui.pa=null;openModal(`<h3>Appoint someone</h3><p class="meta" style="margin-bottom:12px">An appointment needs a Board endorsement date.</p>${apptForm('PWH','Assistant SOT','',TODAY,'')}<div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAppt">Enter appointment</button></div>`)}
@@ -1571,13 +1644,13 @@ function doAppt(){
   const cur=S.appts.find(a=>a.hosp===h&&a.role===r&&!a.ended);
   if(cur&&!cur.until){toast(`${h} already has a ${r} with no end date. End that term first.`);return}
   S.appts.push({id:'AP'+Date.now(),hosp:h,role:r,who:w,from:e,until:null});
-  if(ui.pa){S.pendingAppt=S.pendingAppt.filter(x=>x.id!==ui.pa);ui.pa=null}
+  if(ui.pa){const pa=S.pendingAppt.find(x=>x.id===ui.pa);const nm=pa&&pa.nomId&&S.nominations.find(x=>x.id===pa.nomId);if(nm)nm.state='entered';S.pendingAppt=S.pendingAppt.filter(x=>x.id!==ui.pa);ui.pa=null}
   logAct('Appointment entered',`${w}, ${r}, ${h}, from ${fmt(e)}. Board endorsement ${fmt(b)}`);closeModal();render();toast(`${w} entered as ${r} at ${h}.`)
 }
 function endAppt(id){const a=S.appts.find(x=>x.id===id);ui.ea=id;openModal(`<h3>${a.until?'Change':'End'} the term of ${esc(a.who)}</h3><p class="meta" style="margin:6px 0 12px">${a.role}, ${a.hosp}</p><div class="fld"><label for="eD">Last day in role</label><input type="date" id="eD" value="${a.until||TODAY}" min="${a.from}"></div><div class="fld"><label for="eW">Reason</label><input type="text" id="eW" placeholder="For the record"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doEnd">Save</button></div>`)}
 function doEnd(){const a=S.appts.find(x=>x.id===ui.ea);const d=$('#eD').value,w=$('#eW').value.trim();if(!d||!w){toast('Enter a date and a reason.');return}a.until=d;if(d<=TODAY)a.ended=true;logAct('Term ended',`${a.who}, ${a.role}, ${a.hosp}: last day ${fmt(d)}. ${w}`);closeModal();render();toast('Term updated.')}
 function vRoster(){
-  return `<div class="card"><div class="q-h"><div class="h3">July 2026 round</div><span class="meta">Next round opens 1 January 2027. The SOT of each department updates its trainer list: who has joined, who has left, who has moved to another hospital.</span></div><div class="tbl-scroll"><table><thead><tr><th>Department</th><th>Trainer list confirmed by SOT</th><th>Changes reported</th><th class="act"></th></tr></thead><tbody>${S.roster.map(r=>`<tr><td class="cell-name">${r.hosp}</td><td>${dt('Confirmed '+fmtS(r.on),'ok')}</td><td>${r.changes?`${esc(r.what)} ${r.reviewed?dt('Reviewed','ok'):''}`:'<span class="muted">No changes</span>'}</td><td class="act">${r.changes&&!r.reviewed?`<button class="btn sec sm" data-a="rosterRev" data-h="${r.hosp}">Mark reviewed</button>`:''}</td></tr>`).join('')}</tbody></table></div></div>
+  return `<div class="card"><div class="q-h"><div class="h3">July 2026 round</div><span class="meta">Next round opens 1 January 2027. The SOT of each department updates its trainer list: who has joined, who has left, who has moved to another hospital.</span></div><div class="tbl-scroll"><table><thead><tr><th>Department</th><th>Trainer list confirmed by SOT</th><th>Changes reported</th><th class="act"></th></tr></thead><tbody>${byCluster(S.roster,r=>r.hosp).map(r=>`<tr><td><div class="cell-name">${esc(hn(r.hosp))}</div><div class="cell-sub mono">${r.hosp} &middot; ${CLUSTER[r.hosp]||''}</div></td><td>${dt('Confirmed '+fmtS(r.on),'ok')}</td><td>${r.changes?`${esc(r.what)} ${r.reviewed?dt('Reviewed','ok'):''}`:'<span class="muted">No changes</span>'}</td><td class="act">${r.changes&&!r.reviewed?`<button class="btn sec sm" data-a="rosterRev" data-h="${r.hosp}">Mark reviewed</button>`:''}</td></tr>`).join('')}</tbody></table></div></div>
   <p class="meta" style="margin-top:12px">The round runs every January and July. The SOT screen where a department confirms its trainer list is a later build. This page shows what it will report to the Secretariat.</p>`;
 }
 function rosterRev(h){const r=S.roster.find(x=>x.hosp===h);r.reviewed=true;logAct('Trainer list changes reviewed',`${h}: ${r.what}`);render();toast(h+' trainer list changes marked as reviewed.')}
@@ -1619,7 +1692,7 @@ function openLog(){
   openDrawer('Audit trail','Activity log',(S.log.length?S.log.map(l=>`<div class="log-row"><div class="t">${fmtS(l.d)} ${l.t}</div><div><b>${esc(l.a)}</b><div class="meta">${esc(l.det)}</div></div><div class="h">${l.h}</div></div>`).join(''):'<p class="meta">Nothing yet. Each action you take in this console is recorded here with a chained reference.</p>')+'<p class="note" style="margin-top:14px">Each line carries a reference that depends on the line before it, so a changed or removed entry shows. This is the same trail the College can inspect.</p>','');
 }
 const TABS=[['home','Home'],['trainees','Trainees'],['courses','Courses'],['exams','Exams'],['projects','Formal projects'],['centres','Centres and SOTs'],['wba','iWBA sync']];
-function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct+c.prov,courses:c.triage,exams:c.exFee+c.exCrit,projects:c.pjDispatch+c.pjOver+c.pjIn+c.pjAppeal,centres:c.pend+c.accSoon,wba:c.link+c.unm}[k]||0}
+function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct+c.prov,courses:c.triage,exams:c.exFee+c.exCrit,projects:c.pjDispatch+c.pjOver+c.pjIn+c.pjAppeal,centres:c.pend+c.nomAct+c.accSoon,wba:c.link+c.unm}[k]||0}
 const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,projects:vProjects,centres:vCentres,wba:vWba};
 function labelTables(){document.querySelectorAll('#app table').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(h=>h.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.dataset.l===undefined&&hs[i]!==undefined)td.dataset.l=hs[i]}))})}
 function render(){
@@ -1645,7 +1718,7 @@ const ACT={
   pickRound:e=>{ui.round=e.dataset.id;render()},rdF:e=>{ui.rdF=e.dataset.v;render()},newRound,editRound:e=>editRound(e.dataset.id),saveRound:e=>saveRound(e.dataset.id),openNow:e=>openNow(e.dataset.id),closeNow:e=>closeNow(e.dataset.id),reopen:e=>reopen(e.dataset.id),doReopen:e=>doReopen(e.dataset.id),decideRound:e=>decideRound(e.dataset.id),attendRound:e=>attendRound(e.dataset.id),suggestSeats,applySuggest,loadSheet:()=>{const rd=S.rounds.find(x=>x.id===ui.cn);ui.sheet=rd&&HKC.noticeOn(rd.course)?SHEET.replace(/^(HKCA-\d{4}-\d{3})$/gm,'$1, 100'):SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
   exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=exSample(exName());ui.exOut=null;render()},checkEx,commitEx,exv:e=>{ui.exView=e.dataset.v;ui.exOut=null;render()},newSit:()=>sitForm(''),editSit:e=>sitForm(e.dataset.id),saveSit:e=>saveSit(e.dataset.id),openSit:e=>openSit(e.dataset.id),closeSit:e=>closeSit(e.dataset.id),doCloseSit:e=>doCloseSit(e.dataset.id),viewApps:e=>{ui.exSit=e.dataset.id;ui.exView='apps';ui.exFilter='All';render()},openExApp:e=>openExApp(e.dataset.s,e.dataset.id),exFee:e=>exFee(e.dataset.s,e.dataset.id),exExc:e=>exExc(e.dataset.s,e.dataset.id),exNo:e=>exNo(e.dataset.s,e.dataset.id),exWd:e=>exWd(e.dataset.s,e.dataset.id),saveElig:e=>saveElig(e.dataset.id),sotYes:e=>sotYes(e.dataset.s,e.dataset.id),sotNo:e=>sotNoAsk(e.dataset.s,e.dataset.id),doSotNo:e=>doSotNo(e.dataset.s,e.dataset.id),
   pjF:e=>{ui.pjFilter=e.dataset.v;render()},pjLogF:e=>{ui.pjLogF=e.dataset.v;render()},openCase:e=>openCase(e.dataset.id),pjDispatch:e=>pjDispatch(e.dataset.id,e.dataset.k),pjRecRev:e=>pjRecRev(e.dataset.id,e.dataset.k,+e.dataset.i),pjTeam:e=>pjTeam(e.dataset.id,e.dataset.k,+e.dataset.i),pjTeamRev:e=>pjTeamRev(e.dataset.id,e.dataset.k,+e.dataset.i),pjReassign:e=>pjReassign(e.dataset.id,e.dataset.k,+e.dataset.i),pjLate:e=>pjLate(e.dataset.id,e.dataset.k,+e.dataset.i),pjDecide:e=>pjDecide(e.dataset.id,e.dataset.k),pjResub:e=>pjResub(e.dataset.id,e.dataset.k),pjAppeal:e=>pjAppeal(e.dataset.id,e.dataset.k),pjNoAppeal:e=>pjNoAppeal(e.dataset.id,e.dataset.k),pjManSub:e=>pjManSub(e.dataset.id),pjNewForm,pjSaveNew,pjPaperForm,pjSavePaper,
-  addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),fPv:e=>{ui.provF=e.dataset.v;render()},pvAll:()=>{pvVisible().forEach(x=>ui.provSel[x.t.id]=true);render()},pvNone:()=>{ui.provSel={};render()},pvGo,pvOne:e=>{ui.provSel={[e.dataset.id]:true};render();pvGo()},pvDo,
+  addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),fCSort:e=>{ui.cSort=e.dataset.v;render()},fASort:e=>{ui.aSort=e.dataset.v;render()},newNom:e=>newNom(e.dataset.h,e.dataset.r),doNewNom,nomOpen:e=>nomOpen(e.dataset.id),nomSave:e=>nomSave(e.dataset.id),nomSend:e=>nomSend(e.dataset.id),nomEndorse:e=>nomEndorse(e.dataset.id),nomDoEndorse,nomClose:e=>nomClose(e.dataset.id),nomDoClose,fPv:e=>{ui.provF=e.dataset.v;render()},pvAll:()=>{pvVisible().forEach(x=>ui.provSel[x.t.id]=true);render()},pvNone:()=>{ui.provSel={};render()},pvGo,pvOne:e=>{ui.provSel={[e.dataset.id]:true};render();pvGo()},pvDo,
   linkIt:e=>linkIt(e.dataset.id,e.dataset.to),linkOther:e=>linkOther(e.dataset.id),linkSel:e=>linkIt(e.dataset.id,$('#lkSel').value),bulkLink,doBulk,saveUnm:e=>saveUnm(+e.dataset.i),readNow
 };
 document.addEventListener('click',ev=>{const e=ev.target.closest('[data-a]');if(!e)return;const f=ACT[e.dataset.a];if(f){ev.preventDefault();f(e)}});
@@ -1660,6 +1733,7 @@ document.addEventListener('change',ev=>{
   else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
   else if(c==='cCl'){const c0=S.centres.find(x=>x.hosp===ui.dr.h);$('#cClRow').style.display=e.value!==c0.cluster?'':'none'}
   else if(c==='nHosp'){$('#nCl').value=CLUSTER[e.value]}
+  else if(c==='nmY'){const v=+e.value,yr=+TODAY.slice(0,4);$('#nmYrs').textContent=v?(yr-v)+' years as a Fellow':'Not recorded'}
   else if(c==='pvSel'){ui.provSel[e.dataset.id]=e.checked;render()}
   else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);const a=r.apps[+e.dataset.i];a[2]=e.value;if(e.value!=='Requested'){const t=T(a[0]);logAct('Course decision',`${t?t.name:a[0]}: ${e.value} for ${CNAME[r.course]} ${fmt(r.date)}${e.value==='Accepted'?'. Notice of acceptance queued by email':''}`)}save();render()}
   else if(c==='rfCourse'){$('#rfRank').value=['RTB','RTC'].includes(e.value)?'fcfs':'priority';if(isMand(e.value))['rfFeeM','rfFeeN'].forEach(i=>{if($('#'+i).value==='')$('#'+i).value=0})}

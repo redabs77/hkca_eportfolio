@@ -226,7 +226,7 @@ CREATE TABLE accredited_centres (
   trainer_trainee_ratio         TEXT,       -- e.g., "1:1.2"
   
   -- Training limits
-  max_duration_months           INTEGER,    -- max rotation duration
+  max_duration_months           INTEGER,    -- the accredited training period: most months a trainee can be trained at this centre (Admin console label)
   max_trainee_capacity          INTEGER,
   
   -- Satellite center
@@ -1313,7 +1313,7 @@ This is the single largest piece of ETL work in the project, and the largest dat
 
 Source: `Admin Prototype Delta Check 2026-10-24.md`. These tables are needed by the College Secretariat Console prototype.
 
-**Prisma status (2026-10-25):** migration 5 (`5_secretariat_courses_exams_projects`) adds the courses, exams, formal-project and recognition changes in section 13 and edits several tables below in place. **Prisma status (2026-10-24):** migration `3_admin_console_schema_alignment` adds all of them, plus the earlier doc-only tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans with goals and proposals, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). 22 tables in all, verified on Postgres by `tests/schema/verify_admin_schema.mjs`. Deliberate differences from the SQL in this document:
+**Prisma status (2026-10-25, later):** migration 6 (`6_sot_nominations`) adds the SOT nomination table (section 14). **Prisma status (2026-10-25):** migration 5 (`5_secretariat_courses_exams_projects`) adds the courses, exams, formal-project and recognition changes in section 13 and edits several tables below in place. **Prisma status (2026-10-24):** migration `3_admin_console_schema_alignment` adds all of them, plus the earlier doc-only tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans with goals and proposals, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). 22 tables in all, verified on Postgres by `tests/schema/verify_admin_schema.mjs`. Deliberate differences from the SQL in this document:
 - Ids are UUID strings and foreign keys to users are text, as in the rest of Prisma, not `SERIAL`/`INTEGER`.
 - `ita_domain_ratings` is not built: the 15-item form (migration 1) superseded it.
 - `icu_tutorials` and `icu_tutorial_attendance` are not built: whether ICU trainees are in scope is an open question to the College.
@@ -1635,6 +1635,38 @@ A signed endorsement row must carry a method, and an attached-PDF signature must
 **Database rules added by migration 5 (not visible in the Prisma file):** `course_attendance` and `course_notices` rate 0 to 100; `course_rounds` ranking is priority or fcfs, end date not before start, registration closes not before it opens; `exam_sittings` opens <= closes < written; `exam_section_passes` sittings left 0 to 4 and one active pass per trainee and exam; fee type, exemption kind, project route and event visibility are limited to their listed values; an accepted-paper project names its journal; a Team review needs a hand-over date; a late-report override needs a reason; recognition origin is overseas training or another specialty; **a recognition rejection must be decided by the Board** (`NOT VALID`, so existing rows are not re-checked); the recognition trail refuses UPDATE and DELETE. Enum rewrites refuse to run while `ESCALATED` or `DEFERRED` is in use.
 
 ---
+
+## 14. SOT and Assistant SOT nominations (added 2026-10-25)
+
+Source: Dr. Chan, 2026-10-25. Today a Chief of Service nominates an SOT or Assistant SOT by email. The College Secretariat checks the nominee's **years as a Fellow** and whether the nominee has attended the **WBA course for trainers**, the **JCIMED SOT course** and the **basic medical education course**, sends the nomination to the Board, and after the Board endorses it enters the appointment. Built as Prisma migration `6_sot_nominations`, tested on PGlite by `tests/schema/verify_sot_nominations.mjs` (44 checks, mutation-tested). No existing table changes.
+
+```sql
+CREATE TABLE "SotNomination" (
+  id                 TEXT PRIMARY KEY,
+  "hospitalId"       TEXT NOT NULL REFERENCES "Hospital"(id) ON DELETE RESTRICT,
+  role               "UserRole" NOT NULL,            -- SOT or ASSISTANT_SOT only (CHECK)
+  "nomineeName"      TEXT NOT NULL,
+  "nomineeUserId"    TEXT REFERENCES "User"(id) ON DELETE SET NULL,   -- set once the nominee has an account
+  channel            TEXT NOT NULL DEFAULT 'EMAIL',  -- nominations arrive by email from the Chief of Service
+  "receivedOn"       DATE NOT NULL,
+  "fellowSinceYear"  INTEGER,                        -- years as a Fellow = this year minus fellowSinceYear
+  "wbaTrainerCourse" BOOLEAN NOT NULL DEFAULT false, -- WBA course for trainers
+  "jcimedSotCourse"  BOOLEAN NOT NULL DEFAULT false, -- JCIMED SOT course
+  "basicMedEdCourse" BOOLEAN NOT NULL DEFAULT false, -- basic medical education course
+  "checkedById"      TEXT, "checkedAt" TIMESTAMP,
+  state              "SotNominationState" NOT NULL DEFAULT 'CHECK',
+  "sentToBoardOn"    DATE, "boardEndorsedOn" DATE, "effectiveFrom" DATE,
+  "closedReason"     TEXT,
+  "appointmentId"    TEXT UNIQUE REFERENCES "UserRoleAssignment"(id) ON DELETE SET NULL,  -- the appointment it became
+  "recordedById"     TEXT, "createdAt" TIMESTAMP, "updatedAt" TIMESTAMP
+);
+```
+
+States: `CHECK` (recorded, Admin checks) → `BOARD` (sent to the Board) → `ENDORSED` (Board endorsed, appointment not yet entered) → `ENTERED` (appointment entered). `NOT_ENDORSED` and `WITHDRAWN` close it and need a reason.
+
+Rules held in the migration only (Prisma cannot express them): role is SOT or ASSISTANT_SOT; Fellow year between 1950 and 2100; a nomination that has gone to the Board has its sent date; an endorsed one has the Board date and the effective date; an entered one points at its appointment; a closed one has a reason; dates run forwards; and **one open nomination per hospital, role and nominee** (partial unique index, name compared case-insensitively). The index predicate compares the enum directly, because a `::text` cast is not immutable and Postgres refuses it.
+
+**Not a gate.** The Secretariat records the years and the three courses and the Board sees them; the database does not block a nomination that is short on years or courses. Whether a minimum number of years as a Fellow applies, and whether all three courses are compulsory, is not yet confirmed by the College.
 
 ## Phase 2 Placeholders (schema reserved, not built in MVP)
 

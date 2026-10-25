@@ -19,7 +19,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test:schema": "node tests/schema/verify_admin_schema.mjs && node tests/schema/verify_secretariat_schema.mjs"
+    "test:schema": "node tests/schema/verify_admin_schema.mjs && node tests/schema/verify_secretariat_schema.mjs && node tests/schema/verify_sot_nominations.mjs"
   },
   "repository": {
     "type": "git",

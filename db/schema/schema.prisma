@@ -291,6 +291,9 @@ model User {
   canReviewProjects         Boolean                     @default(false) // eligible for the formal-project reviewer pool (Admin console)
   // --- Admin console / schema doc alignment (2026-10-24) ---
   roleGrants                UserRoleAssignment[]        @relation("RoleGranter")
+  nominationsAsNominee      SotNomination[]             @relation("NominationNominee")
+  nominationsChecked        SotNomination[]             @relation("NominationChecker")
+  nominationsRecorded       SotNomination[]             @relation("NominationRecorder")
   iwbaLinks                 WbaIwbaLink[]               @relation("IwbaLinkPerson")
   iwbaLinksConfirmed        WbaIwbaLink[]               @relation("IwbaLinkConfirmer")
   procedureMapsSet          WbaProcedureMap[]           @relation("ProcedureMapSetter")
@@ -347,15 +350,16 @@ model UserRoleAssignment {
   effectiveUntil DateTime?
   isActive       Boolean   @default(true)
 
-  user             User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Restrict)
   // --- Admin console / schema doc alignment (2026-10-24) ---
   grantedById      String?
-  grantedAt        DateTime  @default(now())
-  boardEndorsedOn  DateTime? @db.Date // required for SOT / Assistant SOT appointments
+  grantedAt        DateTime       @default(now())
+  boardEndorsedOn  DateTime?      @db.Date // required for SOT / Assistant SOT appointments
   endorsementDocId String?
   endReason        String?
   // --- Admin console / schema doc alignment (2026-10-24) ---
-  grantedBy        User?     @relation("RoleGranter", fields: [grantedById], references: [id], onDelete: Restrict)
+  grantedBy        User?          @relation("RoleGranter", fields: [grantedById], references: [id], onDelete: Restrict)
+  nomination       SotNomination? @relation("NominationAppointment")
 
   @@index([userId, role, isActive])
   @@index([scopeType, scopeId])
@@ -488,6 +492,7 @@ model Hospital {
   // --- Admin console / schema doc alignment (2026-10-24) ---
   applications       Application[]            @relation("ApplicationHospital")
   rosterAttestations RosterAttestation[]      @relation("AttestHospital")
+  sotNominations     SotNomination[]          @relation("NominationHospital")
 
   @@index([hospitalCode])
 }
@@ -1962,4 +1967,54 @@ model RetrospectiveRecognitionEvent {
   actor       User?                    @relation("RecognitionEventActor", fields: [actorUserId], references: [id], onDelete: Restrict)
 
   @@index([recognitionId, eventDate])
+}
+
+// ----------------------------------------------------------------------------
+// SOT / Assistant SOT nominations (migration 6, 2026-10-25)
+// The Chief of Service nominates by email. The College Secretariat records it, checks the
+// years as a Fellow and three trainer courses, the Board endorses, then the appointment is
+// entered (UserRoleAssignment). Constraints that Prisma cannot express are in the migration only:
+// role is SOT or ASSISTANT_SOT, each state needs its dates, a closed nomination needs a reason,
+// and one open nomination per hospital, role and nominee.
+// ----------------------------------------------------------------------------
+enum SotNominationState {
+  CHECK // recorded, Admin is checking
+  BOARD // sent to the Board
+  ENDORSED // Board endorsed, appointment not yet entered
+  ENTERED // appointment entered (appointmentId set)
+  NOT_ENDORSED // Board did not endorse (closedReason required)
+  WITHDRAWN // closed before the Board (closedReason required)
+}
+
+model SotNomination {
+  id               String             @id @default(uuid())
+  hospitalId       String
+  role             UserRole // SOT or ASSISTANT_SOT only (CHECK in migration)
+  nomineeName      String
+  nomineeUserId    String?
+  channel          String             @default("EMAIL") // received by email from the Chief of Service
+  receivedOn       DateTime           @db.Date
+  fellowSinceYear  Int? // years as a Fellow = this year minus fellowSinceYear
+  wbaTrainerCourse Boolean            @default(false) // WBA course for trainers
+  jcimedSotCourse  Boolean            @default(false) // JCIMED SOT course
+  basicMedEdCourse Boolean            @default(false) // basic medical education course
+  checkedById      String?
+  checkedAt        DateTime?
+  state            SotNominationState @default(CHECK)
+  sentToBoardOn    DateTime?          @db.Date
+  boardEndorsedOn  DateTime?          @db.Date
+  effectiveFrom    DateTime?          @db.Date
+  closedReason     String?
+  appointmentId    String?            @unique
+  recordedById     String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now()) @updatedAt
+
+  hospital    Hospital            @relation("NominationHospital", fields: [hospitalId], references: [id], onDelete: Restrict)
+  nominee     User?               @relation("NominationNominee", fields: [nomineeUserId], references: [id], onDelete: SetNull)
+  checkedBy   User?               @relation("NominationChecker", fields: [checkedById], references: [id], onDelete: SetNull)
+  recordedBy  User?               @relation("NominationRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+  appointment UserRoleAssignment? @relation("NominationAppointment", fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([hospitalId, state])
 }
