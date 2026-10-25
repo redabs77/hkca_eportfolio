@@ -93,7 +93,10 @@ CREATE TABLE user_roles (
   granted_by            TEXT REFERENCES users(id),
   granted_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   
-  UNIQUE(user_id, role, scope_type, scope_id)
+  board_endorsed_on     DATE,             -- Board of Education endorsement date; required for SOT and Assistant SOT (Admin console, 2026-10-24)
+  endorsement_doc_id    TEXT,             -- reference to the circulated endorsement record
+  end_reason            TEXT              -- recorded when a term ends or its end date changes
+  -- No UNIQUE constraint: the same person can hold the same role again after a gap. The role set stays SOT and Assistant SOT; there is no Acting SOT role (decision 2026-10-24).
 );
 
 CREATE INDEX idx_user_roles_user ON user_roles(user_id);
@@ -119,7 +122,7 @@ CREATE TABLE trainee_profiles (
   mchk_registration_number  TEXT,
   
   -- Training stage
-  current_stage             TEXT NOT NULL, -- BAT, HAT, PFY, Fellow, Suspended
+  current_stage             TEXT NOT NULL, -- BAT, HAT, PFY, Fellow. Suspension is a separate Board-imposed flag (is_suspended), not a stage
   stage_start_date          DATE,
   expected_completion_date  DATE,
   
@@ -158,7 +161,8 @@ CREATE TABLE trainee_profiles (
   
   -- Status
   is_active                 BOOLEAN DEFAULT true,
-  training_status           TEXT DEFAULT 'active', -- active, suspended, terminated, completed
+  training_status           TEXT DEFAULT 'active', -- active | on_leave | deactivated | completed (decision 2026-10-24). Changes are recorded in trainee_status_events (section 12)
+  is_suspended              BOOLEAN DEFAULT false, -- Board-imposed suspension, independent of training_status
   
   -- Metadata
   created_at                TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -524,7 +528,10 @@ CREATE TABLE wba_iwba_links (
   iwba_user_id   UUID PRIMARY KEY,          -- iWBA users.id, stable
   user_id        TEXT REFERENCES users(id), -- the HKCA person (trainee or trainer)
   hkam_id        TEXT,                      -- eHKAM SSO account id; not the HKAM Fellow ID; may start null
-  link_method    TEXT NOT NULL,             -- sso_hkam_id | admin_confirmed | admin_csv
+  -- Unlinked people (Admin console, 2026-10-24): a row exists from first sight, with user_id null until confirmed
+  iwba_display_name TEXT, iwba_hospital TEXT, iwba_role TEXT,   -- exactly as iWBA sent them
+  status         TEXT NOT NULL DEFAULT 'unlinked',            -- unlinked | confirmed | ignored
+  link_method    TEXT,                      -- null while unlinked; sso_hkam_id | admin_confirmed | admin_csv
   confirmed_by   INTEGER REFERENCES users(id),
   confirmed_at   TIMESTAMPTZ,
   created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -533,7 +540,8 @@ CREATE TABLE wba_iwba_links (
 CREATE TABLE wba_sync_state (            -- one row per college token and endpoint
   endpoint       TEXT PRIMARY KEY,         -- summary | backfill
   cursor_updated_at TIMESTAMPTZ,           -- advanced only after a full traversal succeeds
-  last_run_at    TIMESTAMPTZ, last_status TEXT, last_error TEXT
+  last_run_at    TIMESTAMPTZ, last_status TEXT, last_error TEXT,
+  last_records_read INTEGER, last_records_failed INTEGER   -- shown in the Admin console health strip
 );
 
 CREATE TABLE wba_sync_conflicts (
@@ -686,9 +694,21 @@ CREATE TABLE retrospective_recognitions (
   application_date              DATE NOT NULL,
   application_type              TEXT NOT NULL, -- overseas_training, lateral_transfer, prior_experience
   
+  -- Gated access (Admin console, 2026-10-24): the form is locked until Admin unlocks it for this trainee
+  access_requested_at           TIMESTAMP,
+  form_unlocked_at              TIMESTAMP,
+  form_unlocked_by              TEXT REFERENCES users(id),
+  
+  -- What the applicant asked for (what the Board granted is in the credited_* columns below)
+  requested_clinical_months     NUMERIC(4,2),
+  requested_icu_months          NUMERIC(4,2),
+  requested_elective_months     NUMERIC(4,2),
+  requested_cases               INTEGER,
+  board_decision_date           DATE,          -- date the Board decided; approval_date is when Admin executed it
+  
   -- Vetting status
-  vetting_status                TEXT DEFAULT 'pending',
-  -- pending → under_review → approved / rejected
+  vetting_status                TEXT DEFAULT 'access_requested',
+  -- access_requested → unlocked → submitted → approved / rejected   (Admin console: Request access, With applicant, Needs Board decision, Credit executed)
   
   assigned_reviewer_id          TEXT REFERENCES users(id),
   boe_review_date               DATE,
@@ -745,12 +765,13 @@ CREATE TABLE exam_results (
   id                    SERIAL PRIMARY KEY,
   trainee_id            INTEGER REFERENCES trainee_profiles(id) ON DELETE CASCADE,
   
-  exam_type             TEXT NOT NULL,    -- intermediate, final, exit
+  exam_type             TEXT NOT NULL,    -- INTERMEDIATE | FINAL_ANAESTHESIA | FINAL_ICU (names as built in Prisma; decision 2026-10-24)
   exam_date             DATE NOT NULL,
   result                TEXT NOT NULL,    -- pass, fail. Legacy `atp_reg_exam` rows with Processing / Withdraw / Cancel are applications, not results, and are not imported here (Migration Plan 6.9, item 6)
   score                 TEXT,
   
   attempt_number        INTEGER DEFAULT 1,
+  source_batch_id       INTEGER,          -- bulk ingestion batch that recorded it; null if entered one at a time
   
   created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -791,6 +812,8 @@ CREATE TABLE mandatory_courses (
   completion_date       DATE,
   certificate_uploaded  BOOLEAN DEFAULT false,
   certificate_file_path TEXT,
+  source_batch_id       INTEGER,          -- attendance-sheet batch that marked it completed (Admin console)
+  round_id              INTEGER,          -- course_rounds.id the trainee attended (section 12)
   
   verified_by           TEXT REFERENCES users(id),
   verified_at           TIMESTAMP,
@@ -822,6 +845,7 @@ CREATE TABLE formal_projects (
   status                    TEXT DEFAULT 'protocol_draft',
   -- protocol_draft → protocol_submitted → under_review → revision_required → 
   -- manuscript_submitted → approved → final_approval_letter_issued
+  -- plus: escalated (divergent reviews sent to the Formal Project Subcommittee Chair; outcome then recorded). Admin console, 2026-10-24.
   
   protocol_submitted_date   DATE,
   protocol_anonymized_path  TEXT,
@@ -830,6 +854,7 @@ CREATE TABLE formal_projects (
   -- Blinded review
   reviewer_1_id             TEXT REFERENCES users(id),
   reviewer_2_id             TEXT REFERENCES users(id),
+  -- reviewer_1/2 columns hold only the CURRENT reviewers. The source of truth for assignment, deadline, replacement and grade is formal_project_reviews (section 12).
   reviewer_1_status         TEXT,            -- approved, minor_revision, major_revision
   reviewer_2_status         TEXT,
   reviewer_1_feedback       TEXT,
@@ -1002,6 +1027,8 @@ CREATE TABLE audit_log (
   notes                 TEXT
 );
 
+-- Hash chain, as built in Prisma (H7); this doc previously omitted it:
+ALTER TABLE audit_log ADD COLUMN prev_hash TEXT, ADD COLUMN row_hash TEXT NOT NULL;   -- row_hash = sha256(prev_hash + canonical row payload)
 CREATE INDEX idx_audit_entity ON audit_log(entity_type, entity_id);
 CREATE INDEX idx_audit_user ON audit_log(performed_by, performed_at);
 CREATE INDEX idx_audit_timestamp ON audit_log(performed_at);
@@ -1258,6 +1285,153 @@ This is the single largest piece of ETL work in the project, and the largest dat
 2. Was `approved_status` binary, or did it carry rejection/revision states?
 3. Does a `patient` (v1) table exist outside both dumps?
 4. Is the 2-year retrospective rule enforced in the legacy application, or only documented? (`date_entry` vs `start_date` would reveal this.)
+
+---
+
+## 12. Admin console additions (added 2026-10-24)
+
+Source: `Admin Prototype Delta Check 2026-10-24.md`. These tables are needed by the College Secretariat Console prototype. They are **not yet in `db/schema/schema.prisma`**, which also still lacks several earlier doc tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). Bringing Prisma up to this document is a separate, tested step.
+
+Decisions recorded 2026-10-24 (Dr. Chan): (1) trainee status words are active, on leave, deactivated, completed, with suspension a separate Board flag; (2) recognition credit uses ledger reasons `RETROSPECTIVE_OVERSEAS_RECOGNITION` and `RETROSPECTIVE_SPECIALTY_TRANSFER` and carries the Board decision date; (3) recognised logbook cases are stored as a case-credit row (option A, below); (4) there is no Acting SOT role.
+
+### Intake and status
+
+```sql
+CREATE TABLE applications (                  -- Admin intake queue; a trainee exists only after approval
+  id               SERIAL PRIMARY KEY,
+  applicant_user_id TEXT REFERENCES users(id),
+  requested_stage  TEXT NOT NULL DEFAULT 'BAT',        -- BAT, or HAT for a lateral transfer
+  parent_hospital_id INTEGER REFERENCES hospitals(id),
+  submitted_at     TIMESTAMP NOT NULL,
+  check_mchk       BOOLEAN NOT NULL DEFAULT false,     -- Medical Council registration checked
+  check_fee        BOOLEAN NOT NULL DEFAULT false,     -- application fee matched to payment record
+  check_endorsement BOOLEAN NOT NULL DEFAULT false,    -- signed PDF (Chief of Service and SOT) present and checked
+  endorsement_doc_id TEXT,
+  status           TEXT NOT NULL DEFAULT 'submitted',  -- submitted | returned | approved
+  return_note      TEXT,
+  decided_by       TEXT REFERENCES users(id),
+  decided_at       TIMESTAMP,
+  trainee_id       INTEGER REFERENCES trainee_profiles(id)   -- set on approval
+);
+-- Approval is allowed only when all three checks are true. It issues the HKCA number, binds the current curriculum edition,
+-- sets parent hospital and stage, opens the ledger at 0 months and notifies the SOT, in one transaction, and writes audit_log.
+
+CREATE TABLE trainee_status_events (          -- append-only
+  id             SERIAL PRIMARY KEY,
+  trainee_id     INTEGER NOT NULL REFERENCES trainee_profiles(id) ON DELETE RESTRICT,
+  status         TEXT NOT NULL,               -- active | on_leave | deactivated | completed
+  effective_date DATE NOT NULL,
+  reason         TEXT,                        -- required unless status = active
+  recorded_by    TEXT REFERENCES users(id),
+  created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Recognition: ledger and case credit
+
+Ledger (`accredited_time_ledger`): add reasons `RETROSPECTIVE_OVERSEAS_RECOGNITION` and `RETROSPECTIVE_SPECIALTY_TRANSFER` to `LedgerReason`, and a column `board_decision_date DATE` (the authority role stays the Admin who executed it; the Board's decision is the date and note).
+
+```sql
+CREATE TABLE vop_credit_adjustments (        -- option A: recognised logbook cases (decision 2026-10-24)
+  id                  SERIAL PRIMARY KEY,
+  trainee_id          INTEGER NOT NULL REFERENCES trainee_profiles(id) ON DELETE RESTRICT,
+  recognition_id      INTEGER REFERENCES retrospective_recognitions(id),
+  cases               INTEGER NOT NULL,       -- cases recognised by the Board
+  module_code         TEXT,                   -- SM-3.x the Board allocated them to; null = counts to the overall total only
+  reason              TEXT NOT NULL,          -- RETROSPECTIVE_OVERSEAS_RECOGNITION | RETROSPECTIVE_SPECIALTY_TRANSFER | correction codes
+  board_decision_date DATE NOT NULL,
+  note                TEXT,
+  recorded_by         TEXT REFERENCES users(id),
+  supersedes_id       INTEGER REFERENCES vop_credit_adjustments(id),   -- a correction is a new row; rows are never edited
+  is_current          BOOLEAN NOT NULL DEFAULT true,
+  created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+Rules: counted in cumulative case totals; counted towards a module minimum **only** when `module_code` is set; shown to the trainee and SOT as "Recognised by the Board", never as verified cases; outside the 2-year logbook lock; permanent.
+
+### Courses
+
+```sql
+CREATE TABLE course_catalogue (
+  course_code  TEXT PRIMARY KEY,              -- EASE, EMAC, ADAM-A, ECHO-A, UGRA, plus non-mandatory legacy courses
+  course_name  TEXT NOT NULL,
+  is_mandatory BOOLEAN NOT NULL DEFAULT false
+);
+CREATE TABLE course_rounds (
+  id          SERIAL PRIMARY KEY,
+  course_code TEXT NOT NULL REFERENCES course_catalogue(course_code),
+  round_date  DATE NOT NULL,
+  seats       INTEGER NOT NULL,
+  status      TEXT NOT NULL DEFAULT 'open',   -- open | held | cancelled
+  attendance_recorded_at TIMESTAMP
+);
+CREATE TABLE course_requests (
+  id           SERIAL PRIMARY KEY,
+  round_id     INTEGER NOT NULL REFERENCES course_rounds(id) ON DELETE RESTRICT,
+  trainee_id   INTEGER NOT NULL REFERENCES trainee_profiles(id) ON DELETE RESTRICT,
+  requested_at TIMESTAMP NOT NULL,
+  decision     TEXT NOT NULL DEFAULT 'requested',   -- requested | accepted | waitlisted | deferred
+  decided_by   TEXT REFERENCES users(id),
+  decided_at   TIMESTAMP,
+  UNIQUE (round_id, trainee_id)
+);
+```
+Priority (high, medium, low) is computed from stage and course, not stored. Seats accepted must not exceed `course_rounds.seats` (enforced in the write, not only the UI). Attendance sheets use bulk ingestion type `MANDATORY_COURSE`; each completion row carries `source_batch_id` and `round_id`.
+
+### Formal project reviews
+
+```sql
+CREATE TABLE formal_project_reviews (         -- one row per reviewer assignment; replacement writes a new row
+  id           SERIAL PRIMARY KEY,
+  project_id   INTEGER NOT NULL REFERENCES formal_projects(id) ON DELETE RESTRICT,
+  stage        TEXT NOT NULL,                 -- protocol | manuscript
+  version_no   SMALLINT NOT NULL DEFAULT 1,
+  reviewer_id  TEXT NOT NULL REFERENCES users(id),
+  assigned_at  TIMESTAMP NOT NULL,
+  assigned_by  TEXT REFERENCES users(id),
+  due_at       DATE NOT NULL,                 -- assigned_at + 30 days
+  replaced_at  TIMESTAMP,
+  replaced_by  TEXT REFERENCES users(id),
+  submitted_at TIMESTAMP,
+  grade        TEXT,                          -- satisfactory | minor_revision | major_revision | unsatisfactory
+  feedback     TEXT
+);
+```
+Conflict rule: a reviewer whose current or parent hospital equals the trainee's is not offered. Reviewers never see the trainee's name. The reviewer pool is users with role `EXTERNAL_ASSESSOR` or `TRAINER` flagged `can_review_projects`.
+
+### Rosters
+
+```sql
+CREATE TABLE roster_rounds (
+  id SERIAL PRIMARY KEY, period TEXT NOT NULL UNIQUE,    -- e.g. '2026-06', '2026-12'
+  opens_on DATE NOT NULL, closes_on DATE NOT NULL
+);
+CREATE TABLE roster_attestations (
+  id SERIAL PRIMARY KEY,
+  round_id INTEGER NOT NULL REFERENCES roster_rounds(id),
+  hospital_id INTEGER NOT NULL REFERENCES hospitals(id),
+  confirmed_by TEXT REFERENCES users(id), confirmed_at TIMESTAMP,
+  changes_json JSONB,                         -- reported transfers and departures
+  reviewed_by TEXT REFERENCES users(id), reviewed_at TIMESTAMP,
+  UNIQUE (round_id, hospital_id)
+);
+```
+
+### iWBA mapping
+
+```sql
+CREATE TABLE wba_procedure_map (
+  iwba_procedure_code TEXT PRIMARY KEY,
+  curriculum_code     TEXT NOT NULL,          -- CF-2.x or SM-3.x
+  set_by              TEXT REFERENCES users(id),
+  set_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+Saving a mapping releases the assessments held under `unmapped_procedure` conflicts for that code. Bulk ingestion type `IWBA_LINK` is added for "link from a file" (two columns: iWBA user id, HKCA number or assessor id).
+
+### Admin audit
+
+Every Admin action in section 12 writes `audit_log` (hash-chained). The console's Activity log reads it.
 
 ---
 
