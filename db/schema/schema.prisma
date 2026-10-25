@@ -1302,12 +1302,15 @@ model TraineeStatusEvent {
   effectiveDate DateTime      @db.Date
   reason        String? // required unless status is ACTIVE
   recordedById  String?
+  source        String        @default("app") // app | legacy_import | secretariat_review
+  isConfirmed   Boolean       @default(true) // false for a status inferred from legacy `active`; the Secretariat confirms it by writing a new row
   createdAt     DateTime      @default(now())
 
   trainee    TraineeProfile @relation("StatusEventTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
   recordedBy User?          @relation("StatusEventRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
 
   @@index([traineeId, effectiveDate])
+  @@index([isConfirmed])
 }
 
 model Application {

@@ -1331,10 +1331,14 @@ CREATE TABLE trainee_status_events (          -- append-only
   status         TEXT NOT NULL,               -- active | on_leave | deactivated | completed
   effective_date DATE NOT NULL,
   reason         TEXT,                        -- required unless status = active
+  source         TEXT NOT NULL DEFAULT 'app', -- app | legacy_import | secretariat_review
+  is_confirmed   BOOLEAN NOT NULL DEFAULT true, -- false for a status inferred from legacy `active`
   recorded_by    TEXT REFERENCES users(id),
   created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+Legacy status is not trusted (Dr. Chan, 2026-10-24: the legacy active flag is poorly kept). Import writes one event per trainee with `source = 'legacy_import'` and `is_confirmed = false`: legacy Y becomes active, anything else becomes deactivated with the reason "from legacy, reason unknown". The Admin console lists every trainee whose latest event is unconfirmed ("Status to confirm"); confirming writes a new event (`source = 'secretariat_review'`, `is_confirmed = true`) with the real status, reason and effective date. Nothing is overwritten. The cutover report states how many remain unconfirmed.
 
 ### Recognition: ledger and case credit
 

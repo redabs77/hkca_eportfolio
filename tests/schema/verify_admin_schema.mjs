@@ -35,6 +35,7 @@ const before = {};
 for (const t of ORDER) before[t] = await count(pg, t);
 const tablesBefore = (await pg.query(`SELECT count(*)::int n FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'`)).rows[0].n;
 await pg.exec(mig(m3));
+for (const d of dirs.filter(d => parseInt(d) > 3)) await pg.exec(mig(d));   // later migrations (4: status provenance)
 for (const t of ORDER) ok(await count(pg, t) === before[t], `${t}: ${before[t]} rows preserved`);
 const tablesAfter = (await pg.query(`SELECT count(*)::int n FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'`)).rows[0].n;
 ok(tablesAfter - tablesBefore === 22, `22 new tables (${tablesBefore} -> ${tablesAfter})`);
@@ -70,6 +71,16 @@ await rejects(() => q(`INSERT INTO "Application" (id,"submittedAt",status) VALUE
 // status events
 await q(`INSERT INTO "TraineeStatusEvent" (id,"traineeId",status,"effectiveDate",reason,"recordedById") VALUES (gen_random_uuid()::text,$1,'ON_LEAVE','2026-10-01','Parental leave',$2)`, [T1.id, U2]);
 await rejects(() => q(`INSERT INTO "TraineeStatusEvent" (id,"traineeId",status,"effectiveDate") VALUES (gen_random_uuid()::text,$1,'SUSPENDED','2026-10-01')`, [T1.id]), "SUSPENDED is not a trainee status", /invalid input value/i);
+// legacy status provenance (migration 4): imported status is provisional until the Secretariat confirms it
+const def = (await q(`SELECT source, "isConfirmed" c FROM "TraineeStatusEvent" LIMIT 1`))[0];
+ok(def.source === "app" && def.c === true, "a status event written in the app defaults to source app, confirmed");
+for (const [t, st] of [[T1, "ACTIVE"], [T2, "DEACTIVATED"]])
+  await q(`INSERT INTO "TraineeStatusEvent" (id,"traineeId",status,"effectiveDate",reason,source,"isConfirmed") VALUES (gen_random_uuid()::text,$1,$2,'2026-10-24',$3,'legacy_import',false)`, [t.id, st, st === "ACTIVE" ? null : "from legacy, reason unknown"]);
+const latest = `SELECT DISTINCT ON ("traineeId") "traineeId", status, "isConfirmed" FROM "TraineeStatusEvent" ORDER BY "traineeId", "effectiveDate" DESC, "createdAt" DESC`;
+ok((await q(`SELECT count(*)::int n FROM (${latest}) x WHERE NOT "isConfirmed"`))[0].n === 2, "Status to confirm: 2 trainees whose latest status is unconfirmed legacy");
+await q(`INSERT INTO "TraineeStatusEvent" (id,"traineeId",status,"effectiveDate",reason,source,"isConfirmed","recordedById") VALUES (gen_random_uuid()::text,$1,'COMPLETED','2026-10-25','Awarded Fellowship, confirmed by Secretariat','secretariat_review',true,$2)`, [T2.id, U2]);
+ok((await q(`SELECT count(*)::int n FROM (${latest}) x WHERE NOT "isConfirmed"`))[0].n === 1, "confirming appends a new event: queue drops to 1");
+ok((await q(`SELECT count(*)::int n FROM "TraineeStatusEvent" WHERE "traineeId"=$1 AND source='legacy_import'`, [T2.id]))[0].n === 1, "the provisional legacy row is kept, not overwritten");
 // courses
 await q(`INSERT INTO "CourseCatalogue" ("courseCode","courseName","isMandatory") VALUES ('EMAC','Echocardiography and Managing Anaesthetic Complications',true)`);
 const rid = (await q(`INSERT INTO "CourseRound" (id,"courseCode","roundDate",seats) VALUES (gen_random_uuid()::text,'EMAC','2026-11-14',12) RETURNING id`))[0].id;
