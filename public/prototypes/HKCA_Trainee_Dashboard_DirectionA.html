@@ -189,6 +189,11 @@ main{padding:30px 0 70px}
 .cinfo .cdesc{font-size:12px;color:var(--slate);margin-top:2px;line-height:1.4}
 .cmeta{display:flex;align-items:center;gap:11px;flex-wrap:wrap;justify-content:flex-end}
 .cdate{font-size:12px;color:var(--slate);min-width:82px;text-align:right}
+.cr-sec{margin:0 0 9px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
+.cr-sec:not(:first-of-type){margin-top:22px}
+.cinfo .cwhy{font-size:12px;font-weight:650;color:#92400e;margin-top:3px}
+.dark .cinfo .cwhy{color:#fcd34d}
+.cr-empty{font-size:13.5px;color:var(--slate);margin:0;line-height:1.5}
 @media(max-width:760px){
   .course{grid-template-columns:auto 1fr;row-gap:11px}
   .cmeta{grid-column:1/-1;justify-content:flex-start}
@@ -818,7 +823,9 @@ button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.gr
 <div id="modalCase" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mcT"></div>
 <div id="modalCaseDetail" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mdT"></div>
 <div id="modalFlag" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mfT"></div>
+<div id="modalCourse" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mcoT"></div>
 
+<script src="hkca-courses-store.js"></script>
 <script src="hkca-plans-store.js"></script>
 <script>
 
@@ -860,6 +867,7 @@ const CERT_KEY = 'hkca.trainee.cert.v1';
 const certSent = ()=>lsGet(CERT_KEY, []);
 let NS_ACT = [];
 function nsItems(){
+  refreshCourses();
   const it = [], wait = [], info = GL_PEOPLE[GL_ID];
   if(ITA.stage==='reflection'){
     const saved = ITA.refl.savedAt && !ITA._editRefl;
@@ -876,7 +884,18 @@ function nsItems(){
   });
   const cs = lbCases(), rev = cs.filter(c=>c.status==='revision_requested').length, unc = cs.filter(c=>!c.item).length;
   if(rev) it.push({r:3, t: rev+(rev===1?' logbook case needs':' logbook cases need')+' your revision', s:'Your verifier asked for a change.', cta:'Open', act:()=>{ showTab('logbook'); lbGo({status:'revision_requested'}); }});
-  const sent = certSent(); COURSES.filter(c=>!c.done).forEach(c=>{ if(sent.includes(c.n)) wait.push('College Admin is checking your '+c.n+' certificate'); else it.push({r:4, t:'Upload your '+c.n+' certificate', s:'Needed before Exit Assessment.', cta:'Upload', act:()=>{ showTab('courses'); }}); });
+  const sent = certSent(); COURSES.filter(c=>!c.done && !HKC.activeFor(TR_KEY,CK[c.n])).forEach(c=>{ if(sent.includes(c.n)) wait.push('College Admin is checking your '+c.n+' certificate'); else it.push({r:4, t:'Upload your '+c.n+' certificate', s:'Needed before Exit Assessment.', cta:'Upload', act:()=>{ showTab('courses'); }}); });
+  crOpen().forEach(x=>{ if(x.why && !(x.a && x.a[2]!=='Withdrawn')) it.push({r:x.why==='need'?3.5:4.5, t:'Registration is open for '+HKC.SHORT[x.r.course], s:HKC.dates(x.r)+' \u00b7 closes '+HKC.fmtS(x.r.closes)+' \u00b7 '+HKC.feeText(x.r)+(x.why==='need'?'. You still need this course.':'. Matches your stage.'), cta:'Apply', act:()=>showTab('courses')}); });
+  HKC.get().rounds.forEach(r=>{
+    const a = HKC.appOf(r,TR_KEY); if(!a || a[2]==='Withdrawn') return;
+    const st = HKC.rState(r), nm = HKC.SHORT[r.course], d = HKC.fmtS(r.date), rate = (r.att||{})[TR_KEY];
+    if(st==='recorded'){ if(rate!=null && rate<70 && HKC.daysTo(r.recorded)>-30) it.push({r:2.5, t:nm+': attendance '+rate+'%, below the 70% needed', s:'No certificate was issued'+(HKC.MAND.includes(r.course)?'. You will need another round.':'.'), cta:'View', act:()=>showTab('courses')}); return; }
+    if(st==='held') return;
+    if(a[2]==='Accepted') it.push({r:6, t:'You have a place on '+nm+', '+d, s:'Notice of acceptance sent to your email.', cta:'View', act:()=>showTab('courses')});
+    else if(a[2]==='Rejected') it.push({r:6, t:'Your '+nm+' application was not accepted', s:'You can apply again when the next round opens.', cta:'View', act:()=>showTab('courses')});
+    else if(a[2]==='Waitlisted') wait.push(nm+' '+d+': waitlisted, with priority for the next round');
+    else wait.push('College Admin is deciding your '+nm+' application');
+  });
   if(unc) it.push({r:5, t: unc+' imported logbook case'+(unc===1?'':'s')+' need a requirement', s:'They do not count until you classify them.', cta:'Classify', act:()=>{ showTab('logbook'); lbGo({show:'unclassified'}); }});
   it.sort((a,b)=>a.r-b.r); return {it, wait};
 }
@@ -949,7 +968,8 @@ function renderDemo(){
   el.innerHTML = `<label>View plans as<select aria-label="View plans as" onchange="glWho(this.value)">${opts}</select></label>
     <label>ITA stage<select aria-label="ITA stage for this demo" onchange="itaSetStage(this.value)">${itaStageOpts()}</select></label>
     <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${PS.demoReview()?'checked':''} onchange="glReviewWindow(this.checked)"> Show the end-of-period review window (3 Dec)</label>
-    <a href="#" class="link" onclick="glReset();return false">Reset demo data</a>`;
+    <a href="#" class="link" onclick="glReset();return false">Reset demo data</a>
+    <a href="#" class="link" onclick="HKC.reset();location.reload();return false">Reset course registration demo</a>`;
 }
 function renderOverview(){ renderNextSteps(); renderStepper(); renderGate(); renderExit(); }
 const FOLDS = {peerFold:'hkca.trainee.fold.peer', timeFold:'hkca.trainee.fold.time'};
@@ -1081,18 +1101,93 @@ const COURSES = [
  {n:'ADAM-A',d:'Advanced & Difficult Airway Workshop for Anaesthesiologists',done:'18 Jan 2025'},
  {n:'ECHO-A',d:'Focused Transthoracic Echocardiography Workshop for Anaesthetists',done:'07 Jun 2025'},
  {n:'UGRA',d:'Ultrasound-Guided Regional Anaesthesia – Elementary',done:null}];
+/* ---------- course registration: closed loop with the Admin console through hkca-courses-store.js ---------- */
+const TR_KEY = 'HKCA-'+TR_ID, TR_STG = TR_STAGE.split('-')[0];
+const CK = {'EASE':'EASE','EMAC':'EMAC','ADAM-A':'ADAMA','ECHO-A':'ECHOA','UGRA':'UGRA'};
+function refreshCourses(){
+  const dn = HKC.doneList(TR_KEY);
+  COURSES.forEach(c=>{ const k = CK[c.n]; if(dn.includes(k)){ const d = HKC.doneDate(TR_KEY,k); c.done = d ? fmtD(d+'T00:00:00') : (c.done||'On record'); } else c.done = null; });
+}
+function crOpen(){
+  const tr = {stage:TR_STG, done:HKC.doneList(TR_KEY)}, rank = {need:0,stage:1};
+  return HKC.get().rounds.filter(r=>HKC.rState(r)==='open').map(r=>({r, a:HKC.appOf(r,TR_KEY), why:HKC.relevant(r,tr)}))
+    .filter(x=>x.why || !HKC.MAND.includes(x.r.course) || (x.a && x.a[2]!=='Withdrawn'))
+    .sort((a,b)=>((a.why?rank[a.why]:2)-(b.why?rank[b.why]:2)) || (a.r.date<b.r.date?-1:1));
+}
+function crStatus(r,a){
+  const st = HKC.rState(r), rate = (r.att||{})[TR_KEY], mand = HKC.MAND.includes(r.course);
+  if(st==='recorded' && (a[2]==='Accepted' || rate!=null)){
+    if(rate==null) return {c:'',l:'Attendance not recorded',sub:'Ask College Admin if you attended.'};
+    if(rate>=70) return {c:'ok',l:mand?'Completed':'Attended',sub:'Attendance '+rate+'%. Eligible for the Certificate of Attendance.'};
+    return {c:'bad',l:'Attendance '+rate+'%',sub:'Below the 70% needed for the certificate'+(mand?', so the course is not complete. You will need another round.':'.')+(rate<50?' Your Chief of Service and SOT have been told.':'')};
+  }
+  if(a[2]==='Accepted') return {c:'ok',l:'Accepted',sub:'Notice of acceptance sent to your email.'};
+  if(a[2]==='Waitlisted') return {c:'warn',l:'Waitlisted',sub:'You get priority for the next round.'};
+  if(a[2]==='Rejected') return {c:'bad',l:'Not accepted',sub:'You can apply again when the next round opens.'};
+  return {c:'info',l:'Applied',sub:'College Admin will decide your place.'};
+}
+function crRow(x){
+  const r = x.r, a = x.a && x.a[2]!=='Withdrawn' ? x.a : null, st = a ? crStatus(r,a) : null, open = HKC.rState(r)==='open';
+  const n = HKC.daysTo(r.closes);
+  const info = [HKC.dates(r), r.venue, r.format].filter(Boolean).map(X).join(' &middot; ');
+  const why = x.why==='need' ? 'You still need this mandatory course.' : x.why==='stage' ? 'Matches your stage, '+HKC.STAGE_LABEL[TR_STG]+'.' : '';
+  const cl = open ? 'Registration closes '+HKC.fmt(r.closes)+(n===0?' (today)':n===1?' (in 1 day)':' (in '+n+' days)')+' · ' : '';
+  const btn = a ? (open ? `<button type="button" class="btn sec sm" onclick="crWithdraw('${r.id}')">Withdraw</button>` : '') : `<button type="button" class="btn pri sm" onclick="crApply('${r.id}')">Apply</button>`;
+  return `<div class="course ${x.why==='need'&&!a?'pending':''}"><div class="cstat todo" aria-hidden="true">&#8226;</div><div class="cinfo"><div class="cname">${X(HKC.NAMES[r.course])}</div><div class="cdesc">${info}</div><div class="cdesc">${X(cl)}${X(HKC.feeText(r))}</div>${why&&!a?`<div class="cwhy">${X(why)}</div>`:''}${st&&st.sub?`<div class="cdesc">${X(st.sub)}</div>`:''}</div><div class="cmeta">${st?`<span class="pill ${st.c}">${X(st.l)}</span>`:''}${btn}</div></div>`;
+}
+function crCards(){
+  refreshCourses();
+  const open = crOpen(), need = open.filter(x=>x.why==='need'), stage = open.filter(x=>x.why==='stage'), other = open.filter(x=>!x.why);
+  const hist = HKC.get().rounds.map(r=>({r, a:HKC.appOf(r,TR_KEY)})).filter(x=>x.a && x.a[2]!=='Withdrawn' && HKC.rState(x.r)!=='open').sort((a,b)=>a.r.date<b.r.date?1:-1);
+  const sec = (t,l)=>l.length?`<div class="cr-sec">${t}</div><div class="courselist">${l.map(crRow).join('')}</div>`:'';
+  return `<div class="card"><div class="hd"><div><div class="eyebrow">Course registration</div><h2>Open for registration</h2>
+      <p>Mandatory courses you still need come first, then courses for your stage. College Admin decides each place.</p></div>${open.length?`<span class="pill warn">${open.length} open</span>`:''}</div>
+    ${open.length ? sec('Mandatory courses you still need',need)+sec('Courses for your stage',stage)+sec('Other open courses',other) : '<p class="cr-empty">No course is open for registration right now. When one opens for you, it appears here and under Next steps on your Overview.</p>'}</div>
+    ${hist.length?`<div class="card"><div class="hd"><div><div class="eyebrow">Course registration</div><h2>Your applications</h2></div></div><div class="courselist">${hist.map(crRow).join('')}</div></div>`:''}`;
+}
+function crMsg(rid, fn){
+  const r = HKC.get().rounds.find(x=>x.id===rid);
+  const fee = r.feeM>0 ? '<p class="qline" style="margin:10px 0 0;font-size:12.5px">If you withdraw after the deadline the course fee is forfeited. If the reason is medical and supported in writing, it is refunded less a 10% administrative charge.</p>' : '';
+  return {r, fee};
+}
+function crApply(rid){
+  const {r, fee} = crMsg(rid);
+  openModalX('modalCourse', `<div class="xmodal"><div class="eyebrow">Apply for a course</div><h3 id="mcoT">${X(HKC.NAMES[r.course])}</h3>
+    <p class="qline" style="margin:8px 0 0;font-size:13px">${X(HKC.dates(r))}${r.venue?' &middot; '+X(r.venue):''} &middot; ${X(r.format)}</p>
+    <p class="qline" style="margin:6px 0 0;font-size:13px"><b>Fee:</b> ${X(HKC.feeText(r))}. <b>Registration closes:</b> ${X(HKC.fmt(r.closes))}.</p>
+    <p class="qline" style="margin:10px 0 0;font-size:12.5px">You can withdraw any time before registration closes. College Admin decides each place and you will see the result here.</p>${fee}
+    <p class="qline" id="crErr" style="margin:8px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
+    <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalCourse')">Cancel</button><button type="button" class="btn pri" onclick="crDoApply('${r.id}')">Apply for this course</button></div></div>`);
+}
+function crDoApply(rid){ const res = HKC.apply(TR_KEY, rid); if(!res.ok){ $q('#crErr').textContent = res.msg; return; } closeX('modalCourse'); crRefresh(); }
+function crWithdraw(rid){
+  const {r, fee} = crMsg(rid);
+  openModalX('modalCourse', `<div class="xmodal"><div class="eyebrow">Withdraw</div><h3 id="mcoT">Withdraw from ${X(HKC.SHORT[r.course])}, ${X(HKC.fmtS(r.date))}?</h3>
+    <p class="qline" style="margin:8px 0 0;font-size:13px">You can withdraw until registration closes on ${X(HKC.fmt(r.closes))}, and apply again before then.</p>${fee}
+    <p class="qline" id="crErr" style="margin:8px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
+    <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalCourse')">Keep my application</button><button type="button" class="btn pri" onclick="crDoWithdraw('${r.id}')">Withdraw</button></div></div>`);
+}
+function crDoWithdraw(rid){ const res = HKC.withdraw(TR_KEY, rid); if(!res.ok){ $q('#crErr').textContent = res.msg; return; } closeX('modalCourse'); crRefresh(); }
+function crRefresh(){
+  refreshCourses();
+  const cur = TABS.find(t=>!document.getElementById('panel-'+t).hidden);
+  if(cur==='courses') renderCoursesTab(); else if(cur==='overview') renderOverview();
+}
+window.addEventListener('storage', e=>{ if(e.key===HKC.KEY) crRefresh(); });
 function courseListHtml(){
   return '<div class="courselist">'+COURSES.map(c=>c.done
     ? `<div class="course"><div class="cstat done">&#10003;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill ok">Verified</span><span class="cdate mono">${c.done}</span></div></div>`
-    : `<div class="course pending"><div class="cstat todo">&#8226;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill warn">Certificate not uploaded</span><button type="button" class="btn am sm" onclick="uploadCert('${c.n}')">Upload certificate</button></div></div>`).join('')+'</div>';
+    : `<div class="course pending"><div class="cstat todo">&#8226;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta">${HKC.activeFor(TR_KEY,CK[c.n])?'<span class="pill info">Registration open or applied, see above</span>':`<span class="pill warn">Certificate not uploaded</span><button type="button" class="btn am sm" onclick="uploadCert('${c.n}')">Upload certificate</button>`}</div></div>`).join('')+'</div>';
 }
 function uploadCert(n){ const b = event.currentTarget; b.textContent = 'Sent to College Admin'; b.disabled = true; b.className = 'btn sec sm'; const l = certSent(); if(!l.includes(n)){ l.push(n); lsSet(CERT_KEY, l); } }
 const FLAG_KEY = 'hkca.trainee.flags.v1';
 function renderCoursesTab(){
+  refreshCourses();
   const el = document.getElementById('panel-courses'), flags = lsGet(FLAG_KEY, []);
   const steps = PROJ_STEPS;
   el.innerHTML = `<div class="ptitle"><div><h2>Courses &amp; Project</h2><p>These come from your College record. You cannot edit them here. If something looks wrong, flag it to College Admin.</p></div>
       <button type="button" class="btn sec" onclick="openFlag()">Flag a discrepancy with College Admin</button></div>
+    ${crCards()}
     <div class="card"><div class="hd"><div><div class="eyebrow">Mandatory courses</div><h2>Course completion</h2>
         <p>All five must be complete before you apply for Exit Assessment.</p></div><span class="pill ${COURSES.every(c=>c.done)?'ok':''}">${COURSES.filter(c=>c.done).length} of 5 complete</span></div>${courseListHtml()}</div>
     <div class="card"><div class="hd"><div><div class="eyebrow">Formal project (HKCA-E03)</div><h2 style="max-width:62ch">${X(PROJECT.title)}</h2>
