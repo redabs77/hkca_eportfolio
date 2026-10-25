@@ -1,9 +1,9 @@
-/* HKCA prototype: shared course registration store (localStorage).
+/* HKCA prototype: shared course registration and examination application store (localStorage).
    The Admin console writes rounds and decisions; the Trainee Dashboard reads rounds,
    applies and withdraws. Both pages use this one store, so a change on one side shows on the other.
    Illustrative only; production reads the database. Demo date is fixed at 24 Oct 2026. */
 (function(){
-  var KEY='hkca.courses.v1', VER=2, TODAY='2026-10-24';
+  var KEY='hkca.courses.v1', VER=3, TODAY='2026-10-24';
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var MAND=['EASE','EMAC','ADAMA','ECHOA','UGRA'];
   var STAGE_COURSES={BAT:['BSC','IMV','RTB'],HAT:['HTC','CRASH','RTC'],PFY:[]};
@@ -33,7 +33,91 @@
   ];}
   function seedDone(){return {'HKCA-2022-019':['EASE','EMAC','ADAMA','ECHOA']};}
   var BASE_ON={'HKCA-2022-019':{EASE:'2024-03-14',EMAC:'2024-09-02',ADAMA:'2025-01-18',ECHOA:'2025-06-07'}};
-  function fresh(){return {v:VER,rev:0,seq:0,rounds:seedRounds(),done:seedDone(),events:[]};}
+
+  /* ---------- examinations: sittings, applications, eligibility ---------- */
+  var EX_LONG={Intermediate:'Intermediate Fellowship Examination',Final:'Final Fellowship Examination'};
+  var PAY={fps:'118639624',bank:'HSBC 558 069381 001',payee:'The Hong Kong College of Anaesthesiologists',mail:'hkcaexam@hkca.edu.hk'};
+  var DECL='I request admission as a candidate for the {EX} and acknowledge the Regulations for Written Examinations and Suspected Misconduct by Examination Candidates.';
+  /* One list per exam, so the criteria are easy to change when the College confirms them. */
+  var EX_RULES={
+    Intermediate:[
+      {k:'member',l:'Member and registered trainee of the College',src:'Vocational Training Guide 2.4.1; Intermediate Exam FAQ'},
+      {k:'fees',l:'Registration and training fees paid',src:'Intermediate Exam FAQ'},
+      {k:'stage',l:'In Basic training',src:'Vocational Training Guide 2.4.3.1'},
+      {k:'new',l:'Intermediate not already passed, and no exemption',src:'Added check, not stated in the published rules'}],
+    Final:[
+      {k:'member',l:'Member and registered trainee of the College',src:'Vocational Training Guide 2.4.1; Final Exam FAQ'},
+      {k:'fees',l:'Registration and training fees paid',src:'Final Exam FAQ'},
+      {k:'stage',l:'In Higher training',src:'Vocational Training Guide 2.4.4.1'},
+      {k:'inter',l:'Intermediate passed, or exemption granted',src:'Vocational Training Guide 2.4.4.1; Final Exam FAQ'},
+      {k:'centre',l:'Working in a College-accredited training centre',src:'Vocational Training Guide 2.4.4.1'},
+      {k:'new',l:'Final not already passed',src:'Added check, not stated in the published rules'}]
+  };
+  function exWhy(k,p,exam){
+    if(!p)return 'No training record found';
+    switch(k){
+      case 'member': return p.status==='Deactivated'?'Registration is not active':'';
+      case 'fees': return (!p.regFee&&!p.trainFee)?'Registration and training fees are not recorded as paid':!p.regFee?'Registration fee is not recorded as paid':!p.trainFee?'Training fee is not recorded as paid':'';
+      case 'stage': return p.stage===(exam==='Final'?'HAT':'BAT')?'':'You are in '+(STAGE_LABEL[p.stage]||p.stage);
+      case 'inter': return (p.inter==='Pass'||p.exempt)?'':'Intermediate not yet passed';
+      case 'centre': return (p.accred!==false&&p.hosp)?'':'Your hospital is not a College-accredited training centre';
+      case 'new':
+        if(exam==='Final')return p.final==='Pass'?'Final already passed':'';
+        return p.exempt?'Exempt from the Intermediate ('+p.exempt+')':p.inter==='Pass'?'Intermediate already passed':'';
+    }
+    return '';
+  }
+  function exElig(id,exam){
+    var p=load().prof[id]||null;
+    var checks=EX_RULES[exam].map(function(r){var w=exWhy(r.k,p,exam);return {k:r.k,l:r.l,src:r.src,ok:!w,why:w};});
+    return {checks:checks,ok:checks.every(function(c){return c.ok;}),fails:checks.filter(function(c){return !c.ok;})};
+  }
+  function exState(x){
+    if(x.written<TODAY)return 'held';
+    if(x.shut||x.closes<TODAY)return 'closed';
+    if(x.opens>TODAY)return 'scheduled';
+    return 'open';
+  }
+  function exAppOf(x,id){return x.apps.filter(function(a){return a.id===id;})[0]||null;}
+  function exAppState(x,a){
+    var st=exState(x);
+    if(a.wd)return {k:'wd',l:'Withdrawn',c:'mute'};
+    if(a.no)return {k:'no',l:'Not admitted',c:'bad'};
+    if(a.sotNo)return {k:'sotno',l:'SOT did not endorse',c:'bad'};
+    var crit=(a.exc||st==='held')?true:exElig(a.id,x.exam).ok;
+    if(a.sot&&a.fee&&crit)return {k:'complete',l:'Complete',c:'ok'};
+    if(a.sot&&a.fee)return {k:'crit',l:'Criteria not met',c:'warn'};
+    if(st==='closed'||st==='held')return {k:'lapsed',l:'Not completed by the closing date',c:'mute'};
+    if(a.sot)return {k:'fee',l:'Awaiting fee',c:'warn'};
+    return {k:'sotwait',l:'Waiting for SOT',c:'info'};
+  }
+  function exEntered(id,exam){
+    return load().exams.some(function(x){
+      if(x.exam!==exam||exState(x)==='held')return false;
+      var a=exAppOf(x,id);return !!(a&&a.sot&&!a.wd&&!a.no&&!a.sotNo);
+    });
+  }
+  function exWeeksBefore(x){var first=x.mcq&&x.mcq<x.written?x.mcq:x.written;return Math.round((d2(first)-d2(x.closes))/864e5);}
+  function seedExams(){return [
+    {id:'INT-2702',exam:'Intermediate',name:'Feb / Apr 2027',opens:'2026-10-05',closes:'2027-01-08',written:'2027-02-19',oral:'2027-04-09',oralEnd:'2027-04-10',fee:8000,apps:[
+      {id:'HKCA-2024-019',at:'2026-10-12',sot:{d:'2026-10-14',by:'Supervisor of Training, NDH'},fee:{d:'2026-10-16',how:'Faster Payment System',ref:'FPS 2026101688124'},slip:'FPS_confirmation.pdf'},
+      {id:'HKCA-2024-027',at:'2026-10-15',sot:{d:'2026-10-19',by:'Supervisor of Training, UCH'},fee:null,slip:'Payment_slip.jpg'},
+      {id:'HKCA-2023-022',at:'2026-10-16',sot:{d:'2026-10-20',by:'Supervisor of Training, PWH'},fee:null,slip:null},
+      {id:'HKCA-2024-023',at:'2026-10-17',sot:{d:'2026-10-21',by:'Supervisor of Training, QEH'},fee:{d:'2026-10-22',how:'Bank deposit',ref:'HSBC slip 5580-4471'},slip:null},
+      {id:'HKCA-2024-008',at:'2026-10-21',sot:null,fee:null,slip:null},
+      {id:'HKCA-2024-014',at:'2026-10-22',sot:null,fee:null,slip:null}]},
+    {id:'INT-2707',exam:'Intermediate',name:'Jul / Sep 2027',opens:'2027-04-12',closes:'2027-06-10',written:'2027-07-22',oral:'2027-09-10',oralEnd:'2027-09-11',fee:8000,apps:[]},
+    {id:'FIN-2703',exam:'Final',name:'Mar / May 2027',opens:'2026-10-12',closes:'2027-02-02',mcq:'2027-03-16',written:'2027-03-23',oral:'2027-05-14',oralEnd:'2027-05-15',osce:'2027-05-16',fee:16000,apps:[
+      {id:'HKCA-2022-006',at:'2026-10-14',sot:{d:'2026-10-15',by:'Supervisor of Training, PWH'},fee:{d:'2026-10-19',how:'Faster Payment System',ref:'FPS 2026101990211'},slip:null},
+      {id:'HKCA-2022-010',at:'2026-10-16',sot:{d:'2026-10-20',by:'Supervisor of Training, QMH'},fee:null,slip:null},
+      {id:'HKCA-2022-013',at:'2026-10-13',sot:{d:'2026-10-14',by:'Supervisor of Training, TKOH'},fee:{d:'2026-10-18',how:'E-cheque',ref:'cheque no. 004512'},slip:null},
+      {id:'HKCA-2023-015',at:'2026-10-22',sot:null,fee:null,slip:null}]},
+    {id:'FIN-2708',exam:'Final',name:'Aug / Oct 2027',opens:'2027-05-03',closes:'2027-07-06',mcq:'2027-08-17',written:'2027-08-24',oral:'2027-10-15',oralEnd:'2027-10-16',osce:'2027-10-17',fee:16000,apps:[]}
+  ];}
+  function seedProf(){return {'HKCA-2022-019':{stage:'HAT',hosp:'PWH',status:'Active',regFee:true,trainFee:true,inter:'Pass',final:null,exempt:null,accred:true}};}
+  function eevent(s,type,id,sid){s.seq=(s.seq||0)+1;s.events=(s.events||[]).concat([{seq:s.seq,type:type,id:id,sid:sid,ex:1,d:TODAY}]).slice(-60);}
+  function exFind(s,sid){return s.exams.filter(function(x){return x.id===sid;})[0];}
+  function fresh(){return {v:VER,rev:0,seq:0,rounds:seedRounds(),done:seedDone(),exams:seedExams(),prof:seedProf(),events:[]};}
   function put(s){s.rev=(s.rev||0)+1;try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
   function load(){var s=null;try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}if(!s||s.v!==VER){s=fresh();put(s);}return s;}
   function d2(i){var p=i.split('-');return new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));}
@@ -61,6 +145,41 @@
     seedRounds:seedRounds,get:load,reset:function(){try{localStorage.removeItem(KEY);}catch(e){}},
     setRounds:function(rounds){var s=load();if(JSON.stringify(s.rounds)===JSON.stringify(rounds))return;s.rounds=rounds;put(s);},
     setDone:function(map){var s=load();if(JSON.stringify(s.done)===JSON.stringify(map))return;s.done=map;put(s);},
+
+    setExams:function(list){var s=load();if(JSON.stringify(s.exams)===JSON.stringify(list))return;s.exams=list;put(s);},
+    setProfiles:function(map){var s=load();var m=JSON.parse(JSON.stringify(map));var seed=s.prof||{};Object.keys(seed).forEach(function(k){if(!m[k])m[k]=seed[k];});if(JSON.stringify(s.prof)===JSON.stringify(m))return;s.prof=m;put(s);},
+    EX_LONG:EX_LONG,EX_RULES:EX_RULES,PAY:PAY,DECL:DECL,exElig:exElig,exState:exState,exAppOf:exAppOf,exAppState:exAppState,exEntered:exEntered,exWeeksBefore:exWeeksBefore,
+    exApply:function(id,sid){
+      var s=load(),x=exFind(s,sid);
+      if(!x)return {ok:false,msg:'That sitting no longer exists.'};
+      if(exState(x)!=='open')return {ok:false,msg:'Applications are not open for this sitting.'};
+      var el=exElig(id,x.exam);if(!el.ok)return {ok:false,msg:'You do not meet all the criteria yet.'};
+      var other=s.exams.filter(function(y){if(y.exam!==x.exam||y.id===x.id)return false;var b=exAppOf(y,id);return b&&!b.wd&&!b.no&&!b.sotNo&&exState(y)!=='held';})[0];
+      if(other)return {ok:false,msg:'You already have an application for the '+other.name+' sitting.'};
+      var a=exAppOf(x,id);if(a&&!a.wd&&!a.sotNo)return {ok:false,msg:'You have already applied.'};
+      var n={id:id,at:TODAY,sot:null,fee:null,slip:null};
+      if(a){x.apps[x.apps.indexOf(a)]=n;}else x.apps.push(n);
+      eevent(s,'exApply',id,sid);put(s);return {ok:true};
+    },
+    exWithdraw:function(id,sid){
+      var s=load(),x=exFind(s,sid);
+      if(!x)return {ok:false,msg:'That sitting no longer exists.'};
+      if(exState(x)!=='open')return {ok:false,msg:'Applications have closed. Contact the Board of Examinations to withdraw.'};
+      var a=exAppOf(x,id);if(!a||a.wd)return {ok:false,msg:'You have no application to withdraw.'};
+      a.wd={d:TODAY,kind:'trainee'};eevent(s,'exWithdraw',id,sid);put(s);return {ok:true};
+    },
+    exSlip:function(id,sid,name){
+      var s=load(),x=exFind(s,sid),a=x&&exAppOf(x,id);if(!a)return {ok:false,msg:'No application found.'};
+      a.slip=name;eevent(s,'exSlip',id,sid);put(s);return {ok:true};
+    },
+    exSot:function(sid,id,yes,why,by){
+      var s=load(),x=exFind(s,sid),a=x&&exAppOf(x,id);
+      if(!a)return {ok:false,msg:'No application found.'};
+      if(exState(x)!=='open')return {ok:false,msg:'The closing date has passed.'};
+      if(a.wd)return {ok:false,msg:'The trainee has withdrawn.'};
+      if(yes){a.sot={d:TODAY,by:by||'Supervisor of Training'};a.sotNo=null;}else{a.sotNo={d:TODAY,why:why||'',by:by||'Supervisor of Training'};}
+      eevent(s,yes?'exSot':'exSotNo',id,sid);put(s);return {ok:true};
+    },
     rState:rState,fmt:fmt,fmtS:fmtS,daysTo:daysTo,feeText:feeText,dates:dates,hk:hk,appOf:appOf,relevant:relevant,
     doneList:function(id){return (load().done[id])||[];},
     doneDate:function(id,k){var s=load();var r=s.rounds.filter(function(x){return x.course===k&&(x.attended||[]).indexOf(id)>=0;})[0];return (r&&r.recorded)||((BASE_ON[id]||{})[k])||null;},

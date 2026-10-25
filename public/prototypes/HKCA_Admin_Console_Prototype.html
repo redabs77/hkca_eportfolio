@@ -248,6 +248,10 @@ table.dk{table-layout:fixed}
   .tbl-scroll>table:not(.dk):not(.stk) td[colspan]{display:block}
   .tbl-scroll>table:not(.dk):not(.stk) td[colspan]::before{content:none}
 }
+.chk-list{list-style:none;margin:0;padding:0}.chk-list li{padding:9px 0;border-bottom:1px solid var(--border-sub)}
+.chk-list li b{display:inline-block;min-width:58px;margin-right:8px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.chk-list li.ok b{color:var(--ok-f)}.chk-list li.bad b{color:var(--bd-f)}
+@media(max-width:560px){.chk-list li b{display:block;margin:0 0 2px}}
 </style>
 <link rel="stylesheet" href="hkca-theme.css">
 </head>
@@ -268,7 +272,7 @@ table.dk{table-layout:fixed}
 <div class="modal-bg" id="modalBg"><div class="modal" role="dialog" aria-modal="true" id="modal"></div></div>
 <div class="toast" id="toast" role="status"></div>
 <button class="btn sec sm demo-btn" data-a="demoPop">Demo controls</button>
-<div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><div class="fld" style="margin-bottom:10px"><label for="roleSel">View as</label><select id="roleSel" data-c="role"><option value="admin">College Secretariat</option><option value="to">Training Officer</option></select></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><button class="btn sec sm" data-a="simSign">Simulate pending signatures arriving</button><button class="btn sec sm" data-a="simSubmit">Simulate applicants submitting documents</button><button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div></div>
+<div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><div class="fld" style="margin-bottom:10px"><label for="roleSel">View as</label><select id="roleSel" data-c="role"><option value="admin">College Secretariat</option><option value="to">Training Officer</option><option value="sot">Supervisor of Training</option></select></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><button class="btn sec sm" data-a="simSign">Simulate pending signatures arriving</button><button class="btn sec sm" data-a="simSubmit">Simulate applicants submitting documents</button><button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div></div>
 <script src="hkca-courses-store.js"></script>
 <script>
 /* ============ helpers ============ */
@@ -311,6 +315,7 @@ function seedState(){
     T('HKCA-2021-009','Dr. Louis Hung','PFY',60,'TSWH'),T('HKCA-2023-026','Dr. Anna Pang','HAT',31,'KWH','On leave'),
     T('HKCA-2024-031','Dr. Joey Tse','BAT',15,'HKEH','On leave'),T('HKCA-2019-012','Dr. Roy Man','PFY',75,'RH','Deactivated')
   ];
+  trainees.forEach(t=>{t.regFee=true;t.trainFee=t.id!=='HKCA-2022-013';t.exempt=null;if(t.stage!=='BAT')t.exam.Intermediate='Pass';if(t.stage==='PFY')t.exam.Final='Pass'});
   /* docket detail: which gate criteria fail and why (illustrative) */
   const dk={
     'HKCA-2023-022':{fail:{}},
@@ -325,7 +330,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:9,
+    v:10,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -348,20 +353,10 @@ function seedState(){
         trail:[{d:'2026-07-02',who:'Dr. Sam Fok',ev:'Asked for retrospective recognition'},{d:'2026-07-03',who:'Secretariat',ev:'Application enabled'},{d:'2026-08-20',who:'Dr. Sam Fok',ev:'Submitted form and documents'},{d:'2026-08-25',who:'Secretariat',ev:'Documents checked, sent to the Training Officer'},{d:'2026-09-08',who:'Training Officer',ev:'Approved with different figures',note:'Cases reduced from 120 to 110: ten could not be matched to the logbook summary.'},{d:'2026-09-08',who:'Secretariat',ev:'Credit written to the ledger'}]}
     ],
     rounds:HKC.seedRounds(),
-    exCands:[
-      {id:'HKCA-2024-019',exam:'Intermediate',sot:true,fail:[]},
-      {id:'HKCA-2024-027',exam:'Intermediate',sot:true,fail:[]},
-      {id:'HKCA-2023-022',exam:'Intermediate',sot:true,fail:['Logbook 205 of 218']},
-      {id:'HKCA-2024-023',exam:'Intermediate',sot:false,fail:['WBA quota short','Logbook 196 of 218']},
-      {id:'HKCA-2022-006',exam:'Final',sot:true,fail:[]},
-      {id:'HKCA-2022-010',exam:'Final',sot:true,fail:['Latest ITA under BOE review']},
-      {id:'HKCA-2022-013',exam:'Final',sot:false,fail:['Courses: ADAM-A outstanding']}
-    ],
     exResults:[],
     exHist:[
-      {sitting:'2026-06-18',exam:'Intermediate',cand:11,pass:8,fail:3,by:'Secretariat',at:'2026-06-29'},
-      {sitting:'2026-06-20',exam:'Final',cand:9,pass:7,fail:2,by:'Secretariat',at:'2026-06-29'},
-      {sitting:'2025-12-06',exam:'Intermediate',cand:12,pass:9,fail:3,by:'Secretariat',at:'2025-12-18'}
+      {sitting:'2026-04-18',label:'Feb / Apr 2026',exam:'Intermediate',cand:11,pass:8,fail:3,by:'Secretariat',at:'2026-04-30'},
+      {sitting:'2026-05-10',label:'Mar / May 2026',exam:'Final',cand:9,pass:7,fail:2,by:'Secretariat',at:'2026-05-22'}
     ],
     projects:[
       {id:'FP-26-014',title:'Quality improvement: reducing PONV in day surgery',trainee:'HKCA-2023-004',stage:'Protocol',state:'dispatch',sot:true,rev:[]},
@@ -409,12 +404,14 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==9)S=seedState();
+if(!S||S.v!==10)S=seedState();
 S.rounds=HKC.get().rounds;
+S.exams=HKC.get().exams;
 const doneMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]=t.courses.slice()});return m};
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}HKC.setRounds(S.rounds);HKC.setDone(doneMap())};
-const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'cands',projects:'dispatch',centres:'accred',wba:'link'},
-  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
+const profMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]={stage:t.stage,hosp:t.hosp,status:t.status,regFee:t.regFee!==false,trainFee:t.trainFee!==false,inter:t.exam.Intermediate||null,final:t.exam.Final||null,exempt:t.exempt?t.exempt.basis:null,accred:S.centres.some(c=>c.hosp===t.hosp&&c.exp>=TODAY)}});return m};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}HKC.setRounds(S.rounds);HKC.setDone(doneMap());HKC.setExams(S.exams);HKC.setProfiles(profMap())};
+const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'int',projects:'dispatch',centres:'accred',wba:'link'},
+  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',exView:'apps',exSit:null,pjFilter:'dispatch',docketSel:{},role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
 const T=id=>S.trainees.find(t=>t.id===id);
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
 function logAct(a,d){const t=new Date().toTimeString().slice(0,5);const prev=S.log[0]?S.log[0].h:'0';S.log.unshift({d:TODAY,t,a,det:d,h:hash(prev+a+d+t)});save()}
@@ -433,8 +430,9 @@ const docketRows=()=>S.trainees.filter(t=>t.status==='Active'&&S.GATES[t.stage]&
 function counts(){
   const rr=S.rounds.filter(r=>['open','closed'].includes(rState(r)));
   const triage=rr.reduce((n,r)=>n+r.apps.filter(a=>a[2]==='Requested').length,0);
-  const dk=docketRows();
+  const dk=docketRows();const exc=examCounts();
   return {
+    exFee:exc.fee,exCrit:exc.crit,exTab:exc.tab,
     intake:S.intake.length,
     recogAct:S.recog.filter(r=>['gate','docs','board','approved'].includes(r.state)).length,
     recogTo:S.recog.filter(r=>r.state==='to').length,
@@ -476,6 +474,7 @@ function vHome(){
   if(c.intake)q.push({col:'--t1f',t:plural(c.intake,'membership application')+' to vet',w:'Oldest has waited '+ago(days(oldest,TODAY))+'. Three checks, then the account opens.',go:['trainees','intake'],b:'Open applications'});
   if(c.recogAct){const rp=[];const nn=k=>S.recog.filter(r=>r.state===k).length;if(nn('gate'))rp.push(nn('gate')+' to enable');if(nn('docs'))rp.push(nn('docs')+' with documents to check');if(nn('board'))rp.push(nn('board')+' for the Board decision');if(nn('approved'))rp.push(nn('approved')+' approved, credit to execute');q.push({col:'--t1f',t:plural(c.recogAct,'retrospective recognition request')+' need you',w:rp.join(', ')+'.',go:['trainees','recog'],b:'Open requests'})}
   if(c.triage)q.push({col:'--t4f',t:plural(c.triage,'course request')+' to triage',w:'Across '+plural(c.rounds,'round')+'. '+((n=>n?plural(n,'round')+(n===1?' has':' have')+' more applications than places. ':'')(S.rounds.filter(r=>overBy(r)>0).length))+'Applications are already ranked for you.',go:['courses','seats'],b:'Allocate seats'});
+  if(c.exFee+c.exCrit)q.push({col:'--t4f',t:plural(c.exFee+c.exCrit,'exam application')+' need you',w:[c.exFee?c.exFee+' awaiting the fee':'',c.exCrit?c.exCrit+' with criteria not met':''].filter(Boolean).join(', ')+'.',go:['exams',c.exTab],b:'Open applications'});
   if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects','dispatch'],b:'Dispatch'});
   if(c.pend)q.push({col:'--t2f',t:'SOT appointment to enter',w:'The Board endorsed the replacement at '+S.pendingAppt[0].hosp+'. Record the appointment before the current term ends.',go:['centres','appts'],b:'Open appointments'});
   if(c.unm)q.push({col:'--acc',t:plural(c.unm,'iWBA item')+' not mapped',w:'These assessments are held back until each is matched to a curriculum code.',go:['wba','unmapped'],b:'Map items'});
@@ -522,7 +521,8 @@ function vRegistry(){
 function openTrainee(id){
   const t=T(id);ui.dr={type:'trainee',id};
   openDrawer(t.id,t.name,
-  `<div class="sect">Record</div><dl class="kv"><dt>Stage</dt><dd>${stg(t.stage)} month ${t.months}</dd><dt>Hospital</dt><dd>${t.hosp}, ${CLUSTER[t.hosp]||''}</dd><dt>Training start</dt><dd>${fmt(t.start)}</dd><dt>Curriculum edition</dt><dd>${esc(t.edition)}</dd>${t.mc?`<dt>Medical Council</dt><dd>${esc(t.mc.type)} registration, no. ${esc(t.mc.no)}</dd>`:''}<dt>Mandatory courses</dt><dd>${t.courses.length?t.courses.map(c=>CNAME[c]).join(', '):'<span class="muted">None completed</span>'}</dd><dt>Status</dt><dd>${esc(t.status)}</dd></dl>
+  `<div class="sect">Record</div><dl class="kv"><dt>Stage</dt><dd>${stg(t.stage)} month ${t.months}</dd><dt>Hospital</dt><dd>${t.hosp}, ${CLUSTER[t.hosp]||''}</dd><dt>Training start</dt><dd>${fmt(t.start)}</dd><dt>Curriculum edition</dt><dd>${esc(t.edition)}</dd>${t.mc?`<dt>Medical Council</dt><dd>${esc(t.mc.type)} registration, no. ${esc(t.mc.no)}</dd>`:''}<dt>Mandatory courses</dt><dd>${t.courses.length?t.courses.map(c=>CNAME[c]).join(', '):'<span class="muted">None completed</span>'}</dd><dt>Examinations</dt><dd>${esc(exTxt(t))}</dd><dt>Status</dt><dd>${esc(t.status)}</dd></dl>
+  ${eligSection(t)}
   <div class="sect">Change status</div>
   <div class="fld"><label for="stSel">New status</label><select id="stSel" data-c="stSel"><option ${t.status==='Active'?'selected':''}>Active</option><option ${t.status==='On leave'?'selected':''}>On leave</option><option ${t.status==='Deactivated'?'selected':''}>Deactivated</option></select></div>
   <div class="fld"><label for="stDate">Effective from</label><input type="date" id="stDate" value="${TODAY}" max="${TODAY}"></div>
@@ -668,7 +668,7 @@ function simSubmit(){S.recog.forEach(r=>{if(r.state==='waiting'){r.state='docs';
 const toDone=r=>['approved','board','done'].includes(r.state)&&r.trail.some(x=>/Training Officer/.test(x.who));
 const toOutcome=r=>{const x=[...r.trail].reverse().find(y=>/Training Officer/.test(y.who));return x?x.ev:''};
 function toTab(){const n=S.recog.filter(r=>r.state==='to').length;return `<button class="tab on" role="tab" aria-selected="true">Retrospective vetting${n?` <span class="cnt hot">${n}</span>`:''}</button>`}
-function roleChrome(){const to=ui.role==='to';$('#brandSub').textContent=to?'Training Officer view':'College Secretariat Console';$('#whoNm').textContent=to?'Training Officer':'College Secretariat';$('#whoRl').textContent=to?'Retrospective vetting':'Administrator';$('#whoAv').textContent=to?'TO':'CS';$('#roleSel').value=ui.role}
+function roleChrome(){const m={admin:['College Secretariat Console','College Secretariat','Administrator','CS'],to:['Training Officer view','Training Officer','Retrospective vetting','TO'],sot:['Supervisor of Training view','Supervisor of Training','Exam endorsements','ST']}[ui.role]||['College Secretariat Console','College Secretariat','Administrator','CS'];$('#brandSub').textContent=m[0];$('#whoNm').textContent=m[1];$('#whoRl').textContent=m[2];$('#whoAv').textContent=m[3];$('#roleSel').value=ui.role}
 function vTO(){
   const to=S.recog.filter(r=>r.state==='to'),dn=S.recog.filter(toDone);
   return head('Training Officer','Retrospective vetting','Applications the Secretariat has checked and sent to you. Approve when there are no particular issues. Refer to the Board when there is a problem.')+
@@ -755,7 +755,7 @@ const wlBefore=(r,id)=>S.rounds.some(x=>x.course===r.course&&x.id!==r.id&&x.date
 function appInfo(r,a){
   const t=T(a[0]);const wl=wlBefore(r,a[0]);const pg=t?aboutToProgress(t,r.course):null;
   if(r.rank==='fcfs')return {lvl:wl?'h':'n',why:wl?['Waitlisted for an earlier round']:[],score:wl?100:0,wl,pg:null};
-  const ix=r.course==='IMV'&&S.exCands.some(x=>x.id===a[0]&&x.exam==='Intermediate');
+  const ix=r.course==='IMV'&&HKC.exEntered(a[0],'Intermediate');
   let lvl='n',base='';if(isMand(r.course)){const p=prio(a[0],r.course);lvl=p[0];base=p[1]}
   if(wl||pg||ix)lvl='h';
   const why=[];if(wl)why.push('Waitlisted for an earlier round');if(pg)why.push('About to progress ('+pg+')');if(ix)why.push('Sitting the coming Intermediate examination');if(base&&!pg)why.push(base);
@@ -945,25 +945,198 @@ function commitSheet(){
 }
 
 /* ============ EXAMS ============ */
-function candState(c){if(c.fail.length)return ['Not yet eligible','mute'];return c.sot?['Eligible','ok']:['Waiting for SOT','warn']}
+const EXT=HKC.EX_LONG;
+const G2='display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px';
+const exName=()=>ui.sub.exams==='fin'?'Final':'Intermediate';
+const exSit=id=>S.exams.find(s=>s.id===id);
+const exList=()=>S.exams.filter(s=>s.exam===exName());
+const exSel=()=>{const l=exList();return l.find(s=>s.id===ui.exSit)||l.find(s=>HKC.exState(s)==='open')||l[0]};
+const exVis=s=>s.apps.filter(a=>a.sot&&T(a.id));
+const exCnt=s=>{const o={complete:0,fee:0,crit:0,other:0};exVis(s).forEach(a=>{const k=HKC.exAppState(s,a).k;o[k in o?k:'other']++});return o};
+function examCounts(){
+  let fee=0,crit=0,tab='';
+  S.exams.forEach(s=>{if(!['open','closed'].includes(HKC.exState(s)))return;const c=exCnt(s);fee+=c.fee;crit+=c.crit;if((c.fee||c.crit)&&!tab)tab=s.exam==='Final'?'fin':'int'});
+  return {fee,crit,tab:tab||'int'};
+}
+function exDateTxt(s){const p=[];if(s.mcq)p.push('MCQ '+fmt(s.mcq));p.push('Written '+fmt(s.written));p.push('Oral '+(s.oralEnd&&s.oralEnd!==s.oral?fmtS(s.oral)+' to '+fmt(s.oralEnd):fmt(s.oral)));if(s.osce)p.push('OSCE '+fmt(s.osce));return p}
+const exPill=s=>({scheduled:pill('Not open yet','mute'),open:pill('Open','ok'),closed:pill('Closed','warn'),held:pill('Held','mute')})[HKC.exState(s)];
+const exStLabel=s=>({scheduled:'not open yet',open:'open',closed:'closed',held:'held'})[HKC.exState(s)];
+const exTxt=t=>{const i=t.exam.Intermediate==='Pass'?'Intermediate passed':t.exempt?'Intermediate exempt ('+t.exempt.basis+')':'Intermediate not yet passed';const f=t.exam.Final==='Pass'?'Final passed':'Final not yet passed';return i+'. '+f+'.'};
+
 function vExams(){
-  const s=ui.sub.exams;const seg=subSeg('exams',[['cands','Entry list'],['results','Upload results'],['hist','Past sittings']]);
-  const t={cands:'Who can sit the next examinations, from their own records.',results:'Check the results file before it changes any record.',hist:'Results already recorded.'}[s];
-  return head('Examinations',{cands:'Entry list',results:'Upload results',hist:'Past sittings'}[s],t,seg)+(s==='cands'?vCands():s==='results'?vResults():vHist());
+  if(!['int','fin'].includes(ui.sub.exams))ui.sub.exams='int';
+  const ex=exName(),v=ui.exView;
+  const top=subSeg('exams',[['int','Intermediate exam'],['fin','Final exam']]);
+  const nApp=exList().reduce((n,s)=>{const c=exCnt(s);return n+(['open','closed'].includes(HKC.exState(s))?c.fee+c.crit:0)},0);
+  const inner=`<div class="seg" role="tablist" aria-label="${ex} examination" style="margin:0 0 16px">${[['sittings','Sittings'],['apps','Exam Applications',nApp],['results','Upload results'],['hist','Past sittings']].map(([k,l,n])=>`<button role="tab" aria-selected="${v===k}" class="${v===k?'on':''}" data-a="exv" data-v="${k}">${l}${n?` <span class="cnt hot">${n}</span>`:''}</button>`).join('')}</div>`;
+  const sub={sittings:'Open and close applications for each sitting. Dates and fees follow the College calendar.',apps:'Applications appear here once the SOT has endorsed them. An application is complete when the SOT has endorsed it, the fee is received and the criteria are met.',results:'Check the results file before it changes any record.',hist:'Results already recorded.'}[v];
+  return head('Examinations',EXT[ex],sub,top)+inner+(v==='sittings'?vExSittings():v==='apps'?vExApps():v==='results'?vResults():vHist());
 }
-function vCands(){
-  const f=ui.exFilter;const all=S.exCands;
-  const list=all.filter(c=>f==='All'||(f==='Eligible'?candState(c)[0]==='Eligible':f==='Not eligible'?candState(c)[0]!=='Eligible':c.exam===f));
-  const ne=all.filter(c=>candState(c)[0]==='Eligible').length;
-  return `<div class="toolbar"><div class="chips">${['All','Intermediate','Final','Eligible','Not eligible'].map(x=>`<button class="chip ${f===x?'on':''}" aria-pressed="${f===x}" data-a="exF" data-v="${x}">${x}</button>`).join('')}</div><span class="meta grow" style="text-align:right">${ne} eligible of ${all.length}</span><button class="btn sec sm" data-a="toast" data-m="Entry list exported for the examiners (demo)" ${ne?'':'disabled'}>Export eligible list</button></div>
-  <div class="card"><div class="tbl-scroll"><table><thead><tr><th>Candidate</th><th>Examination</th><th>Why not yet</th><th>SOT endorsement</th><th>Entry</th></tr></thead><tbody>${list.map(c=>{const t=T(c.id);const st=candState(c);return `<tr><td><div class="cell-name">${esc(t.name)}</div><div class="cell-sub">${stg(t.stage)} ${t.hosp}</div></td><td>${c.exam}</td><td class="meta">${c.fail.length?c.fail.map(esc).join('<br>'):'<span class="muted">All criteria met</span>'}</td><td>${dt(c.sot?'Endorsed':'Not yet',c.sot?'ok':'none')}</td><td>${pill(st[0],st[1])}</td></tr>`}).join('')}</tbody></table></div></div>
-  <p class="meta" style="margin-top:12px">The system checks eligibility. There is no manual override here. A Board exception is a separate decision.</p>`;
+
+function vExSittings(){
+  const l=exList();
+  return `<div class="toolbar"><span class="meta grow">Sittings from the College's Anaesthesia Examinations page. The fee is the same for every attempt.</span><button class="btn pri sm" data-a="newSit">New sitting</button></div>
+  <div class="card"><div class="tbl-scroll"><table><thead><tr><th>Sitting</th><th>Examination dates</th><th>Applications close</th><th>Fee</th><th>Applications</th><th class="act"></th></tr></thead><tbody>${l.map(s=>{
+    const st=HKC.exState(s),c=exCnt(s),n=HKC.daysTo(s.closes);
+    const when=st==='open'?(n===0?'Today':'In '+plural(n,'day')):st==='scheduled'?'Opens '+fmt(s.opens):'';
+    const btn=(st==='scheduled'?`<button class="btn pri sm" data-a="openSit" data-id="${s.id}">Open now</button>`:'')+(st==='open'?`<button class="btn sec sm" data-a="closeSit" data-id="${s.id}">Close now</button>`:'')+`<button class="btn sec sm" data-a="viewApps" data-id="${s.id}">Applications</button>`+(st==='held'?'':`<button class="btn sec sm" data-a="editSit" data-id="${s.id}">Edit</button>`);
+    return `<tr><td><div class="cell-name">${esc(s.name)}</div><div class="cell-sub">${exPill(s)}</div></td><td class="meta">${exDateTxt(s).map(esc).join('<br>')}</td><td>${fmt(s.closes)}<div class="cell-sub">${esc(when)}</div></td><td>${HKC.hk(s.fee)}</td><td>${exVis(s).length?`${c.complete} complete<div class="cell-sub">${c.fee} awaiting fee${c.crit?' &middot; '+c.crit+' criteria not met':''}</div>`:'<span class="muted">None yet</span>'}</td><td class="act"><div class="btn-row">${btn}</div></td></tr>`}).join('')}</tbody></table></div></div>
+  <p class="meta" style="margin-top:12px">When a sitting closes, any application that is not complete lapses. The College does not consider late applications.</p>`;
 }
-const EX_SAMPLE=`hkca_no,exam,sitting_date,result\nHKCA-2024-019,Intermediate,2026-10-17,Pass\nHKCA-2024-027,Intermediate,2026-10-17,Pass\nHKCA-2023-022,Intermediate,2026-10-17,Fail\nHKCA-2022-006,Final,2026-10-18,Pass\nHKCA-2024-023,Final,2026-10-18,Pass\nHKCA-2022-010,Final,2026-10-18,Merit\nHKCA-2022-006,Final,2026-10-18,Pass\nHKCA-2024-099,Final,2026-10-18,Pass`;
+
+function sitForm(id){
+  const s=id?exSit(id):null,fin=exName()==='Final';
+  const v=s||{name:'',opens:TODAY,closes:'',mcq:'',written:'',oral:'',oralEnd:'',osce:'',fee:fin?16000:8000};
+  openDrawer(id?'Edit sitting':'New sitting',id?s.name:'New '+exName()+' sitting',`
+  <div class="fld"><label for="sfName">Sitting name</label><input type="text" id="sfName" value="${esc(v.name)}" placeholder="e.g. Feb / Apr 2028"></div>
+  <div style="${G2}"><div class="fld"><label for="sfOpens">Applications open</label><input type="date" id="sfOpens" value="${v.opens||''}"></div><div class="fld"><label for="sfCloses">Closing date</label><input type="date" id="sfCloses" value="${v.closes||''}"></div></div>
+  ${fin?`<div class="fld"><label for="sfMcq">MCQ date (optional)</label><input type="date" id="sfMcq" value="${v.mcq||''}"></div>`:''}
+  <div class="fld"><label for="sfWritten">Written examination</label><input type="date" id="sfWritten" value="${v.written||''}"></div>
+  <div style="${G2}"><div class="fld"><label for="sfOral">Oral, first day</label><input type="date" id="sfOral" value="${v.oral||''}"></div><div class="fld"><label for="sfOralEnd">Oral, last day (optional)</label><input type="date" id="sfOralEnd" value="${v.oralEnd||''}"></div></div>
+  ${fin?`<div class="fld"><label for="sfOsce">OSCE</label><input type="date" id="sfOsce" value="${v.osce||''}"></div>`:''}
+  <div class="fld"><label for="sfFee">Examination fee (HK$)</label><input type="number" id="sfFee" min="1" value="${v.fee}"></div>
+  <p class="note">The closing date must be 3 to 8 weeks before the written examination (Vocational Training Guide 2.4.2). Late applications are not considered.</p>`,
+  `<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="saveSit" data-id="${id||''}">${id?'Save changes':'Create sitting'}</button>`);
+}
+function saveSit(id){
+  const s=id?exSit(id):null,fin=exName()==='Final',g=k=>{const e=$('#'+k);return e?e.value.trim():''};
+  const name=g('sfName'),opens=g('sfOpens'),closes=g('sfCloses'),mcq=g('sfMcq'),written=g('sfWritten'),oral=g('sfOral'),oralEnd=g('sfOralEnd'),osce=g('sfOsce'),fee=+g('sfFee');
+  if(!name||!opens||!closes||!written||!oral){toast('Enter the name, the opening and closing dates, the written date and the oral date.');return}
+  if(closes<opens){toast('The closing date must be after the opening date.');return}
+  const first=mcq&&mcq<written?mcq:written,w=days(closes,first);
+  if(w<21||w>56){toast('The closing date must be 3 to 8 weeks before the written examination. This one is '+plural(w,'day')+' before.');return}
+  if(oral<=written){toast('The oral examination follows the written examination.');return}
+  if(oralEnd&&oralEnd<oral){toast('The last oral day cannot be before the first.');return}
+  if(fin&&osce&&osce<oral){toast('The OSCE follows the written examination.');return}
+  if(!(fee>0)){toast('Enter the examination fee.');return}
+  if(s){Object.assign(s,{name,opens,closes,written,oral,oralEnd:oralEnd||'',fee});if(fin){s.mcq=mcq||'';s.osce=osce||''}logAct('Exam sitting edited',`${s.exam} ${name}: closes ${fmt(closes)}, fee ${HKC.hk(fee)}`)}
+  else{const n={id:(fin?'FIN-':'INT-')+written.slice(2,4)+written.slice(5,7)+'-'+(S.exams.length+1),exam:exName(),name,opens,closes,written,oral,oralEnd:oralEnd||'',fee,apps:[]};if(fin){n.mcq=mcq||'';n.osce=osce||''}S.exams.push(n);S.exams.sort((a,b)=>a.written<b.written?-1:1);logAct('Exam sitting created',`${n.exam} ${name}: opens ${fmt(opens)}, closes ${fmt(closes)}, fee ${HKC.hk(fee)}`)}
+  closeDrawer();render();toast('Sitting saved.');
+}
+function openSit(id){
+  const s=exSit(id);if(s.closes<TODAY){toast('The closing date has passed. Edit the dates first.');return}
+  s.opens=TODAY;s.shut=false;logAct('Exam applications opened',`${s.exam} ${s.name}: open until ${fmt(s.closes)}, fee ${HKC.hk(s.fee)}`);render();toast('Applications are open for '+s.exam+' '+s.name+'. Eligible trainees see a notice.');
+}
+function closeSit(id){
+  const s=exSit(id);const inc=s.apps.filter(a=>{const k=HKC.exAppState(s,a).k;return ['sotwait','fee'].includes(k)}).length;
+  openModal(`<h3>Close applications for ${esc(s.name)}?</h3><p class="meta" style="margin:6px 0 12px">Applications that are not complete lapse when the sitting closes: ${inc?plural(inc,'application')+' still waiting for the SOT or the fee.':'none are waiting at the moment.'} Trainees cannot apply or withdraw after this.</p><div class="btn-row"><button class="btn sec" data-a="closeModal">Keep open</button><button class="btn pri" data-a="doCloseSit" data-id="${id}">Close applications</button></div>`);
+}
+function doCloseSit(id){const s=exSit(id);s.shut=true;closeModal();logAct('Exam applications closed',`${s.exam} ${s.name}: closed by the Secretariat`);render();toast('Applications closed for '+s.exam+' '+s.name+'.')}
+
+function vExApps(){
+  const s=exSel();if(!s)return '<p class="meta">No sitting yet.</p>';
+  ui.exSit=s.id;
+  const l=exList(),vis=exVis(s),f=ui.exFilter;
+  const stOf=a=>HKC.exAppState(s,a);
+  const grp=a=>{const k=stOf(a).k;return k==='fee'?'Awaiting fee':k==='complete'?'Complete':k==='crit'?'Criteria not met':'Other'};
+  const chips=['All','Awaiting fee','Complete','Criteria not met','Other'];
+  const cnt=k=>k==='All'?vis.length:vis.filter(a=>grp(a)===k).length;
+  const rows=vis.filter(a=>f==='All'||grp(a)===f);
+  const done=vis.filter(a=>stOf(a).k==='complete').length;
+  const n=HKC.daysTo(s.closes);
+  return `<div class="toolbar"><div class="fld" style="margin:0;min-width:240px"><select id="exSitSel" data-c="exSit" aria-label="Sitting">${l.map(x=>`<option value="${x.id}" ${x.id===s.id?'selected':''}>${esc(x.name)} (${exStLabel(x)})</option>`).join('')}</select></div><div class="chips">${chips.map(x=>`<button class="chip ${f===x?'on':''}" aria-pressed="${f===x}" data-a="exF" data-v="${x}">${x} ${cnt(x)}</button>`).join('')}</div><span class="grow"></span><button class="btn sec sm" data-a="toast" data-m="Complete applications exported for the examiners (demo)" ${done?'':'disabled'}>Export complete list (${done})</button></div>
+  <div class="card"><div class="q-h"><div><div class="h3">${esc(s.name)} ${exPill(s)}</div><div class="meta">Applications close ${fmt(s.closes)}${HKC.exState(s)==='open'?' ('+(n===0?'today':'in '+plural(n,'day'))+')':''} &middot; Fee ${HKC.hk(s.fee)}</div></div></div>
+  ${vis.length?`<div class="tbl-scroll"><table><thead><tr><th>Candidate</th><th>SOT endorsement</th><th>Application fee</th><th>Criteria not met</th><th>Status</th><th class="act"></th></tr></thead><tbody>${rows.map(a=>{
+    const t=T(a.id),stt=stOf(a),fails=(a.exc||HKC.exState(s)==='held')?[]:HKC.exElig(a.id,s.exam).fails.map(x=>x.why);
+    return `<tr><td><div class="cell-name">${esc(t.name)}</div><div class="cell-sub">${stg(t.stage)} ${t.hosp} &middot; <span class="mono">${t.id}</span></div></td><td>${dt('Endorsed '+fmtS(a.sot.d),'ok')}<div class="cell-sub">${esc(a.sot.by)}</div></td><td>${a.fee?dt('Received '+fmtS(a.fee.d),'ok')+`<div class="cell-sub">${esc(a.fee.how)}, ${esc(a.fee.ref)}</div>`:dt('Not yet received','none')+(a.slip?'<div class="cell-sub">Payment slip attached</div>':'')}</td><td class="meta">${fails.length?fails.map(esc).join('<br>'):a.exc?'Board exception':'<span class="muted">None</span>'}</td><td>${pill(stt.l,stt.c)}</td><td class="act"><button class="btn sec sm" data-a="openExApp" data-s="${s.id}" data-id="${a.id}">Open</button></td></tr>`}).join('')}</tbody></table></div>`:`<p class="meta" style="padding:18px 20px">No endorsed applications yet. An application reaches you once the trainee's SOT has endorsed it.</p>`}</div>`;
+}
+
+function openExApp(sid,id){
+  const s=exSit(sid),a=HKC.exAppOf(s,id),t=T(id),stt=HKC.exAppState(s,a),el=HKC.exElig(id,s.exam),st=HKC.exState(s);
+  ui.dr={type:'exapp',sid,id};
+  const chk=el.checks.map(c=>`<li class="${c.ok?'ok':'bad'}"><b>${c.ok?'Met':'Not met'}</b>${esc(c.l)}${c.ok?'':`<div class="meta">${esc(c.why)}</div>`}<div class="meta">Source: ${esc(c.src)}</div></li>`).join('');
+  const live=!a.wd&&!a.no&&!a.sotNo;
+  const feeForm=live&&!a.fee&&st!=='held'?`<div class="sect">Record fee received</div>
+    <div style="${G2}"><div class="fld"><label for="efD">Date received</label><input type="date" id="efD" value="${TODAY}" max="${TODAY}"></div><div class="fld"><label for="efH">How it was paid</label><select id="efH"><option>Faster Payment System</option><option>Bank deposit</option><option>E-cheque</option></select></div></div>
+    <div class="fld"><label for="efR">Reference</label><input type="text" id="efR" placeholder="Transaction or slip reference"></div>
+    <p class="meta" style="margin-bottom:10px">${HKC.hk(s.fee)}. It must arrive on or before ${fmt(s.closes)}.</p><button class="btn pri" data-a="exFee" data-s="${sid}" data-id="${id}">Mark fee received</button>`:'';
+  const board=live&&st!=='held'?`<details class="fold" style="margin-top:18px"><summary class="meta" style="cursor:pointer"><b>Board of Examinations decisions</b></summary>
+    ${stt.k==='crit'&&!a.exc?`<div class="fld" style="margin-top:12px"><label for="ebW">Board exception: reason and reference</label><textarea id="ebW" rows="2"></textarea></div><button class="btn sec sm" data-a="exExc" data-s="${sid}" data-id="${id}">Record Board exception</button>`:''}
+    <div class="fld" style="margin-top:12px"><label for="enW">Not admitted: reason and reference</label><textarea id="enW" rows="2"></textarea></div><button class="btn sec sm" data-a="exNo" data-s="${sid}" data-id="${id}">Record: not admitted</button></details>`:'';
+  const wd=live&&(st==='closed')?`<details class="fold" style="margin-top:12px"><summary class="meta" style="cursor:pointer"><b>Withdrawal after the closing date</b></summary>
+    <div class="fld" style="margin-top:12px"><label for="ewK">Reason</label><select id="ewK"><option value="medical">Medical reason, with proof</option><option value="forfeit">Other reason, or did not attend</option></select></div>
+    <p class="meta" style="margin-bottom:10px">Medical with proof: fee refunded less a 10% administrative charge (${HKC.hk(Math.round(s.fee*0.9))}). Otherwise the fee is forfeited.</p><button class="btn sec sm" data-a="exWd" data-s="${sid}" data-id="${id}">Record withdrawal</button></details>`:'';
+  const wdTxt=a.wd?(a.wd.kind==='trainee'?'Withdrawn by the trainee on '+fmt(a.wd.d):'Withdrawn after the closing date on '+fmt(a.wd.d)+'. '+(a.wd.kind==='medical'?'Medical, refund '+HKC.hk(a.wd.refund)+' (fee less 10%)':'Fee forfeited')):'';
+  openDrawer(EXT[s.exam]+', '+s.name,t.name,
+  `<div class="sect">Application</div><dl class="kv"><dt>Candidate</dt><dd>${stg(t.stage)} month ${t.months}, ${t.hosp} <span class="mono meta">${t.id}</span></dd><dt>Applied</dt><dd>${fmt(a.at)}</dd><dt>SOT endorsement</dt><dd>Endorsed ${fmt(a.sot.d)} by ${esc(a.sot.by)}</dd><dt>Fee</dt><dd>${a.fee?`${HKC.hk(s.fee)} received ${fmt(a.fee.d)}. ${esc(a.fee.how)}, ${esc(a.fee.ref)}`:`Not yet received (${HKC.hk(s.fee)})${a.slip?'. The trainee attached a payment slip: '+esc(a.slip):''}`}</dd><dt>Status</dt><dd>${pill(stt.l,stt.c)}</dd>${wdTxt?`<dt>Outcome</dt><dd>${esc(wdTxt)}</dd>`:''}${a.no?`<dt>Board</dt><dd>Not admitted ${fmt(a.no.d)}: ${esc(a.no.why)}</dd>`:''}</dl>
+  <div class="sect">Criteria</div><ul class="chk-list">${chk}</ul>${a.exc?`<p class="note">Board exception recorded ${fmt(a.exc.d)}: ${esc(a.exc.why)}</p>`:''}
+  ${feeForm}${board}${wd}`,
+  `<button class="btn sec" data-a="closeDrawer">Close</button>`);
+}
+function exFee(sid,id){
+  const s=exSit(sid),a=HKC.exAppOf(s,id),d=$('#efD').value,h=$('#efH').value,r=$('#efR').value.trim();
+  if(!d||!r){toast('Enter the date received and a reference.');return}
+  if(d>s.closes){toast('The fee must arrive on or before the closing date, '+fmt(s.closes)+'. Late applications are not considered.');return}
+  a.fee={d,how:h,ref:r};const nm=tname(id);
+  logAct('Exam fee received',`${nm}: ${HKC.hk(s.fee)} for ${s.exam} ${s.name}. ${h}, ${r}`);
+  const k=HKC.exAppState(s,a).k;
+  if(k==='complete')logAct('Exam application complete',`${nm}: ${s.exam} ${s.name}. SOT endorsed, fee received, criteria met. Confirmation email queued`);
+  closeDrawer();render();toast(k==='complete'?nm+': application complete.':nm+': fee recorded. A criterion is not met, so it is not complete.');
+}
+function exExc(sid,id){
+  const s=exSit(sid),a=HKC.exAppOf(s,id),w=$('#ebW').value.trim();if(!w){toast('Record the Board decision and reference.');return}
+  a.exc={d:TODAY,why:w};logAct('Exam: Board exception recorded',`${tname(id)}: ${s.exam} ${s.name}. ${w}`);closeDrawer();render();toast('Board exception recorded.');
+}
+function exNo(sid,id){
+  const s=exSit(sid),a=HKC.exAppOf(s,id),w=$('#enW').value.trim();if(!w){toast('Record the reason and the Board reference.');return}
+  a.no={d:TODAY,why:w};logAct('Exam: not admitted',`${tname(id)}: ${s.exam} ${s.name}. ${w}`);closeDrawer();render();toast('Recorded as not admitted. The trainee is told.');
+}
+function exWd(sid,id){
+  const s=exSit(sid),a=HKC.exAppOf(s,id),k=$('#ewK').value;
+  a.wd={d:TODAY,kind:k,refund:k==='medical'&&a.fee?Math.round(s.fee*0.9):0};
+  logAct('Exam withdrawal after closing',`${tname(id)}: ${s.exam} ${s.name}. ${k==='medical'?'Medical with proof, refund '+(a.fee?HKC.hk(a.wd.refund):'none due')+' (fee less 10%)':'Fee forfeited'}`);closeDrawer();render();toast('Withdrawal recorded.');
+}
+
+/* Supervisor of Training view (demo of the SOT console step) */
+const sotName=h=>'Supervisor of Training, '+h;
+function sotPend(){const o=[];S.exams.forEach(s=>{if(HKC.exState(s)!=='open')return;s.apps.forEach(a=>{if(!a.sot&&!a.sotNo&&!a.wd&&T(a.id))o.push({s,a})})});return o.sort((x,y)=>x.s.closes<y.s.closes?-1:x.s.closes>y.s.closes?1:0)}
+function sotTab(){const n=sotPend().length;return `<button class="tab on" role="tab" aria-selected="true">Exam endorsements${n?` <span class="cnt hot">${n}</span>`:''}</button>`}
+function sotInfo(t){const dk=(S.dk[t.id]||{fail:{}}).fail,nm=MAND.filter(c=>!t.courses.includes(c));return [['Time in training',t.months+' months, '+t.stage],['Mandatory courses',(MAND.length-nm.length)+' of '+MAND.length+' completed'+(nm.length?'. Outstanding: '+nm.map(c=>CNAME[c]).join(', '):'')],['Workplace-based assessments',dk.wba||'On track'],['Logbook',dk.vop||'On track'],['Latest ITA',dk.ita||'Satisfactory']]}
+function sotCard({s,a}){
+  const t=T(a.id),el=HKC.exElig(a.id,s.exam),n=HKC.daysTo(s.closes);
+  return `<div style="padding:16px 20px;border-top:1px solid var(--border-sub)"><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:flex-start"><div><div class="cell-name">${esc(t.name)} <span class="mono meta">${t.id}</span></div><div class="cell-sub">${stg(t.stage)} ${t.hosp} &middot; ${EXT[s.exam]}, ${esc(s.name)} &middot; closes ${fmt(s.closes)} (${n===0?'today':'in '+plural(n,'day')})</div></div><div class="btn-row"><button class="btn sec sm" data-a="sotNo" data-s="${s.id}" data-id="${a.id}">Decline</button><button class="btn pri sm" data-a="sotYes" data-s="${s.id}" data-id="${a.id}">Endorse</button></div></div>
+  <p class="meta" style="margin:10px 0 4px">System check of the College criteria: ${el.ok?'all met.':'<b>not all met</b>: '+el.fails.map(f=>esc(f.why)).join('; ')+'.'}</p>
+  <details><summary class="meta" style="cursor:pointer">Training record, for your information only. It is not a College requirement for this exam.</summary><dl class="kv" style="margin-top:8px">${sotInfo(t).map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl></details>
+  <p class="meta" style="margin:8px 0 0">By endorsing you certify that <i>this candidate is holding the above post and eligible to present for the exam.</i></p></div>`;
+}
+function vSOT(){
+  const p=sotPend(),done=[];S.exams.forEach(s=>s.apps.forEach(a=>{if((a.sot||a.sotNo)&&T(a.id))done.push({s,a})}));
+  return head('Supervisor of Training','Exam endorsements','Trainees who have applied for an examination ask you to certify that they hold the post and are eligible. When you endorse, the application goes to the College Secretariat. In production each SOT sees only their own trainees.')+
+  `<div class="card"><div class="q-h"><div class="h3">To endorse <span class="cnt ${p.length?'hot':''}">${p.length}</span></div></div>${p.length?p.map(sotCard).join(''):'<p class="meta" style="padding:6px 20px 18px">Nothing is waiting for you.</p>'}</div>
+  <div class="card" style="margin-top:18px"><div class="q-h"><div class="h3">Endorsed or declined <span class="cnt">${done.length}</span></div></div><div class="tbl-scroll"><table><thead><tr><th>Trainee</th><th>Examination</th><th>Outcome</th></tr></thead><tbody>${done.map(({s,a})=>{const t=T(a.id);return `<tr><td><div class="cell-name">${esc(t.name)}</div><div class="cell-sub">${t.hosp}</div></td><td>${s.exam}, ${esc(s.name)}</td><td>${a.sot?dt('Endorsed '+fmtS(a.sot.d),'ok'):dt('Declined '+fmtS(a.sotNo.d),'bad')}${a.sotNo&&a.sotNo.why?`<div class="cell-sub">${esc(a.sotNo.why)}</div>`:''}</td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+function sotSync(){S.exams=HKC.get().exams;procEvents(false)}
+function sotYes(sid,id){const t=T(id),r=HKC.exSot(sid,id,true,'',sotName(t.hosp));if(!r.ok){toast(r.msg);return}sotSync();render();toast(t.name+': endorsed. The application now goes to the Secretariat.')}
+function sotNoAsk(sid,id){const t=T(id);openModal(`<h3>Decline to endorse ${esc(t.name)}?</h3><p class="meta" style="margin:6px 0 12px">The trainee sees your reason and the application does not go to the College. They can apply again before the closing date.</p><div class="fld"><label for="snW">Reason</label><textarea id="snW" rows="3"></textarea></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doSotNo" data-s="${sid}" data-id="${id}">Decline</button></div>`)}
+function doSotNo(sid,id){const t=T(id),w=$('#snW').value.trim();if(!w){toast('Give the trainee a reason.');return}const r=HKC.exSot(sid,id,false,w,sotName(t.hosp));if(!r.ok){toast(r.msg);return}closeModal();sotSync();render();toast(t.name+': not endorsed. The trainee is told.')}
+
+function saveElig(id){
+  const t=T(id),rf=$('#elRf').checked,tf=$('#elTf').checked,ex=$('#elEx').value,why=$('#elWhy').value.trim();
+  if(ex&&!why){toast('Add the Board decision or reference for the exemption.');return}
+  const ch=[];if(rf!==(t.regFee!==false))ch.push('registration fee '+(rf?'paid':'not paid'));if(tf!==(t.trainFee!==false))ch.push('training fee '+(tf?'paid':'not paid'));
+  const old=t.exempt?t.exempt.basis:'';if(ex!==old)ch.push(ex?'Intermediate exemption: '+ex:'Intermediate exemption removed');
+  if(!ch.length){toast('Nothing has changed.');return}
+  t.regFee=rf;t.trainFee=tf;t.exempt=ex?{basis:ex,d:TODAY,why}:null;
+  logAct('Examination eligibility record changed',`${t.name} (${t.id}): ${ch.join('; ')}${why?'. '+why:''}`);closeDrawer();render();toast(t.name+': eligibility record saved.');
+}
+const EX_OPTS=['','ANZCA primary exam','FRCA primary exam','Other overseas qualification, by Board of Examinations decision'];
+function eligSection(t){
+  const ex=t.exempt?t.exempt.basis:'';
+  return `<div class="sect">Examination eligibility</div>
+  <label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="elRf" ${t.regFee!==false?'checked':''}> Registration fee paid</label>
+  <label style="display:flex;gap:8px;align-items:center;margin:6px 0 12px"><input type="checkbox" id="elTf" ${t.trainFee!==false?'checked':''}> Training fee paid</label>
+  <div class="fld"><label for="elEx">Exemption from the Intermediate</label><select id="elEx">${EX_OPTS.map(o=>`<option value="${esc(o)}" ${o===ex?'selected':''}>${o||'None'}</option>`).join('')}</select></div>
+  <div class="fld"><label for="elWhy">Board decision or reference (needed for an exemption)</label><input type="text" id="elWhy" value="${esc(t.exempt?t.exempt.why:'')}"></div>
+  <button class="btn sec sm" data-a="saveElig" data-id="${t.id}">Save eligibility record</button>
+  <p class="meta" style="margin-top:8px">The examination application checks these records. Exemption is the Board of Examinations' decision.</p>`;
+}
+
+const EX_SAMPLES={Intermediate:`hkca_no,exam,sitting_date,result\nHKCA-2024-014,Intermediate,2026-09-05,Pass\nHKCA-2024-008,Intermediate,2026-09-05,Pass\nHKCA-2025-013,Intermediate,2026-09-05,Fail\nHKCA-2022-006,Final,2026-10-04,Pass`,Final:`hkca_no,exam,sitting_date,result\nHKCA-2023-009,Final,2026-10-04,Pass\nHKCA-2024-023,Final,2026-10-04,Pass\nHKCA-2023-017,Final,2026-10-04,Merit\nHKCA-2023-009,Final,2026-10-04,Pass\nHKCA-2024-099,Final,2026-10-04,Pass`};
+const exSample=ex=>EX_SAMPLES[ex];
 function vResults(){
   const o=ui.exOut;
   return `<div class="card pad"><div class="steps"><span class="${o?'done':'on'}">1 Paste the file</span><span class="${o?'on':''}">2 Check it</span><span>3 Record results</span></div>
-  <div class="fld"><label for="exRaw">CSV from the examiners, with a header row</label><textarea id="exRaw" rows="8" class="mono" style="font-size:12.5px" placeholder="hkca_no,exam,sitting_date,result">${esc(ui.exRaw==null?'':ui.exRaw)}</textarea></div>
+  <div class="fld"><label for="exRaw">CSV from the examiners for the ${exName()} examination, with a header row</label><textarea id="exRaw" rows="8" class="mono" style="font-size:12.5px" placeholder="hkca_no,exam,sitting_date,result">${esc(ui.exRaw==null?'':ui.exRaw)}</textarea></div>
   <div class="btn-row"><button class="btn sec" data-a="loadEx">Load a sample file</button><button class="btn pri" data-a="checkEx">Check the file</button></div></div>${o?exOut(o):''}`;
 }
 function checkEx(){
@@ -974,6 +1147,7 @@ function checkEx(){
     const [id,ex,date,res]=l.split(',').map(s=>(s||'').trim());const t=T(id);const base={n:n+2,id,ex,date,res,name:t?t.name:''};
     if(!t)return Object.assign(base,{k:'err',msg:'Not a known HKCA number'});
     if(!['Intermediate','Final'].includes(ex))return Object.assign(base,{k:'err',msg:'Examination must be Intermediate or Final'});
+    if(ex!==exName())return Object.assign(base,{k:'err',msg:'This is the '+exName()+' tab. Upload '+ex+' results under the '+ex+' tab'});
     if(!['Pass','Fail'].includes(res))return Object.assign(base,{k:'err',msg:'Result must be Pass or Fail, not "'+res+'"'});
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date>TODAY)return Object.assign(base,{k:'err',msg:'Sitting date must be a past date as YYYY-MM-DD'});
     const key=id+ex;if(seen[key])return Object.assign(base,{k:'err',msg:'Duplicate of row '+seen[key]});seen[key]=n+2;
@@ -992,9 +1166,9 @@ function commitEx(){
   const rows=ui.exOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));const by={};
   rows.forEach(x=>{T(x.id).exam[x.ex]=x.res;S.exResults.push({id:x.id,ex:x.ex,date:x.date,res:x.res});const k=x.date+'|'+x.ex;(by[k]=by[k]||{sitting:x.date,exam:x.ex,cand:0,pass:0,fail:0,by:'Secretariat',at:TODAY});by[k].cand++;by[k][x.res==='Pass'?'pass':'fail']++});
   Object.values(by).forEach(h=>S.exHist.unshift(h));
-  logAct('Exam results recorded',`${rows.length} results from the examiners' file; ${ui.exOut.rows.length-rows.length} rows skipped`);ui.exOut=null;ui.exRaw=null;ui.sub.exams='hist';render();toast(plural(rows.length,'result')+' recorded.')
+  logAct('Exam results recorded',`${rows.length} results from the examiners' file; ${ui.exOut.rows.length-rows.length} rows skipped`);ui.exOut=null;ui.exRaw=null;ui.exView='hist';render();toast(plural(rows.length,'result')+' recorded.')
 }
-function vHist(){return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Sitting</th><th>Examination</th><th>Candidates</th><th>Pass</th><th>Fail</th><th>Recorded</th></tr></thead><tbody>${S.exHist.map(h=>`<tr><td>${fmt(h.sitting)}</td><td>${h.exam}</td><td>${h.cand}</td><td>${h.pass}</td><td>${h.fail}</td><td class="meta">${fmt(h.at)} by ${h.by}</td></tr>`).join('')}</tbody></table></div></div>`}
+function vHist(){return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Sitting</th><th>Examination</th><th>Candidates</th><th>Pass</th><th>Fail</th><th>Recorded</th></tr></thead><tbody>${S.exHist.filter(h=>h.exam===exName()).map(h=>`<tr><td>${fmt(h.sitting)}${h.label?`<div class="cell-sub">${esc(h.label)}</div>`:''}</td><td>${h.exam}</td><td>${h.cand}</td><td>${h.pass}</td><td>${h.fail}</td><td class="meta">${fmt(h.at)} by ${h.by}</td></tr>`).join('')}</tbody></table></div></div>`}
 </script>
 <script>
 /* ============ FORMAL PROJECTS ============ */
@@ -1118,23 +1292,23 @@ function openLog(){
   openDrawer('Audit trail','Activity log',(S.log.length?S.log.map(l=>`<div class="log-row"><div class="t">${fmtS(l.d)} ${l.t}</div><div><b>${esc(l.a)}</b><div class="meta">${esc(l.det)}</div></div><div class="h">${l.h}</div></div>`).join(''):'<p class="meta">Nothing yet. Each action you take in this console is recorded here with a chained reference.</p>')+'<p class="note" style="margin-top:14px">Each line carries a reference that depends on the line before it, so a changed or removed entry shows. This is the same trail the College can inspect.</p>','');
 }
 const TABS=[['home','Home'],['trainees','Trainees'],['courses','Courses'],['exams','Exams'],['projects','Formal projects'],['centres','Centres and SOTs'],['wba','iWBA sync']];
-function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct,courses:c.triage,projects:c.pjDispatch+c.pjOver+c.pjIn,centres:c.pend+c.accSoon,wba:c.link+c.unm}[k]||0}
+function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct,courses:c.triage,exams:c.exFee+c.exCrit,projects:c.pjDispatch+c.pjOver+c.pjIn,centres:c.pend+c.accSoon,wba:c.link+c.unm}[k]||0}
 const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,projects:vProjects,centres:vCentres,wba:vWba};
 function labelTables(){document.querySelectorAll('#app table').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(h=>h.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.dataset.l===undefined&&hs[i]!==undefined)td.dataset.l=hs[i]}))})}
 function render(){
   const y=window.scrollY;
-  $('#tabs').innerHTML=ui.role==='to'?toTab():TABS.map(([k,l])=>{const b=tabBadge(k);return `<button class="tab ${ui.tab===k?'on':''}" role="tab" aria-selected="${ui.tab===k}" data-a="go" data-t="${k}" tabindex="${ui.tab===k?0:-1}">${l}${b?` <span class="cnt hot">${b}</span>`:''}</button>`}).join('');
-  $('#app').innerHTML=(ui.role==='to'?vTO:VIEWS[ui.tab])();roleChrome();labelTables();save();
+  $('#tabs').innerHTML=ui.role==='to'?toTab():ui.role==='sot'?sotTab():TABS.map(([k,l])=>{const b=tabBadge(k);return `<button class="tab ${ui.tab===k?'on':''}" role="tab" aria-selected="${ui.tab===k}" data-a="go" data-t="${k}" tabindex="${ui.tab===k?0:-1}">${l}${b?` <span class="cnt hot">${b}</span>`:''}</button>`}).join('');
+  $('#app').innerHTML=(ui.role==='to'?vTO:ui.role==='sot'?vSOT:VIEWS[ui.tab])();roleChrome();labelTables();save();
   history.replaceState(null,'','#'+ui.tab+(ui.tab!=='home'&&ui.sub[ui.tab]?'/'+ui.sub[ui.tab]:''));
   document.title='HKCA e-Portfolio · '+TABS.find(t=>t[0]===ui.tab)[1]+' (Secretariat prototype)';
   window.scrollTo(0,y);
 }
-function go(t,k){ui.tab=t;if(k)ui.sub[t]=k;closeDrawer();window.scrollTo(0,0);render()}
+function go(t,k){ui.tab=t;if(k)ui.sub[t]=k;if(t==='exams'&&k)ui.exView='apps';closeDrawer();window.scrollTo(0,0);render()}
 const ACT={
-  go:e=>go(e.dataset.t,e.dataset.k),sub:e=>{ui.sub[e.dataset.t]=e.dataset.k;render()},
+  go:e=>go(e.dataset.t,e.dataset.k),sub:e=>{ui.sub[e.dataset.t]=e.dataset.k;if(e.dataset.t==='exams'){ui.exOut=null;ui.exRaw=null;ui.exFilter='All';ui.exSit=null}render()},
   theme:()=>{document.documentElement.classList.toggle('dark');try{localStorage.setItem('hkca.admin.dark',document.documentElement.classList.contains('dark')?1:0)}catch(x){}},
   closeDrawer,closeModal,openLog,toast:e=>toast(e.dataset.m),demoPop:()=>$('#demoPop').classList.toggle('on'),
-  resetDemo:()=>{HKC.reset();S=seedState();S.rounds=HKC.get().rounds;ui.q='';ui.docketSel={};ui.role='admin';ui.dkGate='All';ui.dkStat='All';ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
+  resetDemo:()=>{HKC.reset();S=seedState();S.rounds=HKC.get().rounds;S.exams=HKC.get().exams;ui.q='';ui.docketSel={};ui.role='admin';ui.dkGate='All';ui.dkStat='All';ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
   sort:e=>{const k=e.dataset.k;ui.sort=[k,ui.sort[0]===k?-ui.sort[1]:1];render()},
   fStage:e=>{ui.stage=e.dataset.v;render()},openTrainee:e=>openTrainee(e.dataset.id),saveStatus:e=>saveStatus(e.dataset.id),
   openIntake:e=>openIntake(e.dataset.id),approveIntake:e=>approveIntake(e.dataset.id),returnIntake:e=>returnIntake(e.dataset.id),doReturn:e=>doReturn(e.dataset.id),
@@ -1142,7 +1316,7 @@ const ACT={
   sigRemind:e=>sigRemind(e.dataset.id,e.dataset.w),sigPdf:e=>sigPdf(e.dataset.id,e.dataset.w),simSign,
   openRecog:e=>openRecog(e.dataset.id),sendTO:e=>sendTO(e.dataset.id),returnRecog:e=>returnRecog(e.dataset.id),doRecogReturn:e=>doRecogReturn(e.dataset.id),openToForm:e=>openToForm(e.dataset.id,e.dataset.b==='1'),toSubmit:e=>toSubmit(e.dataset.id,e.dataset.b==='1'),openToView:e=>openToView(e.dataset.id),simSubmit,unlockRecog:e=>unlockRecog(e.dataset.id),reviewCredit:e=>reviewCredit(e.dataset.id),execCredit,
   pickRound:e=>{ui.round=e.dataset.id;render()},rdF:e=>{ui.rdF=e.dataset.v;render()},newRound,editRound:e=>editRound(e.dataset.id),saveRound:e=>saveRound(e.dataset.id),openNow:e=>openNow(e.dataset.id),closeNow:e=>closeNow(e.dataset.id),reopen:e=>reopen(e.dataset.id),doReopen:e=>doReopen(e.dataset.id),decideRound:e=>decideRound(e.dataset.id),attendRound:e=>attendRound(e.dataset.id),suggestSeats,applySuggest,loadSheet:()=>{ui.sheet=SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
-  exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=EX_SAMPLE;ui.exOut=null;render()},checkEx,commitEx,
+  exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=exSample(exName());ui.exOut=null;render()},checkEx,commitEx,exv:e=>{ui.exView=e.dataset.v;ui.exOut=null;render()},newSit:()=>sitForm(''),editSit:e=>sitForm(e.dataset.id),saveSit:e=>saveSit(e.dataset.id),openSit:e=>openSit(e.dataset.id),closeSit:e=>closeSit(e.dataset.id),doCloseSit:e=>doCloseSit(e.dataset.id),viewApps:e=>{ui.exSit=e.dataset.id;ui.exView='apps';ui.exFilter='All';render()},openExApp:e=>openExApp(e.dataset.s,e.dataset.id),exFee:e=>exFee(e.dataset.s,e.dataset.id),exExc:e=>exExc(e.dataset.s,e.dataset.id),exNo:e=>exNo(e.dataset.s,e.dataset.id),exWd:e=>exWd(e.dataset.s,e.dataset.id),saveElig:e=>saveElig(e.dataset.id),sotYes:e=>sotYes(e.dataset.s,e.dataset.id),sotNo:e=>sotNoAsk(e.dataset.s,e.dataset.id),doSotNo:e=>doSotNo(e.dataset.s,e.dataset.id),
   pjF:e=>{ui.pjFilter=e.dataset.v;render()},openProject:e=>openProject(e.dataset.id),dispatch:e=>dispatchPj(e.dataset.id),replaceRev:e=>replaceRev(e.dataset.id,+e.dataset.i),recordPj:e=>recordPj(e.dataset.id),escalate:e=>escalate(e.dataset.id),
   addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),
   linkIt:e=>linkIt(e.dataset.id,e.dataset.to),linkOther:e=>linkOther(e.dataset.id),linkSel:e=>linkIt(e.dataset.id,$('#lkSel').value),bulkLink,doBulk,saveUnm:e=>saveUnm(+e.dataset.i),readNow
@@ -1159,6 +1333,7 @@ document.addEventListener('change',ev=>{
   else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
   else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);const a=r.apps[+e.dataset.i];a[2]=e.value;if(e.value!=='Requested'){const t=T(a[0]);logAct('Course decision',`${t?t.name:a[0]}: ${e.value} for ${CNAME[r.course]} ${fmt(r.date)}${e.value==='Accepted'?'. Notice of acceptance queued by email':''}`)}save();render()}
   else if(c==='rfCourse'){$('#rfRank').value=['RTB','RTC'].includes(e.value)?'fcfs':'priority';if(isMand(e.value))['rfFeeM','rfFeeN'].forEach(i=>{if($('#'+i).value==='')$('#'+i).value=0})}
+  else if(c==='exSit'){ui.exSit=e.value;render()}
   else if(c==='rdS'){ui.rdS=e.value;render()}
   else if(c==='cn'){ui.cn=e.value;ui.sheetOut=null;render()}
   else if(c==='warnOn'){ui.sheetOut.rows[+e.dataset.i].on=e.checked;render()}
@@ -1177,12 +1352,13 @@ $('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal
 try{if(localStorage.getItem('hkca.admin.dark')==='1')document.documentElement.classList.add('dark')}catch(e){}
 function procEvents(announce){
   const sh=HKC.get();const ev=(sh.events||[]).filter(x=>x.seq>(S.evSeen||0));if(!ev.length)return false;
-  ev.forEach(x=>{const r=S.rounds.find(y=>y.id===x.round),t=T(x.id);if(!r||!t)return;logAct(x.type==='apply'?'Course application received':'Course application withdrawn',`${t.name}: ${CNAME[r.course]} ${fmt(r.date)}`)});
+  ev.forEach(x=>{if(x.ex){if(x.type==='exSot'){const s=S.exams.find(y=>y.id===x.sid),t=T(x.id);if(s&&t)logAct('Exam application endorsed by SOT',`${t.name}: ${s.exam} ${s.name}. Acknowledgement email to the trainee queued`)}return}const r=S.rounds.find(y=>y.id===x.round),t=T(x.id);if(!r||!t)return;logAct(x.type==='apply'?'Course application received':'Course application withdrawn',`${t.name}: ${CNAME[r.course]} ${fmt(r.date)}`)});
   S.evSeen=ev[ev.length-1].seq;const l=ev[ev.length-1],r=S.rounds.find(y=>y.id===l.round),t=T(l.id);
-  if(announce&&r&&t)toast(`${t.name} ${l.type==='apply'?'applied for':'withdrew from'} ${CNAME[r.course]}${ev.length>1?' and '+(ev.length-1)+' more':''}.`);
+  if(announce&&l.ex&&l.type==='exSot'){const s=S.exams.find(y=>y.id===l.sid);if(s&&t)toast(`${t.name}'s SOT endorsed the ${s.exam} application. It is now on your list.`)}
+  else if(announce&&r&&t)toast(`${t.name} ${l.type==='apply'?'applied for':'withdrew from'} ${CNAME[r.course]}${ev.length>1?' and '+(ev.length-1)+' more':''}.`);
   save();return true;
 }
-window.addEventListener('storage',e=>{if(e.key!==HKC.KEY)return;S.rounds=HKC.get().rounds;procEvents(true);render()});
+window.addEventListener('storage',e=>{if(e.key!==HKC.KEY)return;S.rounds=HKC.get().rounds;S.exams=HKC.get().exams;procEvents(true);render()});
 procEvents(false);
 (function(){const h=location.hash.slice(1).split('/');if(VIEWS[h[0]]){ui.tab=h[0];if(h[1])ui.sub[h[0]]=h[1]}})();
 render();

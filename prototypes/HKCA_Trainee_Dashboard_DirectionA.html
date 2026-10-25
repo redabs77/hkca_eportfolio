@@ -194,6 +194,17 @@ main{padding:30px 0 70px}
 .cinfo .cwhy{font-size:12px;font-weight:650;color:#92400e;margin-top:3px}
 .dark .cinfo .cwhy{color:#fcd34d}
 .cr-empty{font-size:13.5px;color:var(--slate);margin:0;line-height:1.5}
+.ex-chk{list-style:none;margin:12px 0 0;padding:0}.ex-chk li{display:flex;gap:10px;font-size:13.5px;padding:5px 0;line-height:1.4}
+.ex-chk .t{font-weight:800;min-width:16px}.ex-chk .t.ok{color:var(--ok-f)}.ex-chk .t.no{color:var(--bd-f)}
+.ex-chk .cwhy{display:block;font-size:12px;font-weight:650;color:#92400e;margin-top:2px}.dark .ex-chk .cwhy{color:#fcd34d}
+.ex-steps{list-style:none;margin:14px 0 4px;padding:0;display:grid;gap:14px}
+.ex-steps li{display:grid;grid-template-columns:22px 1fr;gap:12px;font-size:13.5px;line-height:1.4}
+.ex-steps .mk{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:var(--surface);margin-top:1px}
+.ex-steps li.done .mk{background:var(--ok-f);border-color:var(--ok-f)}
+.ex-steps li.cur .mk{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-bg)}
+.ex-steps li.bad .mk{border-color:var(--bd-f);background:var(--bd-bg)}
+.ex-steps b{display:block;font-weight:650}.ex-steps .sub{display:block;font-size:12.5px;color:var(--slate);margin-top:2px}
+.ex-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
 @media(max-width:760px){
   .course{grid-template-columns:auto 1fr;row-gap:11px}
   .cmeta{grid-column:1/-1;justify-content:flex-start}
@@ -454,6 +465,7 @@ button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.gr
   <section class="panel" id="panel-overview" role="tabpanel" aria-labelledby="tabbtn-overview">
     <!-- 1. what needs me (single list; replaces the two banners) -->
     <div id="nextSteps"></div>
+    <div id="examCard"></div>
 
     <!-- 2. where I am: stage path with exam passes; time in training is one line that expands -->
     <div class="card">
@@ -824,6 +836,7 @@ button.grow{cursor:pointer} button.grow:hover .gl2{color:var(--acc-t)} button.gr
 <div id="modalCaseDetail" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mdT"></div>
 <div id="modalFlag" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mfT"></div>
 <div id="modalCourse" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mcoT"></div>
+<div id="modalExam" class="xscrim hidden" role="dialog" aria-modal="true" aria-labelledby="mexT"></div>
 
 <script src="hkca-courses-store.js"></script>
 <script src="hkca-plans-store.js"></script>
@@ -895,6 +908,16 @@ function nsItems(){
     else if(a[2]==='Rejected') it.push({r:6, t:'Your '+nm+' application was not accepted', s:'You can apply again when the next round opens.', cta:'View', act:()=>showTab('courses')});
     else if(a[2]==='Waitlisted') wait.push(nm+' '+d+': waitlisted, with priority for the next round');
     else wait.push('College Admin is deciding your '+nm+' application');
+  });
+  exRel().forEach(({x,a,el,st})=>{
+    const nm = EXN[x.exam]+', '+x.name, stt = a ? HKC.exAppState(x,a) : null;
+    if(!a){ if(st==='open' && el.ok) it.push({r:3.2, t:'Applications are open for the '+nm, s:'Closes '+HKC.fmtS(x.closes)+' \u00b7 fee '+HKC.hk(x.fee)+'. Your SOT endorses it and the College records your fee to complete it.', cta:'Apply', act:()=>exGo()}); return; }
+    if(stt.k==='sotwait') wait.push('Your SOT has not yet endorsed your '+nm+' application');
+    else if(stt.k==='fee') it.push({r:3.3, t:'Your '+nm+' application needs the fee', s:'Your SOT has endorsed it. Pay '+HKC.hk(x.fee)+' and attach the slip, or email it to the College.', cta:'View', act:()=>exGo()});
+    else if(stt.k==='sotno') it.push({r:2.2, t:'Your SOT did not endorse your '+nm+' application', s:(a.sotNo.why||'Speak to your SOT.')+(st==='open'?' You can apply again before '+HKC.fmtS(x.closes)+'.':''), cta:'View', act:()=>exGo()});
+    else if(stt.k==='crit') it.push({r:2.4, t:'Your '+nm+' application: criteria not met', s:HKC.exElig(TR_KEY,x.exam).fails.map(f=>f.why).join('; '), cta:'View', act:()=>exGo()});
+    else if(stt.k==='lapsed') it.push({r:2.6, t:'Your '+nm+' application lapsed', s:'It was not complete by the closing date.', cta:'View', act:()=>exGo()});
+    else if(stt.k==='complete') it.push({r:6.5, t:'Your '+nm+' application is complete', s:'Confirmation sent to your email.', cta:'View', act:()=>exGo()});
   });
   if(unc) it.push({r:5, t: unc+' imported logbook case'+(unc===1?'':'s')+' need a requirement', s:'They do not count until you classify them.', cta:'Classify', act:()=>{ showTab('logbook'); lbGo({show:'unclassified'}); }});
   it.sort((a,b)=>a.r-b.r); return {it, wait};
@@ -971,7 +994,7 @@ function renderDemo(){
     <a href="#" class="link" onclick="glReset();return false">Reset demo data</a>
     <a href="#" class="link" onclick="HKC.reset();location.reload();return false">Reset course registration demo</a>`;
 }
-function renderOverview(){ renderNextSteps(); renderStepper(); renderGate(); renderExit(); }
+function renderOverview(){ renderNextSteps(); renderExamCard(); renderStepper(); renderGate(); renderExit(); }
 const FOLDS = {peerFold:'hkca.trainee.fold.peer', timeFold:'hkca.trainee.fold.time'};
 function initFolds(){ Object.keys(FOLDS).forEach(id=>{ const d = document.getElementById(id); if(!d) return; d.open = !!lsGet(FOLDS[id], false); d.addEventListener('toggle',()=>lsSet(FOLDS[id], d.open)); }); }
 
@@ -1174,6 +1197,83 @@ function crRefresh(){
   if(cur==='courses') renderCoursesTab(); else if(cur==='overview') renderOverview();
 }
 window.addEventListener('storage', e=>{ if(e.key===HKC.KEY) crRefresh(); });
+/* ---------- examination applications: closed loop with the SOT and Admin through the shared store ---------- */
+const EXN = HKC.EX_LONG;
+function exRel(){
+  const out = [];
+  HKC.get().exams.forEach(x=>{
+    const a = HKC.exAppOf(x,TR_KEY), mine = a && !a.wd, st = HKC.exState(x);
+    if(st==='held') return;
+    const el = HKC.exElig(TR_KEY,x.exam), stageOk = el.checks.find(c=>c.k==='stage').ok;
+    if(st==='open' && (mine || stageOk)) out.push({x, a:mine?a:null, el, st});
+    else if(st==='closed' && mine) out.push({x, a, el, st});
+  });
+  return out;
+}
+const exDatesTxt = x => [x.mcq?'MCQ '+HKC.fmt(x.mcq):'', 'Written '+HKC.fmt(x.written), 'Oral '+(x.oralEnd&&x.oralEnd!==x.oral?HKC.fmtS(x.oral)+' to '+HKC.fmt(x.oralEnd):HKC.fmt(x.oral)), x.osce?'OSCE '+HKC.fmt(x.osce):''].filter(Boolean).join(' \u00b7 ');
+const exChecks = el => `<ul class="ex-chk">${el.checks.map(c=>`<li><span class="t ${c.ok?'ok':'no'}" aria-hidden="true">${c.ok?'\u2713':'\u2717'}</span><span><span class="sr">${c.ok?'Met: ':'Not met: '}</span>${X(c.l)}${c.ok?'':`<span class="cwhy">${X(c.why)}</span>`}</span></li>`).join('')}</ul>`;
+function exPay(x,a){
+  const P = HKC.PAY;
+  return `Pay ${X(HKC.hk(x.fee))} by Faster Payment System (FPS ID ${X(P.fps)}), by deposit to ${X(P.bank)}, or by e-cheque payable to ${X(P.payee)}. Then attach your payment slip here, or email it to ${X(P.mail)} with your name and membership number.${a&&a.slip?' <b>Payment slip attached: '+X(a.slip)+'.</b> College Admin confirms receipt.':''}`;
+}
+function exSteps(x,a,stt,st){
+  const open = st==='open', fails = HKC.exElig(TR_KEY,x.exam).fails.map(f=>f.why).join('; ');
+  const sot = a.sot ? {c:'done', t:'Your SOT endorsed it', s:'Endorsed '+HKC.fmt(a.sot.d)+' ('+a.sot.by+')'}
+    : a.sotNo ? {c:'bad', t:'Your SOT did not endorse', s:(a.sotNo.why?'Reason: '+a.sotNo.why+'. ':'')+(open?'You can apply again before the closing date.':'')}
+    : open ? {c:'cur', t:'Waiting for your SOT to endorse', s:'Your SOT has been asked to certify that you hold your post and are eligible to present.'}
+    : {c:'bad', t:'Not endorsed by the closing date', s:''};
+  const fee = a.fee ? {c:'done', t:'Fee received', s:HKC.hk(x.fee)+' received '+HKC.fmt(a.fee.d)+' ('+a.fee.how+').'}
+    : (open && !a.sotNo && !a.no) ? {c:'cur', t:'Fee not yet received', s:exPay(x,a), html:true}
+    : {c:'', t:'Fee not received', s:''};
+  const last = a.no ? {c:'bad', t:'Not admitted', s:'The Board of Examinations did not admit you: '+a.no.why}
+    : stt.k==='complete' ? {c:'done', t:'Application complete', s:'The SOT has endorsed it and the fee is received. A confirmation email has been sent.'}
+    : stt.k==='crit' ? {c:'bad', t:'Criteria not met', s:'A criterion is no longer met: '+fails+'. Contact College Admin.'}
+    : stt.k==='lapsed' ? {c:'bad', t:'Not completed by the closing date', s:'The application has lapsed. The College does not consider late applications.'}
+    : {c:'', t:'Application complete', s:'When your SOT has endorsed it and the College has received the fee.'};
+  const li = z => `<li class="${z.c}"><span class="mk" aria-hidden="true"></span><span><b>${X(z.t)}</b>${z.s?`<span class="sub">${z.html?z.s:X(z.s)}</span>`:''}</span></li>`;
+  const acts = [];
+  if(open && !a.fee && !a.sotNo && !a.no) acts.push(`<label class="btn sec sm" style="cursor:pointer">Attach payment slip<input type="file" id="exSlipIn" style="display:none" onchange="exAttach('${x.id}',this)"></label>`);
+  if(open && a.sotNo) acts.push(`<button type="button" class="btn pri sm" onclick="exApply('${x.id}')">Apply again</button>`);
+  if(open && !a.no) acts.push(`<button type="button" class="btn sec sm" onclick="exWithdraw('${x.id}')">Withdraw</button>`);
+  const note = !open && stt.k==='complete' ? `<p class="qline" style="margin:12px 0 0;font-size:12.5px">Applications have closed. To withdraw now, contact the Board of Examinations at ${X(HKC.PAY.mail)}. The fee is forfeited, or refunded less 10% for a medical reason with proof.</p>` : '';
+  return `<ol class="ex-steps"><li class="done"><span class="mk" aria-hidden="true"></span><span><b>Applied</b><span class="sub">Submitted ${X(HKC.fmt(a.at))}. You confirmed the examination regulations.</span></span></li>${li(sot)}${li(fee)}${li(last)}</ol>${acts.length?`<div class="ex-acts">${acts.join('')}</div>`:''}${note}`;
+}
+function exCard({x,a,el,st}){
+  const n = HKC.daysTo(x.closes), stt = a?HKC.exAppState(x,a):null, name = EXN[x.exam]+', '+x.name;
+  const cl = st==='open' ? 'Applications close '+HKC.fmt(x.closes)+(n===0?' (today)':n===1?' (in 1 day)':' (in '+n+' days)') : 'Applications closed '+HKC.fmt(x.closes);
+  const tone = {complete:'ok',fee:'warn',crit:'warn',sotno:'bad',no:'bad',sotwait:'info'};
+  const lab = stt ? ({sotwait:'Waiting for your SOT',fee:'Waiting for your fee'}[stt.k]||stt.l) : 'Open';
+  const body = a ? exSteps(x,a,stt,st) : `${exChecks(el)}<p class="qline" style="margin:12px 0 0;font-size:13px">${el.ok?'You meet the College criteria. Applying asks your SOT to endorse it. Your application is complete when your SOT has endorsed it and the College has received your fee. If it is not complete by the closing date it lapses.':'You cannot apply until every criterion is met. If a record looks wrong, flag it to College Admin.'}</p><div class="ex-acts"><button type="button" class="btn pri sm" ${el.ok?'':'disabled'} onclick="exApply('${x.id}')">Apply</button></div>`;
+  return `<div class="card" data-exam="${x.id}"><div class="hd"><div><div class="eyebrow">Examination application</div><h2>${X(name)}</h2><p>${X(exDatesTxt(x))}</p></div><span class="pill ${a?(tone[stt.k]||''):'ok'}">${X(lab)}</span></div><p class="qline" style="margin:0;font-size:13.5px">${X(cl)} &middot; Fee ${X(HKC.hk(x.fee))}</p>${body}</div>`;
+}
+function renderExamCard(){
+  const el = document.getElementById('examCard'); if(!el) return;
+  const l = exRel();
+  el.innerHTML = l.length ? l.map(exCard).join('') : (TR_STG==='PFY' ? '' : `<div class="card"><div class="hd"><div><div class="eyebrow">Examination application</div><h2>No examination is open for applications</h2><p>When applications open for the examination that fits your stage, a notice appears under Next steps and the application appears here.</p></div></div></div>`);
+}
+function exApply(sid){
+  const x = HKC.get().exams.find(y=>y.id===sid), el = HKC.exElig(TR_KEY,x.exam);
+  openModalX('modalExam', `<div class="xmodal"><div class="eyebrow">Apply for an examination</div><h3 id="mexT">${X(EXN[x.exam])}, ${X(x.name)}</h3>
+    <p class="qline" style="margin:8px 0 0;font-size:13px">${X(exDatesTxt(x))}</p>
+    <p class="qline" style="margin:6px 0 0;font-size:13px"><b>Fee:</b> ${X(HKC.hk(x.fee))}. <b>Applications close:</b> ${X(HKC.fmt(x.closes))}.</p>
+    ${exChecks(el)}
+    <p class="qline" style="margin:12px 0 0;font-size:12.5px">Next: your SOT endorses your application, you pay the fee, and College Admin records it. The application is complete when both are done. You can withdraw until the closing date.</p>
+    <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0 0;font-size:13px;line-height:1.45"><input type="checkbox" id="exDecl" style="margin-top:3px" onchange="document.getElementById('exGo').disabled=!this.checked"><span>${X(HKC.DECL.replace('{EX}',EXN[x.exam]))}</span></label>
+    <p class="qline" id="exErr" style="margin:8px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
+    <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalExam')">Cancel</button><button type="button" class="btn pri" id="exGo" disabled onclick="exDoApply('${sid}')">Submit application</button></div></div>`);
+}
+function exDoApply(sid){ const r = HKC.exApply(TR_KEY,sid); if(!r.ok){ $q('#exErr').textContent = r.msg; return; } closeX('modalExam'); crRefresh(); }
+function exWithdraw(sid){
+  const x = HKC.get().exams.find(y=>y.id===sid);
+  openModalX('modalExam', `<div class="xmodal"><div class="eyebrow">Withdraw</div><h3 id="mexT">Withdraw from the ${X(EXN[x.exam])}, ${X(x.name)}?</h3>
+    <p class="qline" style="margin:8px 0 0;font-size:13px">You can withdraw until the closing date, ${X(HKC.fmt(x.closes))}, and apply again before then.</p>
+    <p class="qline" style="margin:10px 0 0;font-size:12.5px">After the closing date a withdrawal forfeits the examination fee. If the reason is medical and supported in writing, the fee is refunded less a 10% administrative charge.</p>
+    <p class="qline" id="exErr" style="margin:8px 0 0;font-size:12.5px;color:var(--bd-f)"></p>
+    <div class="acts"><button type="button" class="btn sec" onclick="closeX('modalExam')">Keep my application</button><button type="button" class="btn pri" onclick="exDoWithdraw('${sid}')">Withdraw</button></div></div>`);
+}
+function exDoWithdraw(sid){ const r = HKC.exWithdraw(TR_KEY,sid); if(!r.ok){ $q('#exErr').textContent = r.msg; return; } closeX('modalExam'); crRefresh(); }
+function exAttach(sid,inp){ if(inp.files && inp.files[0]){ HKC.exSlip(TR_KEY,sid,inp.files[0].name); crRefresh(); } }
+function exGo(){ const e = document.getElementById('examCard'); if(e) e.scrollIntoView({behavior:'smooth',block:'start'}); }
 function courseListHtml(){
   return '<div class="courselist">'+COURSES.map(c=>c.done
     ? `<div class="course"><div class="cstat done">&#10003;</div><div class="cinfo"><div class="cname">${c.n}</div><div class="cdesc">${c.d}</div></div><div class="cmeta"><span class="pill ok">Verified</span><span class="cdate mono">${c.done}</span></div></div>`

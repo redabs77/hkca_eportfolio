@@ -31,3 +31,5 @@ None of these are production code. No accessibility audit has been run, no brows
 against a real device, and the JavaScript is deliberately minimal. Treat them as design artifacts.
 
 `hkca-courses-store.js` is the shared course registration store used by the Admin console (Courses tab) and the Trainee Dashboard (Courses and Next steps). It keeps rounds, applications, decisions and attendance in localStorage so a change on one page shows on the other. Use the same browser and the same site origin. Reset it from Demo controls on the dashboard or the Admin console.
+
+**Exams (Admin console):** Intermediate and Final tabs, each with Sittings, Exam Applications, Upload results and Past sittings. Closed loop with the Trainee Dashboard (overview card and Next steps) through `hkca-courses-store.js`; the SOT step is the demo role "View as Supervisor of Training". Criteria are one list (`EX_RULES`) in the store.
