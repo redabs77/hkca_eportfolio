@@ -145,6 +145,8 @@ td.act,th.act{text-align:right;white-space:nowrap}
 .sigrow small{display:block;color:var(--ink3);font-size:12px}
 .sigrow.done{background:var(--ok-bg);border-color:transparent}
 .sigrow .acts{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.rtrail{display:grid;grid-template-columns:56px 1fr;gap:8px 12px;font-size:13px;margin-bottom:8px}
+.rtrail .rt-d{color:var(--ink3);font-variant-numeric:tabular-nums}
 .chipgrp{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .chipgrp+.chipgrp{padding-left:14px;border-left:1px solid var(--border-sub)}
 .note{font-size:12.5px;color:var(--ink2);background:var(--bg2);border:1px solid var(--border-sub);border-radius:10px;padding:10px 12px;margin:10px 0}
@@ -197,11 +199,11 @@ table.dk{table-layout:fixed}
 </head>
 <body>
 <header class="top"><div class="wrap top-row">
-  <div class="brand"><div class="mark">H</div><div><h1>HKCA e-Portfolio</h1><p>College Secretariat Console</p></div></div>
+  <div class="brand"><div class="mark">H</div><div><h1>HKCA e-Portfolio</h1><p id="brandSub">College Secretariat Console</p></div></div>
   <div class="top-right">
     <button class="btn sec sm" data-a="openLog" title="Every action you take here is recorded">Activity log</button>
     <button class="icon-btn" id="themeBtn" data-a="theme" title="Toggle theme" aria-label="Toggle theme">&#9788;</button>
-    <div class="who"><div><div class="nm">College Secretariat</div><div class="rl">Administrator</div></div><div class="av">CS</div></div>
+    <div class="who"><div><div class="nm" id="whoNm">College Secretariat</div><div class="rl" id="whoRl">Administrator</div></div><div class="av" id="whoAv">CS</div></div>
   </div>
 </div></header>
 <div class="sub"><div class="wrap"><nav class="tabs" role="tablist" aria-label="Console navigation" id="tabs"></nav></div></div>
@@ -212,7 +214,7 @@ table.dk{table-layout:fixed}
 <div class="modal-bg" id="modalBg"><div class="modal" role="dialog" aria-modal="true" id="modal"></div></div>
 <div class="toast" id="toast" role="status"></div>
 <button class="btn sec sm demo-btn" data-a="demoPop">Demo controls</button>
-<div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><button class="btn sec sm" data-a="simSign">Simulate pending signatures arriving</button> <button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div>
+<div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><div class="fld" style="margin-bottom:10px"><label for="roleSel">View as</label><select id="roleSel" data-c="role"><option value="admin">College Secretariat</option><option value="to">Training Officer</option></select></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><button class="btn sec sm" data-a="simSign">Simulate pending signatures arriving</button><button class="btn sec sm" data-a="simSubmit">Simulate applicants submitting documents</button><button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div></div>
 <script>
 /* ============ helpers ============ */
 const $=s=>document.querySelector(s);
@@ -265,7 +267,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:5,
+    v:6,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -274,10 +276,18 @@ function seedState(){
       {id:'AP-26-036',name:'Dr. Benny Hui',from:'Applying from KWH (lateral transfer)',submitted:'2026-10-21',hosp:'KWH',stage:'HAT',chk:{mchk:false,fee:false},mc:{type:'Full',no:'17240'},sig:{cos:{m:'pdf',d:'2026-10-21'},sot:null},note:''}
     ],
     recog:[
-      {id:'RR-26-004',name:'Dr. Zoe Kwan',source:'Anaesthesia training overseas (ANZCA)',state:'gate',req:{CA:12,ICU:0,EL:0,cases:140},asked:'2026-10-20',docs:[],credit:null},
-      {id:'RR-26-003',name:'Dr. Isaac Lo',source:'Intensive care training (HKCA)',state:'waiting',req:null,asked:'2026-10-05',docs:[],credit:null},
-      {id:'RR-26-002',name:'Dr. Mei Yuen',source:'Anaesthesia training overseas (UK)',state:'decide',req:{CA:18,ICU:3,EL:0,cases:210},asked:'2026-09-22',docs:['Letter of training from the previous training body','Logbook summary (PDF)','Certificate of completion, year 2'],credit:null},
-      {id:'RR-26-001',name:'Dr. Sam Fok',source:'Anaesthesia training overseas (ANZCA)',state:'done',req:{CA:12,ICU:0,EL:0,cases:120},asked:'2026-07-02',docs:['Letter of training','Logbook summary (PDF)'],credit:{CA:12,ICU:0,EL:0,cases:110,date:'2026-09-08',reason:'RETROSPECTIVE_OVERSEAS_RECOGNITION'}}
+      {id:'RR-26-006',name:'Dr. Rosa Lim',origin:{kind:'specialty',spec:'Surgery',where:'Singapore'},state:'board',req:{CA:9,ICU:0,EL:3,cases:90},asked:'2026-10-20',rc:[true,true,true],referNote:'Two of the posts claimed overlap in time. The Board is asked to decide how much can count.',credit:null,grant:null,
+        trail:[{d:'2026-10-02',who:'Dr. Rosa Lim',ev:'Asked for retrospective recognition'},{d:'2026-10-03',who:'Secretariat',ev:'Form unlocked'},{d:'2026-10-09',who:'Dr. Rosa Lim',ev:'Submitted form and documents'},{d:'2026-10-13',who:'Secretariat',ev:'Documents checked, sent to the Training Officer'},{d:'2026-10-20',who:'Training Officer',ev:'Referred to the Board',note:'Two of the posts claimed overlap in time. The Board is asked to decide how much can count.'}]},
+      {id:'RR-26-005',name:'Dr. Gary Lee',origin:{kind:'specialty',spec:'Emergency medicine',where:'Hong Kong'},state:'to',req:{CA:6,ICU:3,EL:0,cases:100},asked:'2026-10-20',rc:[true,true,true],credit:null,grant:null,
+        trail:[{d:'2026-10-06',who:'Dr. Gary Lee',ev:'Asked for retrospective recognition'},{d:'2026-10-07',who:'Secretariat',ev:'Form unlocked'},{d:'2026-10-15',who:'Dr. Gary Lee',ev:'Submitted form and documents'},{d:'2026-10-20',who:'Secretariat',ev:'Documents checked, sent to the Training Officer'}]},
+      {id:'RR-26-004',name:'Dr. Zoe Kwan',origin:{kind:'overseas',where:'ANZCA, Australia'},state:'gate',req:{CA:12,ICU:0,EL:0,cases:140},asked:'2026-10-20',rc:[false,false,false],credit:null,grant:null,
+        trail:[{d:'2026-10-20',who:'Dr. Zoe Kwan',ev:'Asked for retrospective recognition'}]},
+      {id:'RR-26-003',name:'Dr. Isaac Lo',origin:{kind:'specialty',spec:'Intensive care',where:'Hong Kong'},state:'waiting',req:null,asked:'2026-10-05',rc:[false,false,false],credit:null,grant:null,
+        trail:[{d:'2026-10-01',who:'Dr. Isaac Lo',ev:'Asked for retrospective recognition'},{d:'2026-10-05',who:'Secretariat',ev:'Form unlocked'}]},
+      {id:'RR-26-002',name:'Dr. Mei Yuen',origin:{kind:'overseas',where:'United Kingdom'},state:'docs',req:{CA:18,ICU:3,EL:0,cases:210},asked:'2026-10-22',rc:[true,true,false],credit:null,grant:null,
+        trail:[{d:'2026-09-22',who:'Dr. Mei Yuen',ev:'Asked for retrospective recognition'},{d:'2026-09-24',who:'Secretariat',ev:'Form unlocked'},{d:'2026-10-22',who:'Dr. Mei Yuen',ev:'Submitted form and documents'}]},
+      {id:'RR-26-001',name:'Dr. Sam Fok',origin:{kind:'overseas',where:'ANZCA, Australia'},state:'done',req:{CA:12,ICU:0,EL:0,cases:120},asked:'2026-07-02',rc:[true,true,true],grant:null,credit:{CA:12,ICU:0,EL:0,cases:110,date:'2026-09-08',reason:'RETROSPECTIVE_OVERSEAS_RECOGNITION',by:'Training Officer'},
+        trail:[{d:'2026-07-02',who:'Dr. Sam Fok',ev:'Asked for retrospective recognition'},{d:'2026-07-03',who:'Secretariat',ev:'Form unlocked'},{d:'2026-08-20',who:'Dr. Sam Fok',ev:'Submitted form and documents'},{d:'2026-08-25',who:'Secretariat',ev:'Documents checked, sent to the Training Officer'},{d:'2026-09-08',who:'Training Officer',ev:'Approved with different figures',note:'Cases reduced from 120 to 110: ten could not be matched to the logbook summary.'},{d:'2026-09-08',who:'Secretariat',ev:'Credit written to the ledger'}]}
     ],
     rounds:[
       {id:'EASE-1114',course:'EASE',date:'2026-11-14',seats:12,status:'open',apps:[
@@ -348,10 +358,10 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==5)S=seedState();
+if(!S||S.v!==6)S=seedState();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const ui={tab:'home',sub:{trainees:'registry',courses:'seats',exams:'cands',projects:'dispatch',centres:'accred',wba:'link'},
-  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
+  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
 const T=id=>S.trainees.find(t=>t.id===id);
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
 function logAct(a,d){const t=new Date().toTimeString().slice(0,5);const prev=S.log[0]?S.log[0].h:'0';S.log.unshift({d:TODAY,t,a,det:d,h:hash(prev+a+d+t)});save()}
@@ -373,7 +383,8 @@ function counts(){
   const dk=docketRows();
   return {
     intake:S.intake.length,
-    recogAct:S.recog.filter(r=>r.state==='gate'||r.state==='decide').length,
+    recogAct:S.recog.filter(r=>['gate','docs','board','approved'].includes(r.state)).length,
+    recogTo:S.recog.filter(r=>r.state==='to').length,
     triage,rounds:rr.length,
     pjDispatch:S.projects.filter(p=>p.state==='dispatch').length,
     pjOver:S.projects.filter(p=>p.state==='review'&&p.due<TODAY).length,
@@ -410,13 +421,13 @@ function vHome(){
   if(c.pjOver)q.push({col:'--t5f',t:plural(c.pjOver,'project review')+' overdue',w:'The 30-day reviewer timer has passed. Reassign the reviewer or wait.',go:['projects','review'],b:'Open reviews'});
   if(c.link)q.push({col:'--acc',t:plural(c.link,'person','people')+' to link in iWBA',w:'Assessments from these people cannot reach a portfolio until you confirm who they are.',go:['wba','link'],b:'Link people'});
   if(c.intake)q.push({col:'--t1f',t:plural(c.intake,'membership application')+' to vet',w:'Oldest has waited '+ago(days(oldest,TODAY))+'. Three checks, then the account opens.',go:['trainees','intake'],b:'Open applications'});
-  if(c.recogAct)q.push({col:'--t1f',t:plural(c.recogAct,'retrospective recognition request')+' need you',w:S.recog.filter(r=>r.state==='decide').length?'One has documents in and waits for the Board decision to be recorded.':'Access to the form is waiting to be unlocked.',go:['trainees','recog'],b:'Open requests'});
+  if(c.recogAct){const rp=[];const nn=k=>S.recog.filter(r=>r.state===k).length;if(nn('gate'))rp.push(nn('gate')+' to unlock');if(nn('docs'))rp.push(nn('docs')+' with documents to check');if(nn('board'))rp.push(nn('board')+' for the Board decision');if(nn('approved'))rp.push(nn('approved')+' approved, credit to execute');q.push({col:'--t1f',t:plural(c.recogAct,'retrospective recognition request')+' need you',w:rp.join(', ')+'.',go:['trainees','recog'],b:'Open requests'})}
   if(c.triage)q.push({col:'--t4f',t:plural(c.triage,'course request')+' to triage',w:'Across '+plural(c.rounds,'round')+'. Priority and request time are already ordered for you.',go:['courses','seats'],b:'Allocate seats'});
   if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects','dispatch'],b:'Dispatch'});
   if(c.pend)q.push({col:'--t2f',t:'SOT appointment to enter',w:'The Board endorsed the replacement at '+S.pendingAppt[0].hosp+'. Record the appointment before the current term ends.',go:['centres','appts'],b:'Open appointments'});
   if(c.unm)q.push({col:'--acc',t:plural(c.unm,'iWBA item')+' not mapped',w:'These assessments are held back until each is matched to a curriculum code.',go:['wba','unmapped'],b:'Map items'});
   const waiting=[];
-  const wRecog=S.recog.filter(r=>r.state==='waiting').length;if(wRecog)waiting.push(plural(wRecog,'retrospective recognition request')+' with the applicant');
+  const wRecog=S.recog.filter(r=>r.state==='waiting').length;if(wRecog)waiting.push(plural(wRecog,'retrospective recognition request')+' with the applicant');const wTo=S.recog.filter(r=>r.state==='to').length;if(wTo)waiting.push(plural(wTo,'retrospective recognition request')+' with the Training Officer');
   const wRev=S.projects.filter(p=>p.state==='review'&&p.due>=TODAY).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
   waiting.push('JCIMED: '+S.jcimed.length+' questions sent 23 Oct');
   const dk=c.dkReady+c.dkAttn;
@@ -436,7 +447,7 @@ function vTrainees(){
   const seg=subSeg('trainees',[['registry','Registry'],['intake','Membership Application',c.intake],['docket','Training Progression'],['recog','Retrospective Recognition',c.recogAct]]);
   let body='';
   if(s==='registry')body=vRegistry();else if(s==='intake')body=vIntake();else if(s==='docket')body=vDocket();else body=vRecog();
-  const t={registry:['Trainee registry','Everyone on the training programme, any status.'],intake:['Membership Application','New applications waiting to become trainee accounts.'],docket:['Training Progression','Admin vetting of trainees in a stage gate window against the curriculum criteria. Only a trainee who meets every criterion can be advanced.'],recog:['Retrospective Recognition','Prior training that the Board may credit towards the programme.']}[s];
+  const t={registry:['Trainee registry','Everyone on the training programme, any status.'],intake:['Membership Application','New applications waiting to become trainee accounts.'],docket:['Training Progression','Admin vetting of trainees in a stage gate window against the curriculum criteria. Only a trainee who meets every criterion can be advanced.'],recog:['Retrospective Recognition','Prior training, from another country or another specialty, that may be credited. The Training Officer vets each one; the Board decides only when a problem is raised.']}[s];
   return head('Trainees',t[0],t[1],seg)+body;
 }
 function vRegistry(){
@@ -557,34 +568,98 @@ function dkDo(){
 }
 
 /* recognition */
-const RSTATE={gate:['Request access','info'],waiting:['With applicant','mute'],decide:['Needs Board decision','warn'],done:['Credit executed','ok']};
+const RSTATE={gate:['Request access','info'],waiting:['With applicant','mute'],docs:['Check documents','warn'],to:['With Training Officer','mute'],board:['Needs Board decision','warn'],approved:['Approved, credit to execute','info'],done:['Credit executed','ok']};
+const srcTxt=r=>r.origin.kind==='overseas'?'Anaesthesia training overseas: '+r.origin.where:'Other specialty: '+r.origin.spec+', '+r.origin.where;
+const DOCREQ={overseas:['Letter of training from the previous training body','Logbook or case summary','Certificate of completion, or latest year-level certificate'],specialty:['Letter or certificate from the specialty training body','Record of posts held, with dates','Case or logbook summary, if kept']};
+const reasonOf=r=>r.origin.kind==='overseas'?'RETROSPECTIVE_OVERSEAS_RECOGNITION':'RETROSPECTIVE_SPECIALTY_TRANSFER';
+const rtr=(r,who,ev,note)=>{r.trail.push({d:TODAY,who,ev,note:note||''})};
+const rtrailHtml=r=>`<div class="sect">Decision trail</div><div class="rtrail">${r.trail.map(x=>`<div class="rt-d">${fmtS(x.d)}</div><div><b>${esc(x.ev)}</b> <span class="meta">${esc(x.who)}</span>${x.note?`<div class="meta">${esc(x.note)}</div>`:''}</div>`).join('')}</div>`;
+const monthFields=(p,v,ro)=>`<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px"><div class="fld"><label for="${p}CA">Clinical anaesthesia (months)</label><input type="number" id="${p}CA" min="0" max="72" value="${v.CA}" ${ro?'disabled':''}></div><div class="fld"><label for="${p}ICU">Intensive care (months)</label><input type="number" id="${p}ICU" min="0" max="6" value="${v.ICU}" ${ro?'disabled':''}></div><div class="fld"><label for="${p}EL">Elective (months)</label><input type="number" id="${p}EL" min="0" max="18" value="${v.EL}" ${ro?'disabled':''}></div><div class="fld"><label for="${p}CS">Logbook cases recognised</label><input type="number" id="${p}CS" min="0" value="${v.cases}" ${ro?'disabled':''}></div></div>`;
+const readM=p=>({CA:+$('#'+p+'CA').value||0,ICU:+$('#'+p+'ICU').value||0,EL:+$('#'+p+'EL').value||0,cases:+$('#'+p+'CS').value||0});
+const recReq=r=>r.req?`<div class="sect">Requested by the applicant</div><dl class="kv"><dt>Clinical anaesthesia</dt><dd>${r.req.CA} months</dd><dt>Intensive care</dt><dd>${r.req.ICU} months</dd><dt>Elective</dt><dd>${r.req.EL} months</dd><dt>Logbook cases</dt><dd>${r.req.cases}</dd></dl>`:'';
+function recDocs(r,edit){
+  const req=DOCREQ[r.origin.kind];
+  return `<div class="sect">Documents</div>${req.map((n,i)=>edit?`<label class="chk ${r.rc[i]?'done':''}"><input type="checkbox" data-c="recRc" data-id="${r.id}" data-i="${i}" ${r.rc[i]?'checked':''}><span>${n}<small>Received and readable</small></span></label>`:`<div class="chk ${r.rc[i]?'done':''}" style="cursor:default"><span>${n}${r.rc[i]?'':'<small>Not received</small>'}</span></div>`).join('')}<p class="meta"><button class="linkbtn" data-a="toast" data-m="Opens the uploaded documents (demo)">View uploaded documents</button></p>`;
+}
 function vRecog(){
-  return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Applicant</th><th>Prior training</th><th>Status</th><th class="act"></th></tr></thead><tbody>${S.recog.map(r=>{const a={gate:['Unlock form','pri'],waiting:['View','sec'],decide:['Record decision','pri'],done:['View','sec']}[r.state];return `<tr><td><div class="cell-name">${esc(r.name)}</div><div class="cell-sub mono">${r.id}</div></td><td>${esc(r.source)}</td><td>${pill(RSTATE[r.state][0],RSTATE[r.state][1])}</td><td class="act"><button class="btn ${a[1]} sm" data-a="openRecog" data-id="${r.id}">${a[0]}</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+  const act={gate:['Unlock form','pri'],waiting:['View','sec'],docs:['Check documents','pri'],to:['View','sec'],board:['Record decision','pri'],approved:['Execute credit','pri'],done:['View','sec']};
+  return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Applicant</th><th>Prior training</th><th>Status</th><th class="act"></th></tr></thead><tbody>${S.recog.map(r=>{const a=act[r.state];return `<tr><td><div class="cell-name">${esc(r.name)}</div><div class="cell-sub mono">${r.id}</div></td><td>${esc(srcTxt(r))}</td><td>${pill(RSTATE[r.state][0],RSTATE[r.state][1])}</td><td class="act"><button class="btn ${a[1]} sm" data-a="openRecog" data-id="${r.id}">${a[0]}</button></td></tr>`}).join('')}</tbody></table></div></div>`;
 }
 function openRecog(id){
   const r=S.recog.find(x=>x.id===id);ui.dr={type:'recog',id};
+  const sinceL={gate:'Asked',waiting:'Form unlocked',docs:'Submitted',to:'Sent to Training Officer',board:'Referred to the Board',approved:'Approved by Training Officer',done:'Decided'}[r.state];
+  const since=r.state==='approved'?r.grant.date:r.state==='done'?r.credit.date:r.asked;
+  const top=`<dl class="kv"><dt>Prior training</dt><dd>${esc(srcTxt(r))}</dd><dt>${sinceL}</dt><dd>${fmt(since)}</dd></dl>`;
   let body='',foot='';
-  const req=r.req?`<div class="sect">Requested by the applicant</div><dl class="kv"><dt>Clinical anaesthesia</dt><dd>${r.req.CA} months</dd><dt>Intensive care</dt><dd>${r.req.ICU} months</dd><dt>Elective</dt><dd>${r.req.EL} months</dd><dt>Logbook cases</dt><dd>${r.req.cases}</dd></dl>`:'';
-  const docs=r.docs.length?`<div class="sect">Documents</div>${r.docs.map(d=>`<div class="chk" style="cursor:default"><span>${esc(d)}</span></div>`).join('')}`:'';
-  if(r.state==='gate'){body=`<dl class="kv"><dt>Prior training</dt><dd>${esc(r.source)}</dd><dt>Asked</dt><dd>${fmt(r.asked)}</dd></dl><p class="note">The retrospective form stays locked until you unlock it for this trainee. After that they upload documents and state what they are asking for.</p>`;foot=`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="unlockRecog" data-id="${id}">Unlock the form</button>`}
-  else if(r.state==='waiting'){body=`<dl class="kv"><dt>Prior training</dt><dd>${esc(r.source)}</dd><dt>Form unlocked</dt><dd>${fmt(r.asked)}</dd></dl><p class="note">Waiting for the applicant to upload documents. This moves to your list when they submit.</p>`}
-  else if(r.state==='decide'){body=`<dl class="kv"><dt>Prior training</dt><dd>${esc(r.source)}</dd><dt>Submitted</dt><dd>${fmt(r.asked)}</dd></dl>${req}${docs}
-    <div class="sect">Board decision</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px"><div class="fld"><label for="gCA">Clinical anaesthesia (months)</label><input type="number" id="gCA" min="0" max="72" value="${r.req.CA}"></div><div class="fld"><label for="gICU">Intensive care (months)</label><input type="number" id="gICU" min="0" max="6" value="${r.req.ICU}"></div><div class="fld"><label for="gEL">Elective (months)</label><input type="number" id="gEL" min="0" max="18" value="${r.req.EL}"></div><div class="fld"><label for="gCS">Logbook cases recognised</label><input type="number" id="gCS" min="0" value="${r.req.cases}"></div></div>
-    <div class="fld"><label for="gDate">Date of Board decision</label><input type="date" id="gDate" max="${TODAY}" value="${TODAY}"></div>
-    <div class="fld"><label for="gReason">Reason code</label><select id="gReason"><option>RETROSPECTIVE_OVERSEAS_RECOGNITION</option><option>RETROSPECTIVE_SPECIALTY_TRANSFER</option></select></div>`;foot=`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="reviewCredit" data-id="${id}">Review and execute</button>`}
-  else{const c=r.credit;body=`<dl class="kv"><dt>Prior training</dt><dd>${esc(r.source)}</dd><dt>Decision date</dt><dd>${fmt(c.date)}</dd><dt>Reason code</dt><dd class="mono" style="font-size:12px">${c.reason}</dd></dl><div class="sect">Credit written to the ledger</div><dl class="kv"><dt>Clinical anaesthesia</dt><dd>${c.CA} months</dd><dt>Intensive care</dt><dd>${c.ICU} months</dd><dt>Elective</dt><dd>${c.EL} months</dd><dt>Logbook cases</dt><dd>${c.cases}</dd></dl><p class="note">Ledger rows are permanent. A later correction is a new row with its own reason code, approved by the Board.</p>`}
+  if(r.state==='gate'){body=top+`<p class="note">The retrospective form stays locked until you unlock it for this trainee. After that they upload documents and state what they are asking for.</p>`;foot=`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="unlockRecog" data-id="${id}">Unlock the form</button>`}
+  else if(r.state==='waiting'){body=top+`<p class="note">Waiting for the applicant to upload documents. This moves to your list when they submit.</p>`}
+  else if(r.state==='docs'){body=top+(r.toNote?`<p class="note warn"><b>The Training Officer asked for more documents:</b> ${esc(r.toNote)}</p>`:'')+recReq(r)+recDocs(r,true)+`<p class="meta">When every document is in, send the pack to the Training Officer to vet.</p>`;foot=`<button class="btn sec" data-a="returnRecog" data-id="${id}">Return to applicant</button><button class="btn pri" id="sendToBtn" data-a="sendTO" data-id="${id}" ${r.rc.every(Boolean)?'':'disabled'}>Send to Training Officer</button>`}
+  else if(r.state==='to'){body=top+recReq(r)+recDocs(r,false)+`<p class="note">With the Training Officer. It returns here only if they refer it to the Board or ask for more documents. If they approve, it comes to you to execute the credit.</p>`;foot=`<button class="btn sec" data-a="closeDrawer">Close</button><button class="btn sec" data-a="openToForm" data-id="${id}" data-b="1">Record outcome for them</button>`}
+  else if(r.state==='board'||r.state==='approved'){
+    const ap=r.state==='approved';const v=ap?r.grant:r.req;
+    body=top+recReq(r)+recDocs(r,false)+`<div class="sect">${ap?'Training Officer\'s decision':'Board decision'}</div>${ap?`<p class="note ok">No particular issues were raised, so the Training Officer's vetting is the decision. Check the figures and execute.</p>`:(r.referNote?`<p class="note warn"><b>Referred by the Training Officer:</b> ${esc(r.referNote)}</p>`:'')}${monthFields('g',v,ap)}<div class="fld"><label for="gDate">Date of ${ap?'the Training Officer\'s':'the Board'} decision</label><input type="date" id="gDate" max="${TODAY}" value="${ap?r.grant.date:TODAY}" ${ap?'disabled':''}></div><dl class="kv"><dt>Reason code</dt><dd class="mono" style="font-size:12px">${reasonOf(r)}</dd></dl>`+rtrailHtml(r);
+    foot=`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="reviewCredit" data-id="${id}">Review and execute</button>`}
+  else{const c=r.credit;body=top+`<dl class="kv"><dt>Decided by</dt><dd>${esc(c.by||'Board')}</dd><dt>Reason code</dt><dd class="mono" style="font-size:12px">${c.reason}</dd></dl><div class="sect">Credit written to the ledger</div><dl class="kv"><dt>Clinical anaesthesia</dt><dd>${c.CA} months</dd><dt>Intensive care</dt><dd>${c.ICU} months</dd><dt>Elective</dt><dd>${c.EL} months</dd><dt>Logbook cases</dt><dd>${c.cases}</dd></dl><p class="note">Ledger rows are permanent. A later correction is a new row with its own reason code, approved by the Board.</p>`}
+  if(r.state!=='board'&&r.state!=='approved')body+=rtrailHtml(r);
   openDrawer(r.id,r.name,body,foot);
 }
-function unlockRecog(id){const r=S.recog.find(x=>x.id===id);r.state='waiting';r.asked=TODAY;logAct('Retrospective form unlocked',r.name);closeDrawer();render();toast('Form unlocked for '+r.name+'.')}
+function refreshRecog(r){openRecog(r.id);render()}
+function unlockRecog(id){const r=S.recog.find(x=>x.id===id);r.state='waiting';r.asked=TODAY;rtr(r,'Secretariat','Form unlocked');logAct('Retrospective form unlocked',r.name);closeDrawer();render();toast('Form unlocked for '+r.name+'.')}
+function sendTO(id){const r=S.recog.find(x=>x.id===id);if(!r.rc.every(Boolean))return;r.state='to';r.asked=TODAY;r.toNote='';rtr(r,'Secretariat','Documents checked, sent to the Training Officer');logAct('Sent to Training Officer',r.name+', '+srcTxt(r));closeDrawer();render();toast('Sent to the Training Officer.')}
+function returnRecog(id){const r=S.recog.find(x=>x.id===id);openModal(`<h3>Return ${esc(r.name)}'s documents</h3><p class="meta" style="margin-bottom:12px">The applicant sees your note and can upload again.</p><div class="fld"><label for="rcWhy">What is missing or unreadable</label><textarea id="rcWhy" rows="3"></textarea></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doRecogReturn" data-id="${id}">Return to applicant</button></div>`)}
+function doRecogReturn(id){const w=$('#rcWhy').value.trim();if(!w){toast('Say what is missing.');return}const r=S.recog.find(x=>x.id===id);r.state='waiting';r.asked=TODAY;rtr(r,'Secretariat','Returned to the applicant',w);logAct('Retrospective documents returned',r.name+': '+w);closeModal();closeDrawer();render();toast('Returned to '+r.name+'.')}
+function simSubmit(){S.recog.forEach(r=>{if(r.state==='waiting'){r.state='docs';r.asked=TODAY;r.req=r.req||{CA:6,ICU:0,EL:0,cases:60};r.rc=[false,false,false];rtr(r,r.name,'Submitted form and documents')}});save();$('#demoPop').classList.remove('on');closeDrawer();render();toast('Applicants submitted (demo).')}
+
+/* Training Officer */
+const toDone=r=>['approved','board','done'].includes(r.state)&&r.trail.some(x=>/Training Officer/.test(x.who));
+const toOutcome=r=>{const x=[...r.trail].reverse().find(y=>/Training Officer/.test(y.who));return x?x.ev:''};
+function toTab(){const n=S.recog.filter(r=>r.state==='to').length;return `<button class="tab on" role="tab" aria-selected="true">Retrospective vetting${n?` <span class="cnt hot">${n}</span>`:''}</button>`}
+function roleChrome(){const to=ui.role==='to';$('#brandSub').textContent=to?'Training Officer view':'College Secretariat Console';$('#whoNm').textContent=to?'Training Officer':'College Secretariat';$('#whoRl').textContent=to?'Retrospective vetting':'Administrator';$('#whoAv').textContent=to?'TO':'CS';$('#roleSel').value=ui.role}
+function vTO(){
+  const to=S.recog.filter(r=>r.state==='to'),dn=S.recog.filter(toDone);
+  return head('Training Officer','Retrospective vetting','Applications the Secretariat has checked and sent to you. Approve when there are no particular issues. Refer to the Board when there is a problem.')+
+  `<div class="card"><div class="q-h"><div class="h3">To vet <span class="cnt ${to.length?'hot':''}">${to.length}</span></div></div><div class="tbl-scroll"><table><thead><tr><th>Applicant</th><th>Prior training</th><th>Sent</th><th class="act"></th></tr></thead><tbody>${to.map(r=>`<tr><td><div class="cell-name">${esc(r.name)}</div><div class="cell-sub mono">${r.id}</div></td><td>${esc(srcTxt(r))}</td><td>${fmt(r.asked)} <span class="cell-sub">waiting ${ago(days(r.asked,TODAY))}</span></td><td class="act"><button class="btn pri sm" data-a="openToForm" data-id="${r.id}">Vet</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nothing waiting for you.</td></tr>'}</tbody></table></div></div>
+  <div class="card" style="margin-top:18px"><div class="q-h"><div class="h3">Your outcomes <span class="cnt">${dn.length}</span></div></div><div class="tbl-scroll"><table><thead><tr><th>Applicant</th><th>Prior training</th><th>Outcome</th><th class="act"></th></tr></thead><tbody>${dn.map(r=>`<tr><td><div class="cell-name">${esc(r.name)}</div><div class="cell-sub mono">${r.id}</div></td><td>${esc(srcTxt(r))}</td><td>${esc(toOutcome(r))}</td><td class="act"><button class="btn sec sm" data-a="openToView" data-id="${r.id}">View</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">No outcomes yet.</td></tr>'}</tbody></table></div></div>`;
+}
+function openToView(id){const r=S.recog.find(x=>x.id===id);ui.dr={type:'toview',id};openDrawer(r.id,r.name,`<dl class="kv"><dt>Prior training</dt><dd>${esc(srcTxt(r))}</dd></dl>${recReq(r)}${recDocs(r,false)}${rtrailHtml(r)}`,'')}
+function openToForm(id,behalf){
+  const r=S.recog.find(x=>x.id===id);ui.dr={type:'to',id};
+  openDrawer(r.id,r.name,`<dl class="kv"><dt>Prior training</dt><dd>${esc(srcTxt(r))}</dd><dt>Sent</dt><dd>${fmt(r.asked)}</dd></dl>${behalf?'<p class="note warn">Recording on behalf of the Training Officer, from an outcome received outside the system. This is noted in the decision trail.</p>':''}${recReq(r)}${recDocs(r,false)}${rtrailHtml(r)}
+  <div class="sect">${behalf?'Training Officer\'s outcome':'Your outcome'}</div>
+  <label class="chk"><input type="radio" name="toOut" value="approve" data-c="toOut" checked><span>Approve<small>No particular issues. Your vetting is the decision.</small></span></label>
+  <label class="chk"><input type="radio" name="toOut" value="refer" data-c="toOut"><span>Refer to the Board<small>There is a problem the Board should decide.</small></span></label>
+  <label class="chk"><input type="radio" name="toOut" value="docs" data-c="toOut"><span>More documents needed<small>Goes back to the Secretariat.</small></span></label>
+  <div id="toApprove"><div class="sect">Credit to give</div>${monthFields('t',r.req)}</div>
+  <div class="fld"><label for="toNote" id="toNoteL">Note (needed only if you change the figures)</label><textarea id="toNote" rows="3" placeholder="Recorded in the decision trail"></textarea></div>`,
+  `<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="toSubmit" data-id="${id}" data-b="${behalf?1:0}">Record outcome</button>`);
+}
+function toOutChange(v){$('#toApprove').style.display=v==='approve'?'':'none';$('#toNoteL').textContent=v==='approve'?'Note (needed only if you change the figures)':v==='refer'?'Why it needs the Board':'What documents are needed'}
+function toSubmit(id,behalf){
+  const r=S.recog.find(x=>x.id===id);const out=document.querySelector('input[name=toOut]:checked').value;const note=$('#toNote').value.trim();
+  const who=behalf?'Secretariat, for the Training Officer':'Training Officer';
+  if(out==='approve'){
+    const g=readM('t');const diff=['CA','ICU','EL','cases'].filter(k=>g[k]!==r.req[k]);
+    if(diff.length&&!note){toast('Say why the figures differ from the request.');$('#toNote').focus();return}
+    r.grant=Object.assign(g,{date:TODAY});r.state='approved';rtr(r,who,diff.length?'Approved with different figures':'Approved as requested',note);
+    logAct('Retrospective recognition approved',`${r.name}: CA ${g.CA}, ICU ${g.ICU}, EL ${g.EL} months, ${g.cases} cases. Decided by the Training Officer${behalf?' (recorded by the Secretariat)':''}`);
+  }else if(out==='refer'){
+    if(!note){toast('Say why it needs the Board.');$('#toNote').focus();return}
+    r.state='board';r.referNote=note;rtr(r,who,'Referred to the Board',note);logAct('Retrospective recognition referred to the Board',r.name+': '+note);
+  }else{
+    if(!note){toast('Say what documents are needed.');$('#toNote').focus();return}
+    r.state='docs';r.toNote=note;r.asked=TODAY;rtr(r,who,'Asked for more documents',note);logAct('Retrospective recognition: more documents asked',r.name+': '+note);
+  }
+  closeDrawer();render();toast(out==='approve'?'Approved. The Secretariat will execute the credit.':out==='refer'?'Referred to the Board.':'Returned to the Secretariat.')
+}
 function reviewCredit(id){
-  const r=S.recog.find(x=>x.id===id);const g={CA:+$('#gCA').value||0,ICU:+$('#gICU').value||0,EL:+$('#gEL').value||0,cases:+$('#gCS').value||0,date:$('#gDate').value,reason:$('#gReason').value};
-  if(!g.date||g.date>TODAY){toast('Enter the Board decision date. It cannot be in the future.');return}
+  const r=S.recog.find(x=>x.id===id);const ap=r.state==='approved';const by=ap?'Training Officer':'Board';
+  const g=Object.assign(readM('g'),{date:ap?r.grant.date:$('#gDate').value,reason:reasonOf(r),by});
+  if(!g.date||g.date>TODAY){toast('Enter the decision date. It cannot be in the future.');return}
   const over=['CA','ICU','EL','cases'].filter(k=>g[k]>r.req[k]);
   ui.pendingCredit={id,g};
-  openModal(`<h3>Write credit for ${esc(r.name)}?</h3><dl class="kv" style="margin-top:12px"><dt>Clinical anaesthesia</dt><dd>${g.CA} months</dd><dt>Intensive care</dt><dd>${g.ICU} months</dd><dt>Elective</dt><dd>${g.EL} months</dd><dt>Logbook cases</dt><dd>${g.cases}</dd><dt>Decision date</dt><dd>${fmt(g.date)}</dd></dl>${over.length?'<p class="note warn">One or more figures are above what the applicant asked for.</p>':''}<p class="meta">This writes permanent ledger rows. It cannot be edited afterwards, only corrected by a new Board-approved row.</p><div class="btn-row"><button class="btn sec" data-a="closeModal">Go back</button><button class="btn pri" data-a="execCredit">Execute credit</button></div>`);
+  openModal(`<h3>Write credit for ${esc(r.name)}?</h3><dl class="kv" style="margin-top:12px"><dt>Clinical anaesthesia</dt><dd>${g.CA} months</dd><dt>Intensive care</dt><dd>${g.ICU} months</dd><dt>Elective</dt><dd>${g.EL} months</dd><dt>Logbook cases</dt><dd>${g.cases}</dd><dt>Decided by</dt><dd>${by}, ${fmt(g.date)}</dd></dl>${over.length?'<p class="note warn">One or more figures are above what the applicant asked for.</p>':''}<p class="meta">This writes permanent ledger rows. It cannot be edited afterwards, only corrected by a new Board-approved row.</p><div class="btn-row"><button class="btn sec" data-a="closeModal">Go back</button><button class="btn pri" data-a="execCredit">Execute credit</button></div>`);
 }
-function execCredit(){const {id,g}=ui.pendingCredit;const r=S.recog.find(x=>x.id===id);r.credit=g;r.state='done';logAct('Retrospective credit executed',`${r.name}: CA ${g.CA}, ICU ${g.ICU}, EL ${g.EL} months, ${g.cases} cases. ${g.reason}`);closeModal();closeDrawer();render();toast('Credit written for '+r.name+'.')}
+function execCredit(){const {id,g}=ui.pendingCredit;const r=S.recog.find(x=>x.id===id);r.credit=g;r.state='done';rtr(r,'Secretariat','Credit written to the ledger',g.by+' decision of '+fmtS(g.date));logAct('Retrospective credit executed',`${r.name}: CA ${g.CA}, ICU ${g.ICU}, EL ${g.EL} months, ${g.cases} cases. ${g.reason}. Decided by ${g.by}`);closeModal();closeDrawer();render();toast('Credit written for '+r.name+'.')}
 
 /* ============ COURSES ============ */
 const PR={h:['High','pri-h'],m:['Medium','pri-m'],l:['Low','pri-l']};
@@ -827,8 +902,8 @@ function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct,cours
 const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,projects:vProjects,centres:vCentres,wba:vWba};
 function render(){
   const y=window.scrollY;
-  $('#tabs').innerHTML=TABS.map(([k,l])=>{const b=tabBadge(k);return `<button class="tab ${ui.tab===k?'on':''}" role="tab" aria-selected="${ui.tab===k}" data-a="go" data-t="${k}" tabindex="${ui.tab===k?0:-1}">${l}${b?` <span class="cnt hot">${b}</span>`:''}</button>`}).join('');
-  $('#app').innerHTML=VIEWS[ui.tab]();save();
+  $('#tabs').innerHTML=ui.role==='to'?toTab():TABS.map(([k,l])=>{const b=tabBadge(k);return `<button class="tab ${ui.tab===k?'on':''}" role="tab" aria-selected="${ui.tab===k}" data-a="go" data-t="${k}" tabindex="${ui.tab===k?0:-1}">${l}${b?` <span class="cnt hot">${b}</span>`:''}</button>`}).join('');
+  $('#app').innerHTML=(ui.role==='to'?vTO:VIEWS[ui.tab])();roleChrome();save();
   history.replaceState(null,'','#'+ui.tab+(ui.tab!=='home'&&ui.sub[ui.tab]?'/'+ui.sub[ui.tab]:''));
   document.title='HKCA e-Portfolio · '+TABS.find(t=>t[0]===ui.tab)[1]+' (Secretariat prototype)';
   window.scrollTo(0,y);
@@ -838,13 +913,13 @@ const ACT={
   go:e=>go(e.dataset.t,e.dataset.k),sub:e=>{ui.sub[e.dataset.t]=e.dataset.k;render()},
   theme:()=>{document.documentElement.classList.toggle('dark');try{localStorage.setItem('hkca.admin.dark',document.documentElement.classList.contains('dark')?1:0)}catch(x){}},
   closeDrawer,closeModal,openLog,toast:e=>toast(e.dataset.m),demoPop:()=>$('#demoPop').classList.toggle('on'),
-  resetDemo:()=>{S=seedState();ui.q='';ui.docketSel={};ui.dkGate='All';ui.dkStat='All';ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
+  resetDemo:()=>{S=seedState();ui.q='';ui.docketSel={};ui.role='admin';ui.dkGate='All';ui.dkStat='All';ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
   sort:e=>{const k=e.dataset.k;ui.sort=[k,ui.sort[0]===k?-ui.sort[1]:1];render()},
   fStage:e=>{ui.stage=e.dataset.v;render()},openTrainee:e=>openTrainee(e.dataset.id),saveStatus:e=>saveStatus(e.dataset.id),
   openIntake:e=>openIntake(e.dataset.id),approveIntake:e=>approveIntake(e.dataset.id),returnIntake:e=>returnIntake(e.dataset.id),doReturn:e=>doReturn(e.dataset.id),
   dkAll:e=>{dkVisible().filter(x=>x.c.ready&&(!e.dataset.g||x.t.stage===e.dataset.g)).forEach(x=>ui.docketSel[x.t.id]=true);render()},dkGo,dkDo,fDkGate:e=>{ui.dkGate=e.dataset.v;render()},fDkStat:e=>{ui.dkStat=e.dataset.v;render()},
   sigRemind:e=>sigRemind(e.dataset.id,e.dataset.w),sigPdf:e=>sigPdf(e.dataset.id,e.dataset.w),simSign,
-  openRecog:e=>openRecog(e.dataset.id),unlockRecog:e=>unlockRecog(e.dataset.id),reviewCredit:e=>reviewCredit(e.dataset.id),execCredit,
+  openRecog:e=>openRecog(e.dataset.id),sendTO:e=>sendTO(e.dataset.id),returnRecog:e=>returnRecog(e.dataset.id),doRecogReturn:e=>doRecogReturn(e.dataset.id),openToForm:e=>openToForm(e.dataset.id,e.dataset.b==='1'),toSubmit:e=>toSubmit(e.dataset.id,e.dataset.b==='1'),openToView:e=>openToView(e.dataset.id),simSubmit,unlockRecog:e=>unlockRecog(e.dataset.id),reviewCredit:e=>reviewCredit(e.dataset.id),execCredit,
   pickRound:e=>{ui.round=e.dataset.id;render()},autoFill,loadSheet:()=>{ui.sheet=SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
   exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=EX_SAMPLE;ui.exOut=null;render()},checkEx,commitEx,
   pjF:e=>{ui.pjFilter=e.dataset.v;render()},openProject:e=>openProject(e.dataset.id),dispatch:e=>dispatchPj(e.dataset.id),replaceRev:e=>replaceRev(e.dataset.id,+e.dataset.i),recordPj:e=>recordPj(e.dataset.id),escalate:e=>escalate(e.dataset.id),
@@ -857,6 +932,9 @@ document.addEventListener('change',ev=>{
   if(c==='status'){ui.status=e.value;render()}
   else if(c==='hosp'){ui.hosp=e.value;render()}
   else if(c==='intakeChk'){const a=S.intake.find(x=>x.id===e.dataset.id);a.chk[e.dataset.k]=e.checked;save();refreshIntake(a)}
+  else if(c==='recRc'){const r=S.recog.find(x=>x.id===e.dataset.id);r.rc[+e.dataset.i]=e.checked;save();refreshRecog(r)}
+  else if(c==='toOut'){toOutChange(e.value)}
+  else if(c==='role'){ui.role=e.value;closeDrawer();$('#demoPop').classList.remove('on');window.scrollTo(0,0);render()}
   else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
   else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);r.apps[+e.dataset.i][2]=e.value;save();render()}
   else if(c==='cn'){ui.cn=e.value;ui.sheetOut=null;render()}
