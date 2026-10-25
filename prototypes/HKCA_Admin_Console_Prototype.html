@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HKCA e-Portfolio · College Secretariat Console (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--g300:#d4d4d4;--am700:#8f5d12;--rd700:#ac3f4c;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg2);color:var(--ink);line-height:1.5;font-size:14px;-webkit-font-smoothing:antialiased;transition:background-color .15s,color .15s}
+.mono{font-family:'JetBrains Mono',Menlo,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1420px;margin:0 auto;padding:0 22px}
+.hidden{display:none!important}
+button{font-family:inherit}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+
+/* top bar + tabs (same frame as the SOT console) */
+.top{position:sticky;top:0;z-index:80;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(18px) saturate(180%);border-bottom:1px solid var(--border)}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:11px 0}
+.brand{display:flex;align-items:center;gap:11px}
+.mark{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px;flex:none}
+.brand h1{font-size:14.5px;font-weight:650;letter-spacing:-.01em;line-height:1.2}
+.brand p{font-size:12px;color:var(--ink3);line-height:1.2}
+.top-right{display:flex;align-items:center;gap:9px}
+.icon-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:8px;display:grid;place-items:center;cursor:pointer;font-size:15px}
+.icon-btn:hover{background:var(--bg3)}
+.who{display:flex;align-items:center;gap:9px;padding-left:11px;border-left:1px solid var(--border)}
+.who .nm{font-size:12.5px;font-weight:650;line-height:1.2;text-align:right}
+.who .rl{font-size:12px;color:var(--ink3);line-height:1.2;text-align:right}
+.av{width:31px;height:31px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:650;flex:none}
+.sub{background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:70}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:transparent;font-size:13px;font-weight:550;color:var(--ink2);padding:13px 15px 12px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--acc-t);border-bottom-color:var(--acc);font-weight:650}
+.cnt{background:var(--bg3);color:var(--ink2);font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px;font-family:'JetBrains Mono',monospace;min-width:18px;text-align:center}
+.cnt.hot{background:var(--wn-bg);color:var(--wn-f)}
+main{padding:24px 0 90px}
+
+/* page head */
+.pghead{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px;flex-wrap:wrap}
+.eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+.pgtitle{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-top:2px}
+.pgsub{font-size:13.5px;color:var(--ink2);margin-top:3px;max-width:70ch}
+.meta{font-size:12.5px;color:var(--ink2)}
+.muted{color:var(--ink3)}
+.h3{font-size:14px;font-weight:650;letter-spacing:-.01em}
+
+/* controls */
+.seg{display:inline-flex;gap:3px;background:var(--bg3);padding:3px;border-radius:10px;border:1px solid var(--border-sub);flex-wrap:wrap}
+.seg button{border:0;background:transparent;font-size:12.5px;font-weight:550;color:var(--ink2);padding:6px 13px;border-radius:7px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--raised);color:var(--ink);box-shadow:var(--shadow);font-weight:650}
+.btn{border:0;font-size:12.5px;font-weight:650;padding:7px 13px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background .14s}
+.btn.pri{background:var(--acc);color:#fff}.btn.pri:hover{background:var(--acc-d)}
+.btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--border)}.btn.sec:hover{background:var(--bg3)}
+.btn.out{background:transparent;color:var(--acc-t);border:1px solid var(--acc)}.btn.out:hover{background:var(--acc-bg)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.linkbtn{background:none;border:0;color:var(--acc-t);font-weight:600;font-size:inherit;cursor:pointer;padding:0;text-align:left}
+.linkbtn:hover{text-decoration:underline}
+input[type=text],input[type=search],input[type=date],input[type=number],select,textarea{font-family:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 10px;max-width:100%}
+textarea{width:100%;resize:vertical;line-height:1.5}
+select{padding-right:26px}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fld>label,.lab{font-size:12px;font-weight:650;color:var(--ink2)}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1px solid var(--border);background:var(--surface);color:var(--ink2);font-size:12.5px;font-weight:550;padding:5px 11px;border-radius:999px;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+.chip:hover{border-color:var(--ink3)}
+.chip.on{background:var(--acc-bg);border-color:var(--acc);color:var(--acc-t);font-weight:650}
+.chip .n{font-size:11px;font-family:'JetBrains Mono',monospace;opacity:.85}
+.toolbar{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.toolbar .grow{flex:1}
+
+/* surfaces */
+.card{background:var(--raised);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.pad{padding:18px 20px}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+thead th{text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg2);position:sticky;top:0}
+thead th:first-child{border-top-left-radius:14px}thead th:last-child{border-top-right-radius:14px}
+thead th button{all:unset;cursor:pointer;display:inline-flex;gap:5px;align-items:center;text-transform:inherit;letter-spacing:inherit;font-weight:inherit;color:inherit}
+thead th button:hover{color:var(--ink)}
+thead th button:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
+tbody td{padding:10px 14px;border-bottom:1px solid var(--border-sub);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--bg2)}
+td.act,th.act{text-align:right;white-space:nowrap}
+.cell-name{font-weight:600}
+.cell-sub{font-size:12px;color:var(--ink3);margin-top:1px}
+.grp td{background:var(--bg2);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);padding:8px 14px}
+.empty{padding:34px 20px;text-align:center;color:var(--ink3);font-size:13px}
+
+/* status vocabulary: one saturated pill per row at most; secondary states are dot + text */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:650;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok-f)}.pill.warn{background:var(--wn-bg);color:var(--wn-f)}.pill.bad{background:var(--bd-bg);color:var(--bd-f)}.pill.info{background:var(--in-bg);color:var(--in-f)}.pill.pur{background:var(--pp-bg);color:var(--pp-f)}.pill.mute{background:var(--bg3);color:var(--ink2)}
+.dt{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink)}
+.dt::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink3);flex:none}
+.dt.ok::before{background:var(--ok-f)}.dt.warn::before{background:#d99a2b}.dt.bad::before{background:var(--bd-f)}.dt.info::before{background:var(--in-f)}.dt.none::before{background:transparent;border:1.5px dashed var(--ink3)}
+.stg{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;color:#1f2a44}
+.stg.BAT{background:var(--s-bat)}.stg.HAT{background:var(--s-hat)}.stg.PFY{background:var(--s-pfy)}
+.dark .stg{color:#0f1226}
+.tick{color:var(--ok-f);font-weight:800}.cross{color:var(--bd-f);font-weight:800}
+
+/* home: work queue */
+.hm{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+.q-h{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;border-bottom:1px solid var(--border)}
+.q-item{display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:16px;align-items:center;padding:15px 20px 15px 0;border-bottom:1px solid var(--border-sub)}
+.q-item:last-child{border-bottom:0}
+.q-bar{align-self:stretch;border-radius:0 4px 4px 0}
+.q-title{font-size:14.5px;font-weight:650;letter-spacing:-.01em}
+.q-why{font-size:12.5px;color:var(--ink2);margin-top:2px}
+.q-wait{padding:13px 20px;font-size:13px;color:var(--ink2);border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap}
+.q-clear{padding:15px 20px;font-size:13px;color:var(--ink2)}
+.rail-card{padding:16px 18px;margin-bottom:16px}
+.cal{display:grid;grid-template-columns:54px 1fr;gap:4px 12px;margin-top:10px;font-size:13px}
+.cal .d{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2)}
+.cal .w{color:var(--ink)}
+.cal .w small{display:block;color:var(--ink3);font-size:12px}
+.sync-line{display:flex;gap:9px;align-items:center;font-size:13px;margin-top:8px}
+
+/* drawer + modal + toast */
+.scrim{position:fixed;inset:0;background:rgba(20,18,40,.42);z-index:120;opacity:0;pointer-events:none;transition:opacity .18s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);background:var(--surface);border-left:1px solid var(--border);z-index:130;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .22s ease;box-shadow:var(--shadow-md)}
+.drawer.on{transform:none}
+.dr-h{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.dr-h h2{font-size:18px;letter-spacing:-.015em;font-weight:700;line-height:1.25}
+.dr-b{flex:1;overflow:auto;padding:18px 22px}
+.dr-f{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;background:var(--bg)}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;font-size:13px;margin-bottom:16px}
+.kv dt{color:var(--ink3)}.kv dd{color:var(--ink)}
+.sect{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:20px 0 8px}
+.sect:first-child{margin-top:0}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:13px}
+.chk:hover{background:var(--bg2)}
+.chk input{margin-top:3px}
+.chk small{display:block;color:var(--ink3);font-size:12px}
+.chk.done{background:var(--ok-bg);border-color:transparent}
+.note{font-size:12.5px;color:var(--ink2);background:var(--bg2);border:1px solid var(--border-sub);border-radius:10px;padding:10px 12px;margin:10px 0}
+.note.warn{background:var(--wn-bg);color:var(--wn-f);border-color:transparent}
+.note.bad{background:var(--bd-bg);color:var(--bd-f);border-color:transparent}
+.note.ok{background:var(--ok-bg);color:var(--ok-f);border-color:transparent}
+.modal-bg{position:fixed;inset:0;background:rgba(20,18,40,.5);z-index:150;display:none;place-items:center;padding:20px}
+.modal-bg.on{display:grid}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);width:min(520px,100%);max-height:88vh;overflow:auto;padding:22px 24px}
+.modal h3{font-size:17px;letter-spacing:-.015em;margin-bottom:6px}
+.modal .btn-row{justify-content:flex-end;margin-top:18px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13px;font-weight:550;z-index:200;opacity:0;pointer-events:none;transition:all .2s;max-width:min(560px,92vw)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.demo-btn{position:fixed;right:16px;bottom:16px;z-index:90}
+.demo-pop{position:fixed;right:16px;bottom:56px;z-index:91;width:240px;padding:14px;display:none}
+.demo-pop.on{display:block}
+
+/* course rounds, projects, small bars */
+.split{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
+.round{display:block;width:100%;text-align:left;border:0;background:transparent;padding:13px 16px;border-bottom:1px solid var(--border-sub);cursor:pointer;color:var(--ink)}
+.round:last-child{border-bottom:0}
+.round:hover{background:var(--bg2)}
+.round.on{background:var(--acc-bg);box-shadow:inset 3px 0 0 var(--acc)}
+.round b{font-size:13.5px}
+.seatbar{height:6px;background:var(--bg3);border-radius:4px;margin-top:8px;overflow:hidden}
+.seatbar i{display:block;height:100%;background:var(--acc);border-radius:4px}
+.seatbar i.full{background:var(--ok-f)}
+.pri-h{font-weight:700}.pri-m{font-weight:600;color:var(--ink2)}.pri-l{color:var(--ink3)}
+.steps{display:flex;gap:8px;margin-bottom:14px;font-size:12.5px;color:var(--ink3);flex-wrap:wrap}
+.steps span{padding:3px 10px;border-radius:999px;background:var(--bg3)}
+.steps span.on{background:var(--acc-bg);color:var(--acc-t);font-weight:650}
+.steps span.done{background:var(--ok-bg);color:var(--ok-f);font-weight:650}
+.crit{display:flex;gap:6px;flex-wrap:wrap}
+.crit i{font-style:normal;font-size:11.5px;font-weight:650;padding:1px 7px;border-radius:6px;background:var(--bg3);color:var(--ink3)}
+.crit i.ok{background:var(--ok-bg);color:var(--ok-f)}.crit i.no{background:var(--bd-bg);color:var(--bd-f)}
+.log-row{display:grid;grid-template-columns:96px 1fr;gap:3px 12px;padding:10px 0;border-bottom:1px solid var(--border-sub);font-size:13px}
+.log-row .t{color:var(--ink3);font-variant-numeric:tabular-nums}
+.log-row .h{grid-column:2;font-size:12px;color:var(--ink3);font-family:'JetBrains Mono',monospace}
+details.fold{border:1px solid var(--border);border-radius:12px;background:var(--raised);margin-top:16px}
+details.fold>summary{cursor:pointer;padding:13px 18px;font-weight:650;font-size:13.5px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::after{content:"+";color:var(--ink3);font-weight:700}
+details.fold[open]>summary::after{content:"\2013"}
+details.fold .in{padding:0 18px 14px}
+table.dk{table-layout:fixed}
+@media(max-width:1000px){.hm,.split{grid-template-columns:1fr}.kv{grid-template-columns:120px 1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel="stylesheet" href="hkca-theme.css">
+</head>
+<body>
+<header class="top"><div class="wrap top-row">
+  <div class="brand"><div class="mark">H</div><div><h1>HKCA e-Portfolio</h1><p>College Secretariat Console</p></div></div>
+  <div class="top-right">
+    <button class="btn sec sm" data-a="openLog" title="Every action you take here is recorded">Activity log</button>
+    <button class="icon-btn" id="themeBtn" data-a="theme" title="Toggle theme" aria-label="Toggle theme">&#9788;</button>
+    <div class="who"><div><div class="nm">College Secretariat</div><div class="rl">Administrator</div></div><div class="av">CS</div></div>
+  </div>
+</div></header>
+<div class="sub"><div class="wrap"><nav class="tabs" role="tablist" aria-label="Console navigation" id="tabs"></nav></div></div>
+<main><div class="wrap" id="app"></div></main>
+
+<div class="scrim" id="scrim" data-a="closeDrawer"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle"><div class="dr-h"><div><div class="eyebrow" id="drEye"></div><h2 id="drTitle"></h2></div><button class="icon-btn" data-a="closeDrawer" aria-label="Close">&times;</button></div><div class="dr-b" id="drBody"></div><div class="dr-f" id="drFoot"></div></aside>
+<div class="modal-bg" id="modalBg"><div class="modal" role="dialog" aria-modal="true" id="modal"></div></div>
+<div class="toast" id="toast" role="status"></div>
+<button class="btn sec sm demo-btn" data-a="demoPop">Demo controls</button>
+<div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div>
+<script>
+/* ============ helpers ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const TODAY='2026-10-24';
+const D=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(Date.UTC(y,m-1,d))};
+const iso=d=>d.toISOString().slice(0,10);
+const addDays=(i,n)=>iso(new Date(D(i).getTime()+n*864e5));
+const days=(a,b)=>Math.round((D(b)-D(a))/864e5);
+const fmt=i=>{if(!i)return '';const d=D(i);return d.getUTCDate()+' '+MON[d.getUTCMonth()]+' '+d.getUTCFullYear()};
+const fmtS=i=>{if(!i)return '';const d=D(i);return d.getUTCDate()+' '+MON[d.getUTCMonth()]};
+const ago=n=>n<=0?'today':n===1?'1 day':n+' days';
+const plural=(n,a,b)=>n+' '+(n===1?a:(b||a+'s'));
+
+/* ============ reference data ============ */
+const HOSP=[['HKE','PYNEH'],['HKE','RH'],['HKW','QMH'],['HKW','GH'],['KCC','HKBH'],['KCC','HKEH'],['KCC','KWH'],['KCC','QEH'],['KEC','TKOH'],['KEC','UCH'],['KWC','CMC'],['KWC','NLTH'],['KWC','PMH'],['KWC','YCH'],['NTE','AHNH'],['NTE','NDH'],['NTE','PWH'],['NTW','POH'],['NTW','TMH'],['NTW','TSWH']];
+const CLUSTER=Object.fromEntries(HOSP.map(([c,h])=>[h,c]));
+const COURSES={EASE:'Essential Anaesthesia Skills Education',EMAC:'Emergency and Management of Anaesthetic Crises',ECHOA:'Echo-A workshop','ADAMA':'ADAM-A',UGRA:'Ultrasound-Guided Regional Anaesthesia'};
+const CNAME={EASE:'EASE',EMAC:'EMAC',ECHOA:'ECHO-A',ADAMA:'ADAM-A',UGRA:'UGRA'};
+
+function seedState(){
+  const T=(id,name,stage,m,hosp,status,extra)=>Object.assign({id,name,stage,months:m,hosp,status:status||'Active',edition:'2017 v1.1',start:addDays(TODAY,-Math.round(m*30.4)),courses:[],exam:{}},extra||{});
+  const trainees=[
+    T('HKCA-2024-011','Dr. Sarah Lau','HAT',30,'PWH'),T('HKCA-2024-008','Dr. Marcus Yip','BAT',18,'PWH'),
+    T('HKCA-2023-015','Dr. Priya Nair','HAT',38,'PWH'),T('HKCA-2023-022','Dr. Felix Tam','BAT',24,'PWH',null,{courses:['EASE']}),
+    T('HKCA-2024-019','Dr. Jasmine Ho','BAT',22,'NDH',null,{courses:['EASE']}),T('HKCA-2024-023','Dr. Kevin Mak','BAT',23,'QEH',null,{courses:[]}),
+    T('HKCA-2024-027','Dr. Mandy Siu','BAT',22,'UCH',null,{courses:['EASE','ADAMA']}),T('HKCA-2024-014','Dr. Eric Poon','BAT',12,'AHNH',null,{courses:['EASE']}),
+    T('HKCA-2025-004','Dr. Grace Wong','BAT',9,'QMH'),T('HKCA-2025-009','Dr. Ryan Leung','BAT',6,'KWH'),
+    T('HKCA-2025-013','Dr. Ivy Cheung','BAT',4,'PMH'),T('HKCA-2025-021','Dr. Daniel Ng','BAT',3,'TMH'),
+    T('HKCA-2022-006','Dr. Alan Fung','HAT',46,'PWH',null,{courses:['EASE','EMAC','ADAMA']}),T('HKCA-2022-010','Dr. Cindy Lam','HAT',47,'QMH',null,{courses:['EASE','EMAC','UGRA']}),
+    T('HKCA-2022-013','Dr. Henry Kwok','HAT',48,'TKOH',null,{courses:['EASE','EMAC']}),T('HKCA-2023-004','Dr. Olivia Tsang','HAT',34,'PYNEH',null),
+    T('HKCA-2023-009','Dr. Nathan Chow','HAT',29,'YCH'),T('HKCA-2023-017','Dr. Winnie Kong','HAT',27,'CMC'),
+    T('HKCA-2022-019','Dr. Peter Law','HAT',42,'POH'),T('HKCA-2021-003','Dr. Vivian Chu','PFY',58,'PWH'),
+    T('HKCA-2020-007','Dr. Samuel Yeung','PFY',70,'PWH',null,{courses:['EASE','EMAC','ECHOA','ADAMA','UGRA']}),T('HKCA-2020-011','Dr. Tina Lui','PFY',71,'NDH',null,{courses:['EASE','EMAC','ADAMA','UGRA']}),
+    T('HKCA-2021-009','Dr. Louis Hung','PFY',60,'TSWH'),T('HKCA-2023-026','Dr. Anna Pang','HAT',31,'KWH','On leave'),
+    T('HKCA-2024-031','Dr. Joey Tse','BAT',15,'HKEH','On leave'),T('HKCA-2019-012','Dr. Roy Man','PFY',75,'RH','Deactivated')
+  ];
+  /* docket detail: which gate criteria fail and why (illustrative) */
+  const dk={
+    'HKCA-2023-022':{fail:{}},
+    'HKCA-2024-019':{fail:{}},
+    'HKCA-2024-023':{fail:{wba:'2 WBAs short of the quota',vop:'196 of 218 logbook cases verified'}},
+    'HKCA-2024-027':{fail:{}},
+    'HKCA-2022-006':{fail:{}},
+    'HKCA-2022-010':{fail:{ita:'Latest ITA is under BOE review'}},
+    'HKCA-2022-013':{fail:{exam:'Final examination not yet passed',courses:'ADAM-A outstanding'}},
+    'HKCA-2020-007':{fail:{}},
+    'HKCA-2020-011':{fail:{courses:'ECHO-A outstanding'}}
+  };
+  const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'Exit from training'}};
+  return {
+    v:3,
+    trainees,dk,GATES,
+    intake:[
+      {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true,end:false},note:''},
+      {id:'AP-26-033',name:'Dr. Lucas Wan',from:'Applying from PWH',submitted:'2026-10-14',hosp:'PWH',stage:'BAT',chk:{mchk:false,fee:false,end:false},note:''},
+      {id:'AP-26-034',name:'Dr. Chloe Au',from:'Applying from TMH',submitted:'2026-10-19',hosp:'TMH',stage:'BAT',chk:{mchk:true,fee:false,end:true},note:''},
+      {id:'AP-26-036',name:'Dr. Benny Hui',from:'Applying from KWH (lateral transfer)',submitted:'2026-10-21',hosp:'KWH',stage:'HAT',chk:{mchk:false,fee:false,end:false},note:''}
+    ],
+    recog:[
+      {id:'RR-26-004',name:'Dr. Zoe Kwan',source:'Anaesthesia training overseas (ANZCA)',state:'gate',req:{CA:12,ICU:0,EL:0,cases:140},asked:'2026-10-20',docs:[],credit:null},
+      {id:'RR-26-003',name:'Dr. Isaac Lo',source:'Intensive care training (HKCA)',state:'waiting',req:null,asked:'2026-10-05',docs:[],credit:null},
+      {id:'RR-26-002',name:'Dr. Mei Yuen',source:'Anaesthesia training overseas (UK)',state:'decide',req:{CA:18,ICU:3,EL:0,cases:210},asked:'2026-09-22',docs:['Letter of training from the previous training body','Logbook summary (PDF)','Certificate of completion, year 2'],credit:null},
+      {id:'RR-26-001',name:'Dr. Sam Fok',source:'Anaesthesia training overseas (ANZCA)',state:'done',req:{CA:12,ICU:0,EL:0,cases:120},asked:'2026-07-02',docs:['Letter of training','Logbook summary (PDF)'],credit:{CA:12,ICU:0,EL:0,cases:110,date:'2026-09-08',reason:'RETROSPECTIVE_OVERSEAS_RECOGNITION'}}
+    ],
+    rounds:[
+      {id:'EASE-1114',course:'EASE',date:'2026-11-14',seats:12,status:'open',apps:[
+        ['HKCA-2025-004','2026-09-14','Accepted'],['HKCA-2025-009','2026-09-14','Accepted'],['HKCA-2025-013','2026-09-16','Requested'],['HKCA-2025-021','2026-09-17','Requested'],['HKCA-2024-014','2026-09-20','Requested'],['HKCA-2024-008','2026-09-21','Requested'],['HKCA-2024-023','2026-09-29','Requested'],['HKCA-2024-031','2026-10-02','Deferred']]},
+      {id:'ADAM-1128',course:'ADAMA',date:'2026-11-28',seats:6,status:'open',apps:[
+        ['HKCA-2023-022','2026-09-30','Requested'],['HKCA-2022-013','2026-10-01','Requested'],['HKCA-2024-023','2026-10-03','Requested'],['HKCA-2024-019','2026-10-04','Requested'],['HKCA-2022-010','2026-10-04','Requested'],['HKCA-2023-017','2026-10-06','Requested'],['HKCA-2023-009','2026-10-10','Requested'],['HKCA-2024-011','2026-10-12','Requested']]},
+      {id:'EMAC-1011',course:'EMAC',date:'2026-10-11',seats:10,status:'done',apps:[
+        ['HKCA-2022-006','2026-08-10','Accepted'],['HKCA-2022-010','2026-08-11','Accepted'],['HKCA-2022-013','2026-08-12','Accepted'],['HKCA-2022-019','2026-08-14','Accepted'],['HKCA-2023-004','2026-08-20','Accepted'],['HKCA-2023-015','2026-08-22','Accepted']]}
+    ],
+    exCands:[
+      {id:'HKCA-2024-019',exam:'Intermediate',sot:true,fail:[]},
+      {id:'HKCA-2024-027',exam:'Intermediate',sot:true,fail:[]},
+      {id:'HKCA-2023-022',exam:'Intermediate',sot:true,fail:['Logbook 205 of 218']},
+      {id:'HKCA-2024-023',exam:'Intermediate',sot:false,fail:['WBA quota short','Logbook 196 of 218']},
+      {id:'HKCA-2022-006',exam:'Final',sot:true,fail:[]},
+      {id:'HKCA-2022-010',exam:'Final',sot:true,fail:['Latest ITA under BOE review']},
+      {id:'HKCA-2022-013',exam:'Final',sot:false,fail:['Courses: ADAM-A outstanding']}
+    ],
+    exResults:[],
+    exHist:[
+      {sitting:'2026-06-18',exam:'Intermediate',cand:11,pass:8,fail:3,by:'Secretariat',at:'2026-06-29'},
+      {sitting:'2026-06-20',exam:'Final',cand:9,pass:7,fail:2,by:'Secretariat',at:'2026-06-29'},
+      {sitting:'2025-12-06',exam:'Intermediate',cand:12,pass:9,fail:3,by:'Secretariat',at:'2025-12-18'}
+    ],
+    projects:[
+      {id:'FP-26-014',title:'Quality improvement: reducing PONV in day surgery',trainee:'HKCA-2023-004',stage:'Protocol',state:'dispatch',sot:true,rev:[]},
+      {id:'FP-26-011',title:'Audit of difficult airway alerts',trainee:'HKCA-2022-019',stage:'Manuscript',state:'dispatch',sot:true,rev:[]},
+      {id:'FP-26-009',title:'Retrospective cohort: sugammadex and postoperative pulmonary complications',trainee:'HKCA-2023-009',stage:'Protocol',state:'dispatch',sot:true,rev:[]},
+      {id:'FP-26-006',title:'Survey: handover practice in recovery',trainee:'HKCA-2023-017',stage:'Manuscript',state:'review',sot:true,due:'2026-11-08',rev:[{a:'A-03',in:false},{a:'A-11',in:false}]},
+      {id:'FP-26-004',title:'Regional anaesthesia and delirium after hip fracture',trainee:'HKCA-2023-015',stage:'Protocol',state:'review',sot:true,due:'2026-10-18',rev:[{a:'A-05',in:true,g:'Satisfactory'},{a:'A-08',in:false}]},
+      {id:'FP-26-002',title:'Preoperative anxiety in children: a prospective study',trainee:'HKCA-2022-013',stage:'Manuscript',state:'reviewsIn',sot:true,rev:[{a:'A-02',in:true,g:'Minor revision'},{a:'A-09',in:true,g:'Major revision'}]},
+      {id:'FP-26-001',title:'Opioid-free anaesthesia: a service evaluation',trainee:'HKCA-2022-006',stage:'Manuscript',state:'reviewsIn',sot:true,rev:[{a:'A-04',in:true,g:'Satisfactory'},{a:'A-06',in:true,g:'Satisfactory'}]}
+    ],
+    assessors:[['A-01','Dr. Wing Fai Tong','NDH'],['A-02','Dr. Irene Shum','QMH'],['A-03','Dr. Ken Sit','QEH'],['A-04','Dr. Dora Yau','TMH'],['A-05','Dr. Paul Luk','PYNEH'],['A-06','Dr. Janet Ma','PWH'],['A-07','Dr. Colin Ip','UCH'],['A-08','Dr. Rita Hon','KWH'],['A-09','Dr. Terry Cho','YCH'],['A-10','Dr. Nancy Ling','PMH'],['A-11','Dr. Oscar Wu','TKOH'],['A-12','Dr. Lena Fu','POH']].map(([id,name,hosp])=>({id,name,hosp})),
+    centres:[
+      ['PWH',60,'2029-06-30'],['NDH',36,'2028-03-31'],['AHNH',30,'2028-09-30'],['PYNEH',36,'2027-03-31'],['QMH',48,'2029-01-31'],['QEH',48,'2028-11-30'],['KWH',36,'2027-08-31'],['UCH',36,'2029-04-30'],['TKOH',36,'2028-05-31'],['PMH',48,'2028-12-31'],['YCH',30,'2029-02-28'],['CMC',24,'2028-07-31'],['TMH',36,'2027-12-31'],['POH',30,'2029-03-31']
+    ].map(([h,lim,exp])=>({hosp:h,cluster:CLUSTER[h],limit:lim,exp})),
+    appts:[
+      ['PWH','SOT','2024-01-01',null],['PWH','Assistant SOT','2025-07-01',null],['NDH','SOT','2023-07-01',null],['NDH','Assistant SOT','2024-07-01',null],
+      ['QMH','SOT','2022-01-01',null],['QEH','SOT','2025-01-01',null],['TKOH','SOT','2021-07-01','2026-12-31'],['TKOH','Assistant SOT','2025-07-01',null],['PYNEH','SOT','2024-07-01',null],['KWH','SOT','2023-01-01',null]
+    ].map(([h,r,f,u],i)=>({id:'AP'+i,hosp:h,role:r,from:f,until:u,who:['Dr. Albert Chan','Dr. Mabel Ko','Dr. Ricky Fan','Dr. Selina Yim','Dr. Gordon Pau','Dr. Teresa Kam','Dr. Hugo Tin','Dr. Alice Ngai','Dr. Vincent Sze','Dr. Fiona Cho'][i],end:u?'planned':'',})),
+    pendingAppt:[{id:'PA1',hosp:'TKOH',role:'SOT',nominee:'Dr. Cora Lim',boe:'2026-10-20',eff:'2027-01-01'}],
+    roster:[['PWH',true,'2026-06-12',2],['NDH',true,'2026-06-10',0],['AHNH',true,'2026-06-18',1],['PYNEH',true,'2026-06-11',0],['QMH',true,'2026-06-15',3],['QEH',true,'2026-06-09',0],['KWH',true,'2026-06-20',1],['UCH',true,'2026-06-14',0],['TKOH',true,'2026-06-22',1],['PMH',true,'2026-06-13',0]].map(([h,c,d,n])=>({hosp:h,conf:c,on:d,changes:n,reviewed:n===0})),
+    people:[
+      {id:'U-8812',iw:'LAU Sarah Wai-yee',hosp:'PWH',role:'Trainee',n:14,sug:{id:'HKCA-2024-011',why:'Name and hospital match'}},
+      {id:'U-8820',iw:'YIP Marcus',hosp:'PWH',role:'Trainee',n:9,sug:{id:'HKCA-2024-008',why:'Name and hospital match'}},
+      {id:'U-8833',iw:'Dr N. Pradeep',hosp:'PWH',role:'Trainee',n:6,sug:{id:'HKCA-2023-015',why:'Surname and hospital partly match'}},
+      {id:'U-8841',iw:'Ho J',hosp:'NDH',role:'Trainee',n:5,sug:null},
+      {id:'U-9005',iw:'Dr Tong Wing Fai',hosp:'NDH',role:'Trainer',n:31,sug:{id:'A-01',why:'Assessor pool: name and hospital match'}},
+      {id:'U-9017',iw:'Dr R Hon',hosp:'KWH',role:'Trainer',n:12,sug:{id:'A-08',why:'Assessor pool: initial, surname and hospital match'}}
+    ],
+    unmapped:[
+      {code:'DOPS-12',name:'Ultrasound-guided central venous access',n:9,map:''},
+      {code:'CEX-02',name:'Mini-CEX, general',n:11,map:''},
+      {code:'DOPS-31',name:'Prone positioning',n:5,map:''},
+      {code:'EPA-01',name:'Entrustable professional activity (unspecified)',n:3,map:''}
+    ],
+    quarantine:[{code:'PBA-04',name:'Procedure-based assessment',n:2,why:'Modality not part of the curriculum'},{code:'ACR-01',name:'Anaesthetic case review',n:1,why:'Modality not part of the curriculum'}],
+    sync:{last:'2026-10-24T09:20',read:143,fail:0,cursor:'24 Oct 2026, 07:20',backfill:'Off'},
+    jcimed:[
+      ['How curriculum codes come back in responses','Sent 23 Oct'],['Whether the trainee number can be stored on the iWBA user','Sent 23 Oct'],['How voided assessments are signalled','Sent 23 Oct'],['What "unverified" means','Sent 23 Oct'],['MSF row structure','Sent 23 Oct'],['When history backfill can be switched on','Sent 23 Oct']
+    ],
+    log:[]
+  };
+}
+
+/* ============ state ============ */
+const KEY='hkca.admin.proto';
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+if(!S||S.v!==3)S=seedState();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const ui={tab:'home',sub:{trainees:'registry',courses:'seats',exams:'cands',projects:'dispatch',centres:'accred',wba:'link'},
+  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},cn:'EMAC-1011'};
+const T=id=>S.trainees.find(t=>t.id===id);
+const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
+function logAct(a,d){const t=new Date().toTimeString().slice(0,5);const prev=S.log[0]?S.log[0].h:'0';S.log.unshift({d:TODAY,t,a,det:d,h:hash(prev+a+d+t)});save()}
+
+/* ============ derived: docket, counts ============ */
+function critOf(t){
+  const g=S.GATES[t.stage];const d=S.dk[t.id]||{fail:{}};const f=d.fail;
+  const need=g.next==='Exit'?['EASE','EMAC','ECHOA','ADAMA','UGRA']:g.next==='PFY'?['EASE','EMAC']:['EASE'];
+  const miss=need.filter(c=>!t.courses.includes(c));
+  const out={time:!f.time,courses:miss.length===0&&!f.courses,wba:!f.wba,vop:!f.vop,ita:!f.ita,exam:!f.exam};
+  const why={time:f.time||'',courses:miss.length?CNAME[miss[0]]+(miss.length>1?' and '+(miss.length-1)+' more':'')+' outstanding':(f.courses||''),wba:f.wba||'',vop:f.vop||'',ita:f.ita||'',exam:f.exam||''};
+  return {out,why,ready:Object.values(out).every(Boolean),miss};
+}
+const docketRows=()=>S.trainees.filter(t=>t.status==='Active'&&S.GATES[t.stage]&&t.months>=S.GATES[t.stage].from&&t.months<=S.GATES[t.stage].to).map(t=>({t,c:critOf(t)}));
+function counts(){
+  const rr=S.rounds.filter(r=>r.status==='open');
+  const triage=rr.reduce((n,r)=>n+r.apps.filter(a=>a[2]==='Requested').length,0);
+  const dk=docketRows();
+  return {
+    intake:S.intake.length,
+    recogAct:S.recog.filter(r=>r.state==='gate'||r.state==='decide').length,
+    triage,rounds:rr.length,
+    pjDispatch:S.projects.filter(p=>p.state==='dispatch').length,
+    pjOver:S.projects.filter(p=>p.state==='review'&&p.due<TODAY).length,
+    pjIn:S.projects.filter(p=>p.state==='reviewsIn').length,
+    accSoon:S.centres.filter(c=>days(TODAY,c.exp)<=366).length,
+    pend:S.pendingAppt.length,
+    rosterOpen:S.roster.filter(r=>!r.reviewed).length,
+    link:S.people.length,unm:S.unmapped.length,
+    dkReady:dk.filter(x=>x.c.ready).length,dkAttn:dk.filter(x=>!x.c.ready).length
+  };
+}
+
+/* ============ ui primitives ============ */
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),3200)}
+let lastFocus=null;
+function openDrawer(eye,title,body,foot){lastFocus=document.activeElement;$('#drEye').textContent=eye;$('#drTitle').textContent=title;$('#drBody').innerHTML=body;$('#drFoot').innerHTML=foot||'';$('#drFoot').style.display=foot?'flex':'none';$('#drawer').classList.add('on');$('#scrim').classList.add('on');setTimeout(()=>{const f=$('#drawer').querySelector('input,select,textarea,button:not(.icon-btn)');},0)}
+function closeDrawer(){$('#drawer').classList.remove('on');$('#scrim').classList.remove('on');ui.dr=null;if(lastFocus&&lastFocus.focus)try{lastFocus.focus()}catch(e){}}
+function openModal(html){$('#modal').innerHTML=html;$('#modalBg').classList.add('on');const b=$('#modal').querySelector('button.pri,button');if(b)b.focus()}
+function closeModal(){$('#modalBg').classList.remove('on')}
+const pill=(t,c)=>`<span class="pill ${c||'mute'}">${esc(t)}</span>`;
+const dt=(t,c)=>`<span class="dt ${c||''}">${esc(t)}</span>`;
+const stg=s=>`<span class="stg ${s}">${s}</span>`;
+const hospOpts=(sel)=>{let o='',c='';HOSP.forEach(([cl,h])=>{if(cl!==c){if(c)o+='</optgroup>';o+=`<optgroup label="${cl}">`;c=cl}o+=`<option ${h===sel?'selected':''}>${h}</option>`});return o+'</optgroup>'};
+const thSort=(k,l)=>`<th aria-sort="${ui.sort[0]===k?(ui.sort[1]>0?'ascending':'descending'):'none'}"><button data-a="sort" data-k="${k}">${l}<span aria-hidden="true">${ui.sort[0]===k?(ui.sort[1]>0?'\u2191':'\u2193'):''}</span></button></th>`;
+const subSeg=(tab,items)=>`<div class="seg" role="tablist">${items.map(([k,l,n])=>`<button role="tab" aria-selected="${ui.sub[tab]===k}" class="${ui.sub[tab]===k?'on':''}" data-a="sub" data-t="${tab}" data-k="${k}">${l}${n?` <span class="cnt${n>0?' hot':''}">${n}</span>`:''}</button>`).join('')}</div>`;
+const head=(eye,title,sub,right)=>`<div class="pghead"><div><div class="eyebrow">${eye}</div><h1 class="pgtitle">${title}</h1>${sub?`<p class="pgsub">${sub}</p>`:''}</div><div>${right||''}</div></div>`;
+const tname=id=>{const t=T(id);return t?t.name:id};
+</script>
+<script>
+/* ============ HOME ============ */
+function vHome(){
+  const c=counts();const q=[];
+  const oldest=S.intake.reduce((m,a)=>a.submitted<m?a.submitted:m,'9999-99');
+  if(c.pjOver)q.push({col:'--t5f',t:plural(c.pjOver,'project review')+' overdue',w:'The 30-day reviewer timer has passed. Reassign the reviewer or wait.',go:['projects','review'],b:'Open reviews'});
+  if(c.link)q.push({col:'--acc',t:plural(c.link,'person','people')+' to link in iWBA',w:'Assessments from these people cannot reach a portfolio until you confirm who they are.',go:['wba','link'],b:'Link people'});
+  if(c.intake)q.push({col:'--t1f',t:plural(c.intake,'new application')+' to vet',w:'Oldest has waited '+ago(days(oldest,TODAY))+'. Three checks, then the account opens.',go:['trainees','intake'],b:'Open queue'});
+  if(c.recogAct)q.push({col:'--t1f',t:plural(c.recogAct,'recognition request')+' need you',w:S.recog.filter(r=>r.state==='decide').length?'One has documents in and waits for the Board decision to be recorded.':'Access to the form is waiting to be unlocked.',go:['trainees','recog'],b:'Open requests'});
+  if(c.triage)q.push({col:'--t4f',t:plural(c.triage,'course request')+' to triage',w:'Across '+plural(c.rounds,'round')+'. Priority and request time are already ordered for you.',go:['courses','seats'],b:'Allocate seats'});
+  if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects','dispatch'],b:'Dispatch'});
+  if(c.pend)q.push({col:'--t2f',t:'SOT appointment to enter',w:'The Board endorsed the replacement at '+S.pendingAppt[0].hosp+'. Record the appointment before the current term ends.',go:['centres','appts'],b:'Open appointments'});
+  if(c.unm)q.push({col:'--acc',t:plural(c.unm,'iWBA item')+' not mapped',w:'These assessments are held back until each is matched to a curriculum code.',go:['wba','unmapped'],b:'Map items'});
+  const waiting=[];
+  const wRecog=S.recog.filter(r=>r.state==='waiting').length;if(wRecog)waiting.push(plural(wRecog,'recognition request')+' with the applicant');
+  const wRev=S.projects.filter(p=>p.state==='review'&&p.due>=TODAY).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
+  waiting.push('JCIMED: '+S.jcimed.length+' questions sent 23 Oct');
+  const dk=c.dkReady+c.dkAttn;
+  const cal=[['14 Nov','EASE round','of '+S.rounds[0].seats+' seats: '+S.rounds[0].apps.filter(a=>a[2]==='Accepted').length+' allocated'],['28 Nov','ADAM-A round',''],['1 Dec','Roster attestation opens','SOTs confirm trainee lists'],['Dec','Progression docket',dk+' trainees in a gate window'],['31 Dec','TKOH SOT term ends','Replacement endorsed'],['Mar 2027','PYNEH accreditation expires','Renewal inspection due']];
+  return head('Friday 24 October 2026','Work queue','What needs the Secretariat, most time-sensitive first.')+
+  `<div class="hm"><div class="card"><div class="q-h"><div class="h3">Needs you</div><span class="meta">${q.length?plural(q.length,'item'):'Nothing open'}</span></div>
+  ${q.length?q.map(x=>`<div class="q-item"><div class="q-bar" style="background:var(${x.col})"></div><div><div class="q-title">${x.t}</div><div class="q-why">${x.w}</div></div><button class="btn pri sm" data-a="go" data-t="${x.go[0]}" data-k="${x.go[1]}">${x.b}</button></div>`).join(''):'<div class="q-clear">Everything is cleared. New items appear here as trainees, SOTs and iWBA create them.</div>'}
+  <div class="q-wait"><b class="muted">Waiting on others</b><span>${waiting.join(' &middot; ')}</span></div></div>
+  <aside><div class="card rail-card"><div class="eyebrow">Coming up</div><div class="cal">${cal.map(r=>`<div class="d">${r[0]}</div><div class="w">${r[1]}${r[2]?`<small>${r[2]}</small>`:''}</div>`).join('')}</div></div>
+  <div class="card rail-card"><div class="eyebrow">iWBA sync</div><div class="sync-line">${dt('Healthy','ok')}</div><p class="meta" style="margin-top:6px">Last read ${S.sync.last.slice(11)} today, ${S.sync.read} records, ${S.sync.fail} failures. History backfill is ${S.sync.backfill.toLowerCase()}.</p><p style="margin-top:8px"><button class="linkbtn" data-a="go" data-t="wba" data-k="link">Open iWBA sync</button></p></div></aside></div>`;
+}
+
+/* ============ TRAINEES ============ */
+const stOrder={BAT:1,HAT:2,PFY:3};
+function vTrainees(){
+  const c=counts();const s=ui.sub.trainees;
+  const seg=subSeg('trainees',[['registry','Registry'],['intake','Intake queue',c.intake],['docket','Progression docket',c.dkReady+c.dkAttn?0:0],['recog','Recognition requests',c.recogAct]]);
+  let body='';
+  if(s==='registry')body=vRegistry();else if(s==='intake')body=vIntake();else if(s==='docket')body=vDocket();else body=vRecog();
+  const t={registry:['Trainee registry','Everyone on the training programme, any status.'],intake:['Intake queue','New applications waiting to become trainee accounts.'],docket:['Progression docket','Trainees in a stage gate window. The Board advances only those who meet every criterion.'],recog:['Recognition requests','Prior training that the Board may credit towards the programme.']}[s];
+  return head('Trainees',t[0],t[1],seg)+body;
+}
+function vRegistry(){
+  const q=ui.q.toLowerCase();
+  let rows=S.trainees.filter(t=>(ui.stage==='All'||t.stage===ui.stage)&&(ui.status==='All'||t.status===ui.status)&&(ui.hosp==='All'||t.hosp===ui.hosp)&&(!q||(t.name+t.id+t.hosp).toLowerCase().includes(q)));
+  const [k,dir]=ui.sort;
+  rows.sort((a,b)=>{let x,y;if(k==='stage'){x=stOrder[a.stage]*100+a.months;y=stOrder[b.stage]*100+b.months}else if(k==='hosp'){x=a.hosp;y=b.hosp}else if(k==='status'){x=a.status;y=b.status}else{x=a.name;y=b.name}return (x>y?1:x<y?-1:0)*dir});
+  const stat=s=>({Active:'ok','On leave':'warn',Deactivated:'bad',Completed:'info'}[s]||'');
+  return `<div class="toolbar"><input type="search" id="q" placeholder="Search name, HKCA number or hospital" value="${esc(ui.q)}" data-i="q" aria-label="Search trainees" style="width:290px">
+  <div class="chips" role="group" aria-label="Stage">${['All','BAT','HAT','PFY'].map(x=>`<button class="chip ${ui.stage===x?'on':''}" aria-pressed="${ui.stage===x}" data-a="fStage" data-v="${x}">${x==='All'?'All stages':x}</button>`).join('')}</div>
+  <select data-c="status" aria-label="Status">${['All','Active','On leave','Deactivated','Completed'].map(x=>`<option value="${x}" ${ui.status===x?'selected':''}>${x==='All'?'Any status':x}</option>`).join('')}</select>
+  <select data-c="hosp" aria-label="Hospital"><option value="All">Any hospital</option>${HOSP.map(h=>`<option ${ui.hosp===h[1]?'selected':''}>${h[1]}</option>`).join('')}</select>
+  <span class="meta grow" style="text-align:right">${rows.length} of ${S.trainees.length}</span></div>
+  <div class="card"><div class="tbl-scroll"><table><thead><tr>${thSort('name','Trainee')}${thSort('stage','Stage')}${thSort('hosp','Hospital')}${thSort('status','Status')}<th>Curriculum</th><th class="act"></th></tr></thead><tbody>
+  ${rows.map(t=>`<tr><td><div class="cell-name">${esc(t.name)}</div><div class="cell-sub mono">${t.id}</div></td><td>${stg(t.stage)} <span class="meta">month ${t.months}</span></td><td>${t.hosp} <span class="cell-sub">${CLUSTER[t.hosp]||''}</span></td><td>${dt(t.status,stat(t.status))}</td><td class="meta">${esc(t.edition)}</td><td class="act"><button class="btn sec sm" data-a="openTrainee" data-id="${t.id}">Open</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No trainee matches these filters.</td></tr>'}
+  </tbody></table></div></div>`;
+}
+function openTrainee(id){
+  const t=T(id);ui.dr={type:'trainee',id};
+  openDrawer(t.id,t.name,
+  `<div class="sect">Record</div><dl class="kv"><dt>Stage</dt><dd>${stg(t.stage)} month ${t.months}</dd><dt>Hospital</dt><dd>${t.hosp}, ${CLUSTER[t.hosp]||''}</dd><dt>Training start</dt><dd>${fmt(t.start)}</dd><dt>Curriculum edition</dt><dd>${esc(t.edition)}</dd><dt>Mandatory courses</dt><dd>${t.courses.length?t.courses.map(c=>CNAME[c]).join(', '):'<span class="muted">None completed</span>'}</dd><dt>Status</dt><dd>${esc(t.status)}</dd></dl>
+  <div class="sect">Change status</div>
+  <div class="fld"><label for="stSel">New status</label><select id="stSel" data-c="stSel"><option ${t.status==='Active'?'selected':''}>Active</option><option ${t.status==='On leave'?'selected':''}>On leave</option><option ${t.status==='Deactivated'?'selected':''}>Deactivated</option></select></div>
+  <div class="fld"><label for="stDate">Effective from</label><input type="date" id="stDate" value="${TODAY}" max="${TODAY}"></div>
+  <div class="fld"><label for="stWhy">Reason (required unless Active)</label><textarea id="stWhy" rows="3" placeholder="For the audit log"></textarea></div>
+  <p class="note">A change of stage is not made here. It goes through the progression docket so the Board's criteria are checked each time.</p>`,
+  `<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="saveStatus" data-id="${t.id}">Save status</button>`);
+}
+function saveStatus(id){
+  const t=T(id),v=$('#stSel').value,why=$('#stWhy').value.trim();
+  if(v!=='Active'&&!why){toast('Add a reason for the audit log.');$('#stWhy').focus();return}
+  if(v===t.status){toast('Status is unchanged.');return}
+  const old=t.status;t.status=v;logAct('Status changed',`${t.name} (${t.id}): ${old} to ${v}${why?'. '+why:''}`);closeDrawer();render();toast(`${t.name}: status set to ${v}.`)
+}
+
+/* intake */
+const CHK=[['mchk','Medical Council registration checked','Specialist or full registration current on the date of application'],['fee','Application fee received','Matched to the payment record'],['end','Endorsement signed by the Chief of Service and the SOT','Signed PDF is attached to the application']];
+function vIntake(){
+  if(!S.intake.length)return `<div class="card"><div class="empty">No applications waiting. New ones from the application form appear here.</div></div>`;
+  return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Applicant</th><th>Submitted</th><th>Checks</th><th class="act"></th></tr></thead><tbody>${S.intake.map(a=>{const n=Object.values(a.chk).filter(Boolean).length;return `<tr><td><div class="cell-name">${esc(a.name)}</div><div class="cell-sub">${esc(a.from)}</div></td><td>${fmt(a.submitted)} <span class="cell-sub">waiting ${ago(days(a.submitted,TODAY))}</span></td><td>${dt(n+' of 3 checked',n===3?'ok':n?'warn':'none')}</td><td class="act"><button class="btn pri sm" data-a="openIntake" data-id="${a.id}">Review</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+function intakeBody(a){
+  const n=Object.values(a.chk).filter(Boolean).length;
+  return `<div class="sect">Checks</div>${CHK.map(([k,l,s])=>`<label class="chk ${a.chk[k]?'done':''}"><input type="checkbox" data-c="intakeChk" data-id="${a.id}" data-k="${k}" ${a.chk[k]?'checked':''}><span>${l}<small>${s}</small></span></label>`).join('')}
+  <p class="meta"><button class="linkbtn" data-a="toast" data-m="Opens the signed endorsement PDF (demo)">View the endorsement PDF</button></p>
+  <div class="sect">Account set-up</div>
+  <div class="fld"><label for="inHosp">Parent hospital</label><select id="inHosp">${hospOpts(a.hosp)}</select></div>
+  <div class="fld"><label for="inStage">Starting stage</label><select id="inStage"><option value="BAT" ${a.stage==='BAT'?'selected':''}>BAT, new entrant</option><option value="HAT" ${a.stage==='HAT'?'selected':''}>HAT, lateral transfer</option></select></div>
+  <dl class="kv"><dt>Curriculum edition</dt><dd>2017 v1.1 (current)</dd><dt>HKCA number</dt><dd>Issued on approval</dd></dl>`;
+}
+function openIntake(id){
+  const a=S.intake.find(x=>x.id===id);ui.dr={type:'intake',id};
+  openDrawer(a.id,a.name,intakeBody(a),`<button class="btn sec" data-a="returnIntake" data-id="${id}">Return to applicant</button><button class="btn pri" id="apprBtn" data-a="approveIntake" data-id="${id}" ${Object.values(a.chk).every(Boolean)?'':'disabled'}>Approve and open account</button>`);
+}
+function approveIntake(id){
+  const a=S.intake.find(x=>x.id===id);const hosp=$('#inHosp').value,stage=$('#inStage').value;
+  const num='HKCA-2026-'+String(40+S.trainees.filter(t=>t.id.startsWith('HKCA-2026')).length+1).padStart(3,'0');
+  S.trainees.unshift({id:num,name:a.name,stage,months:0,hosp,status:'Active',edition:'2017 v1.1',start:TODAY,courses:[],exam:{}});
+  S.intake=S.intake.filter(x=>x.id!==id);logAct('Application approved',`${a.name} became ${num}, ${stage} at ${hosp}, curriculum 2017 v1.1`);closeDrawer();render();
+  openModal(`<h3>Account opened for ${esc(a.name)}</h3><dl class="kv" style="margin-top:12px"><dt>HKCA number</dt><dd class="mono">${num}</dd><dt>Stage</dt><dd>${stage}</dd><dt>Parent hospital</dt><dd>${hosp}, ${CLUSTER[hosp]}</dd><dt>Curriculum edition</dt><dd>2017 v1.1</dd><dt>Ledger</dt><dd>Opened at 0 months</dd></dl><p class="meta">The SOT at ${hosp} sees the trainee on their next load. A welcome email with a set-password link is queued.</p><div class="btn-row"><button class="btn pri" data-a="closeModal">Done</button></div>`);
+}
+function returnIntake(id){
+  const a=S.intake.find(x=>x.id===id);
+  openModal(`<h3>Return ${esc(a.name)}'s application</h3><p class="meta" style="margin-bottom:12px">The applicant sees your note and can resubmit.</p><div class="fld"><label for="rtWhy">What is missing or wrong</label><textarea id="rtWhy" rows="3"></textarea></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doReturn" data-id="${id}">Return application</button></div>`);
+}
+function doReturn(id){const w=$('#rtWhy').value.trim();if(!w){toast('Say what needs fixing.');return}const a=S.intake.find(x=>x.id===id);S.intake=S.intake.filter(x=>x.id!==id);logAct('Application returned',`${a.name}: ${w}`);closeModal();closeDrawer();render();toast('Application returned to '+a.name+'.')}
+
+/* docket */
+const CRIT=[['time','Time'],['courses','Courses'],['wba','WBA'],['vop','Logbook'],['ita','ITA'],['exam','Exam']];
+const CG='<colgroup><col style="width:48px"><col style="width:27%"><col style="width:22%"><col></colgroup>';
+function vDocket(){
+  const rows=docketRows();const ready=rows.filter(x=>x.c.ready),att=rows.filter(x=>!x.c.ready);
+  const sel=Object.keys(ui.docketSel).filter(k=>ui.docketSel[k]&&ready.find(x=>x.t.id===k));
+  const chips=c=>`<div class="crit">${CRIT.map(([k,l])=>`<i class="${c.out[k]?'ok':'no'}">${c.out[k]?'\u2713':'\u2715'} ${l}</i>`).join('')}</div>`;
+  const row=(x,r)=>`<tr>${r?`<td style="width:34px"><input type="checkbox" data-c="dkSel" data-id="${x.t.id}" ${ui.docketSel[x.t.id]?'checked':''} aria-label="Select ${esc(x.t.name)}"></td>`:'<td></td>'}<td><div class="cell-name">${esc(x.t.name)}</div><div class="cell-sub">${x.t.hosp} <span class="mono">${x.t.id}</span></div></td><td>${stg(x.t.stage)} <span class="meta">&rarr; ${S.GATES[x.t.stage].next}</span><div class="cell-sub">month ${x.t.months} of ${S.GATES[x.t.stage].to}</div></td><td>${r?chips(x.c):`<div>${CRIT.filter(([k])=>!x.c.out[k]).map(([k,l])=>`<div class="cell-sub" style="color:var(--bd-f)"><b>${l}:</b> ${esc(x.c.why[k])}</div>`).join('')}</div>`}</td></tr>`;
+  return `<div class="card"><div class="q-h"><div class="h3">Ready to advance <span class="cnt">${ready.length}</span></div><div class="btn-row"><button class="btn sec sm" data-a="dkAll" ${ready.length?'':'disabled'}>Select all ready</button><button class="btn pri sm" data-a="dkGo" ${sel.length?'':'disabled'}>Advance ${sel.length||''} selected</button></div></div>
+  <div class="tbl-scroll"><table class="dk">${CG}<tbody>${ready.map(x=>row(x,true)).join('')||'<tr><td class="empty">Nobody is fully ready right now.</td></tr>'}</tbody></table></div></div>
+  <div class="card" style="margin-top:18px"><div class="q-h"><div class="h3">Needs attention <span class="cnt hot">${att.length}</span></div><span class="meta">Not yet eligible. The trainee and the SOT see the same reasons.</span></div>
+  <div class="tbl-scroll"><table class="dk">${CG}<tbody>${att.map(x=>row(x,false)).join('')||'<tr><td class="empty">Nobody in a gate window is short of a criterion.</td></tr>'}</tbody></table></div></div>
+  <p class="meta" style="margin-top:12px">Criteria shown are illustrative. The real thresholds come from the curriculum edition each trainee is bound to.</p>`;
+}
+function dkGo(){
+  const ids=Object.keys(ui.docketSel).filter(k=>ui.docketSel[k]);const ts=ids.map(T).filter(Boolean);
+  openModal(`<h3>Advance ${plural(ts.length,'trainee')}?</h3><p class="meta" style="margin:6px 0 12px">Each trainee moves to the next stage today and is notified. Stage history keeps the date and who made the change.</p><ul style="padding-left:18px;font-size:13px;line-height:1.8">${ts.map(t=>`<li>${esc(t.name)}: ${t.stage} &rarr; ${S.GATES[t.stage].next==='Exit'?'completed training':S.GATES[t.stage].next}</li>`).join('')}</ul><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="dkDo">Advance</button></div>`);
+}
+function dkDo(){
+  const ids=Object.keys(ui.docketSel).filter(k=>ui.docketSel[k]);
+  ids.forEach(id=>{const t=T(id);if(!t)return;const g=S.GATES[t.stage];if(g.next==='Exit'){t.status='Completed'}else{t.stage=g.next}logAct('Stage advanced',`${t.name} (${t.id}): ${g.label}`)});
+  ui.docketSel={};closeModal();render();toast(plural(ids.length,'trainee')+' advanced.')
+}
+
+/* recognition */
+const RSTATE={gate:['Request access','info'],waiting:['With applicant','mute'],decide:['Needs Board decision','warn'],done:['Credit executed','ok']};
+function vRecog(){
+  return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Applicant</th><th>Prior training</th><th>Status</th><th class="act"></th></tr></thead><tbody>${S.recog.map(r=>{const a={gate:['Unlock form','pri'],waiting:['View','sec'],decide:['Record decision','pri'],done:['View','sec']}[r.state];return `<tr><td><div class="cell-name">${esc(r.name)}</div><div class="cell-sub mono">${r.id}</div></td><td>${esc(r.source)}</td><td>${pill(RSTATE[r.state][0],RSTATE[r.state][1])}</td><td class="act"><button class="btn ${a[1]} sm" data-a="openRecog" data-id="${r.id}">${a[0]}</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+function openRecog(id){
+  const r=S.recog.find(x=>x.id===id);ui.dr={type:'recog',id};
+  let body='',foot='';
+  const req=r.req?`<div class="sect">Requested by the applicant</div><dl class="kv"><dt>Clinical anaesthesia</dt><dd>${r.req.CA} months</dd><dt>Intensive care</dt><dd>${r.req.ICU} months</dd><dt>Elective</dt><dd>${r.req.EL} months</dd><dt>Logbook cases</dt><dd>${r.req.cases}</dd></dl>`:'';
+  const docs=r.docs.length?`<div class="sect">Documents</div>${r.docs.map(d=>`<div class="chk" style="cursor:default"><span>${esc(d)}</span></div>`).join('')}`:'';
+  if(r.state==='gate'){body=`<dl class="kv"><dt>Prior training</dt><dd>${esc(r.source)}</dd><dt>Asked</dt><dd>${fmt(r.asked)}</dd></dl><p class="note">The retrospective form stays locked until you unlock it for this trainee. After that they upload documents and state what they are asking for.</p>`;foot=`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="unlockRecog" data-id="${id}">Unlock the form</button>`}
+  else if(r.state==='waiting'){body=`<dl class="kv"><dt>Prior training</dt><dd>${esc(r.source)}</dd><dt>Form unlocked</dt><dd>${fmt(r.asked)}</dd></dl><p class="note">Waiting for the applicant to upload documents. This moves to your list when they submit.</p>`}
+  else if(r.state==='decide'){body=`<dl class="kv"><dt>Prior training</dt><dd>${esc(r.source)}</dd><dt>Submitted</dt><dd>${fmt(r.asked)}</dd></dl>${req}${docs}
+    <div class="sect">Board decision</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px"><div class="fld"><label for="gCA">Clinical anaesthesia (months)</label><input type="number" id="gCA" min="0" max="72" value="${r.req.CA}"></div><div class="fld"><label for="gICU">Intensive care (months)</label><input type="number" id="gICU" min="0" max="6" value="${r.req.ICU}"></div><div class="fld"><label for="gEL">Elective (months)</label><input type="number" id="gEL" min="0" max="18" value="${r.req.EL}"></div><div class="fld"><label for="gCS">Logbook cases recognised</label><input type="number" id="gCS" min="0" value="${r.req.cases}"></div></div>
+    <div class="fld"><label for="gDate">Date of Board decision</label><input type="date" id="gDate" max="${TODAY}" value="${TODAY}"></div>
+    <div class="fld"><label for="gReason">Reason code</label><select id="gReason"><option>RETROSPECTIVE_OVERSEAS_RECOGNITION</option><option>RETROSPECTIVE_SPECIALTY_TRANSFER</option></select></div>`;foot=`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="reviewCredit" data-id="${id}">Review and execute</button>`}
+  else{const c=r.credit;body=`<dl class="kv"><dt>Prior training</dt><dd>${esc(r.source)}</dd><dt>Decision date</dt><dd>${fmt(c.date)}</dd><dt>Reason code</dt><dd class="mono" style="font-size:12px">${c.reason}</dd></dl><div class="sect">Credit written to the ledger</div><dl class="kv"><dt>Clinical anaesthesia</dt><dd>${c.CA} months</dd><dt>Intensive care</dt><dd>${c.ICU} months</dd><dt>Elective</dt><dd>${c.EL} months</dd><dt>Logbook cases</dt><dd>${c.cases}</dd></dl><p class="note">Ledger rows are permanent. A later correction is a new row with its own reason code, approved by the Board.</p>`}
+  openDrawer(r.id,r.name,body,foot);
+}
+function unlockRecog(id){const r=S.recog.find(x=>x.id===id);r.state='waiting';r.asked=TODAY;logAct('Retrospective form unlocked',r.name);closeDrawer();render();toast('Form unlocked for '+r.name+'.')}
+function reviewCredit(id){
+  const r=S.recog.find(x=>x.id===id);const g={CA:+$('#gCA').value||0,ICU:+$('#gICU').value||0,EL:+$('#gEL').value||0,cases:+$('#gCS').value||0,date:$('#gDate').value,reason:$('#gReason').value};
+  if(!g.date||g.date>TODAY){toast('Enter the Board decision date. It cannot be in the future.');return}
+  const over=['CA','ICU','EL','cases'].filter(k=>g[k]>r.req[k]);
+  ui.pendingCredit={id,g};
+  openModal(`<h3>Write credit for ${esc(r.name)}?</h3><dl class="kv" style="margin-top:12px"><dt>Clinical anaesthesia</dt><dd>${g.CA} months</dd><dt>Intensive care</dt><dd>${g.ICU} months</dd><dt>Elective</dt><dd>${g.EL} months</dd><dt>Logbook cases</dt><dd>${g.cases}</dd><dt>Decision date</dt><dd>${fmt(g.date)}</dd></dl>${over.length?'<p class="note warn">One or more figures are above what the applicant asked for.</p>':''}<p class="meta">This writes permanent ledger rows. It cannot be edited afterwards, only corrected by a new Board-approved row.</p><div class="btn-row"><button class="btn sec" data-a="closeModal">Go back</button><button class="btn pri" data-a="execCredit">Execute credit</button></div>`);
+}
+function execCredit(){const {id,g}=ui.pendingCredit;const r=S.recog.find(x=>x.id===id);r.credit=g;r.state='done';logAct('Retrospective credit executed',`${r.name}: CA ${g.CA}, ICU ${g.ICU}, EL ${g.EL} months, ${g.cases} cases. ${g.reason}`);closeModal();closeDrawer();render();toast('Credit written for '+r.name+'.')}
+
+/* ============ COURSES ============ */
+const PR={h:['High','pri-h'],m:['Medium','pri-m'],l:['Low','pri-l']};
+function prio(id,course){
+  const t=T(id);if(!t)return ['l','Not on file'];
+  if(course==='EASE')return t.stage==='BAT'?['h','Needed early in basic training']:['m','Past the usual stage'];
+  if(course==='EMAC'||course==='ECHOA')return t.stage==='BAT'?['l','Not yet needed']:['h','Needed before the exit examination'];
+  return t.stage==='PFY'?['h','Few sittings left before exit']:t.stage==='HAT'?['m','Needed before the exit examination']:['l','Not yet needed'];
+}
+const PRK={h:0,m:1,l:2};
+function sortedApps(r){return r.apps.map((a,i)=>({i,id:a[0],req:a[1],st:a[2],p:prio(a[0],r.course)})).sort((a,b)=>PRK[a.p[0]]-PRK[b.p[0]]||(a.req>b.req?1:-1))}
+const accepted=r=>r.apps.filter(a=>a[2]==='Accepted').length;
+function vCourses(){
+  const s=ui.sub.courses;
+  const seg=subSeg('courses',[['seats','Seat allocation',counts().triage],['attend','Record attendance']]);
+  return head('Courses',s==='seats'?'Seat allocation':'Record attendance',s==='seats'?'Allocate seats in each round. Higher need goes first, then earlier request.':'Check an attendance sheet before it changes any trainee record.',seg)+(s==='seats'?vSeats():vAttend());
+}
+function vSeats(){
+  const open=S.rounds.filter(r=>r.status==='open');if(!ui.round||!S.rounds.find(r=>r.id===ui.round&&r.status==='open'))ui.round=open[0]&&open[0].id;
+  const r=S.rounds.find(x=>x.id===ui.round);if(!r)return '<div class="card"><div class="empty">No open rounds.</div></div>';
+  const full=accepted(r)>=r.seats;
+  return `<div class="split"><div class="card">${open.map(o=>`<button class="round ${o.id===r.id?'on':''}" data-a="pickRound" data-id="${o.id}"><b>${CNAME[o.course]}</b> <span class="meta">${fmt(o.date)}</span><div class="meta" style="margin-top:2px">${accepted(o)} of ${o.seats} seats allocated &middot; ${o.apps.filter(a=>a[2]==='Requested').length} undecided</div><div class="seatbar"><i class="${accepted(o)>=o.seats?'full':''}" style="width:${Math.min(100,accepted(o)/o.seats*100)}%"></i></div></button>`).join('')}</div>
+  <div class="card"><div class="q-h"><div><div class="h3">${esc(COURSES[r.course])}</div><div class="meta">${fmt(r.date)} &middot; ${accepted(r)} of ${r.seats} seats allocated</div></div><button class="btn pri sm" data-a="autoFill">Fill seats by priority</button></div>
+  <div class="tbl-scroll"><table><thead><tr><th>Trainee</th><th>Need</th><th>Requested</th><th>Decision</th></tr></thead><tbody>${sortedApps(r).map(a=>{const t=T(a.id);return `<tr><td><div class="cell-name">${esc(t?t.name:a.id)}</div><div class="cell-sub">${t?stg(t.stage)+' '+t.hosp:''}</div></td><td><span class="${PR[a.p[0]][1]}">${PR[a.p[0]][0]}</span><div class="cell-sub">${a.p[1]}</div></td><td class="meta">${fmtS(a.req)}</td><td><select data-c="setApp" data-i="${a.i}" aria-label="Decision for ${esc(t?t.name:a.id)}"><option value="Requested" ${a.st==='Requested'?'selected':''}>Not decided</option><option ${a.st==='Accepted'?'selected':''} ${full&&a.st!=='Accepted'?'disabled':''}>Accepted</option><option ${a.st==='Waitlisted'?'selected':''}>Waitlisted</option><option ${a.st==='Deferred'?'selected':''}>Deferred</option></select></td></tr>`}).join('')}</tbody></table></div>${full?'<div class="q-wait">All seats are allocated. Others can be waitlisted or deferred.</div>':''}</div></div>`;
+}
+function autoFill(){
+  const r=S.rounds.find(x=>x.id===ui.round);let n=0;
+  sortedApps(r).filter(a=>a.st==='Requested').forEach(a=>{if(accepted(r)<r.seats){r.apps[a.i][2]='Accepted';n++}else r.apps[a.i][2]='Waitlisted'});
+  logAct('Seats allocated',`${CNAME[r.course]} ${fmt(r.date)}: ${n} accepted by priority, rest waitlisted`);render();toast(n+' seats filled. The rest are waitlisted.')
+}
+const SHEET=`HKCA-2022-006\nHKCA-2022-010\nHKCA-2022-019\nHKCA-2023-004\nHKCA-2023-015\nHKCA-2023-009\nHKCA-2022-099`;
+function vAttend(){
+  const done=S.rounds;if(!ui.cn)ui.cn='EMAC-1011';
+  const r=S.rounds.find(x=>x.id===ui.cn)||S.rounds[2];const o=ui.sheetOut;
+  const rows=o&&o.round===r.id?o.rows:null;
+  return `<div class="card pad"><div class="steps"><span class="${rows?'done':'on'}">1 Paste the sheet</span><span class="${rows?'on':''}">2 Check it</span><span>3 Mark attended</span></div>
+  <div class="fld" style="max-width:340px"><label for="cnSel">Round</label><select id="cnSel" data-c="cn">${done.map(x=>`<option value="${x.id}" ${x.id===r.id?'selected':''}>${CNAME[x.course]} &middot; ${fmt(x.date)}${x.status==='done'?' (held)':''}</option>`).join('')}</select></div>
+  <div class="fld"><label for="sheet">HKCA numbers, one per line, from the attendance sheet</label><textarea id="sheet" rows="7" class="mono" style="font-size:12.5px">${esc(ui.sheet==null?'':ui.sheet)}</textarea></div>
+  <div class="btn-row"><button class="btn sec" data-a="loadSheet">Load a sample sheet</button><button class="btn pri" data-a="checkSheet">Check the sheet</button></div></div>
+  ${rows?attendOut(r,rows):''}`;
+}
+function attendOut(r,rows){
+  const nOk=rows.filter(x=>x.k==='ok').length,nW=rows.filter(x=>x.k==='warn').length,nS=rows.filter(x=>x.k==='skip').length,nE=rows.filter(x=>x.k==='err').length;
+  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${nOk} ready &middot; ${nW} need your decision &middot; ${nS} already done &middot; ${nE} not recognised</div></div><button class="btn pri sm" data-a="commitSheet" ${nOk+rows.filter(x=>x.k==='warn'&&x.on).length?'':'disabled'}>Mark ${nOk+rows.filter(x=>x.k==='warn'&&x.on).length||''} as completed</button></div>
+  <div class="tbl-scroll"><table><thead><tr><th></th><th>Number</th><th>Trainee</th><th>Result</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td style="width:34px">${x.k==='warn'?`<input type="checkbox" data-c="warnOn" data-i="${i}" ${x.on?'checked':''} aria-label="Include ${esc(x.id)}">`:''}</td><td class="mono">${esc(x.id)}</td><td>${esc(x.name||'')}</td><td>${dt(x.msg,{ok:'ok',warn:'warn',skip:'none',err:'bad'}[x.k])}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function checkSheet(){
+  const r=S.rounds.find(x=>x.id===ui.cn);ui.sheet=$('#sheet').value;
+  const seen={};const rows=ui.sheet.split(/\n/).map(s=>s.trim()).filter(Boolean).map(id=>{
+    const t=T(id);if(!t)return {id,k:'err',msg:'Not a known HKCA number'};
+    if(seen[id])return {id,name:t.name,k:'skip',msg:'Listed twice on the sheet'};seen[id]=1;
+    if(t.courses.includes(r.course))return {id,name:t.name,k:'skip',msg:'Already has '+CNAME[r.course]+' recorded'};
+    const a=r.apps.find(x=>x[0]===id);
+    if(a&&a[2]==='Accepted')return {id,name:t.name,k:'ok',msg:'Accepted for this round. Will be marked completed'};
+    return {id,name:t.name,k:'warn',on:false,msg:a?'Was '+a[2].toLowerCase()+' for this round. Tick to include':'Never requested a seat. Tick to include'};
+  });
+  ui.sheetOut={round:r.id,rows};render();
+}
+function commitSheet(){
+  const r=S.rounds.find(x=>x.id===ui.cn);const rows=ui.sheetOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));
+  rows.forEach(x=>{T(x.id).courses.push(r.course)});r.recorded=TODAY;
+  logAct('Course attendance recorded',`${CNAME[r.course]} ${fmt(r.date)}: ${rows.length} trainees marked completed`);ui.sheetOut=null;ui.sheet=null;render();toast(plural(rows.length,'trainee')+' marked as completed '+CNAME[r.course]+'.')
+}
+
+/* ============ EXAMS ============ */
+function candState(c){if(c.fail.length)return ['Not yet eligible','mute'];return c.sot?['Eligible','ok']:['Waiting for SOT','warn']}
+function vExams(){
+  const s=ui.sub.exams;const seg=subSeg('exams',[['cands','Entry list'],['results','Upload results'],['hist','Past sittings']]);
+  const t={cands:'Who can sit the next examinations, from their own records.',results:'Check the results file before it changes any record.',hist:'Results already recorded.'}[s];
+  return head('Examinations',{cands:'Entry list',results:'Upload results',hist:'Past sittings'}[s],t,seg)+(s==='cands'?vCands():s==='results'?vResults():vHist());
+}
+function vCands(){
+  const f=ui.exFilter;const all=S.exCands;
+  const list=all.filter(c=>f==='All'||(f==='Eligible'?candState(c)[0]==='Eligible':f==='Not eligible'?candState(c)[0]!=='Eligible':c.exam===f));
+  const ne=all.filter(c=>candState(c)[0]==='Eligible').length;
+  return `<div class="toolbar"><div class="chips">${['All','Intermediate','Final','Eligible','Not eligible'].map(x=>`<button class="chip ${f===x?'on':''}" aria-pressed="${f===x}" data-a="exF" data-v="${x}">${x}</button>`).join('')}</div><span class="meta grow" style="text-align:right">${ne} eligible of ${all.length}</span><button class="btn sec sm" data-a="toast" data-m="Entry list exported for the examiners (demo)" ${ne?'':'disabled'}>Export eligible list</button></div>
+  <div class="card"><div class="tbl-scroll"><table><thead><tr><th>Candidate</th><th>Examination</th><th>Why not yet</th><th>SOT endorsement</th><th>Entry</th></tr></thead><tbody>${list.map(c=>{const t=T(c.id);const st=candState(c);return `<tr><td><div class="cell-name">${esc(t.name)}</div><div class="cell-sub">${stg(t.stage)} ${t.hosp}</div></td><td>${c.exam}</td><td class="meta">${c.fail.length?c.fail.map(esc).join('<br>'):'<span class="muted">All criteria met</span>'}</td><td>${dt(c.sot?'Endorsed':'Not yet',c.sot?'ok':'none')}</td><td>${pill(st[0],st[1])}</td></tr>`}).join('')}</tbody></table></div></div>
+  <p class="meta" style="margin-top:12px">The system checks eligibility. There is no manual override here. A Board exception is a separate decision.</p>`;
+}
+const EX_SAMPLE=`hkca_no,exam,sitting_date,result\nHKCA-2024-019,Intermediate,2026-10-17,Pass\nHKCA-2024-027,Intermediate,2026-10-17,Pass\nHKCA-2023-022,Intermediate,2026-10-17,Fail\nHKCA-2022-006,Final,2026-10-18,Pass\nHKCA-2024-023,Final,2026-10-18,Pass\nHKCA-2022-010,Final,2026-10-18,Merit\nHKCA-2022-006,Final,2026-10-18,Pass\nHKCA-2024-099,Final,2026-10-18,Pass`;
+function vResults(){
+  const o=ui.exOut;
+  return `<div class="card pad"><div class="steps"><span class="${o?'done':'on'}">1 Paste the file</span><span class="${o?'on':''}">2 Check it</span><span>3 Record results</span></div>
+  <div class="fld"><label for="exRaw">CSV from the examiners, with a header row</label><textarea id="exRaw" rows="8" class="mono" style="font-size:12.5px" placeholder="hkca_no,exam,sitting_date,result">${esc(ui.exRaw==null?'':ui.exRaw)}</textarea></div>
+  <div class="btn-row"><button class="btn sec" data-a="loadEx">Load a sample file</button><button class="btn pri" data-a="checkEx">Check the file</button></div></div>${o?exOut(o):''}`;
+}
+function checkEx(){
+  const raw=$('#exRaw').value;ui.exRaw=raw;const lines=raw.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){toast('Paste the results file first.');return}
+  if(lines[0].toLowerCase().replace(/\s/g,'')!=='hkca_no,exam,sitting_date,result'){ui.exOut={fatal:'The header row must be exactly: hkca_no,exam,sitting_date,result'};render();return}
+  const seen={};const rows=lines.slice(1).map((l,n)=>{
+    const [id,ex,date,res]=l.split(',').map(s=>(s||'').trim());const t=T(id);const base={n:n+2,id,ex,date,res,name:t?t.name:''};
+    if(!t)return Object.assign(base,{k:'err',msg:'Not a known HKCA number'});
+    if(!['Intermediate','Final'].includes(ex))return Object.assign(base,{k:'err',msg:'Examination must be Intermediate or Final'});
+    if(!['Pass','Fail'].includes(res))return Object.assign(base,{k:'err',msg:'Result must be Pass or Fail, not "'+res+'"'});
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date>TODAY)return Object.assign(base,{k:'err',msg:'Sitting date must be a past date as YYYY-MM-DD'});
+    const key=id+ex;if(seen[key])return Object.assign(base,{k:'err',msg:'Duplicate of row '+seen[key]});seen[key]=n+2;
+    if(t.exam[ex]==='Pass')return Object.assign(base,{k:'err',msg:'A pass is already recorded for this exam'});
+    if((ex==='Final'&&t.stage==='BAT')||(ex==='Intermediate'&&t.stage==='PFY'))return Object.assign(base,{k:'warn',on:false,msg:t.stage+' does not normally sit the '+ex+'. Tick to include'});
+    return Object.assign(base,{k:'ok',msg:res==='Pass'?'Will record a pass':'Will record a fail'});
+  });
+  ui.exOut={rows};render();
+}
+function exOut(o){
+  if(o.fatal)return `<div class="note bad" style="margin-top:18px">${esc(o.fatal)}</div>`;
+  const ok=o.rows.filter(x=>x.k==='ok').length,w=o.rows.filter(x=>x.k==='warn').length,e=o.rows.filter(x=>x.k==='err').length;const n=ok+o.rows.filter(x=>x.k==='warn'&&x.on).length;
+  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${ok} ready &middot; ${w} need your decision &middot; ${e} with errors, which will be skipped</div></div><button class="btn pri sm" data-a="commitEx" ${n?'':'disabled'}>Record ${n||''} results</button></div><div class="tbl-scroll"><table><thead><tr><th>Row</th><th></th><th>Candidate</th><th>Exam</th><th>Result</th><th>Check</th></tr></thead><tbody>${o.rows.map((x,i)=>`<tr><td class="meta mono">${x.n}</td><td style="width:34px">${x.k==='warn'?`<input type="checkbox" data-c="exWarn" data-i="${i}" ${x.on?'checked':''} aria-label="Include row ${x.n}">`:''}</td><td><div class="cell-name">${esc(x.name||x.id)}</div><div class="cell-sub mono">${esc(x.id)}</div></td><td>${esc(x.ex)}</td><td>${esc(x.res)}</td><td>${dt(x.msg,{ok:'ok',warn:'warn',err:'bad'}[x.k])}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function commitEx(){
+  const rows=ui.exOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));const by={};
+  rows.forEach(x=>{T(x.id).exam[x.ex]=x.res;S.exResults.push({id:x.id,ex:x.ex,date:x.date,res:x.res});const k=x.date+'|'+x.ex;(by[k]=by[k]||{sitting:x.date,exam:x.ex,cand:0,pass:0,fail:0,by:'Secretariat',at:TODAY});by[k].cand++;by[k][x.res==='Pass'?'pass':'fail']++});
+  Object.values(by).forEach(h=>S.exHist.unshift(h));
+  logAct('Exam results recorded',`${rows.length} results from the examiners' file; ${ui.exOut.rows.length-rows.length} rows skipped`);ui.exOut=null;ui.exRaw=null;ui.sub.exams='hist';render();toast(plural(rows.length,'result')+' recorded.')
+}
+function vHist(){return `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Sitting</th><th>Examination</th><th>Candidates</th><th>Pass</th><th>Fail</th><th>Recorded</th></tr></thead><tbody>${S.exHist.map(h=>`<tr><td>${fmt(h.sitting)}</td><td>${h.exam}</td><td>${h.cand}</td><td>${h.pass}</td><td>${h.fail}</td><td class="meta">${fmt(h.at)} by ${h.by}</td></tr>`).join('')}</tbody></table></div></div>`}
+</script>
+<script>
+/* ============ FORMAL PROJECTS ============ */
+const GR=['Satisfactory','Minor revision','Major revision','Unsatisfactory'];
+const PJ={dispatch:'To dispatch',review:'Under review',reviewsIn:'Reviews in',done:'Recorded'};
+function vProjects(){
+  const c=counts();const f=ui.pjFilter;const n=k=>S.projects.filter(p=>p.state===k||(k==='done'&&p.state==='escalated')).length;
+  const list=S.projects.filter(p=>f==='done'?(p.state==='done'||p.state==='escalated'):p.state===f);
+  const chips=`<div class="chips">${Object.keys(PJ).map(k=>`<button class="chip ${f===k?'on':''}" aria-pressed="${f===k}" data-a="pjF" data-v="${k}">${PJ[k]} <span class="n">${n(k)}</span></button>`).join('')}</div>`;
+  const nextCol=p=>{
+    if(p.state==='dispatch')return dt('Reviewers not chosen','none');
+    if(p.state==='review'){const d=days(TODAY,p.due);const waiting=p.rev.filter(r=>!r.in).length;return dt(d<0?`${plural(waiting,'review')} ${-d} days overdue`:`${plural(waiting,'review')} due ${fmtS(p.due)}, ${d} days left`,d<0?'bad':'info')}
+    if(p.state==='reviewsIn'){const d=Math.abs(GR.indexOf(p.rev[0].g)-GR.indexOf(p.rev[1].g));return dt(d>=2?'Reviews differ widely':d===1?'Reviews differ':'Reviews agree',d>=2?'bad':d===1?'warn':'ok')}
+    if(p.state==='escalated')return dt('With the Subcommittee Chair','info');return dt('Outcome: '+p.outcome,'ok')};
+  const act=p=>({dispatch:['Choose reviewers','pri'],review:['Open','sec'],reviewsIn:['Record outcome','pri'],done:['Open','sec'],escalated:['Open','sec']}[p.state]);
+  return head('Formal projects','Review pipeline','Reviewers are chosen by the Secretariat and never see the trainee\u2019s name. Each review has 30 days.',chips)+
+  `<div class="card"><div class="tbl-scroll"><table><thead><tr><th>Project</th><th>Trainee</th><th>Stage</th><th>Where it stands</th><th class="act"></th></tr></thead><tbody>${list.map(p=>{const t=T(p.trainee);const a=act(p);return `<tr><td style="max-width:380px"><div class="cell-name">${esc(p.title)}</div><div class="cell-sub mono">${p.id}</div></td><td>${esc(t.name)}<div class="cell-sub">${t.hosp}</div></td><td>${p.stage}</td><td>${nextCol(p)}</td><td class="act"><button class="btn ${a[1]} sm" data-a="openProject" data-id="${p.id}">${a[0]}</button></td></tr>`}).join('')||'<tr><td colspan="5" class="empty">Nothing here.</td></tr>'}</tbody></table></div></div>`;
+}
+const eligible=(p,excl)=>S.assessors.filter(a=>a.hosp!==T(p.trainee).hosp&&!(excl||[]).includes(a.id));
+function openProject(id){
+  const p=S.projects.find(x=>x.id===id);const t=T(p.trainee);ui.dr={type:'project',id};ui.pick=[];
+  const info=`<dl class="kv"><dt>Project</dt><dd>${esc(p.title)}</dd><dt>Trainee</dt><dd>${esc(t.name)}, ${t.hosp}</dd><dt>Stage</dt><dd>${p.stage}</dd><dt>SOT sign-off</dt><dd>${p.sot?'Signed':'Not yet'}</dd></dl>`;
+  let body=info,foot='';
+  if(p.state==='dispatch'){
+    const el=eligible(p),ex=S.assessors.filter(a=>a.hosp===t.hosp);
+    body+=`<div class="sect">Choose two reviewers</div><div id="pickList">${el.map(a=>`<label class="chk"><input type="checkbox" data-c="pick" value="${a.id}"><span>${esc(a.name)}<small>${a.hosp}</small></span></label>`).join('')}</div>${ex.length?`<details class="fold"><summary>${plural(ex.length,'assessor')} excluded</summary><div class="in meta">${ex.map(a=>esc(a.name)+', '+a.hosp).join('<br>')}<br>Same hospital as the trainee.</div></details>`:''}<p class="note">Both reviewers get the same 30-day deadline from today, ${fmt(addDays(TODAY,30))}.</p>`;
+    foot=`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" id="dispBtn" data-a="dispatch" data-id="${id}" disabled>Send to reviewers</button>`;
+  }else if(p.state==='review'){
+    const od=p.due<TODAY;
+    body+=`<div class="sect">Reviewers</div>${p.rev.map((r,i)=>{const a=S.assessors.find(x=>x.id===r.a);return `<div class="chk" style="cursor:default;justify-content:space-between;align-items:center"><span>${esc(a.name)}<small>${a.hosp}</small></span><span style="display:flex;gap:10px;align-items:center">${r.in?dt('Review in','ok'):dt(od?'Overdue':'Not yet',od?'bad':'none')}${!r.in&&od?`<button class="btn sec sm" data-a="replaceRev" data-id="${id}" data-i="${i}">Replace</button>`:''}</span></div>`}).join('')}<p class="note ${od?'warn':''}">${od?'The deadline of '+fmt(p.due)+' has passed. Replacing a reviewer gives the new one 30 days.':'Due '+fmt(p.due)+'. A reminder goes to each reviewer who has not finished, 7 days before.'}</p>`;
+  }else if(p.state==='reviewsIn'){
+    const d=Math.abs(GR.indexOf(p.rev[0].g)-GR.indexOf(p.rev[1].g));
+    body+=`<div class="sect">Reviews</div>${p.rev.map((r,i)=>`<div class="chk" style="cursor:default;justify-content:space-between"><span>Reviewer ${i+1}<small>Name hidden from the trainee</small></span><b>${r.g}</b></div>`).join('')}
+    <div class="sect">Outcome</div><div class="fld"><label for="pjOut">Outcome to record</label><select id="pjOut">${GR.map(g=>`<option ${g===(d===0?p.rev[0].g:GR[Math.max(GR.indexOf(p.rev[0].g),GR.indexOf(p.rev[1].g))])?'selected':''}>${g}</option>`).join('')}</select></div>${d>=2?'<p class="note warn">The two reviews are two or more grades apart. Record an outcome only if the Board policy allows it, otherwise escalate.</p>':d===1?'<p class="note">The reviews differ by one grade. Choose the outcome, or escalate.</p>':''}`;
+    foot=`<button class="btn sec" data-a="escalate" data-id="${id}">Escalate to Subcommittee Chair</button><button class="btn pri" data-a="recordPj" data-id="${id}">Record outcome</button>`;
+  }else if(p.state==='escalated'){body+=`<p class="note">Sent to the Formal Project Subcommittee Chair. The outcome will be recorded here when the Chair decides.</p>`}
+  else{body+=`<dl class="kv"><dt>Outcome</dt><dd>${p.outcome}</dd></dl><p class="note ok">Recorded on ${fmt(p.at)}. The trainee and SOT see the outcome in the portfolio.</p>`}
+  openDrawer(p.id,p.stage+' stage',body,foot);
+}
+function dispatchPj(id){const p=S.projects.find(x=>x.id===id);const ids=ui.pick;p.state='review';p.due=addDays(TODAY,30);p.rev=ids.map(a=>({a,in:false}));logAct('Reviewers assigned',`${p.id}: ${ids.join(' and ')}, due ${fmt(p.due)}`);closeDrawer();ui.pjFilter='review';render();toast('Sent to two reviewers. Due '+fmtS(p.due)+'.')}
+function replaceRev(id,i){const p=S.projects.find(x=>x.id===id);const cur=p.rev.map(r=>r.a);const a=eligible(p,cur)[0];if(!a){toast('No other eligible assessor.');return}const old=p.rev[i].a;p.rev[i]={a:a.id,in:false};p.due=addDays(TODAY,30);logAct('Reviewer replaced',`${p.id}: ${old} replaced by ${a.id}`);openProject(id);render();toast('Replaced with '+a.name+'. New deadline '+fmtS(p.due)+'.')}
+function recordPj(id){const p=S.projects.find(x=>x.id===id);p.state='done';p.outcome=$('#pjOut').value;p.at=TODAY;logAct('Project outcome recorded',`${p.id}: ${p.outcome}`);closeDrawer();ui.pjFilter='done';render();toast('Outcome recorded: '+p.outcome+'.')}
+function escalate(id){const p=S.projects.find(x=>x.id===id);p.state='escalated';logAct('Project escalated',`${p.id} sent to the Subcommittee Chair`);closeDrawer();ui.pjFilter='done';render();toast('Escalated to the Subcommittee Chair.')}
+
+/* ============ CENTRES & SOTs ============ */
+function vCentres(){
+  const s=ui.sub.centres;const c=counts();
+  const seg=subSeg('centres',[['accred','Accreditation',c.accSoon],['appts','SOT appointments',c.pend],['roster','Rosters',c.rosterOpen]]);
+  const t={accred:'Each centre\u2019s accredited limit and when it expires. Expiry within a year is flagged.',appts:'Who holds the SOT and Assistant SOT roles, from the date the Board endorsed them.',roster:'Each hospital\u2019s June and December confirmation of who is in training there.'}[s];
+  return head('Centres and SOTs',{accred:'Accreditation',appts:'SOT appointments',roster:'Rosters'}[s],t,seg)+(s==='accred'?vAccred():s==='appts'?vAppts():vRoster());
+}
+function vAccred(){
+  const rows=S.centres.slice().sort((a,b)=>a.exp>b.exp?1:-1);
+  return `<div class="toolbar"><span class="meta grow">${rows.length} accredited centres</span><button class="btn pri sm" data-a="addCentre">Add a centre</button></div><div class="card"><div class="tbl-scroll"><table><thead><tr><th>Centre</th><th>Cluster</th><th>Accredited limit</th><th>Accreditation expires</th><th class="act"></th></tr></thead><tbody>${rows.map(c=>{const d=days(TODAY,c.exp);const m=Math.floor(d/30.4);return `<tr><td class="cell-name">${c.hosp}</td><td>${c.cluster}</td><td>${c.limit} months</td><td>${fmt(c.exp)} ${d<=366?dt('in '+m+' months','warn'):''}</td><td class="act"><button class="btn sec sm" data-a="editCentre" data-h="${c.hosp}">Edit</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+function editCentre(h){const c=S.centres.find(x=>x.hosp===h);ui.dr={type:'centre',h};openDrawer(c.cluster,c.hosp,`<div class="fld"><label for="cLim">Accredited limit (months of training)</label><input type="number" id="cLim" min="0" max="72" value="${c.limit}"></div><div class="fld"><label for="cExp">Accreditation expires</label><input type="date" id="cExp" value="${c.exp}"></div><p class="note">Changes apply from today. Trainees already allocated stay allocated. The reason is recorded.</p><div class="fld"><label for="cWhy">Reason</label><textarea id="cWhy" rows="2"></textarea></div>`,`<button class="btn sec" data-a="closeDrawer">Cancel</button><button class="btn pri" data-a="saveCentre" data-h="${h}">Save</button>`)}
+function saveCentre(h){const c=S.centres.find(x=>x.hosp===h);const l=+$('#cLim').value,e=$('#cExp').value,w=$('#cWhy').value.trim();if(!e||l<0){toast('Enter a limit and an expiry date.');return}if(!w){toast('Add a reason for the record.');return}logAct('Accreditation changed',`${h}: limit ${c.limit} to ${l} months, expiry ${fmt(c.exp)} to ${fmt(e)}. ${w}`);c.limit=l;c.exp=e;closeDrawer();render();toast(h+' updated.')}
+function addCentre(){const free=HOSP.filter(([c,h])=>!S.centres.find(x=>x.hosp===h));openModal(`<h3>Add an accredited centre</h3><div class="fld" style="margin-top:12px"><label for="nHosp">Hospital</label><select id="nHosp">${free.map(([c,h])=>`<option>${h}</option>`).join('')}</select></div><div class="fld"><label for="nLim">Accredited limit (months)</label><input type="number" id="nLim" value="24" min="0" max="72"></div><div class="fld"><label for="nExp">Accreditation expires</label><input type="date" id="nExp"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAddCentre">Add centre</button></div>`)}
+function doAddCentre(){const h=$('#nHosp').value,l=+$('#nLim').value,e=$('#nExp').value;if(!e||e<=TODAY){toast('Enter an expiry date in the future.');return}S.centres.push({hosp:h,cluster:CLUSTER[h],limit:l,exp:e});logAct('Centre added',`${h}: ${l} months, expires ${fmt(e)}`);closeModal();render();toast(h+' added.')}
+
+function vAppts(){
+  const cur=S.appts.filter(a=>!a.ended).sort((a,b)=>a.hosp>b.hosp?1:a.hosp<b.hosp?-1:a.role>b.role?1:-1);
+  const pend=S.pendingAppt.map(p=>`<div class="q-item" style="padding-left:0"><div class="q-bar" style="background:var(--t2f)"></div><div><div class="q-title">${esc(p.nominee)} as ${p.role} at ${p.hosp}</div><div class="q-why">Endorsed by the Board on ${fmt(p.boe)}. Replaces the current term, which ends ${fmt(S.appts.find(a=>a.hosp===p.hosp&&a.role===p.role&&a.until).until)}. Effective ${fmt(p.eff)}.</div></div><button class="btn pri sm" data-a="enterAppt" data-id="${p.id}">Enter appointment</button></div>`).join('');
+  return `${pend?`<div class="card" style="margin-bottom:18px"><div class="q-h"><div class="h3">Waiting to be entered <span class="cnt hot">${S.pendingAppt.length}</span></div></div>${pend}</div>`:''}
+  <div class="toolbar"><span class="meta grow">${cur.length} current role holders</span><button class="btn sec sm" data-a="newAppt">Appoint someone else</button></div>
+  <div class="card"><div class="tbl-scroll"><table><thead><tr><th>Hospital</th><th>Role</th><th>Name</th><th>From</th><th>Until</th><th class="act"></th></tr></thead><tbody>${cur.map(a=>`<tr><td class="cell-name">${a.hosp}</td><td>${a.role}</td><td>${esc(a.who)}</td><td>${fmt(a.from)}</td><td>${a.until?fmt(a.until):'<span class="muted">Open-ended</span>'}</td><td class="act"><button class="btn sec sm" data-a="endAppt" data-id="${a.id}">${a.until?'Change end date':'End term'}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function apptForm(h,r,who,eff,boe,idp){return `<div class="fld"><label for="aH">Hospital</label><select id="aH">${hospOpts(h)}</select></div><div class="fld"><label for="aR">Role</label><select id="aR">${['SOT','Assistant SOT','Acting SOT'].map(x=>`<option ${x===r?'selected':''}>${x}</option>`).join('')}</select></div><div class="fld"><label for="aW">Name</label><input type="text" id="aW" value="${esc(who)}" placeholder="Full name"></div><div class="fld"><label for="aE">Effective from</label><input type="date" id="aE" value="${eff}"></div><div class="fld"><label for="aB">Date the Board endorsed it</label><input type="date" id="aB" max="${TODAY}" value="${boe}"></div>`}
+function enterAppt(id){const p=S.pendingAppt.find(x=>x.id===id);ui.pa=id;openModal(`<h3>Enter the appointment</h3><p class="meta" style="margin-bottom:12px">Check the details against the Board minute.</p>${apptForm(p.hosp,p.role,p.nominee,p.eff,p.boe)}<div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAppt">Enter appointment</button></div>`)}
+function newAppt(){ui.pa=null;openModal(`<h3>Appoint someone</h3><p class="meta" style="margin-bottom:12px">An appointment needs a Board endorsement date.</p>${apptForm('PWH','Acting SOT','',TODAY,'')}<div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAppt">Enter appointment</button></div>`)}
+function doAppt(){
+  const h=$('#aH').value,r=$('#aR').value,w=$('#aW').value.trim(),e=$('#aE').value,b=$('#aB').value;
+  if(!w){toast('Enter the name.');return}if(!b||b>TODAY){toast('Enter the Board endorsement date. It cannot be in the future.');return}if(!e){toast('Enter the effective date.');return}
+  const cur=S.appts.find(a=>a.hosp===h&&a.role===r&&!a.ended);
+  if(cur&&!cur.until&&r!=='Acting SOT'){toast(`${h} already has a ${r} with no end date. End that term first.`);return}
+  S.appts.push({id:'AP'+Date.now(),hosp:h,role:r,who:w,from:e,until:null});
+  if(ui.pa){S.pendingAppt=S.pendingAppt.filter(x=>x.id!==ui.pa);ui.pa=null}
+  logAct('Appointment entered',`${w}, ${r}, ${h}, from ${fmt(e)}. Board endorsement ${fmt(b)}`);closeModal();render();toast(`${w} entered as ${r} at ${h}.`)
+}
+function endAppt(id){const a=S.appts.find(x=>x.id===id);ui.ea=id;openModal(`<h3>${a.until?'Change':'End'} the term of ${esc(a.who)}</h3><p class="meta" style="margin:6px 0 12px">${a.role}, ${a.hosp}</p><div class="fld"><label for="eD">Last day in role</label><input type="date" id="eD" value="${a.until||TODAY}" min="${a.from}"></div><div class="fld"><label for="eW">Reason</label><input type="text" id="eW" placeholder="For the record"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doEnd">Save</button></div>`)}
+function doEnd(){const a=S.appts.find(x=>x.id===ui.ea);const d=$('#eD').value,w=$('#eW').value.trim();if(!d||!w){toast('Enter a date and a reason.');return}a.until=d;if(d<=TODAY)a.ended=true;logAct('Term ended',`${a.who}, ${a.role}, ${a.hosp}: last day ${fmt(d)}. ${w}`);closeModal();render();toast('Term updated.')}
+function vRoster(){
+  return `<div class="card"><div class="q-h"><div class="h3">June 2026 round</div><span class="meta">Next round opens 1 December. SOTs of the ${S.centres.length} centres confirm their lists.</span></div><div class="tbl-scroll"><table><thead><tr><th>Hospital</th><th>Confirmed by SOT</th><th>Changes reported</th><th class="act"></th></tr></thead><tbody>${S.roster.map(r=>`<tr><td class="cell-name">${r.hosp}</td><td>${dt('Confirmed '+fmtS(r.on),'ok')}</td><td>${r.changes?`${r.changes} ${r.changes===1?'change':'changes'} ${r.reviewed?dt('Reviewed','ok'):''}`:'<span class="muted">None</span>'}</td><td class="act">${r.changes&&!r.reviewed?`<button class="btn sec sm" data-a="rosterRev" data-h="${r.hosp}">Mark reviewed</button>`:''}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function rosterRev(h){const r=S.roster.find(x=>x.hosp===h);r.reviewed=true;logAct('Roster changes reviewed',`${h}: ${r.changes} reported changes`);render();toast(h+' changes marked as reviewed.')}
+
+/* ============ iWBA SYNC ============ */
+const CODES=['CF-2.1','CF-2.2','CF-2.3','CF-2.4','CF-2.5','CF-2.6','CF-2.7','SM-3.1','SM-3.2','SM-3.3','SM-3.4','SM-3.5','SM-3.6','SM-3.7','SM-3.8','SM-3.9','SM-3.10','SM-3.11'];
+function vWba(){
+  const c=counts();const s=ui.sub.wba;
+  const seg=subSeg('wba',[['link','People to link',c.link],['unmapped','Items to map',c.unm],['held','Held back',S.quarantine.length?0:0]]);
+  const strip=`<div class="card pad" style="margin-bottom:18px;display:flex;gap:18px 30px;flex-wrap:wrap;align-items:center;justify-content:space-between"><div style="display:flex;gap:10px 34px;flex-wrap:wrap"><div><div class="eyebrow">Last read</div><div style="font-weight:650">${S.sync.last==='now'?'Just now':S.sync.last.slice(11)+' today'}</div></div><div><div class="eyebrow">Records read</div><div style="font-weight:650">${S.sync.read}</div></div><div><div class="eyebrow">Failed</div><div style="font-weight:650">${S.sync.fail}</div></div><div><div class="eyebrow">History backfill</div><div style="font-weight:650">${S.sync.backfill} <span class="meta">(waiting on JCIMED)</span></div></div></div><button class="btn sec sm" data-a="readNow">Read now</button></div>`;
+  const body=s==='link'?vLink():s==='unmapped'?vUnm():vHeld();
+  const jc=`<details class="fold"><summary><span>Waiting on JCIMED <span class="meta" style="font-weight:500">&middot; ${S.jcimed.length} questions</span></span></summary><div class="in"><table><tbody>${S.jcimed.map(q=>`<tr><td>${esc(q[0])}</td><td class="meta" style="text-align:right">${q[1]}</td></tr>`).join('')}</tbody></table><p class="meta" style="margin-top:8px">The linking and mapping screens work whatever the answers are. The answers change how much is automatic.</p></div></details>`;
+  return head('iWBA sync',{link:'People to link',unmapped:'Items to map',held:'Held back'}[s],'Assessments come in from iWBA on their own. These are the things only a person can settle.',seg)+strip+body+jc;
+}
+function vLink(){
+  if(!S.people.length)return `<div class="card"><div class="empty">Everyone iWBA has sent is linked to a portfolio.</div></div>`;
+  return `<div class="toolbar"><span class="meta grow">${plural(S.people.length,'person','people')} in iWBA with no portfolio link</span><button class="btn sec sm" data-a="bulkLink">Link from a file</button></div><div class="card"><div class="tbl-scroll"><table><thead><tr><th>Name in iWBA</th><th>Role</th><th>Assessments held</th><th>Best match</th><th class="act"></th></tr></thead><tbody>${S.people.map(p=>{const m=p.sug&&(T(p.sug.id)||S.assessors.find(a=>a.id===p.sug.id));return `<tr><td><div class="cell-name">${esc(p.iw)}</div><div class="cell-sub">${p.hosp} <span class="mono">${p.id}</span></div></td><td>${p.role}</td><td>${p.n}</td><td>${m?`<div>${esc(m.name)}</div><div class="cell-sub">${esc(p.sug.why)}</div>`:'<span class="muted">No match found</span>'}</td><td class="act">${m?`<button class="btn pri sm" data-a="linkIt" data-id="${p.id}" data-to="${p.sug.id}">Confirm link</button> `:''}<button class="btn sec sm" data-a="linkOther" data-id="${p.id}">${m?'Someone else':'Choose person'}</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+function linkIt(id,to){const p=S.people.find(x=>x.id===id);const m=T(to)||S.assessors.find(a=>a.id===to);S.people=S.people.filter(x=>x.id!==id);logAct('iWBA user linked',`${p.id} (${p.iw}) linked to ${m.name} (${to}); ${p.n} assessments attached`);closeModal();render();toast(`${p.n} assessments now appear for ${m.name}.`)}
+function linkOther(id){const p=S.people.find(x=>x.id===id);const opts=p.role==='Trainer'?S.assessors.map(a=>`<option value="${a.id}">${esc(a.name)}, ${a.hosp}</option>`):S.trainees.filter(t=>t.status!=='Deactivated').map(t=>`<option value="${t.id}">${esc(t.name)}, ${t.hosp}</option>`);openModal(`<h3>Link ${esc(p.iw)}</h3><p class="meta" style="margin:6px 0 12px">${p.role} at ${p.hosp} in iWBA, ${p.n} assessments held.</p><div class="fld"><label for="lkSel">Portfolio record</label><select id="lkSel">${opts.join('')}</select></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="linkSel" data-id="${id}">Link</button></div>`)}
+function bulkLink(){openModal(`<h3>Link from a file</h3><p class="meta" style="margin:6px 0 12px">Two columns, no header: the iWBA user ID and the HKCA number or assessor ID.</p><textarea id="bkRaw" rows="5" class="mono" style="font-size:12.5px">U-8841,HKCA-2024-019\nU-9999,HKCA-2024-011\nU-8833,HKCA-2023-015</textarea><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doBulk">Link what matches</button></div>`)}
+function doBulk(){
+  const lines=$('#bkRaw').value.split(/\n/).map(s=>s.trim()).filter(Boolean);let ok=0,bad=[];
+  lines.forEach(l=>{const [u,h]=l.split(',').map(s=>s.trim());const p=S.people.find(x=>x.id===u);const m=T(h)||S.assessors.find(a=>a.id===h);if(p&&m){S.people=S.people.filter(x=>x.id!==u);ok++;logAct('iWBA user linked',`${u} linked to ${m.name} (${h}) from file`)}else bad.push(u+(p?' (no such record)':' (not in the queue)'))});
+  closeModal();render();toast(`${ok} linked.${bad.length?' Not linked: '+bad.join(', ')+'.':''}`)
+}
+function vUnm(){
+  if(!S.unmapped.length)return `<div class="card"><div class="empty">Every item iWBA has used is mapped to a curriculum code.</div></div>`;
+  return `<div class="note">Until JCIMED confirms how curriculum codes come back, items are matched by their iWBA code. Assessments wait here, and the trainee sees them as soon as you save the mapping.</div><div class="card"><div class="tbl-scroll"><table><thead><tr><th>iWBA item</th><th>Assessments waiting</th><th>Curriculum code</th><th class="act"></th></tr></thead><tbody>${S.unmapped.map((u,i)=>`<tr><td><div class="cell-name">${esc(u.name)}</div><div class="cell-sub mono">${u.code}</div></td><td>${u.n}</td><td><select data-c="unm" data-i="${i}" aria-label="Curriculum code for ${esc(u.code)}"><option value="">Choose a code</option>${CODES.map(c=>`<option ${u.map===c?'selected':''}>${c}</option>`).join('')}</select></td><td class="act"><button class="btn pri sm" data-a="saveUnm" data-i="${i}" ${u.map?'':'disabled'}>Save mapping</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function saveUnm(i){const u=S.unmapped[i];S.unmapped.splice(i,1);logAct('iWBA item mapped',`${u.code} (${u.name}) mapped to ${u.map}; ${u.n} assessments released`);render();toast(`${u.code} mapped to ${u.map}. ${u.n} assessments released.`)}
+function vHeld(){
+  return `<div class="note">These came from iWBA but are not part of the HKCA curriculum, so they are kept out of every portfolio. Nothing is deleted.</div><div class="card"><div class="tbl-scroll"><table><thead><tr><th>iWBA item</th><th>Assessments</th><th>Why held back</th></tr></thead><tbody>${S.quarantine.map(q=>`<tr><td><div class="cell-name">${esc(q.name)}</div><div class="cell-sub mono">${q.code}</div></td><td>${q.n}</td><td class="meta">${esc(q.why)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function readNow(){S.sync.last='now';S.sync.read+=Math.floor(Math.random()*6)+2;logAct('iWBA read triggered','Manual read from the console');render();toast('Read from iWBA. No new people or items.')}
+
+/* ============ LOG, ROUTER, EVENTS ============ */
+function openLog(){
+  openDrawer('Audit trail','Activity log',(S.log.length?S.log.map(l=>`<div class="log-row"><div class="t">${fmtS(l.d)} ${l.t}</div><div><b>${esc(l.a)}</b><div class="meta">${esc(l.det)}</div></div><div class="h">${l.h}</div></div>`).join(''):'<p class="meta">Nothing yet. Each action you take in this console is recorded here with a chained reference.</p>')+'<p class="note" style="margin-top:14px">Each line carries a reference that depends on the line before it, so a changed or removed entry shows. This is the same trail the College can inspect.</p>','');
+}
+const TABS=[['home','Home'],['trainees','Trainees'],['courses','Courses'],['exams','Exams'],['projects','Formal projects'],['centres','Centres and SOTs'],['wba','iWBA sync']];
+function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct,courses:c.triage,projects:c.pjDispatch+c.pjOver+c.pjIn,centres:c.pend+c.accSoon,wba:c.link+c.unm}[k]||0}
+const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,projects:vProjects,centres:vCentres,wba:vWba};
+function render(){
+  const y=window.scrollY;
+  $('#tabs').innerHTML=TABS.map(([k,l])=>{const b=tabBadge(k);return `<button class="tab ${ui.tab===k?'on':''}" role="tab" aria-selected="${ui.tab===k}" data-a="go" data-t="${k}" tabindex="${ui.tab===k?0:-1}">${l}${b?` <span class="cnt hot">${b}</span>`:''}</button>`}).join('');
+  $('#app').innerHTML=VIEWS[ui.tab]();save();
+  history.replaceState(null,'','#'+ui.tab+(ui.tab!=='home'&&ui.sub[ui.tab]?'/'+ui.sub[ui.tab]:''));
+  document.title='HKCA e-Portfolio · '+TABS.find(t=>t[0]===ui.tab)[1]+' (Secretariat prototype)';
+  window.scrollTo(0,y);
+}
+function go(t,k){ui.tab=t;if(k)ui.sub[t]=k;closeDrawer();window.scrollTo(0,0);render()}
+const ACT={
+  go:e=>go(e.dataset.t,e.dataset.k),sub:e=>{ui.sub[e.dataset.t]=e.dataset.k;render()},
+  theme:()=>{document.documentElement.classList.toggle('dark');try{localStorage.setItem('hkca.admin.dark',document.documentElement.classList.contains('dark')?1:0)}catch(x){}},
+  closeDrawer,closeModal,openLog,toast:e=>toast(e.dataset.m),demoPop:()=>$('#demoPop').classList.toggle('on'),
+  resetDemo:()=>{S=seedState();ui.q='';ui.docketSel={};ui.exOut=null;ui.sheetOut=null;$('#demoPop').classList.remove('on');closeDrawer();render();toast('Demo data reset.')},
+  sort:e=>{const k=e.dataset.k;ui.sort=[k,ui.sort[0]===k?-ui.sort[1]:1];render()},
+  fStage:e=>{ui.stage=e.dataset.v;render()},openTrainee:e=>openTrainee(e.dataset.id),saveStatus:e=>saveStatus(e.dataset.id),
+  openIntake:e=>openIntake(e.dataset.id),approveIntake:e=>approveIntake(e.dataset.id),returnIntake:e=>returnIntake(e.dataset.id),doReturn:e=>doReturn(e.dataset.id),
+  dkAll:()=>{docketRows().filter(x=>x.c.ready).forEach(x=>ui.docketSel[x.t.id]=true);render()},dkGo,dkDo,
+  openRecog:e=>openRecog(e.dataset.id),unlockRecog:e=>unlockRecog(e.dataset.id),reviewCredit:e=>reviewCredit(e.dataset.id),execCredit,
+  pickRound:e=>{ui.round=e.dataset.id;render()},autoFill,loadSheet:()=>{ui.sheet=SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
+  exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=EX_SAMPLE;ui.exOut=null;render()},checkEx,commitEx,
+  pjF:e=>{ui.pjFilter=e.dataset.v;render()},openProject:e=>openProject(e.dataset.id),dispatch:e=>dispatchPj(e.dataset.id),replaceRev:e=>replaceRev(e.dataset.id,+e.dataset.i),recordPj:e=>recordPj(e.dataset.id),escalate:e=>escalate(e.dataset.id),
+  addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),
+  linkIt:e=>linkIt(e.dataset.id,e.dataset.to),linkOther:e=>linkOther(e.dataset.id),linkSel:e=>linkIt(e.dataset.id,$('#lkSel').value),bulkLink,doBulk,saveUnm:e=>saveUnm(+e.dataset.i),readNow
+};
+document.addEventListener('click',ev=>{const e=ev.target.closest('[data-a]');if(!e)return;const f=ACT[e.dataset.a];if(f){ev.preventDefault();f(e)}});
+document.addEventListener('change',ev=>{
+  const e=ev.target,c=e.dataset.c;if(!c)return;
+  if(c==='status'){ui.status=e.value;render()}
+  else if(c==='hosp'){ui.hosp=e.value;render()}
+  else if(c==='intakeChk'){const a=S.intake.find(x=>x.id===e.dataset.id);a.chk[e.dataset.k]=e.checked;save();const body=$('#drBody');const hs=$('#inHosp').value,st=$('#inStage').value;body.innerHTML=intakeBody(a);$('#inHosp').value=hs;$('#inStage').value=st;$('#apprBtn').disabled=!Object.values(a.chk).every(Boolean);render();}
+  else if(c==='dkSel'){ui.docketSel[e.dataset.id]=e.checked;render()}
+  else if(c==='setApp'){const r=S.rounds.find(x=>x.id===ui.round);r.apps[+e.dataset.i][2]=e.value;save();render()}
+  else if(c==='cn'){ui.cn=e.value;ui.sheetOut=null;render()}
+  else if(c==='warnOn'){ui.sheetOut.rows[+e.dataset.i].on=e.checked;render()}
+  else if(c==='exWarn'){ui.exOut.rows[+e.dataset.i].on=e.checked;render()}
+  else if(c==='pick'){const v=[...document.querySelectorAll('#pickList input:checked')].map(x=>x.value);if(v.length>2){e.checked=false;toast('Pick exactly two reviewers.');return}ui.pick=v;$('#dispBtn').disabled=v.length!==2;document.querySelectorAll('#pickList input').forEach(x=>{x.disabled=v.length>=2&&!x.checked})}
+  else if(c==='unm'){S.unmapped[+e.dataset.i].map=e.value;save();render()}
+});
+document.addEventListener('input',ev=>{
+  const e=ev.target;if(e.dataset.i==='q'){ui.q=e.value;const p=e.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)}
+});
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'){if($('#modalBg').classList.contains('on'))closeModal();else if($('#drawer').classList.contains('on'))closeDrawer()}
+  const t=ev.target.closest&&ev.target.closest('.tab');if(t&&(ev.key==='ArrowRight'||ev.key==='ArrowLeft')){const tabs=[...document.querySelectorAll('.tab')];const i=tabs.indexOf(t)+(ev.key==='ArrowRight'?1:-1);const n=tabs[(i+tabs.length)%tabs.length];n.click();setTimeout(()=>document.querySelector('.tab.on').focus(),0)}
+});
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal()});
+try{if(localStorage.getItem('hkca.admin.dark')==='1')document.documentElement.classList.add('dark')}catch(e){}
+(function(){const h=location.hash.slice(1).split('/');if(VIEWS[h[0]]){ui.tab=h[0];if(h[1])ui.sub[h[0]]=h[1]}})();
+render();
+</script>
+</body>
+</html>
