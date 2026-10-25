@@ -704,11 +704,18 @@ CREATE TABLE retrospective_recognitions (
   requested_icu_months          NUMERIC(4,2),
   requested_elective_months     NUMERIC(4,2),
   requested_cases               INTEGER,
-  board_decision_date           DATE,          -- date the Board decided; approval_date is when Admin executed it
+  decision_date                 DATE,          -- date the Training Officer or the Board decided; approval_date is when Admin executed it (renamed from board_decision_date, migration 5)
+  decided_by_body               TEXT,          -- TRAINING_OFFICER | BOARD. A rejection is only ever the Board's (database check)
+  -- Origin is structured, never free text. The ledger reason is DERIVED from it: OVERSEAS_TRAINING gives RETROSPECTIVE_OVERSEAS_RECOGNITION, OTHER_SPECIALTY gives RETROSPECTIVE_SPECIALTY_TRANSFER.
+  origin_kind                   TEXT,          -- OVERSEAS_TRAINING | OTHER_SPECIALTY
+  origin_specialty              TEXT,          -- for OTHER_SPECIALTY, for example surgery or emergency medicine
+  origin_place                  TEXT,          -- country (overseas) or hospital or place (other specialty); the training body is overseas_institution below
   
   -- Vetting status
   vetting_status                TEXT DEFAULT 'access_requested',
-  -- access_requested → unlocked → submitted → approved / rejected   (Admin console: Request access, With applicant, Needs Board decision, Credit executed)
+  -- access_requested → unlocked → submitted → with_training_officer → (approved_pending_credit | referred_to_board → approved_pending_credit | rejected) → approved
+  -- (Admin console: Request access, With applicant, Check documents, With Training Officer, Needs Board decision, Approved credit to execute, Credit executed.)
+  -- The Training Officer's vetting IS the decision when there is no particular issue; a problem goes to the Board; only the Board rejects. Every step is a row in retrospective_recognition_events (section 13).
   
   assigned_reviewer_id          TEXT REFERENCES users(id),
   boe_review_date               DATE,
@@ -761,22 +768,33 @@ CREATE INDEX idx_retro_status ON retrospective_recognitions(vetting_status);
 ### `exam_results`
 
 ```sql
-CREATE TABLE exam_results (
+CREATE TABLE exam_results (                -- one row per attempt; built as `ExamResult` (migration 5)
   id                    SERIAL PRIMARY KEY,
   trainee_id            INTEGER REFERENCES trainee_profiles(id) ON DELETE CASCADE,
   
-  exam_type             TEXT NOT NULL,    -- INTERMEDIATE | FINAL_ANAESTHESIA | FINAL_ICU (names as built in Prisma; decision 2026-10-24)
+  exam_type             TEXT NOT NULL,    -- INTERMEDIATE | FINAL_ANAESTHESIA | FINAL_ICU (names as built in Prisma; decision 2026-10-24). The first release covers INTERMEDIATE and FINAL_ANAESTHESIA only (decision 2026-10-25)
+  sitting_id            INTEGER,          -- exam_sittings.id (section 13)
+  application_id        INTEGER,          -- exam application it came from; null for an imported historical result
   exam_date             DATE NOT NULL,
-  result                TEXT NOT NULL,    -- pass, fail. Legacy `atp_reg_exam` rows with Processing / Withdraw / Cancel are applications, not results, and are not imported here (Migration Plan 6.9, item 6)
+  result                TEXT NOT NULL,    -- PASS | FAIL overall. Legacy `atp_reg_exam` rows with Processing / Withdraw / Cancel are applications, not results, and are not imported here (Migration Plan 6.9, item 6)
   score                 TEXT,
+  -- Intermediate, per subject (results upload columns physiology, pharmacology, minimum_met). A blank subject is carried forward.
+  physiology            TEXT,             -- PASS | FAIL
+  pharmacology          TEXT,             -- PASS | FAIL
+  minimum_met           BOOLEAN,          -- needed when one subject passed and the other failed: the pass carries forward only if the minimum score was met in the failed subject
+  -- Final, per section (results upload columns written, oral_osce). Oral and OSCE are one result; separate oral and OSCE columns are refused (decision 2026-10-25).
+  written               TEXT,             -- PASS | FAIL; blank = carried forward
+  oral_osce             TEXT,             -- PASS | FAIL
   
-  attempt_number        INTEGER DEFAULT 1,
+  attempt_number        INTEGER DEFAULT 1, -- unique per trainee and exam
   source_batch_id       INTEGER,          -- bulk ingestion batch that recorded it; null if entered one at a time
   
   created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_exams_trainee ON exam_results(trainee_id, exam_type);
+-- Migration 5 moved the result, score, attempt number and batch that used to sit on ExamApplication into this table (one row per result, attempts numbered by date).
+-- Those four columns remain on ExamApplication, deprecated, until no code reads them.
 ```
 
 ### `training_stage_history` (added 2026-10-22: Trainee Dashboard progression record)
@@ -845,7 +863,8 @@ CREATE TABLE formal_projects (
   status                    TEXT DEFAULT 'protocol_draft',
   -- protocol_draft → protocol_submitted → under_review → revision_required → 
   -- manuscript_submitted → approved → final_approval_letter_issued
-  -- plus: escalated (divergent reviews sent to the Formal Project Subcommittee Chair; outcome then recorded). Admin console, 2026-10-24.
+  -- plus: appeal (a rejected part under the once-only appeal; migration 5). The earlier `escalated` state (divergent reviews sent to the Subcommittee Chair) was dropped on 2026-10-25: no screen or rule used it.
+  -- The state of each PART (protocol, manuscript) is in formal_project_stages (section 13); this column is the project-level summary.
   
   protocol_submitted_date   DATE,
   protocol_anonymized_path  TEXT,
@@ -855,7 +874,7 @@ CREATE TABLE formal_projects (
   reviewer_1_id             TEXT REFERENCES users(id),
   reviewer_2_id             TEXT REFERENCES users(id),
   -- reviewer_1/2 columns hold only the CURRENT reviewers. The source of truth for assignment, deadline, replacement and grade is formal_project_reviews (section 12).
-  reviewer_1_status         TEXT,            -- approved, minor_revision, major_revision
+  reviewer_1_status         TEXT,            -- approved, revision, rejected (three outcomes, 2026-10-25; the four grades were dropped)
   reviewer_2_status         TEXT,
   reviewer_1_feedback       TEXT,
   reviewer_2_feedback       TEXT,
@@ -1292,7 +1311,7 @@ This is the single largest piece of ETL work in the project, and the largest dat
 
 Source: `Admin Prototype Delta Check 2026-10-24.md`. These tables are needed by the College Secretariat Console prototype.
 
-**Prisma status (2026-10-24):** migration `3_admin_console_schema_alignment` adds all of them, plus the earlier doc-only tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans with goals and proposals, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). 22 tables in all, verified on Postgres by `tests/schema/verify_admin_schema.mjs`. Deliberate differences from the SQL in this document:
+**Prisma status (2026-10-25):** migration 5 (`5_secretariat_courses_exams_projects`) adds the courses, exams, formal-project and recognition changes in section 13 and edits several tables below in place. **Prisma status (2026-10-24):** migration `3_admin_console_schema_alignment` adds all of them, plus the earlier doc-only tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans with goals and proposals, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). 22 tables in all, verified on Postgres by `tests/schema/verify_admin_schema.mjs`. Deliberate differences from the SQL in this document:
 - Ids are UUID strings and foreign keys to users are text, as in the rest of Prisma, not `SERIAL`/`INTEGER`.
 - `ita_domain_ratings` is not built: the 15-item form (migration 1) superseded it.
 - `icu_tutorials` and `icu_tutorial_attendance` are not built: whether ICU trainees are in scope is an open question to the College.
@@ -1314,8 +1333,10 @@ CREATE TABLE applications (                  -- Admin intake queue; a trainee ex
   submitted_at     TIMESTAMP NOT NULL,
   check_mchk       BOOLEAN NOT NULL DEFAULT false,     -- Medical Council registration checked
   check_fee        BOOLEAN NOT NULL DEFAULT false,     -- application fee matched to payment record
-  check_endorsement BOOLEAN NOT NULL DEFAULT false,    -- signed PDF (Chief of Service and SOT) present and checked
+  check_endorsement BOOLEAN NOT NULL DEFAULT false,    -- DERIVED from application_endorsements (section 13): both signer rows signed, by e-signature or an attached PDF
   endorsement_doc_id TEXT,
+  mchk_registration_type   TEXT,                       -- full | limited (never 'specialist': applicants are not yet specialists)
+  mchk_registration_number TEXT,
   status           TEXT NOT NULL DEFAULT 'submitted',  -- submitted | returned | approved
   return_note      TEXT,
   decided_by       TEXT REFERENCES users(id),
@@ -1342,7 +1363,7 @@ Legacy status is not trusted (Dr. Chan, 2026-10-24: the legacy active flag is po
 
 ### Recognition: ledger and case credit
 
-Ledger (`accredited_time_ledger`): add reasons `RETROSPECTIVE_OVERSEAS_RECOGNITION` and `RETROSPECTIVE_SPECIALTY_TRANSFER` to `LedgerReason`, and a column `board_decision_date DATE` (the authority role stays the Admin who executed it; the Board's decision is the date and note).
+Ledger (`accredited_time_ledger`): add reasons `RETROSPECTIVE_OVERSEAS_RECOGNITION` and `RETROSPECTIVE_SPECIALTY_TRANSFER` to `LedgerReason`, and columns `decision_date DATE` and `decided_by_body TEXT` (TRAINING_OFFICER or BOARD; the authority role stays the Admin who executed it). These replace `board_decision_date` (renamed in migration 5, data kept), because the Training Officer's vetting can itself be the decision.
 
 ```sql
 CREATE TABLE vop_credit_adjustments (        -- option A: recognised logbook cases (decision 2026-10-24)
@@ -1352,7 +1373,8 @@ CREATE TABLE vop_credit_adjustments (        -- option A: recognised logbook cas
   cases               INTEGER NOT NULL,       -- cases recognised by the Board
   module_code         TEXT,                   -- SM-3.x the Board allocated them to; null = counts to the overall total only
   reason              TEXT NOT NULL,          -- RETROSPECTIVE_OVERSEAS_RECOGNITION | RETROSPECTIVE_SPECIALTY_TRANSFER | correction codes
-  board_decision_date DATE NOT NULL,
+  decision_date       DATE NOT NULL,          -- renamed from board_decision_date (migration 5)
+  decided_by_body     TEXT,                   -- TRAINING_OFFICER | BOARD
   note                TEXT,
   recorded_by         TEXT REFERENCES users(id),
   supersedes_id       INTEGER REFERENCES vop_credit_adjustments(id),   -- a correction is a new row; rows are never edited
@@ -1368,14 +1390,25 @@ Rules: counted in cumulative case totals; counted towards a module minimum **onl
 CREATE TABLE course_catalogue (
   course_code  TEXT PRIMARY KEY,              -- EASE, EMAC, ADAM-A, ECHO-A, UGRA, plus non-mandatory legacy courses
   course_name  TEXT NOT NULL,
-  is_mandatory BOOLEAN NOT NULL DEFAULT false
+  is_mandatory BOOLEAN NOT NULL DEFAULT false,
+  organiser    TEXT                           -- CSC (Clinical Simulation Committee) | HKCA
 );
 CREATE TABLE course_rounds (
   id          SERIAL PRIMARY KEY,
   course_code TEXT NOT NULL REFERENCES course_catalogue(course_code),
-  round_date  DATE NOT NULL,
-  seats       INTEGER NOT NULL,
-  status      TEXT NOT NULL DEFAULT 'open',   -- open | held | cancelled
+  round_date  DATE NOT NULL,                  -- first day
+  end_date    DATE,                           -- last day of a multi-day course
+  seats       INTEGER,                        -- null = no cap (the Mock Viva)
+  venue       TEXT,
+  format      TEXT,                           -- Face-to-face | Online | Online and face-to-face
+  fee_member      INTEGER,                    -- HK$. null = fee to be confirmed, 0 = No charge (mandatory courses are free now; the field stays so charging can start later)
+  fee_non_member  INTEGER,
+  registration_opens  DATE,
+  registration_closes DATE,
+  registration_shut_at TIMESTAMP,             -- Admin pressed Close now; reopening clears it and sets a new closing date
+  coordinators TEXT,
+  ranking_mode TEXT NOT NULL DEFAULT 'priority',  -- priority | fcfs (first come first served). Anyone waitlisted last time still goes first. Admin still decides every place
+  status      TEXT NOT NULL DEFAULT 'open',   -- stored: open | cancelled. Not open yet, Open, Closed, Held and Attendance recorded are DERIVED from the dates, registration_shut_at and attendance_recorded_at
   attendance_recorded_at TIMESTAMP
 );
 CREATE TABLE course_requests (
@@ -1383,9 +1416,10 @@ CREATE TABLE course_requests (
   round_id     INTEGER NOT NULL REFERENCES course_rounds(id) ON DELETE RESTRICT,
   trainee_id   INTEGER NOT NULL REFERENCES trainee_profiles(id) ON DELETE RESTRICT,
   requested_at TIMESTAMP NOT NULL,
-  decision     TEXT NOT NULL DEFAULT 'requested',   -- requested | accepted | waitlisted | deferred
+  decision     TEXT NOT NULL DEFAULT 'requested',   -- requested | accepted | waitlisted | rejected (deferred was removed, migration 5)
   decided_by   TEXT REFERENCES users(id),
   decided_at   TIMESTAMP,
+  withdrawn_at TIMESTAMP,                           -- trainee withdrew before the deadline; not counted as an applicant
   UNIQUE (round_id, trainee_id)
 );
 ```
@@ -1398,19 +1432,28 @@ CREATE TABLE formal_project_reviews (         -- one row per reviewer assignment
   id           SERIAL PRIMARY KEY,
   project_id   INTEGER NOT NULL REFERENCES formal_projects(id) ON DELETE RESTRICT,
   stage        TEXT NOT NULL,                 -- protocol | manuscript
-  version_no   SMALLINT NOT NULL DEFAULT 1,
+  version_no   SMALLINT NOT NULL DEFAULT 1,   -- the round; a revision goes back to the same reviewers as round 2
   reviewer_id  TEXT NOT NULL REFERENCES users(id),
   assigned_at  TIMESTAMP NOT NULL,
   assigned_by  TEXT REFERENCES users(id),
-  due_at       DATE NOT NULL,                 -- assigned_at + 30 days
+  due_at       DATE NOT NULL,                 -- assigned_at + 2 months (HKCA-E03; was 30 days). A reminder goes 14 days before
   replaced_at  TIMESTAMP,
   replaced_by  TEXT REFERENCES users(id),
   submitted_at TIMESTAMP,
-  grade        TEXT,                          -- satisfactory | minor_revision | major_revision | unsatisfactory
-  feedback     TEXT
+  recommendation TEXT,                        -- approved | revision | rejected (three outcomes; the four grades were dropped, 2026-10-25)
+  feedback     TEXT,
+  -- Overdue handling (decided 2026-10-25)
+  handed_to_team_at    TIMESTAMP,             -- after the deadline Admin hands ONLY the missing review to the Formal Project Team
+  by_team              BOOLEAN NOT NULL DEFAULT false,  -- the Team's review is recorded on the same row; reviewer_id stays as the original assessor. Needs handed_to_team_at
+  late_override_reason TEXT,                  -- a late report is ignored unless Admin accepts it with a reason
+  late_override_by     TEXT REFERENCES users(id),
+  reassign_reason      TEXT,                  -- written on the NEW row of a reassignment (no response, unavailable, conflict of interest)
+  reminder_sent_at     TIMESTAMP
 );
 ```
 Conflict rule: a reviewer whose current or parent hospital equals the trainee's is not offered. Reviewers never see the trainee's name. The reviewer pool is users with role `EXTERNAL_ASSESSOR` or `TRAINER` flagged `can_review_projects`.
+
+**Migration 5 (2026-10-25) updated the tables above in place** (courses, applications, formal project reviews, recognition decision date) and added the tables in section 13.
 
 ### Rosters
 
@@ -1445,6 +1488,146 @@ Saving a mapping releases the assessments held under `unmapped_procedure` confli
 ### Admin audit
 
 Every Admin action in section 12 writes `audit_log` (hash-chained). The console's Activity log reads it.
+
+---
+
+## 13. Secretariat console: courses, exams, formal projects, recognition (added 2026-10-25)
+
+Source: `Admin Prototype Delta Check 2026-10-25.md` and decisions D1 to D5 (Dr. Chan, 2026-10-25). Built as Prisma migration `5_secretariat_courses_exams_projects`, tested on PGlite by `tests/schema/verify_secretariat_schema.mjs` (91 checks). Same conventions as section 12: UUID text ids, `ON DELETE RESTRICT`, Prisma's names stand. Names below are the SQL names; the Prisma models are `CourseAttendance`, `CourseNotice`, `ExamSitting`, `ExamResult`, `ExamSectionPass`, `TraineeFeePayment`, `TraineeExemption`, `FormalProjectStage`, `ApplicationEndorsement`, `RetrospectiveRecognitionEvent`.
+
+**Scope (D1).** Course registration and exam applications are part of the first launch, not Phase 2. The Phase 2 list below no longer holds `course_catalogue`, `exam_catalogue` or `course_registrations`: rounds and requests are section 12, sittings and applications are here.
+
+**Two things the Prisma file does that the SQL below cannot show.** A partial unique index (`exam_section_passes`, one active carried pass per trainee and exam) lives only in the migration, because Prisma cannot express it. The same migration adds check constraints and an append-only trigger, listed at the end of this section; a future `prisma migrate dev` will want to drop the partial index, so keep it in the migration file.
+
+### Courses: attendance and notices
+
+```sql
+CREATE TABLE course_attendance (               -- one row per trainee per round; records the RATE, not just the completion
+  id SERIAL PRIMARY KEY,
+  round_id   INTEGER NOT NULL REFERENCES course_rounds(id) ON DELETE RESTRICT,
+  trainee_id INTEGER NOT NULL REFERENCES trainee_profiles(id) ON DELETE RESTRICT,
+  rate_percent INTEGER NOT NULL CHECK (rate_percent BETWEEN 0 AND 100),
+  certificate_issued BOOLEAN NOT NULL DEFAULT false,   -- 70% or more (College Regulations for Courses, May 2026)
+  recorded_at TIMESTAMP DEFAULT now(), recorded_by TEXT REFERENCES users(id), source_batch_id INTEGER,
+  UNIQUE (round_id, trainee_id)
+);
+CREATE TABLE course_notices (                  -- below 50% is reported to the trainee's Chief of Service and SOT
+  id SERIAL PRIMARY KEY,
+  round_id INTEGER NOT NULL, trainee_id INTEGER NOT NULL, rate_percent INTEGER NOT NULL CHECK (rate_percent BETWEEN 0 AND 100),
+  notice_type TEXT NOT NULL DEFAULT 'UNDER_50_REPORT', queued_at TIMESTAMP DEFAULT now(), sent_at TIMESTAMP,
+  UNIQUE (round_id, trainee_id, notice_type)
+);
+```
+Rules: 70% or more earns the Certificate of Attendance and marks a mandatory course completed (a `mandatory_courses` row linked by `round_id`); below 70% gives none; below 50% queues a notice. Attendance for a non-mandatory course stays here and does not touch `mandatory_courses`. A line with no rate on the attendance sheet means full attendance (prototype assumption, to confirm with the College). The 70% rule is applied to every course including the CSC courses (assumption, to confirm).
+
+### Exams
+
+```sql
+CREATE TABLE exam_sittings (
+  id SERIAL PRIMARY KEY,
+  exam_type  TEXT NOT NULL,                    -- INTERMEDIATE | FINAL_ANAESTHESIA | FINAL_ICU (ICU Final out of scope for the first release, D4)
+  name       TEXT NOT NULL,                    -- for example 'Feb / Apr 2027'
+  opens_on   DATE NOT NULL,
+  closes_on  DATE NOT NULL,                    -- 3 to 8 weeks before the first written paper (Vocational Training Guide 2.4.2); the 3-to-8-week rule is checked in the write, the database checks opens <= closes < written
+  mcq_on DATE, written_on DATE NOT NULL, oral_on DATE, oral_end_on DATE, osce_on DATE,
+  fee_hkd    INTEGER NOT NULL,                 -- HK$8,000 Intermediate, HK$16,000 Final (College exams page; changes yearly)
+  shut_at    TIMESTAMP,                        -- Admin closed applications early
+  created_at TIMESTAMP DEFAULT now()
+);
+```
+`exam_applications` is the existing `ExamApplication` table, extended (not renamed):
+```sql
+-- added columns (migration 5)
+sitting_id TEXT REFERENCES exam_sittings(id),     -- UNIQUE (trainee_id, sitting_id): one application per trainee and sitting
+withdrawn_at TIMESTAMP, withdrawn_kind TEXT,      -- trainee | admin
+sot_decline_reason TEXT,                          -- the SOT endorses, or declines with a reason, BEFORE Admin sees the application (a query rule: Admin lists only SOT-approved rows)
+fee_received_at DATE, fee_method TEXT, fee_reference TEXT,   -- Admin records by hand: Faster Payment System | Bank deposit | E-cheque (decision D3)
+slip_document_id TEXT,                            -- payment slip: the trainee attaches it or emails it and Admin attaches it
+board_exception_reason TEXT, board_exception_at DATE,        -- Board exception when criteria are not met
+not_admitted_at TIMESTAMP,
+sections_to_sit TEXT[] DEFAULT '{}'               -- snapshot at application: PHYSIOLOGY / PHARMACOLOGY, or WRITTEN / ORAL / OSCE
+```
+An application is **complete** when the SOT has endorsed, the fee is received and the criteria are met (or a Board exception is recorded). One that is not complete when the sitting closes lapses; "Lapsed", "Waiting for SOT", "Awaiting fee", "Criteria not met" and "Complete" are derived, not stored.
+
+```sql
+CREATE TABLE exam_section_passes (             -- carry-forward of a passed section
+  id SERIAL PRIMARY KEY,
+  trainee_id INTEGER NOT NULL, exam_type TEXT NOT NULL,
+  section TEXT NOT NULL,                         -- PHYSIOLOGY | PHARMACOLOGY (Intermediate: one subject) | WRITTEN (Final)
+  passed_on DATE NOT NULL, passed_sitting_id TEXT,
+  sittings_left INTEGER NOT NULL DEFAULT 4 CHECK (sittings_left BETWEEN 0 AND 4),
+  is_active BOOLEAN NOT NULL DEFAULT true,       -- false once used up or the exam is passed
+  created_at TIMESTAMP DEFAULT now()
+);
+CREATE UNIQUE INDEX one_active_pass ON exam_section_passes(trainee_id, exam_type) WHERE is_active;
+```
+Carry-forward (Intermediate and Final Exam FAQs): Intermediate, a pass in one subject carries when the other subject meets the minimum score; Final, the written pass carries when the oral or OSCE is failed; each lasts up to four subsequent consecutive exams, then every section is re-sat; the fee is unchanged. **Counting every sitting the College holds toward the four is our reading and is not confirmed by the College.** Results upload formats: Intermediate `hkca_no,exam,sitting_date,physiology,pharmacology,minimum_met`; Final `hkca_no,exam,sitting_date,written,oral_osce`.
+
+```sql
+CREATE TABLE trainee_fee_payments (            -- append-only; a wrong entry is voided, never deleted (decision D3: entered by hand from payment slips)
+  id SERIAL PRIMARY KEY, trainee_id INTEGER NOT NULL,
+  fee_type TEXT NOT NULL CHECK (fee_type IN ('REGISTRATION','TRAINING')),
+  paid_on DATE NOT NULL, reference TEXT, recorded_by TEXT REFERENCES users(id), voided_at TIMESTAMP, created_at TIMESTAMP DEFAULT now()
+);
+CREATE TABLE trainee_exemptions (              -- Intermediate exemption
+  id SERIAL PRIMARY KEY, trainee_id INTEGER NOT NULL, exam_type TEXT NOT NULL DEFAULT 'INTERMEDIATE',
+  kind TEXT NOT NULL CHECK (kind IN ('ANZCA_PRIMARY','FRCA_PRIMARY','OTHER_BOARD')),
+  granted_on DATE NOT NULL, reference TEXT, note TEXT, recorded_by TEXT REFERENCES users(id),
+  UNIQUE (trainee_id, exam_type)
+);
+```
+Eligibility criteria are read live and kept in one list per exam, each with its source (Intermediate: member and registered trainee, fees paid, in Basic training, not already passed or exempt; Final: member and registered trainee, fees paid, in Higher training, Intermediate passed or exempt, in a College-accredited centre, not already passed). The two "not already passed" checks are our additions and are not in the published rules; the Administrative Instructions (members only) were not read.
+
+### Formal projects: stages, appeal, accepted-paper route
+
+```sql
+CREATE TABLE formal_project_stages (           -- one row for the protocol part, one for the manuscript part
+  id SERIAL PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES formal_projects(id) ON DELETE RESTRICT,
+  stage TEXT NOT NULL,                           -- protocol | manuscript. The manuscript opens after the protocol is approved
+  state TEXT NOT NULL DEFAULT 'awaiting_reviewers',  -- awaiting_reviewers | under_review | reviews_in | revision | appeal | approved | rejected
+  round_no INTEGER NOT NULL DEFAULT 1,
+  dispatched_at DATE, due_at DATE,               -- due_at = dispatched + 2 months
+  decision TEXT, decided_on DATE,                -- approved | revision | rejected
+  appealed_on TIMESTAMP,                         -- ONE appeal, with a point-by-point reply; a rejection after appeal is final
+  created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now(),
+  UNIQUE (project_id, stage)
+);
+-- added to formal_projects
+route TEXT NOT NULL DEFAULT 'STANDARD',          -- STANDARD | ACCEPTED_PAPER (HKCA-E03: an accepted peer-reviewed paper counts as the formal project; no protocol; the trainee's authorship is recorded, for example first author, corresponding author, first and corresponding, or other significant contribution)
+paper_journal TEXT, paper_authorship TEXT, paper_accepted_on DATE, paper_evidence_doc_id TEXT   -- journal required when ACCEPTED_PAPER
+-- added to formal_project_events
+visibility TEXT NOT NULL DEFAULT 'trainee'       -- trainee | internal
+```
+`formal_project_events` now carries two kinds of entry. **Trainee-visible** (submission, resubmission with version, revision request with its outcome, approval, accepted paper recorded) never names a reviewer. **Internal** (reviewers assigned, reminder sent, handed to the Team, late report accepted, reviewer reassigned, appeal received, certification advice queued) is for the Secretariat only. Approving a manuscript queues certification advice to the Board of Education and the Board of Censors (an internal event; a `notifications` row if one is needed). The exit-gate "Formal project" criterion is **derived** from the stages and route (manuscript approved, or accepted paper); `trainee_profiles.formal_project_approved` and its date are a maintained copy and are never edited by hand. College-issued project numbers are of the form FP-26-0xx (year, then a running number) and are issued when a protocol is recorded.
+
+### Membership application: endorsements; recognition trail
+
+```sql
+CREATE TABLE application_endorsements (        -- two rows per application: Chief of Service and SOT at the applicant's hospital
+  id SERIAL PRIMARY KEY,
+  application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+  signer_role TEXT NOT NULL,                     -- CHIEF_OF_SERVICE | SOT
+  signer_user_id TEXT REFERENCES users(id),
+  method TEXT,                                   -- ESIGN (own portfolio login, like the trainee ITA signature) | PDF (Admin attached a signed PDF instead)
+  requested_at TIMESTAMP DEFAULT now(), signed_at TIMESTAMP,
+  document_id TEXT, attached_by TEXT REFERENCES users(id),
+  UNIQUE (application_id, signer_role)
+);
+CREATE TABLE retrospective_recognition_events ( -- append-only decision trail (trigger refuses UPDATE and DELETE)
+  id SERIAL PRIMARY KEY,
+  recognition_id INTEGER NOT NULL REFERENCES retrospective_recognitions(id) ON DELETE RESTRICT,
+  event_type TEXT NOT NULL,                      -- requested | enabled | submitted | documents_returned | sent_to_training_officer | more_documents_asked | decided | referred_to_board | credit_executed
+  from_status TEXT, to_status TEXT,
+  actor_user_id TEXT REFERENCES users(id),
+  actor_role TEXT NOT NULL,                      -- ADMIN | TRAINING_OFFICER | BOARD
+  on_behalf BOOLEAN NOT NULL DEFAULT false,      -- Admin recorded an outcome that arrived outside the system; the trail says so
+  outcome TEXT, note TEXT, event_date DATE NOT NULL, created_at TIMESTAMP DEFAULT now()
+);
+```
+A signed endorsement row must carry a method, and an attached-PDF signature must carry the document. `applications.check_endorsement` is derived from these rows.
+
+**Database rules added by migration 5 (not visible in the Prisma file):** `course_attendance` and `course_notices` rate 0 to 100; `course_rounds` ranking is priority or fcfs, end date not before start, registration closes not before it opens; `exam_sittings` opens <= closes < written; `exam_section_passes` sittings left 0 to 4 and one active pass per trainee and exam; fee type, exemption kind, project route and event visibility are limited to their listed values; an accepted-paper project names its journal; a Team review needs a hand-over date; a late-report override needs a reason; recognition origin is overseas training or another specialty; **a recognition rejection must be decided by the Board** (`NOT VALID`, so existing rows are not re-checked); the recognition trail refuses UPDATE and DELETE. Enum rewrites refuse to run while `ESCALATED` or `DEFERRED` is in use.
 
 ---
 
@@ -1487,9 +1670,8 @@ CREATE TABLE echo_assessments (...);    -- legacy: atp_echo (1,350 rows) — FTT
 ```
 
 ### Also deferred to Phase 2
-- `course_catalogue` (legacy `atp_course`)
-- `exam_catalogue` (legacy `atp_exam`)
-- `course_registrations` (legacy `atp_reg`, `atp_reg_exam`)
+- ICU Final examination sittings and the ICU and Pain courses (decisions D4 and the courses note, 2026-10-25).
+- **No longer Phase 2 (decided 2026-10-25, D1):** the course catalogue, rounds and requests (section 12), and exam sittings, applications and results (section 13), which replace the idea of `course_registrations` and `exam_catalogue`. The legacy tables `atp_course`, `atp_exam`, `atp_reg` and `atp_reg_exam` are still preserved as raw data (below).
 
 **Legacy data to preserve for these modules** — do not discard during ETL, even though the modules are not built:
 `atp_icu_tutorial`, `atp_icu_tutorial_trainee`, `atp_echo`, `atp_course`, `atp_exam`, `atp_reg`, `atp_reg_exam`, and `atp_portfolio.tutorial_admin1..38` (38 columns of ICU tutorial flags that duplicate the join table above).
