@@ -261,11 +261,11 @@ function seedState(){
     'HKCA-2022-010':{fail:{ita:'Latest ITA is under BOE review'}},
     'HKCA-2022-013':{fail:{exam:'Final examination not yet passed',courses:'ADAM-A outstanding'}},
     'HKCA-2020-007':{fail:{}},
-    'HKCA-2020-011':{fail:{courses:'ECHO-A outstanding'}}
+    'HKCA-2020-011':{fail:{courses:'ECHO-A outstanding',project:'Final manuscript not yet approved'}}
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:4,
+    v:5,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -348,7 +348,7 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==4)S=seedState();
+if(!S||S.v!==5)S=seedState();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const ui={tab:'home',sub:{trainees:'registry',courses:'seats',exams:'cands',projects:'dispatch',centres:'accred',wba:'link'},
   q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',pjFilter:'dispatch',docketSel:{},dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
@@ -363,6 +363,7 @@ function critOf(t){
   const miss=need.filter(c=>!t.courses.includes(c));
   const out={time:!f.time,courses:miss.length===0&&!f.courses,wba:!f.wba,vop:!f.vop,ita:!f.ita,exam:!f.exam};
   const why={time:f.time||'',courses:miss.length?CNAME[miss[0]]+(miss.length>1?' and '+(miss.length-1)+' more':'')+' outstanding':(f.courses||''),wba:f.wba||'',vop:f.vop||'',ita:f.ita||'',exam:f.exam||''};
+  if(g.next==='Exit'){out.project=!f.project;why.project=f.project||''}
   return {out,why,ready:Object.values(out).every(Boolean),miss};
 }
 const docketRows=()=>S.trainees.filter(t=>t.status==='Active'&&S.GATES[t.stage]&&t.months>=S.GATES[t.stage].from&&t.months<=S.GATES[t.stage].to).map(t=>({t,c:critOf(t)}));
@@ -409,13 +410,13 @@ function vHome(){
   if(c.pjOver)q.push({col:'--t5f',t:plural(c.pjOver,'project review')+' overdue',w:'The 30-day reviewer timer has passed. Reassign the reviewer or wait.',go:['projects','review'],b:'Open reviews'});
   if(c.link)q.push({col:'--acc',t:plural(c.link,'person','people')+' to link in iWBA',w:'Assessments from these people cannot reach a portfolio until you confirm who they are.',go:['wba','link'],b:'Link people'});
   if(c.intake)q.push({col:'--t1f',t:plural(c.intake,'membership application')+' to vet',w:'Oldest has waited '+ago(days(oldest,TODAY))+'. Three checks, then the account opens.',go:['trainees','intake'],b:'Open applications'});
-  if(c.recogAct)q.push({col:'--t1f',t:plural(c.recogAct,'recognition request')+' need you',w:S.recog.filter(r=>r.state==='decide').length?'One has documents in and waits for the Board decision to be recorded.':'Access to the form is waiting to be unlocked.',go:['trainees','recog'],b:'Open requests'});
+  if(c.recogAct)q.push({col:'--t1f',t:plural(c.recogAct,'retrospective recognition request')+' need you',w:S.recog.filter(r=>r.state==='decide').length?'One has documents in and waits for the Board decision to be recorded.':'Access to the form is waiting to be unlocked.',go:['trainees','recog'],b:'Open requests'});
   if(c.triage)q.push({col:'--t4f',t:plural(c.triage,'course request')+' to triage',w:'Across '+plural(c.rounds,'round')+'. Priority and request time are already ordered for you.',go:['courses','seats'],b:'Allocate seats'});
   if(c.pjDispatch)q.push({col:'--t5f',t:plural(c.pjDispatch,'formal project')+' need reviewers',w:'Conflicting hospitals are filtered out. Pick two.',go:['projects','dispatch'],b:'Dispatch'});
   if(c.pend)q.push({col:'--t2f',t:'SOT appointment to enter',w:'The Board endorsed the replacement at '+S.pendingAppt[0].hosp+'. Record the appointment before the current term ends.',go:['centres','appts'],b:'Open appointments'});
   if(c.unm)q.push({col:'--acc',t:plural(c.unm,'iWBA item')+' not mapped',w:'These assessments are held back until each is matched to a curriculum code.',go:['wba','unmapped'],b:'Map items'});
   const waiting=[];
-  const wRecog=S.recog.filter(r=>r.state==='waiting').length;if(wRecog)waiting.push(plural(wRecog,'recognition request')+' with the applicant');
+  const wRecog=S.recog.filter(r=>r.state==='waiting').length;if(wRecog)waiting.push(plural(wRecog,'retrospective recognition request')+' with the applicant');
   const wRev=S.projects.filter(p=>p.state==='review'&&p.due>=TODAY).length;if(wRev)waiting.push(plural(wRev,'project review')+' with assessors');
   waiting.push('JCIMED: '+S.jcimed.length+' questions sent 23 Oct');
   const dk=c.dkReady+c.dkAttn;
@@ -432,10 +433,10 @@ function vHome(){
 const stOrder={BAT:1,HAT:2,PFY:3};
 function vTrainees(){
   const c=counts();const s=ui.sub.trainees;
-  const seg=subSeg('trainees',[['registry','Registry'],['intake','Membership Application',c.intake],['docket','Training Progression'],['recog','Recognition requests',c.recogAct]]);
+  const seg=subSeg('trainees',[['registry','Registry'],['intake','Membership Application',c.intake],['docket','Training Progression'],['recog','Retrospective Recognition',c.recogAct]]);
   let body='';
   if(s==='registry')body=vRegistry();else if(s==='intake')body=vIntake();else if(s==='docket')body=vDocket();else body=vRecog();
-  const t={registry:['Trainee registry','Everyone on the training programme, any status.'],intake:['Membership Application','New applications waiting to become trainee accounts.'],docket:['Training Progression','Admin vetting of trainees in a stage gate window against the curriculum criteria. Only a trainee who meets every criterion can be advanced.'],recog:['Recognition requests','Prior training that the Board may credit towards the programme.']}[s];
+  const t={registry:['Trainee registry','Everyone on the training programme, any status.'],intake:['Membership Application','New applications waiting to become trainee accounts.'],docket:['Training Progression','Admin vetting of trainees in a stage gate window against the curriculum criteria. Only a trainee who meets every criterion can be advanced.'],recog:['Retrospective Recognition','Prior training that the Board may credit towards the programme.']}[s];
   return head('Trainees',t[0],t[1],seg)+body;
 }
 function vRegistry(){
@@ -521,6 +522,7 @@ function doReturn(id){const w=$('#rtWhy').value.trim();if(!w){toast('Say what ne
 
 /* docket */
 const CRIT=[['time','Time'],['courses','Courses'],['wba','WBA'],['vop','Logbook'],['ita','ITA'],['exam','Exam']];
+const critFor=t=>S.GATES[t.stage].next==='Exit'?[...CRIT,['project','Formal project']]:CRIT;
 const CG='<colgroup><col style="width:48px"><col style="width:27%"><col style="width:22%"><col></colgroup>';
 const GK=['BAT','HAT','PFY'];
 const dkInScope=x=>ui.dkGate==='All'||x.t.stage===ui.dkGate;
@@ -528,8 +530,8 @@ const dkVisible=()=>docketRows().filter(x=>dkInScope(x)&&(ui.dkStat==='All'||(ui
 const dkSelected=()=>dkVisible().filter(x=>x.c.ready&&ui.docketSel[x.t.id]).map(x=>x.t.id);
 function vDocket(){
   const all=docketRows();const vis=dkVisible();const sel=dkSelected();
-  const crit=c=>`<div class="crit">${CRIT.map(([k,l])=>`<i class="${c.out[k]?'ok':'no'}">${c.out[k]?'\u2713':'\u2715'} ${l}</i>`).join('')}</div>`;
-  const row=(x,r)=>{const g=S.GATES[x.t.stage];const out=CRIT.filter(([k])=>!x.c.out[k]);return `<tr>${r?`<td style="width:34px"><input type="checkbox" data-c="dkSel" data-id="${x.t.id}" ${ui.docketSel[x.t.id]?'checked':''} aria-label="Select ${esc(x.t.name)}"></td>`:'<td></td>'}<td><div class="cell-name">${esc(x.t.name)}</div><div class="cell-sub">${x.t.hosp} <span class="mono">${x.t.id}</span></div></td><td>month ${x.t.months} of ${g.to}<div class="cell-sub">${r?dt('Ready to advance','ok'):dt(out.length+' outstanding','warn')}</div></td><td>${r?crit(x.c):`<div>${out.map(([k,l])=>`<div class="cell-sub" style="color:var(--bd-f)"><b>${l}:</b> ${esc(x.c.why[k])}</div>`).join('')}</div>`}</td></tr>`};
+  const crit=(c,t)=>`<div class="crit">${critFor(t).map(([k,l])=>`<i class="${c.out[k]?'ok':'no'}">${c.out[k]?'\u2713':'\u2715'} ${l}</i>`).join('')}</div>`;
+  const row=(x,r)=>{const g=S.GATES[x.t.stage];const out=critFor(x.t).filter(([k])=>!x.c.out[k]);return `<tr>${r?`<td style="width:34px"><input type="checkbox" data-c="dkSel" data-id="${x.t.id}" ${ui.docketSel[x.t.id]?'checked':''} aria-label="Select ${esc(x.t.name)}"></td>`:'<td></td>'}<td><div class="cell-name">${esc(x.t.name)}</div><div class="cell-sub">${x.t.hosp} <span class="mono">${x.t.id}</span></div></td><td>month ${x.t.months} of ${g.to}<div class="cell-sub">${r?dt('Ready to advance','ok'):dt(out.length+' outstanding','warn')}</div></td><td>${r?crit(x.c,x.t):`<div>${out.map(([k,l])=>`<div class="cell-sub" style="color:var(--bd-f)"><b>${l}:</b> ${esc(x.c.why[k])}</div>`).join('')}</div>`}</td></tr>`};
   const gcard=g=>{const G=S.GATES[g];const rows=vis.filter(x=>x.t.stage===g);const rd=rows.filter(x=>x.c.ready),at=rows.filter(x=>!x.c.ready);
     if(!rows.length&&ui.dkStat!=='All')return '';
     return `<div class="card" style="margin-bottom:18px"><div class="q-h"><div class="h3">${G.label} <span class="cnt">${rows.length}</span></div><div class="btn-row"><span class="meta">${rd.length} ready, ${at.length} need attention. Window: month ${G.from} to ${G.to}.</span><button class="btn sec sm" data-a="dkAll" data-g="${g}" ${rd.length?'':'disabled'}>Select all ready</button></div></div>
