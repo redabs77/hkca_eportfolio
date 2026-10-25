@@ -1290,7 +1290,16 @@ This is the single largest piece of ETL work in the project, and the largest dat
 
 ## 12. Admin console additions (added 2026-10-24)
 
-Source: `Admin Prototype Delta Check 2026-10-24.md`. These tables are needed by the College Secretariat Console prototype. They are **not yet in `db/schema/schema.prisma`**, which also still lacks several earlier doc tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). Bringing Prisma up to this document is a separate, tested step.
+Source: `Admin Prototype Delta Check 2026-10-24.md`. These tables are needed by the College Secretariat Console prototype.
+
+**Prisma status (2026-10-24):** migration `3_admin_console_schema_alignment` adds all of them, plus the earlier doc-only tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans with goals and proposals, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). 22 tables in all, verified on Postgres by `tests/schema/verify_admin_schema.mjs`. Deliberate differences from the SQL in this document:
+- Ids are UUID strings and foreign keys to users are text, as in the rest of Prisma, not `SERIAL`/`INTEGER`.
+- `ita_domain_ratings` is not built: the 15-item form (migration 1) superseded it.
+- `icu_tutorials` and `icu_tutorial_attendance` are not built: whether ICU trainees are in scope is an open question to the College.
+- `volume_of_practice.is_within_2yr_window` (a generated column) is not built; `disqualificationReason` and `isAccredited` carry the rule. `dedupeKey` is nullable so existing rows load.
+- `users.email_verified`, `image`, `role` and `last_login` are auth-library fields, not built; roles live in `UserRoleAssignment`.
+- Where the doc and Prisma already hold the same fact under different names (for example `commencementBat` for `bat_start_date`, the ITA item columns after migration 1), Prisma's names stand. The doc was not re-aligned column by column for these.
+- `TrainingStage` no longer contains SUSPENDED or TERMINATED. The migration refuses to run if any row still uses them.
 
 Decisions recorded 2026-10-24 (Dr. Chan): (1) trainee status words are active, on leave, deactivated, completed, with suspension a separate Board flag; (2) recognition credit uses ledger reasons `RETROSPECTIVE_OVERSEAS_RECOGNITION` and `RETROSPECTIVE_SPECIALTY_TRANSFER` and carries the Board decision date; (3) recognised logbook cases are stored as a case-credit row (option A, below); (4) there is no Acting SOT role.
 

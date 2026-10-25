@@ -1,14 +1,14 @@
 {
   "name": "hkca-eporfolio",
   "version": "1.0.0",
-  "description": "Replacement for the legacy HKCA Electronic Training Portfolio (ETP/EPS) — a role-aware web application tracking anaesthesia trainees from Basic Anaesthesia Training (BAT) through Higher Anaesthesia Training (HAT) and Provisional Fellowship Year (PFY) to Fellowship.",
+  "description": "Replacement for the legacy HKCA Electronic Training Portfolio (ETP/EPS) \u2014 a role-aware web application tracking anaesthesia trainees from Basic Anaesthesia Training (BAT) through Higher Anaesthesia Training (HAT) and Provisional Fellowship Year (PFY) to Fellowship.",
   "main": "index.js",
   "directories": {
     "doc": "docs",
     "test": "tests"
   },
   "scripts": {
-    "test": "npm run test:parity",
+    "test": "npm run test:parity && npm run test:schema",
     "postinstall": "prisma generate --schema db/schema/schema.prisma || exit 0",
     "test:parity": "node tests/parity/verify_parity.mjs",
     "prisma:generate": "prisma generate --schema db/schema/schema.prisma",
@@ -18,7 +18,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:schema": "node tests/schema/verify_admin_schema.mjs"
   },
   "repository": {
     "type": "git",

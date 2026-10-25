@@ -36,8 +36,14 @@ enum TrainingStage {
   HAT // Higher Anaesthesia Training (24 months)
   PFY // Provisional Fellowship Year (12 months)
   FELLOW
-  SUSPENDED
-  TERMINATED
+}
+
+// Training status is separate from stage (decision 2026-10-24); suspension is the Board flag TraineeProfile.isSuspended.
+enum TraineeStatus {
+  ACTIVE
+  ON_LEAVE
+  DEACTIVATED
+  COMPLETED
 }
 
 enum RotationType {
@@ -69,6 +75,8 @@ enum LedgerReason {
   CURRICULUM_RULE_CHANGE
   SUPERSEDES_DUPLICATE
   OTHER_BOE_DIRECTED
+  RETROSPECTIVE_OVERSEAS_RECOGNITION
+  RETROSPECTIVE_SPECIALTY_TRANSFER
 }
 
 enum ItaStatus {
@@ -108,6 +116,7 @@ enum ProjectStatus {
   MANUSCRIPT_SUBMITTED
   APPROVED
   REJECTED
+  ESCALATED // divergent reviews sent to the Formal Project Subcommittee Chair
 }
 
 enum BulkIngestionType {
@@ -115,6 +124,7 @@ enum BulkIngestionType {
   EXAM_RESULT
   ROTATION_ALLOCATION
   CENTRE_APPOINTMENT
+  IWBA_LINK
   OTHER
 }
 
@@ -155,6 +165,40 @@ enum EchoStudyType {
   TTE
   TOE
   FOCUS
+}
+
+enum ReviewGrade {
+  SATISFACTORY
+  MINOR_REVISION
+  MAJOR_REVISION
+  UNSATISFACTORY
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  RETURNED
+  APPROVED
+}
+
+enum RecognitionStatus {
+  ACCESS_REQUESTED
+  UNLOCKED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum CourseDecision {
+  REQUESTED
+  ACCEPTED
+  WAITLISTED
+  DEFERRED
+}
+
+enum IwbaLinkStatus {
+  UNLINKED
+  CONFIRMED
+  IGNORED
 }
 
 // =============================================================================
@@ -211,11 +255,47 @@ model User {
   ledgerActions         AccreditedTimeLedger[] @relation("LedgerAuthority")
 
   // Stakeholder Survey Extensions (S1-S4)
-  bulkBatchesExecuted   BulkIngestionBatch[]    @relation("BulkBatchExecutor")
-  exitDossiersReviewed  FellowshipExitDossier[] @relation("ExitDossierReviewer")
-  documentsVerified     DocumentRecord[]        @relation("DocumentVerifier")
-  coursesVerified       MandatoryCourse[]       @relation("CourseVerifier")
-  echoStudiesSupervised EchoStudy[]             @relation("EchoSupervisor")
+  bulkBatchesExecuted       BulkIngestionBatch[]        @relation("BulkBatchExecutor")
+  exitDossiersReviewed      FellowshipExitDossier[]     @relation("ExitDossierReviewer")
+  documentsVerified         DocumentRecord[]            @relation("DocumentVerifier")
+  coursesVerified           MandatoryCourse[]           @relation("CourseVerifier")
+  echoStudiesSupervised     EchoStudy[]                 @relation("EchoSupervisor")
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  canReviewProjects         Boolean                     @default(false) // eligible for the formal-project reviewer pool (Admin console)
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  roleGrants                UserRoleAssignment[]        @relation("RoleGranter")
+  iwbaLinks                 WbaIwbaLink[]               @relation("IwbaLinkPerson")
+  iwbaLinksConfirmed        WbaIwbaLink[]               @relation("IwbaLinkConfirmer")
+  procedureMapsSet          WbaProcedureMap[]           @relation("ProcedureMapSetter")
+  stageHistoryRecorded      TrainingStageHistory[]      @relation("StageHistoryRecorder")
+  statusEventsRecorded      TraineeStatusEvent[]        @relation("StatusEventRecorder")
+  applications              Application[]               @relation("ApplicationApplicant")
+  applicationsDecided       Application[]               @relation("ApplicationDecider")
+  recognitionsUnlocked      RetrospectiveRecognition[]  @relation("RecognitionUnlocker")
+  recognitionsReviewing     RetrospectiveRecognition[]  @relation("RecognitionReviewer")
+  recognitionsCreated       RetrospectiveRecognition[]  @relation("RecognitionCreator")
+  recognitionsApproved      RetrospectiveRecognition[]  @relation("RecognitionApprover")
+  creditAdjustmentsRecorded VopCreditAdjustment[]       @relation("CreditRecorder")
+  projectEventsRecorded     FormalProjectEvent[]        @relation("ProjectEventRecorder")
+  projectReviews            FormalProjectReview[]       @relation("ReviewReviewer")
+  projectReviewsAssigned    FormalProjectReview[]       @relation("ReviewAssigner")
+  projectReviewsReplaced    FormalProjectReview[]       @relation("ReviewReplacer")
+  plansAssigned             LearningPlan[]              @relation("PlanAssignedSot")
+  plansSigned               LearningPlan[]              @relation("PlanSigner")
+  plansCosApproved          LearningPlan[]              @relation("PlanCos")
+  plansReviewed             LearningPlan[]              @relation("PlanReviewer")
+  goalsGraded               LearningGoal[]              @relation("GoalGrader")
+  proposalsSotDecided       LearningPlanProposal[]      @relation("ProposalSot")
+  proposalsCosDecided       LearningPlanProposal[]      @relation("ProposalCos")
+  sotAssignmentsHeld        SotAssignment[]             @relation("SotAsgSot")
+  sotAssignmentsFrom        SotAssignment[]             @relation("SotAsgFrom")
+  sotAssignmentsMade        SotAssignment[]             @relation("SotAsgBy")
+  verifierAssignmentsHeld   LogbookVerifierAssignment[] @relation("VerifierUser")
+  verifierAssignmentsMade   LogbookVerifierAssignment[] @relation("VerifierAssigner")
+  notifications             Notification[]              @relation("NotificationUser")
+  courseDecisions           CourseRequest[]             @relation("RequestDecider")
+  attestationsConfirmed     RosterAttestation[]         @relation("AttestConfirmer")
+  attestationsReviewed      RosterAttestation[]         @relation("AttestReviewer")
 
   @@index([email, hkcaNumber])
   @@index([hkamId])
@@ -232,7 +312,15 @@ model UserRoleAssignment {
   effectiveUntil DateTime?
   isActive       Boolean   @default(true)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  grantedById      String?
+  grantedAt        DateTime  @default(now())
+  boardEndorsedOn  DateTime? @db.Date // required for SOT / Assistant SOT appointments
+  endorsementDocId String?
+  endReason        String?
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  grantedBy        User?     @relation("RoleGranter", fields: [grantedById], references: [id], onDelete: Restrict)
 
   @@index([userId, role, isActive])
   @@index([scopeType, scopeId])
@@ -285,10 +373,24 @@ model TraineeProfile {
   pfyPlans          PfyPlan[]
 
   // Stakeholder Survey Extensions (S1-S4)
-  mandatoryCourses MandatoryCourse[]
-  documents        DocumentRecord[]
-  echoStudies      EchoStudy[]
-  exitDossiers     FellowshipExitDossier[]
+  mandatoryCourses       MandatoryCourse[]
+  documents              DocumentRecord[]
+  echoStudies            EchoStudy[]
+  exitDossiers           FellowshipExitDossier[]
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  trainingStatus         TraineeStatus               @default(ACTIVE) // changes recorded in TraineeStatusEvent
+  mchkRegistrationType   String? // full / limited / provisional
+  mchkRegistrationNumber String?
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  stageHistory           TrainingStageHistory[]      @relation("StageHistoryTrainee")
+  statusEvents           TraineeStatusEvent[]        @relation("StatusEventTrainee")
+  application            Application?                @relation("ApplicationTrainee")
+  recognitions           RetrospectiveRecognition[]  @relation("RecognitionTrainee")
+  creditAdjustments      VopCreditAdjustment[]       @relation("CreditTrainee")
+  learningPlans          LearningPlan[]              @relation("PlanTrainee")
+  sotAssignments         SotAssignment[]             @relation("SotAsgTrainee")
+  verifierAssignments    LogbookVerifierAssignment[] @relation("VerifierTrainee")
+  courseRequests         CourseRequest[]             @relation("RequestTrainee")
 
   @@index([currentStage, isSuspended])
   @@index([parentHospitalId])
@@ -335,12 +437,15 @@ model Hospital {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  clusterHistory    HospitalClusterHistory[]
-  accreditedCentres AccreditedCentre[]
-  traineeProfiles   TraineeProfile[]
-  trainerProfiles   TrainerProfile[]
-  rotations         Rotation[]
-  vopEntries        VolumeOfPractice[]
+  clusterHistory     HospitalClusterHistory[]
+  accreditedCentres  AccreditedCentre[]
+  traineeProfiles    TraineeProfile[]
+  trainerProfiles    TrainerProfile[]
+  rotations          Rotation[]
+  vopEntries         VolumeOfPractice[]
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  applications       Application[]            @relation("ApplicationHospital")
+  rosterAttestations RosterAttestation[]      @relation("AttestHospital")
 
   @@index([hospitalCode])
 }
@@ -376,9 +481,13 @@ model AccreditedCentre {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  hospital  Hospital                @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
-  rotations Rotation[]
-  auditLogs AccreditationAuditLog[]
+  hospital                Hospital                @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  rotations               Rotation[]
+  auditLogs               AccreditationAuditLog[]
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  lastInspectionDate      DateTime?               @db.Date
+  nextInspectionDue       DateTime?               @db.Date
+  reviewAlertMonthsBefore Int                     @default(12) // Admin console flags centres expiring within this many months
 
   @@index([hospitalId, accreditationStatus])
   @@index([accreditationEndDate])
@@ -538,10 +647,12 @@ model AccreditedTimeLedger {
   effectiveAt    DateTime @default(now())
   isCurrent      Boolean  @default(true)
 
-  trainee       TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
-  rotation      Rotation?      @relation(fields: [rotationId], references: [id], onDelete: Restrict)
-  itaSession    ItaSession?    @relation(fields: [itaSessionId], references: [id], onDelete: Restrict)
-  authorityUser User           @relation("LedgerAuthority", fields: [authorityId], references: [id], onDelete: Restrict)
+  trainee           TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  rotation          Rotation?      @relation(fields: [rotationId], references: [id], onDelete: Restrict)
+  itaSession        ItaSession?    @relation(fields: [itaSessionId], references: [id], onDelete: Restrict)
+  authorityUser     User           @relation("LedgerAuthority", fields: [authorityId], references: [id], onDelete: Restrict)
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  boardDecisionDate DateTime?      @db.Date // Board decision date (recognition and rulings); authorityId is who recorded it
 
   @@index([traineeId, isCurrent])
   @@index([rotationId])
@@ -612,6 +723,8 @@ model ItaSession {
   ledgerEntries     AccreditedTimeLedger[]
   remedialPlan      RemedialPlan?
   appeals           ItaAppeal[]
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  learningGoals     LearningGoal[]         @relation("GoalIta")
 
   @@index([traineeId, status])
   @@index([rotationId])
@@ -733,12 +846,26 @@ model VolumeOfPractice {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  trainee        TraineeProfile       @relation(fields: [traineeId], references: [id], onDelete: Restrict)
-  hospital       Hospital             @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
-  descriptor     CurriculumDescriptor @relation(fields: [descriptorCode], references: [code], onDelete: Restrict)
-  verifiedByUser User?                @relation("VopVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
-  caseBlocks     CaseBlock[]
+  trainee              TraineeProfile         @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  hospital             Hospital               @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  descriptor           CurriculumDescriptor   @relation(fields: [descriptorCode], references: [code], onDelete: Restrict)
+  verifiedByUser       User?                  @relation("VopVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+  caseBlocks           CaseBlock[]
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  caseRef              String?
+  traineeNotes         String?
+  trainingStageAtEntry String? // stage when logged (legacy snapshot)
+  dedupeKey            String? // hash of trainee, date, hospital, ASA, age, operation (legacy import idempotency)
+  needsClassification  Boolean                @default(false) // imported row whose claim matched no descriptor; counts toward nothing until set
+  verifiedByName       String? // legacy approver is free text; kept when no user matches
+  verifiedByRole       String? // sot | assistant_sot
+  loggedDate           DateTime               @default(now()) @db.Date // when entered, for the 2-year rule
+  legacyWindowAnomaly  Boolean                @default(false) // imported row outside the window although the legacy app enforced it
+  migratedAt           DateTime?
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  verificationEvents   VopVerificationEvent[] @relation("VopEventVop")
 
+  @@unique([legacyPid, legacyTid])
   @@index([traineeId, caseDate])
   @@index([firstLoggedAt, isAccredited])
   @@index([descriptorCode])
@@ -791,8 +918,14 @@ model WbaAssessment {
   syncStatus  String   @default("SYNCED")
   importedAt  DateTime @default(now())
 
-  trainee    TraineeProfile        @relation(fields: [traineeId], references: [id], onDelete: Restrict)
-  descriptor CurriculumDescriptor? @relation(fields: [descriptorCode], references: [code], onDelete: Restrict)
+  trainee           TraineeProfile        @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  descriptor        CurriculumDescriptor? @relation(fields: [descriptorCode], references: [code], onDelete: Restrict)
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  traineeIwbaUserId String?
+  trainerIwbaUserId String?
+  iwbaStatus        String? // as returned; voided/withdrawn handling pending JCIMED answer
+  iwbaUpdatedAt     DateTime?
+  hospitalSnapshot  String?
 
   @@index([traineeId, modality, datePerformed])
   @@index([jcimedWbaId])
@@ -807,6 +940,9 @@ model WbaSyncConflict {
   resolvedAt     DateTime?
   resolvedBy     String?
   createdAt      DateTime  @default(now())
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  resolutionNote String?
+  // errorReason vocabulary (doc): unknown_modality | unlinked_trainee | unmapped_procedure | field_conflict | not_found
 
   @@index([resolved, createdAt])
 }
@@ -829,7 +965,13 @@ model ExamApplication {
   collegeVettingStatus String  @default("UNDER_REVIEW")
   result               String? // "PASS", "FAIL"
 
-  trainee TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  trainee       TraineeProfile      @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  attemptNumber Int                 @default(1)
+  score         Decimal?            @db.Decimal(5, 2)
+  sourceBatchId String?
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  sourceBatch   BulkIngestionBatch? @relation("ExamBatch", fields: [sourceBatchId], references: [id], onDelete: SetNull)
 
   @@index([traineeId, examType, examDate])
 }
@@ -857,9 +999,14 @@ model FormalProject {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @default(now()) @updatedAt
 
-  trainee   TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
-  reviewer1 User?          @relation("ProjectReviewer1", fields: [reviewer1Id], references: [id], onDelete: Restrict)
-  reviewer2 User?          @relation("ProjectReviewer2", fields: [reviewer2Id], references: [id], onDelete: Restrict)
+  trainee       TraineeProfile        @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  reviewer1     User?                 @relation("ProjectReviewer1", fields: [reviewer1Id], references: [id], onDelete: Restrict)
+  reviewer2     User?                 @relation("ProjectReviewer2", fields: [reviewer2Id], references: [id], onDelete: Restrict)
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  projectNumber String?               @unique // College project number, e.g. FP-26-014
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  events        FormalProjectEvent[]  @relation("ProjectEventProject")
+  reviews       FormalProjectReview[] @relation("ReviewProject")
 
   @@index([traineeId, status])
 }
@@ -938,7 +1085,10 @@ model BulkIngestionBatch {
   committedAt       DateTime?
 
   // Relations
-  executedByUser User @relation("BulkBatchExecutor", fields: [executedById], references: [id], onDelete: Restrict)
+  executedByUser   User              @relation("BulkBatchExecutor", fields: [executedById], references: [id], onDelete: Restrict)
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  examApplications ExamApplication[] @relation("ExamBatch")
+  mandatoryCourses MandatoryCourse[] @relation("CourseBatch")
 
   @@index([batchType, status])
   @@index([executedById, executedAt])
@@ -1035,8 +1185,14 @@ model MandatoryCourse {
   updatedAt DateTime @default(now()) @updatedAt
 
   // Relations
-  trainee        TraineeProfile @relation(fields: [traineeId], references: [id], onDelete: Restrict)
-  verifiedByUser User?          @relation("CourseVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+  trainee        TraineeProfile      @relation(fields: [traineeId], references: [id], onDelete: Restrict)
+  verifiedByUser User?               @relation("CourseVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  sourceBatchId  String? // attendance-sheet batch that marked it completed
+  roundId        String? // CourseRound attended
+  // --- Admin console / schema doc alignment (2026-10-24) ---
+  sourceBatch    BulkIngestionBatch? @relation("CourseBatch", fields: [sourceBatchId], references: [id], onDelete: SetNull)
+  round          CourseRound?        @relation("CourseRoundCompletion", fields: [roundId], references: [id], onDelete: SetNull)
 
   @@unique([traineeId, courseCode])
   @@index([traineeId, status])
@@ -1077,4 +1233,428 @@ model EchoStudy {
   @@index([traineeId, studyDate])
   @@index([supervisorId, status])
   @@index([supervisorToken])
+}
+
+// =============================================================================
+// 13. ADMIN CONSOLE & DOC ALIGNMENT (migration 3, 2026-10-24)
+// Source: Database Schema and Data Model.md section 12 and the earlier doc-only tables.
+// =============================================================================
+
+model WbaIwbaLink {
+  iwbaUserId      String         @id // iWBA users.id, stable
+  userId          String?
+  hkamId          String? // eHKAM SSO account id
+  iwbaDisplayName String?
+  iwbaHospital    String?
+  iwbaRole        String?
+  status          IwbaLinkStatus @default(UNLINKED)
+  linkMethod      String? // null while unlinked; sso_hkam_id | admin_confirmed | admin_csv
+  confirmedById   String?
+  confirmedAt     DateTime?
+  createdAt       DateTime       @default(now())
+
+  user        User? @relation("IwbaLinkPerson", fields: [userId], references: [id], onDelete: Restrict)
+  confirmedBy User? @relation("IwbaLinkConfirmer", fields: [confirmedById], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([userId])
+}
+
+model WbaSyncState {
+  endpoint          String    @id // summary | backfill
+  cursorUpdatedAt   DateTime? // advanced only after a full traversal succeeds
+  lastRunAt         DateTime?
+  lastStatus        String?
+  lastError         String?
+  lastRecordsRead   Int?
+  lastRecordsFailed Int?
+}
+
+model WbaProcedureMap {
+  iwbaProcedureCode String   @id
+  curriculumCode    String // curriculum code in College format (CF-2.x / SM-3.x); not an FK, descriptor codes use a different notation
+  setById           String?
+  setAt             DateTime @default(now())
+
+  setBy User? @relation("ProcedureMapSetter", fields: [setById], references: [id], onDelete: Restrict)
+}
+
+model TrainingStageHistory {
+  id            String   @id @default(uuid())
+  traineeId     String
+  stage         String // BAT-1 .. EXIT, FELLOW (codes from curriculum edition)
+  effectiveDate DateTime @db.Date
+  recordedById  String?
+  source        String // app | secretariat_csv | legacy_backfill
+  note          String?
+  createdAt     DateTime @default(now())
+
+  trainee    TraineeProfile @relation("StageHistoryTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  recordedBy User?          @relation("StageHistoryRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@unique([traineeId, stage])
+}
+
+model TraineeStatusEvent {
+  id            String        @id @default(uuid())
+  traineeId     String
+  status        TraineeStatus
+  effectiveDate DateTime      @db.Date
+  reason        String? // required unless status is ACTIVE
+  recordedById  String?
+  createdAt     DateTime      @default(now())
+
+  trainee    TraineeProfile @relation("StatusEventTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  recordedBy User?          @relation("StatusEventRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, effectiveDate])
+}
+
+model Application {
+  id               String            @id @default(uuid())
+  applicantUserId  String?
+  requestedStage   TrainingStage     @default(BAT)
+  parentHospitalId String?
+  submittedAt      DateTime
+  checkMchk        Boolean           @default(false)
+  checkFee         Boolean           @default(false)
+  checkEndorsement Boolean           @default(false)
+  endorsementDocId String?
+  status           ApplicationStatus @default(SUBMITTED)
+  returnNote       String?
+  decidedById      String?
+  decidedAt        DateTime?
+  traineeId        String?           @unique // set on approval
+
+  applicantUser  User?           @relation("ApplicationApplicant", fields: [applicantUserId], references: [id], onDelete: Restrict)
+  parentHospital Hospital?       @relation("ApplicationHospital", fields: [parentHospitalId], references: [id], onDelete: Restrict)
+  decidedBy      User?           @relation("ApplicationDecider", fields: [decidedById], references: [id], onDelete: Restrict)
+  trainee        TraineeProfile? @relation("ApplicationTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+
+  @@index([status, submittedAt])
+}
+
+model RetrospectiveRecognition {
+  id                                String            @id @default(uuid())
+  traineeId                         String
+  applicationDate                   DateTime          @default(now()) @db.Date // set when access is requested
+  applicationType                   String // overseas_training | lateral_transfer | prior_experience
+  accessRequestedAt                 DateTime?
+  formUnlockedAt                    DateTime?
+  formUnlockedById                  String?
+  requestedClinicalMonths           Decimal?          @db.Decimal(4, 2)
+  requestedIcuMonths                Decimal?          @db.Decimal(4, 2)
+  requestedElectiveMonths           Decimal?          @db.Decimal(4, 2)
+  requestedCases                    Int?
+  boardDecisionDate                 DateTime?         @db.Date
+  vettingStatus                     RecognitionStatus @default(ACCESS_REQUESTED)
+  assignedReviewerId                String?
+  boeReviewDate                     DateTime?         @db.Date
+  approvalDate                      DateTime?         @db.Date
+  creditedBatMonths                 Decimal           @default(0) @db.Decimal(4, 2)
+  creditedHatMonths                 Decimal           @default(0) @db.Decimal(4, 2)
+  creditedIcuMonths                 Decimal           @default(0) @db.Decimal(4, 2)
+  creditedElectiveMonths            Decimal           @default(0) @db.Decimal(4, 2)
+  creditedAccreditedMonths          Decimal           @default(0) @db.Decimal(4, 2)
+  creditedClinicalAnaesthesiaMonths Decimal           @default(0) @db.Decimal(4, 2)
+  creditedCardiacMonths             Decimal           @default(0) @db.Decimal(4, 2)
+  creditedPaediatricMonths          Decimal           @default(0) @db.Decimal(4, 2)
+  creditedObstetricMonths           Decimal           @default(0) @db.Decimal(4, 2)
+  creditedPainMonths                Decimal           @default(0) @db.Decimal(4, 2)
+  overseasInstitution               String?
+  overseasProgramName               String?
+  overseasTrainingStart             DateTime?         @db.Date
+  overseasTrainingEnd               DateTime?         @db.Date
+  overseasDurationMonths            Decimal?          @db.Decimal(4, 2)
+  vettingNotes                      String?
+  boeDecisionRationale              String?
+  conditionsAttached                String?
+  documentsJson                     Json? // [{type, filePath, uploadedDate}]
+  createdById                       String?
+  approvedById                      String?
+  createdAt                         DateTime          @default(now())
+  updatedAt                         DateTime          @default(now()) @updatedAt
+
+  trainee           TraineeProfile        @relation("RecognitionTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  formUnlockedBy    User?                 @relation("RecognitionUnlocker", fields: [formUnlockedById], references: [id], onDelete: Restrict)
+  assignedReviewer  User?                 @relation("RecognitionReviewer", fields: [assignedReviewerId], references: [id], onDelete: Restrict)
+  createdBy         User?                 @relation("RecognitionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  approvedBy        User?                 @relation("RecognitionApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  creditAdjustments VopCreditAdjustment[] @relation("CreditRecognition")
+
+  @@index([traineeId])
+  @@index([vettingStatus])
+}
+
+model VopCreditAdjustment {
+  id                String       @id @default(uuid())
+  traineeId         String
+  recognitionId     String?
+  cases             Int
+  moduleCode        String? // descriptor the Board allocated the cases to; null counts to the overall total only
+  reason            LedgerReason
+  boardDecisionDate DateTime     @db.Date
+  note              String?
+  recordedById      String?
+  supersedesId      String?
+  isCurrent         Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+
+  trainee      TraineeProfile            @relation("CreditTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  recognition  RetrospectiveRecognition? @relation("CreditRecognition", fields: [recognitionId], references: [id], onDelete: Restrict)
+  recordedBy   User?                     @relation("CreditRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+  supersedes   VopCreditAdjustment?      @relation("CreditSupersedes", fields: [supersedesId], references: [id], onDelete: Restrict)
+  supersededBy VopCreditAdjustment[]     @relation("CreditSupersedes")
+
+  @@index([traineeId, isCurrent])
+}
+
+model VopVerificationEvent {
+  id         String   @id @default(uuid())
+  vopId      String
+  fromStatus String?
+  toStatus   String
+  actorName  String?
+  actorRole  String?
+  note       String?
+  occurredAt DateTime
+  source     String // app | legacy_import
+
+  vop VolumeOfPractice @relation("VopEventVop", fields: [vopId], references: [id], onDelete: Restrict)
+
+  @@index([vopId, occurredAt])
+}
+
+model FormalProjectEvent {
+  id           String   @id @default(uuid())
+  projectId    String
+  eventType    String // protocol_submitted | revision_requested | protocol_resubmitted | protocol_approved | manuscript_*
+  eventDate    DateTime @db.Date
+  versionNo    Int?
+  outcomeNote  String? // trainee-visible; never names a blinded reviewer
+  recordedById String?
+  source       String // app | admin | legacy_backfill
+  createdAt    DateTime @default(now())
+
+  project    FormalProject @relation("ProjectEventProject", fields: [projectId], references: [id], onDelete: Restrict)
+  recordedBy User?         @relation("ProjectEventRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@index([projectId, eventDate])
+}
+
+model FormalProjectReview {
+  id           String       @id @default(uuid())
+  projectId    String
+  stage        String // protocol | manuscript
+  versionNo    Int          @default(1)
+  reviewerId   String
+  assignedAt   DateTime
+  assignedById String?
+  dueAt        DateTime     @db.Date // assignedAt + 30 days
+  replacedAt   DateTime?
+  replacedById String?
+  submittedAt  DateTime?
+  grade        ReviewGrade?
+  feedback     String?
+
+  project    FormalProject @relation("ReviewProject", fields: [projectId], references: [id], onDelete: Restrict)
+  reviewer   User          @relation("ReviewReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+  assignedBy User?         @relation("ReviewAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+  replacedBy User?         @relation("ReviewReplacer", fields: [replacedById], references: [id], onDelete: Restrict)
+
+  @@index([projectId, stage])
+  @@index([reviewerId])
+}
+
+model LearningPlan {
+  id                String    @id @default(uuid())
+  traineeId         String
+  planType          String // SIX_MONTH | PF_YEAR
+  periodStart       DateTime  @db.Date
+  periodEnd         DateTime  @db.Date
+  assignedSotId     String?
+  status            String    @default("NOT_SET") // NOT_SET, DRAFT, SUBMITTED, CHANGES_REQUESTED, AWAITING_COS, SIGNED, CHANGE_PROPOSED, CHANGE_COS, REVIEW_OPEN, REVIEW_SUBMITTED, REVIEWED
+  version           Int       @default(0)
+  notifiedAt        DateTime? @db.Date
+  submittedAt       DateTime? @db.Date
+  signedById        String?
+  signedAt          DateTime? @db.Date
+  cosApprovedById   String?
+  cosApprovedAt     DateTime? @db.Date
+  reviewSummary     String?
+  reviewSubmittedAt DateTime? @db.Date
+  reviewedById      String?
+  reviewedAt        DateTime? @db.Date
+  reviewComment     String?
+
+  trainee       TraineeProfile         @relation("PlanTrainee", fields: [traineeId], references: [id], onDelete: Cascade)
+  assignedSot   User?                  @relation("PlanAssignedSot", fields: [assignedSotId], references: [id], onDelete: Restrict)
+  signedBy      User?                  @relation("PlanSigner", fields: [signedById], references: [id], onDelete: Restrict)
+  cosApprovedBy User?                  @relation("PlanCos", fields: [cosApprovedById], references: [id], onDelete: Restrict)
+  reviewedBy    User?                  @relation("PlanReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  goals         LearningGoal[]         @relation("GoalPlan")
+  proposals     LearningPlanProposal[] @relation("ProposalPlan")
+
+  @@unique([traineeId, planType, periodStart])
+}
+
+model LearningGoal {
+  id                String    @id @default(uuid())
+  planId            String
+  planVersion       Int
+  domainCode        String // CF-2.x | SM-3.x | ITA-* | OTHER | CLINICAL | MANAGEMENT | EDUCATION
+  objective         String
+  success           String
+  evidence          String?
+  reflection        String?
+  outcome           String? // COMPLETELY_ACHIEVED | PARTIALLY_ACHIEVED | NOT_ACHIEVED (advisory, graded by Assigned SOT at synthesis)
+  outcomeGradedById String?
+  outcomeGradedAt   DateTime?
+  outcomeItaId      String?
+
+  plan            LearningPlan @relation("GoalPlan", fields: [planId], references: [id], onDelete: Cascade)
+  outcomeGradedBy User?        @relation("GoalGrader", fields: [outcomeGradedById], references: [id], onDelete: Restrict)
+  outcomeIta      ItaSession?  @relation("GoalIta", fields: [outcomeItaId], references: [id], onDelete: Restrict)
+
+  @@index([planId, planVersion])
+}
+
+model LearningPlanProposal {
+  id                String    @id @default(uuid())
+  planId            String
+  reason            String
+  proposedGoalsJson Json
+  proposedAt        DateTime? @db.Date
+  sotDecidedById    String?
+  sotDecidedAt      DateTime? @db.Date
+  sotDecision       String?
+  cosDecidedById    String?
+  cosDecidedAt      DateTime? @db.Date
+  cosDecision       String?
+  boardInformedAt   DateTime? @db.Date
+
+  plan         LearningPlan @relation("ProposalPlan", fields: [planId], references: [id], onDelete: Cascade)
+  sotDecidedBy User?        @relation("ProposalSot", fields: [sotDecidedById], references: [id], onDelete: Restrict)
+  cosDecidedBy User?        @relation("ProposalCos", fields: [cosDecidedById], references: [id], onDelete: Restrict)
+}
+
+model SotAssignment {
+  id               String    @id @default(uuid())
+  traineeId        String
+  sotId            String
+  periodStart      DateTime  @db.Date
+  reassignedFromId String?
+  reassignedAt     DateTime? @db.Date
+  reassignedById   String?
+  reason           String?
+
+  trainee        TraineeProfile @relation("SotAsgTrainee", fields: [traineeId], references: [id], onDelete: Cascade)
+  sot            User           @relation("SotAsgSot", fields: [sotId], references: [id], onDelete: Restrict)
+  reassignedFrom User?          @relation("SotAsgFrom", fields: [reassignedFromId], references: [id], onDelete: Restrict)
+  reassignedBy   User?          @relation("SotAsgBy", fields: [reassignedById], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, periodStart])
+}
+
+model LogbookVerifierAssignment {
+  id               String    @id @default(uuid())
+  traineeId        String
+  verifierId       String? // null = unassigned pool: any ASOT/SOT at the trainee hospital may claim
+  assignedAt       DateTime?
+  assignedById     String?
+  unassignedAt     DateTime?
+  unassignedReason String?
+  isCurrent        Boolean   @default(true)
+
+  trainee    TraineeProfile @relation("VerifierTrainee", fields: [traineeId], references: [id], onDelete: Cascade)
+  verifier   User?          @relation("VerifierUser", fields: [verifierId], references: [id], onDelete: Restrict)
+  assignedBy User?          @relation("VerifierAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  @@index([traineeId, isCurrent])
+  @@index([verifierId, isCurrent])
+}
+
+model Notification {
+  id               String    @id @default(uuid())
+  userId           String
+  notificationType String
+  priority         String    @default("normal") // low | normal | high | urgent
+  title            String
+  message          String
+  linkUrl          String?
+  isRead           Boolean   @default(false)
+  readAt           DateTime?
+  createdAt        DateTime  @default(now())
+
+  user User @relation("NotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model CourseCatalogue {
+  courseCode  String  @id // EASE, EMAC, ADAM-A, ECHO-A, UGRA, plus non-mandatory legacy courses
+  courseName  String
+  isMandatory Boolean @default(false)
+
+  rounds CourseRound[] @relation("RoundCourse")
+}
+
+model CourseRound {
+  id                   String    @id @default(uuid())
+  courseCode           String
+  roundDate            DateTime  @db.Date
+  seats                Int
+  status               String    @default("open") // open | held | cancelled
+  attendanceRecordedAt DateTime?
+
+  catalogue   CourseCatalogue   @relation("RoundCourse", fields: [courseCode], references: [courseCode], onDelete: Restrict)
+  completions MandatoryCourse[] @relation("CourseRoundCompletion")
+  requests    CourseRequest[]   @relation("RequestRound")
+
+  @@index([courseCode, roundDate])
+}
+
+model CourseRequest {
+  id          String         @id @default(uuid())
+  roundId     String
+  traineeId   String
+  requestedAt DateTime
+  decision    CourseDecision @default(REQUESTED)
+  decidedById String?
+  decidedAt   DateTime?
+
+  round     CourseRound    @relation("RequestRound", fields: [roundId], references: [id], onDelete: Restrict)
+  trainee   TraineeProfile @relation("RequestTrainee", fields: [traineeId], references: [id], onDelete: Restrict)
+  decidedBy User?          @relation("RequestDecider", fields: [decidedById], references: [id], onDelete: Restrict)
+
+  @@unique([roundId, traineeId])
+  @@index([traineeId])
+}
+
+model RosterRound {
+  id       String   @id @default(uuid())
+  period   String   @unique // e.g. 2026-06, 2026-12
+  opensOn  DateTime @db.Date
+  closesOn DateTime @db.Date
+
+  attestations RosterAttestation[] @relation("AttestRound")
+}
+
+model RosterAttestation {
+  id            String    @id @default(uuid())
+  roundId       String
+  hospitalId    String
+  confirmedById String?
+  confirmedAt   DateTime?
+  changesJson   Json? // reported transfers and departures
+  reviewedById  String?
+  reviewedAt    DateTime?
+
+  round       RosterRound @relation("AttestRound", fields: [roundId], references: [id], onDelete: Restrict)
+  hospital    Hospital    @relation("AttestHospital", fields: [hospitalId], references: [id], onDelete: Restrict)
+  confirmedBy User?       @relation("AttestConfirmer", fields: [confirmedById], references: [id], onDelete: Restrict)
+  reviewedBy  User?       @relation("AttestReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+
+  @@unique([roundId, hospitalId])
 }

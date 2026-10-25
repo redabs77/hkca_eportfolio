@@ -446,5 +446,6 @@ Working decisions made for items E1–E6 to ensure platform resilience, integrat
 - **Recognised logbook cases (decided, option A).** Stored as permanent case-credit rows (`vop_credit_adjustments`). They count in overall totals, count towards a module minimum only when the Board allocates a module, are shown as "Recognised by the Board" and never as verified cases, and sit outside the 2-year lock.
 - **No Acting SOT role (decided).** The role set stays SOT and Assistant SOT.
 - **Legacy source code review** (see `Legacy Source Code Findings 2026-10-24.md`): legacy approval status is blank, `A` or `R` only; course names are fixed in code, not data; the 15-item ITA matches, with column 3b unused.
-- **Schema gap.** Prisma is behind the prose doc by ten tables; section 12 of the schema doc lists what the Admin console adds.
+- **Prisma brought up to the schema doc** (migration `3_admin_console_schema_alignment`, 22 new tables, `TrainingStage` loses SUSPENDED and TERMINATED, `TraineeStatus` added). Tested by `tests/schema/verify_admin_schema.mjs` (57 checks). Differences by design are listed at the top of schema doc section 12.
+- **PRD 1.5.0.** Board-recognised cases bypass hospital scoping (§3.1) and the 2-year lock (§3.2); new §3.10.
 
