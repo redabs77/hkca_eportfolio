@@ -1571,7 +1571,7 @@ function saveCentre(h){
 }
 function addCentre(){const free=HOSP.filter(([c,h])=>!S.centres.find(x=>x.hosp===h)).sort((a,b)=>hn(a[1])>hn(b[1])?1:-1);openModal(`<h3>Add an accredited training centre</h3><div class="fld" style="margin-top:12px"><label for="nHosp">Hospital</label><select id="nHosp" data-c="nHosp">${free.map(([c,h])=>`<option value="${h}">${esc(hn(h))} (${h})</option>`).join('')}</select></div><div class="fld"><label for="nCl">Hospital cluster</label><select id="nCl">${clOpts(free.length?CLUSTER[free[0][1]]:'')}</select></div><div class="fld"><label for="nLim">Accredited training period (months)</label><input type="number" id="nLim" value="24" min="0" max="72"></div><div class="fld"><label for="nExp">Accreditation expires</label><input type="date" id="nExp"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doAddCentre">Add centre</button></div>`)}
 function doAddCentre(){const h=$('#nHosp').value,l=+$('#nLim').value,e=$('#nExp').value,cl=$('#nCl').value;if(!e||e<=TODAY){toast('Enter an expiry date in the future.');return}S.centres.push({hosp:h,cluster:cl,limit:l,exp:e});CLUSTER[h]=cl;logAct('Centre added',`${h} (${cl}): ${l} months, expires ${fmt(e)}`);closeModal();render();toast(h+' added.')}
-const NOMCH=[['wba','WBA course for trainers'],['jcimed','JCIMED SOT course'],['bme','Basic medical education course']];
+const NOMCH=[['wba','WBA Train-the-trainer Workshop'],['jcimed','JCIMED SOT course (AMEC)'],['bme','Basic Medical Education Course (BMEC)']];
 const nomYrs=n=>n.fellow?(+TODAY.slice(0,4))-n.fellow:null;
 const nomSum=n=>{const y=nomYrs(n),c=NOMCH.filter(([k])=>n.courses[k]).length;return `${y==null?'Fellow year not recorded':y+' years as a Fellow'}, ${c} of 3 trainer courses`};
 const nomOk=n=>nomYrs(n)!=null&&NOMCH.every(([k])=>n.courses[k]);
@@ -1622,7 +1622,7 @@ function nomOpen(id){
     <p class="note">The Board sees these checks with the nomination. If something is missing you can still send it, and the Board will see what is missing.</p>`,
     `<button class="btn sec" data-a="nomClose" data-id="${n.id}">Close nomination</button><button class="btn sec" data-a="nomSave" data-id="${n.id}">Save checks</button><button class="btn pri" data-a="nomSend" data-id="${n.id}">Send to the Board</button>`);
   else
-    openDrawer('SOT nomination',n.nominee,head+`<div class="sect">Checks</div><dl class="kv"><dt>Fellow</dt><dd>${n.fellow?(yr-n.fellow)+' years (since '+n.fellow+')':'Not recorded'}</dd>${NOMCH.map(([k,l])=>`<dt>${l.split(' ')[0]==='WBA'?'WBA':l.split(' ')[0]}</dt><dd>${n.courses[k]?'Attended':'<span style="color:var(--bd-f)">Not attended</span>'}</dd>`).join('')}</dl>`,
+    openDrawer('SOT nomination',n.nominee,head+`<div class="sect">Checks</div><dl class="kv"><dt>Fellow</dt><dd>${n.fellow?(yr-n.fellow)+' years (since '+n.fellow+')':'Not recorded'}</dd>${NOMCH.map(([k,l])=>`<dt>${l}</dt><dd>${n.courses[k]?'Attended':'<span style="color:var(--bd-f)">Not attended</span>'}</dd>`).join('')}</dl>`,
     `<button class="btn sec" data-a="nomClose" data-id="${n.id}">Board did not endorse</button><button class="btn pri" data-a="nomEndorse" data-id="${n.id}">Record Board endorsement</button>`)
 }
 function nomRead(n){n.fellow=+$('#nmY').value||null;NOMCH.forEach(([k])=>{n.courses[k]=$('#nm_'+k).checked})}
