@@ -347,7 +347,7 @@ function seedState(){
   };
   const GATES={BAT:{next:'HAT',from:22,to:24,label:'BAT to HAT'},HAT:{next:'PFY',from:46,to:48,label:'HAT to PFY'},PFY:{next:'Exit',from:70,to:72,label:'PFY to Exit'}};
   return {
-    v:15,
+    v:16,
     trainees,dk,GATES,
     intake:[
       {id:'AP-26-031',name:'Dr. Hannah Cheng',from:'Applying from QEH',submitted:'2026-10-09',hosp:'QEH',stage:'BAT',chk:{mchk:true,fee:true},mc:{type:'Full',no:'21874'},sig:{cos:{m:'esign',d:'2026-10-12'},sot:null},note:''},
@@ -384,7 +384,7 @@ function seedState(){
       ['PWH','SOT','2024-01-01',null],['PWH','Assistant SOT','2025-07-01',null],['NDH','SOT','2023-07-01',null],['NDH','Assistant SOT','2024-07-01',null],
       ['QMH','SOT','2022-01-01',null],['QEH','SOT','2025-01-01',null],['TKOH','SOT','2021-07-01','2026-12-31'],['TKOH','Assistant SOT','2025-07-01',null],['PYNEH','SOT','2024-07-01',null],['KWH','SOT','2023-01-01',null],
       ['AHNH','SOT','2023-07-01',null],['PMH','SOT','2024-01-01',null],['TMH','SOT','2022-07-01',null],['YCH','SOT','2025-01-01',null],['POH','SOT','2024-07-01',null]
-    ].map(([h,r,f,u],i)=>({id:'AP'+i,hosp:h,role:r,from:f,until:u,who:['Dr. Albert Chan','Dr. Mabel Ko','Dr. Ricky Fan','Dr. Selina Yim','Dr. Gordon Pau','Dr. Teresa Kam','Dr. Hugo Tin','Dr. Alice Ngai','Dr. Vincent Sze','Dr. Fiona Cho','Dr. Kelvin Yeung','Dr. Nora Lai','Dr. Edwin Mak','Dr. Yvonne Tse','Dr. Peter Wan'][i],end:u?'planned':'',})),
+    ].map(([h,r,f,u],i)=>({id:'AP'+i,hosp:h,role:r,from:f,until:u,who:['Dr. Albert Chan','Dr. Winnie Ho','Dr. Ricky Fan','Dr. Selina Yim','Dr. Gordon Pau','Dr. Teresa Kam','Dr. Hugo Tin','Dr. Alice Ngai','Dr. Vincent Sze','Dr. Fiona Cho','Dr. Kelvin Yeung','Dr. Nora Lai','Dr. Edwin Mak','Dr. Yvonne Tse','Dr. Peter Wan'][i],end:u?'planned':'',})),
     pendingAppt:[{id:'PA1',hosp:'TKOH',role:'SOT',nominee:'Dr. Cora Lim',boe:'2026-10-20',eff:'2027-01-01',nom:{recv:'2026-09-02',fellow:2013,courses:{wba:true,jcimed:true,bme:true}}}],
     nominations:[
       {id:'N1',hosp:'NDH',role:'Assistant SOT',nominee:'Dr. Janice Wong',recv:'2026-10-14',fellow:2014,courses:{wba:true,jcimed:true,bme:false},state:'check'},
@@ -419,7 +419,7 @@ function seedState(){
 const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-if(!S||S.v!==15)S=seedState();
+if(!S||S.v!==16)S=seedState();
 S.rounds=HKC.get().rounds;S.trainers=S.trainers||[];
 S.exams=HKC.get().exams;
 syncCluster();
@@ -1646,7 +1646,7 @@ function doAppt(){
   if(cur&&!cur.until){toast(`${h} already has a ${r} with no end date. End that term first.`);return}
   S.appts.push({id:'AP'+Date.now(),hosp:h,role:r,who:w,from:e,until:null});
   if(ui.pa){const pa=S.pendingAppt.find(x=>x.id===ui.pa);const nm=pa&&pa.nomId&&S.nominations.find(x=>x.id===pa.nomId);if(nm)nm.state='entered';S.pendingAppt=S.pendingAppt.filter(x=>x.id!==ui.pa);ui.pa=null}
-  logAct('Appointment entered',`${w}, ${r}, ${h}, from ${fmt(e)}. Board endorsement ${fmt(b)}`);closeModal();render();toast(`${w} entered as ${r} at ${h}.`)
+  logAct('Appointment entered',`${w}, ${r}, ${h}, from ${fmt(e)}. Board endorsement ${fmt(b)}`);closeModal();render();toast(`${w} entered as ${r} at ${h}, and is on its trainer list.`)
 }
 function endAppt(id){const a=S.appts.find(x=>x.id===id);ui.ea=id;openModal(`<h3>${a.until?'Change':'End'} the term of ${esc(a.who)}</h3><p class="meta" style="margin:6px 0 12px">${a.role}, ${a.hosp}</p><div class="fld"><label for="eD">Last day in role</label><input type="date" id="eD" value="${a.until||TODAY}" min="${a.from}"></div><div class="fld"><label for="eW">Reason</label><input type="text" id="eW" placeholder="For the record"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doEnd">Save</button></div>`)}
 function doEnd(){const a=S.appts.find(x=>x.id===ui.ea);const d=$('#eD').value,w=$('#eW').value.trim();if(!d||!w){toast('Enter a date and a reason.');return}a.until=d;if(d<=TODAY)a.ended=true;logAct('Term ended',`${a.who}, ${a.role}, ${a.hosp}: last day ${fmt(d)}. ${w}`);closeModal();render();toast('Term updated.')}
@@ -1755,9 +1755,11 @@ function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct+c.pro
 const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,projects:vProjects,centres:vCentres,wba:vWba};
 function labelTables(){document.querySelectorAll('#app table').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(h=>h.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.dataset.l===undefined&&hs[i]!==undefined)td.dataset.l=hs[i]}))})}
 /* a department SOT's confirmation (SOT Console, same browser) replaces the demo row for that hospital */
+/* every SOT and Assistant SOT in post is a trainer of their hospital (Trainer List) */
+function syncAppts(){TrainersStore.syncAppointments(S.appts.filter(a=>!a.ended&&a.from<=TODAY).map(a=>({hosp:a.hosp,role:a.role,who:a.who})))}
 function syncRoster(){Object.keys(TrainersStore.get().reports).forEach(h=>{const rp=TrainersStore.report(h);let r=S.roster.find(x=>x.hosp===h);if(!r){r={hosp:h};S.roster.push(r)}if(r.repAt===rp.at)return;const n=rp.joined+rp.left+rp.moved;Object.assign(r,{conf:true,on:rp.on,changes:n,what:rp.what,reviewed:n===0,repAt:rp.at})})}
 function render(){
-  syncRoster();
+  syncAppts();syncRoster();
   const y=window.scrollY;
   $('#tabs').innerHTML=ui.role==='to'?toTab():ui.role==='sot'?sotTab():TABS.map(([k,l])=>{const b=tabBadge(k);return `<button class="tab ${ui.tab===k?'on':''}" role="tab" aria-selected="${ui.tab===k}" data-a="go" data-t="${k}" tabindex="${ui.tab===k?0:-1}">${l}${b?` <span class="cnt hot">${b}</span>`:''}</button>`}).join('');
   $('#app').innerHTML=(ui.role==='to'?vTO:ui.role==='sot'?vSOT:VIEWS[ui.tab])();roleChrome();labelTables();save();

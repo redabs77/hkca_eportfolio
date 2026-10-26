@@ -3783,9 +3783,9 @@ function renderTrainers(){
   document.getElementById('trLock').textContent = asst ? 'Only the SOT can change or confirm the list.' : '';
   const rows = list.filter(t=>!q || (t.name+' '+t.email).toLowerCase().includes(q));
   document.getElementById('trBody').innerHTML = rows.map(t=>`<tr${t.st!=='on'?' style="opacity:.62"':''}>
-    <td><div style="font-weight:650">${trEsc(t.name)}</div><div class="meta" style="font-size:12px">${trEsc(t.email)}</div></td>
+    <td><div style="font-weight:650">${trEsc(t.name)}${t.role?` <span class="pill" style="margin-left:6px;font-weight:650">${t.role}</span>`:''}</div><div class="meta" style="font-size:12px">${trEsc(t.email)}</div></td>
     <td>${t.isNew?'<span class="meta">New</span>':''}</td>
-    <td><select class="ctl" aria-label="Status of ${trEsc(t.name)}" ${asst?'disabled':''} onchange="trSet('${t.id}',this.value)">${trOpts(t)}</select></td></tr>`).join('')
+    <td>${t.role?'<span class="meta">On the list while in post</span>':`<select class="ctl" aria-label="Status of ${trEsc(t.name)}" ${asst?'disabled':''} onchange="trSet('${t.id}',this.value)">${trOpts(t)}</select>`}</td></tr>`).join('')
     || '<tr><td colspan="3" class="meta" style="padding:16px">No trainer matches.</td></tr>';
   const un = TrainersStore.unplaced();
   document.getElementById('trUnplacedCard').style.display = un.length?'':'none';

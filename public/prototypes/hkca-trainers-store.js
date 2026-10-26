@@ -10,7 +10,8 @@
   var HOSP=[['HKIC (E)','PYNEH','Pamela Youde Nethersole Eastern Hospital'],['HKIC (E)','RH','Ruttonjee Hospital'],['HKIC (W)','QMH','Queen Mary Hospital'],['HKIC (W)','GH','Grantham Hospital'],['KCC','HKBH','Hong Kong Buddhist Hospital'],['KCC','HKEH','Hong Kong Eye Hospital'],['KCC','KWH','Kwong Wah Hospital'],['KCC','QEH','Queen Elizabeth Hospital'],['KEC','TKOH','Tseung Kwan O Hospital'],['KEC','UCH','United Christian Hospital'],['KWC','CMC','Caritas Medical Centre'],['KWC','NLTH','North Lantau Hospital'],['KWC','PMH','Princess Margaret Hospital'],['KWC','YCH','Yan Chai Hospital'],['NTE','AHNH','Alice Ho Miu Ling Nethersole Hospital'],['NTE','NDH','North District Hospital'],['NTE','PWH','Prince of Wales Hospital'],['NTW','POH','Pok Oi Hospital'],['NTW','TMH','Tuen Mun Hospital'],['NTW','TSWH','Tin Shui Wai Hospital']];
   function seed(){
     var mk=function(n,i){return {id:'T'+i,name:n,email:em(n),st:'on',to:null,isNew:false}};
-    return {v:VER,lists:{PWH:NAMES.map(mk)},unplaced:UNPL.map(function(n,i){return {id:'U'+i,name:n,email:em(n)}}),reports:{},lastConf:{PWH:'2026-07-12'},n:100};
+    var hold=[['Dr. Albert Chan','SOT'],['Dr. Winnie Ho','Assistant SOT']].map(function(p,i){return {id:'R'+i,name:p[0],email:em(p[0]),st:'on',to:null,isNew:false,role:p[1]}});
+    return {v:VER,lists:{PWH:hold.concat(NAMES.map(mk))},unplaced:UNPL.map(function(n,i){return {id:'U'+i,name:n,email:em(n)}}),reports:{},lastConf:{PWH:'2026-07-12'},n:100};
   }
   function get(){var s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!s||s.v!==VER){s=seed();put(s)}s.retired=s.retired||[];return s}
   function put(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
@@ -45,6 +46,17 @@
         else s.unplaced.push(Object.assign({id:'U'+(s.n++)},base))});
       put(s);return n},
     summary:function(){var s=get();return {lists:s.lists,unplaced:s.unplaced,retired:s.retired,lastConf:s.lastConf}},
+    /* SOT and Assistant SOT are trainers of their own hospital. The Admin console passes the appointments in post
+       (hospital, role, name); each holder is put on that hospital's list with the role, taken off the unplaced pool,
+       and the role is cleared again once a term has ended. Idempotent: saves only when something changed. */
+    syncAppointments:function(cur){var s=get(),ch=false,want={};
+      cur.forEach(function(a){var e=em(a.who);want[a.hosp+'|'+e]=a.role;
+        var l=(s.lists[a.hosp]=s.lists[a.hosp]||[]),t=l.find(function(x){return x.email===e});
+        var ui=s.unplaced.findIndex(function(x){return x.email===e});if(ui>=0){s.unplaced.splice(ui,1);ch=true}
+        if(!t){l.unshift({id:'T'+(s.n++),name:a.who,email:e,st:'on',to:null,isNew:false,role:a.role});ch=true}
+        else if(t.role!==a.role||t.st!=='on'){t.role=a.role;t.st='on';t.to=null;ch=true}});
+      Object.keys(s.lists).forEach(function(h){s.lists[h].forEach(function(t){if(t.role&&!want[h+'|'+t.email]){delete t.role;ch=true}})});
+      if(ch)put(s)},
     report:function(h){return get().reports[h]||null},
     lastConf:function(h){return get().lastConf[h]||null},
     reset:function(){try{localStorage.removeItem(KEY)}catch(e){}return get()}
