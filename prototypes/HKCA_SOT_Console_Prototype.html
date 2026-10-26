@@ -1189,7 +1189,7 @@
         </div>
       </div>
       <div class="tbl-scroll"><table id="trTable">
-        <thead><tr><th>Trainer</th><th style="width:150px">Fellowship year</th><th style="width:130px">Since last confirmation</th><th style="width:260px">Status</th></tr></thead>
+        <thead><tr><th>Trainer</th><th style="width:150px">Fellowship year</th><th style="width:150px">Account</th><th style="width:260px">Status</th></tr></thead>
         <tbody id="trBody"></tbody>
       </table></div>
     </div>
@@ -2525,6 +2525,8 @@ function renderInvitePreview(){
   } else {
     const rc = invChosen(), all = ptrainees().length;
     html = `<div class="prev-row"><span>One request goes to <b>${rc.length} trainer${rc.length===1?'':'s'}</b>${rc.length===DEPT_TRAINERS.length?' (the whole department)':''}, covering <b>all ${all} trainees</b> in the round. Each trainer fills in forms for the trainees they know. The aim is ${min} or more forms per trainee before the face-to-face meetings start.</span></div>`;
+    const nA = TrainersStore.needInvite(TR_HOME, rc);
+    if(nA) html += `<div class="prev-row"><span><b>${nA} of them ${nA===1?'has':'have'} no trainer account yet.</b> Each gets a link in the invitation to set a password. Nothing else is needed from you.</span></div>`;
     count = `${rc.length} trainer${rc.length===1?'':'s'} \u00b7 ${all} trainees`; ok = rc.length>0;
   }
   document.getElementById('invPreview').innerHTML = html;
@@ -2543,9 +2545,10 @@ function sendInvite(){
     closeInvite(); renderAll(); toast('Reminder sent to every trainer with forms outstanding'); return;
   }
   const rc = invChosen(); if(!rc.length) return;
+  const nAcc = TrainersStore.inviteAll(TR_HOME, rc);
   ROUND.open = true; ROUND.at = todayTxt; ROUND.due = dueTxt;
   ptrainees().forEach(t=>{ INV[t.id] = {at:todayTxt, due:dueTxt, got:0, total:rc.length}; });
-  logEvent(`Initiated ITA ${ROUND.cycle}: invited ${rc.length===DEPT_TRAINERS.length?'all '+rc.length+' trainers':rc.length+' selected trainers'} for all ${ptrainees().length} trainees &middot; deadline ${dueTxt}`);
+  logEvent(`Initiated ITA ${ROUND.cycle}: invited ${rc.length===DEPT_TRAINERS.length?'all '+rc.length+' trainers':rc.length+' selected trainers'} for all ${ptrainees().length} trainees &middot; deadline ${dueTxt}${nAcc?` &middot; ${nAcc} account set-up link${nAcc===1?'':'s'} sent`:''}`);
   closeInvite(); renderAll(); toast(`ITA initiated; invitation sent to ${rc.length} trainers`);
 }
 const CYC = {};   // prototype: remembers each cycle's state so you can switch back and forth
@@ -3785,9 +3788,9 @@ function renderTrainers(){
   document.getElementById('trLock').textContent = asst ? 'Only the SOT can change or confirm the list.' : '';
   const rows = list.filter(t=>!q || (t.name+' '+t.email).toLowerCase().includes(q));
   document.getElementById('trBody').innerHTML = rows.map(t=>`<tr${t.st!=='on'?' style="opacity:.62"':''}>
-    <td><div style="font-weight:650">${trEsc(t.name)}${t.role?` <span class="pill" style="margin-left:6px;font-weight:650">${t.role}</span>`:''}</div><div class="meta" style="font-size:12px">${trEsc(t.email)}</div></td>
+    <td><div style="font-weight:650">${trEsc(t.name)}${t.role?` <span class="pill" style="margin-left:6px;font-weight:650">${t.role}</span>`:''}${t.isNew?' <span class="pill" style="margin-left:6px;font-weight:650">New</span>':''}</div><div class="meta" style="font-size:12px">${trEsc(t.email)}</div></td>
     <td><input class="ctl" type="number" inputmode="numeric" min="1960" max="2026" placeholder="Not recorded" value="${t.fellow||''}" aria-label="Fellowship year of ${trEsc(t.name)}" ${asst?'disabled':''} style="width:120px" onchange="trFellow('${t.id}',this.value)"></td>
-    <td>${t.isNew?'<span class="meta">New</span>':''}</td>
+    <td>${trAcct(t)}</td>
     <td>${t.role?'<span class="meta">On the list while in post</span>':`<select class="ctl" aria-label="Status of ${trEsc(t.name)}" ${asst?'disabled':''} onchange="trSet('${t.id}',this.value)">${trOpts(t)}</select>`}</td></tr>`).join('')
     || '<tr><td colspan="4" class="meta" style="padding:16px">No trainer matches.</td></tr>';
   const un = TrainersStore.unplaced();
@@ -3795,6 +3798,8 @@ function renderTrainers(){
   document.getElementById('trUnplaced').innerHTML = un.map(u=>`<tr><td><div style="font-weight:650">${trEsc(u.name)}</div><div class="meta" style="font-size:12px">${trEsc(u.email)}</div></td>
     <td style="text-align:right;width:220px"><button class="btn sec sm" ${asst?'disabled':''} onclick="trClaim('${u.id}')">Add to my department</button></td></tr>`).join('');
 }
+const TR_ACCT = {none:['No account yet','#b8b3c9'], invited:['Link sent','#d99a2b'], active:['Active','var(--ok-f)']};
+function trAcct(t){ const a=TR_ACCT[t.acct||'none']; return `<span class="meta" style="display:inline-flex;align-items:center;gap:7px"><i style="width:7px;height:7px;border-radius:50%;background:${a[1]};display:inline-block"></i>${a[0]}</span>`; }
 function trSet(id,v){ const p=v.split(':'); TrainersStore.setState(TR_HOME,id,p[0],p[1]||null); renderTrainers(); }
 function trClaim(id){ TrainersStore.claim(TR_HOME,id); renderTrainers(); toast('Added to your trainer list.'); }
 function trFellow(id,v){ const r=TrainersStore.setFellow(TR_HOME,id,v); if(r.err){ toast(r.err); } renderTrainers(); }

@@ -3,15 +3,15 @@
    confirmation and the reported changes. Illustrative only: names and emails are made up, and
    production reads the database (trainer list = people with the trainer role at a hospital). */
 (function(){
-  var KEY='hkca.trainers.v1', VER=2;
-  var NAMES=['Dr. Chung Wai Lun','Dr. Fan Mei Yee','Dr. Ip Chi Hang','Dr. Kwok Siu Man','Dr. Leung Ka Yan','Dr. Ng Tsz Ho','Dr. Poon Wing Sze','Dr. Sin Hoi Ying','Dr. To Man Kit','Dr. Wan Yuk Ling','Dr. Yip Chun Kit','Dr. Zhou Lai Fong'];
+  var KEY='hkca.trainers.v1', VER=3;
+  var NAMES=['Dr. Chung Wai Lun','Dr. Fan Mei Yee','Dr. Ip Chi Hang','Dr. Lisa Kwok','Dr. Leung Ka Yan','Dr. Ng Tsz Ho','Dr. Poon Wing Sze','Dr. Sin Hoi Ying','Dr. To Man Kit','Dr. Wan Yuk Ling','Dr. Yip Chun Kit','Dr. Zhou Lai Fong'];
   var UNPL=['Dr. Au Kin Fai','Dr. Cheuk Pui Shan','Dr. Hung Lok Yin','Dr. Mak Sze Wai'];
   var em=function(n){return n.replace(/^Dr\. /,'').toLowerCase().replace(/ /g,'.')+'@example.org'};
   var HOSP=[['HKIC (E)','PYNEH','Pamela Youde Nethersole Eastern Hospital'],['HKIC (E)','RH','Ruttonjee Hospital'],['HKIC (W)','QMH','Queen Mary Hospital'],['HKIC (W)','GH','Grantham Hospital'],['KCC','HKBH','Hong Kong Buddhist Hospital'],['KCC','HKEH','Hong Kong Eye Hospital'],['KCC','KWH','Kwong Wah Hospital'],['KCC','QEH','Queen Elizabeth Hospital'],['KEC','TKOH','Tseung Kwan O Hospital'],['KEC','UCH','United Christian Hospital'],['KWC','CMC','Caritas Medical Centre'],['KWC','NLTH','North Lantau Hospital'],['KWC','PMH','Princess Margaret Hospital'],['KWC','YCH','Yan Chai Hospital'],['NTE','AHNH','Alice Ho Miu Ling Nethersole Hospital'],['NTE','NDH','North District Hospital'],['NTE','PWH','Prince of Wales Hospital'],['NTW','POH','Pok Oi Hospital'],['NTW','TMH','Tuen Mun Hospital'],['NTW','TSWH','Tin Shui Wai Hospital']];
   function seed(){
     var YRS=[2004,2011,1999,2016,2008,2013,2002,2018,2006,2010,2014,2001];
-    var mk=function(n,i){return {id:'T'+i,name:n,email:em(n),fellow:YRS[i%YRS.length],st:'on',to:null,isNew:false}};
-    var hold=[['Dr. Albert Chan','SOT'],['Dr. Winnie Ho','Assistant SOT']].map(function(p,i){return {id:'R'+i,name:p[0],email:em(p[0]),st:'on',to:null,isNew:false,role:p[1]}});
+    var mk=function(n,i){return {id:'T'+i,name:n,email:em(n),fellow:YRS[i%YRS.length],st:'on',to:null,isNew:false,acct:(i<6||n==='Dr. Lisa Kwok')?'active':'none'}};
+    var hold=[['Dr. Albert Chan','SOT'],['Dr. Winnie Ho','Assistant SOT']].map(function(p,i){return {id:'R'+i,name:p[0],email:em(p[0]),st:'on',to:null,isNew:false,role:p[1],acct:'active'}});
     return {v:VER,lists:{PWH:hold.concat(NAMES.map(mk))},unplaced:UNPL.map(function(n,i){return {id:'U'+i,name:n,email:em(n)}}),reports:{},lastConf:{PWH:'2026-07-12'},n:100};
   }
   function get(){var s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!s||s.v!==VER){s=seed();put(s)}s.retired=s.retired||[];return s}
@@ -26,10 +26,10 @@
       if(fy!=null&&(!(fy>=1960&&fy<=2026)))return {err:'Fellowship year must be a year from 1960 to 2026, or left blank.'};
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return {err:'Enter a valid email address.'};
       if(emailTaken(s,email))return {err:'That email is already on a trainer list.'};
-      (s.lists[h]=s.lists[h]||[]).push({id:'T'+(s.n++),name:name,last:last,first:first,fellow:fy,email:email,st:'on',to:null,isNew:true});put(s);return {ok:true}},
+      (s.lists[h]=s.lists[h]||[]).push({id:'T'+(s.n++),name:name,last:last,first:first,fellow:fy,email:email,st:'on',to:null,isNew:true,acct:'none'});put(s);return {ok:true}},
     setFellow:function(h,id,y){var s=get(),t=(s.lists[h]||[]).find(function(x){return x.id===id});if(!t)return {err:1};var v=y===''?null:+y;if(v!=null&&!(v>=1960&&v<=2026))return {err:'Fellowship year must be a year from 1960 to 2026.'};t.fellow=v;put(s);return {ok:true}},
     claim:function(h,id){var s=get(),i=s.unplaced.findIndex(function(u){return u.id===id});if(i<0)return;var u=s.unplaced.splice(i,1)[0];
-      (s.lists[h]=s.lists[h]||[]).push({id:'T'+(s.n++),name:u.name,email:u.email,st:'on',to:null,isNew:true});put(s)},
+      (s.lists[h]=s.lists[h]||[]).push({id:'T'+(s.n++),name:u.name,email:u.email,st:'on',to:null,isNew:true,acct:u.acct||'none'});put(s)},
     setState:function(h,id,st,to){var s=get(),t=(s.lists[h]||[]).find(function(x){return x.id===id});if(!t)return;t.st=st;t.to=st==='moved'?to:null;put(s)},
     changes:function(h){var l=API.list(h);return {joined:l.filter(function(t){return t.isNew&&t.st==='on'}).length,left:l.filter(function(t){return t.st==='left'}).length,moved:l.filter(function(t){return t.st==='moved'}).length}},
     what:function(c){var p=[];if(c.joined)p.push(c.joined+' joined');if(c.left)p.push(c.left+' left');if(c.moved)p.push(c.moved+(c.moved>1?' moved':' moved')+' to another hospital');return p.join(', ')},
@@ -57,10 +57,18 @@
       cur.forEach(function(a){var e=em(a.who);want[a.hosp+'|'+e]=a.role;
         var l=(s.lists[a.hosp]=s.lists[a.hosp]||[]),t=l.find(function(x){return x.email===e});
         var ui=s.unplaced.findIndex(function(x){return x.email===e});if(ui>=0){s.unplaced.splice(ui,1);ch=true}
-        if(!t){l.unshift({id:'T'+(s.n++),name:a.who,email:e,st:'on',to:null,isNew:false,role:a.role});ch=true}
+        if(!t){l.unshift({id:'T'+(s.n++),name:a.who,email:e,st:'on',to:null,isNew:false,role:a.role,acct:'active'});ch=true}
         else if(t.role!==a.role||t.st!=='on'){t.role=a.role;t.st='on';t.to=null;ch=true}});
       Object.keys(s.lists).forEach(function(h){s.lists[h].forEach(function(t){if(t.role&&!want[h+'|'+t.email]){delete t.role;ch=true}})});
       if(ch)put(s)},
+    /* Light trainer account: made when a trainer is first invited to an ITA round (an emailed link to set a password),
+       so there are three states: none, invited (link sent), active (password set). SOT and Assistant SOT already have a login. */
+    find:function(email){var s=get(),r=null;Object.keys(s.lists).forEach(function(h){s.lists[h].forEach(function(t){if(t.email===email&&!r)r={h:h,t:t,s:s}})});return r},
+    acct:function(email){var f=API.find(email);return f?(f.t.acct||'none'):null},
+    setAcct:function(email,v){var f=API.find(email);if(!f)return false;f.t.acct=v;put(f.s);return true},
+    setFellowByEmail:function(email,y){var f=API.find(email);if(!f)return {err:1};var v=y===''||y==null?null:+y;if(v!=null&&!(v>=1960&&v<=2026))return {err:'Fellowship year must be a year from 1960 to 2026.'};f.t.fellow=v;put(f.s);return {ok:true}},
+    needInvite:function(h,names){return API.list(h).filter(function(t){return t.st==='on'&&(t.acct||'none')==='none'&&(!names||names.indexOf(t.name)>=0)}).length},
+    inviteAll:function(h,names){var s=get(),n=0;(s.lists[h]||[]).forEach(function(t){if(t.st==='on'&&(t.acct||'none')==='none'&&(!names||names.indexOf(t.name)>=0)){t.acct='invited';n++}});if(n)put(s);return n},
     report:function(h){return get().reports[h]||null},
     lastConf:function(h){return get().lastConf[h]||null},
     reset:function(){try{localStorage.removeItem(KEY)}catch(e){}return get()}

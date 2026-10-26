@@ -221,6 +221,27 @@
   .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink2);text-decoration:none;margin-bottom:12px;min-height:32px}
   .back:hover{color:var(--ink)}
   .wl-bar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-top:20px}
+  /* trainer account: identity button, set-up and sign-in pages, profile dialog */
+  .me{display:flex;align-items:center;gap:10px;background:none;border:0;padding:4px 6px;border-radius:10px;cursor:pointer;font:inherit;color:inherit;text-align:right}
+  .me:hover{background:var(--bg3)}
+  .meav{width:32px;height:32px;border-radius:50%;background:var(--acc);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  body.bare .top-right .me{display:none}
+  .acct{max-width:480px;margin:34px auto 0}
+  .acct .kv{display:grid;grid-template-columns:120px 1fr;gap:8px 14px;font-size:13px;margin:16px 0 4px}
+  .acct .kv dt{color:var(--ink3)} .acct .kv dd{margin:0;font-weight:600}
+  .fld{display:grid;gap:5px;margin-top:14px}
+  .fld label{font-size:12px;font-weight:650;color:var(--ink2)}
+  .fld input{min-height:40px;border:1px solid var(--border);border-radius:9px;background:var(--surface);padding:0 12px;font:inherit;font-size:14px;color:var(--ink)}
+  .fld small{font-size:12px;color:var(--ink3)}
+  .acct .btn{width:100%;margin-top:20px}
+  dialog#profile{border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--ink);padding:0;width:min(440px,calc(100vw - 24px))}
+  dialog#profile::backdrop{background:rgba(0,0,0,.45)}
+  dialog#profile .pd{padding:20px 22px}
+  dialog#profile h2{font-size:17px;margin:0 0 2px}
+  dialog#profile .sec2{margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+  dialog#profile .row2{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+  #acctToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1d1a2f;color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:300}
+  #acctToast.on{opacity:1}
   .wl-search{flex:0 1 240px;min-height:36px;border:1px solid var(--border);border-radius:9px;background:var(--surface);padding:0 12px;font:inherit;font-size:13px;color:var(--ink)}
   .wl-chips{display:flex;gap:6px;flex-wrap:wrap}
   .fchip{border:1px solid var(--border);background:var(--surface);border-radius:8px;min-height:36px;padding:0 12px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer}
@@ -251,6 +272,7 @@
 <link rel="stylesheet" href="hkca-theme.css">
 <link rel="stylesheet" href="hkca-mobile.css">
 <script src="hkca-mobile.js" defer></script>
+<script src="hkca-trainers-store.js"></script>
 </head>
 <body>
 
@@ -263,7 +285,7 @@
       </div>
       <div class="top-right">
         <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode" onclick="toggleTheme()">&#9788;</button>
-        <div class="who"><b>Dr. Lisa Kwok</b><span>Consultant &middot; Prince of Wales Hospital</span></div>
+        <button class="me" id="meBtn" type="button" aria-haspopup="dialog" aria-label="Your account"><span class="who"><b id="meName">Dr. Lisa Kwok</b><span>Consultant &middot; Prince of Wales Hospital</span></span><span class="meav" id="meAv">LK</span></button>
       </div>
     </div>
   </div>
@@ -288,7 +310,29 @@
     <p class="privacy">Your ratings are read by the SOT team without your name unless you tick &ldquo;happy to be contacted&rdquo; on a form. Submitted forms can be edited until the round closes on <span id="closesTxt"></span>.</p>
     <div class="proto"><span>Prototype</span>
       <label><input type="checkbox" id="demoClosed"> Show the round as closed</label>
+      <button class="linkbtn" id="inviteBtn" type="button">Show the first visit from the invitation link</button>
       <button class="linkbtn" id="resetBtn" type="button">Reset this prototype</button></div>
+  </section>
+
+  <!-- ===== trainer account: first visit from the invitation link, and sign-in ===== -->
+  <section id="view-welcome" class="hidden acct" aria-labelledby="wc-h">
+    <h1 class="title" id="wc-h">Set up your trainer account</h1>
+    <p class="lede">The SOT of <span id="wcHosp"></span> has invited you to give In-Training Assessment feedback. Check your details and choose a password. The same account is used for every round.</p>
+    <dl class="kv"><dt>Name</dt><dd id="wcName"></dd><dt>Email</dt><dd id="wcEmail"></dd><dt>Hospital</dt><dd id="wcHosp2"></dd></dl>
+    <div class="fld"><label for="wcFy">Fellowship year</label><input id="wcFy" type="number" inputmode="numeric" min="1960" max="2026" placeholder="Optional"><small>Your SOT may already have filled this in. You can change it later in your profile.</small></div>
+    <div class="fld"><label for="wcPw">Password</label><input id="wcPw" type="password" autocomplete="new-password"><small>At least 8 characters.</small></div>
+    <div class="fld"><label for="wcPw2">Repeat password</label><input id="wcPw2" type="password" autocomplete="new-password"></div>
+    <button class="btn pri" id="wcGo" type="button">Create account and continue</button>
+    <p class="privacy">Prototype: any password of 8 or more characters is accepted. In production this link arrives by email and works once.</p>
+  </section>
+  <section id="view-signin" class="hidden acct" aria-labelledby="si-h">
+    <h1 class="title" id="si-h">Sign in</h1>
+    <p class="lede">Trainer account for the HKCA e-Portfolio.</p>
+    <div class="fld"><label for="siEmail">Email</label><input id="siEmail" type="email" autocomplete="username"></div>
+    <div class="fld"><label for="siPw">Password</label><input id="siPw" type="password" autocomplete="current-password"></div>
+    <button class="btn pri" id="siGo" type="button">Sign in</button>
+    <p class="privacy"><button class="linkbtn" id="siForgot" type="button">Forgot your password?</button> A reset link is sent to your email.</p>
+    <p class="privacy">Prototype: any password is accepted.</p>
   </section>
 
   <!-- ===== one trainee's 15-item form ===== -->
@@ -379,6 +423,15 @@
 
 <div id="live" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
 
+<dialog id="profile" aria-labelledby="pf-h"><div class="pd">
+  <h2 id="pf-h">Your account</h2>
+  <p class="lede" style="margin:0">Trainer &middot; <span id="pfHosp"></span></p>
+  <dl class="kv" style="grid-template-columns:110px 1fr;display:grid;gap:8px 14px;font-size:13px;margin:14px 0 0"><dt style="color:var(--ink3)">Name</dt><dd id="pfName" style="margin:0;font-weight:600"></dd><dt style="color:var(--ink3)">Email</dt><dd id="pfEmail" style="margin:0;font-weight:600"></dd></dl>
+  <div class="fld"><label for="pfFy">Fellowship year</label><input id="pfFy" type="number" inputmode="numeric" min="1960" max="2026" placeholder="Not recorded"></div>
+  <div class="sec2"><div class="fld" style="margin-top:0"><label for="pfPw">New password</label><input id="pfPw" type="password" autocomplete="new-password"><small>At least 8 characters. Leave blank to keep your current password.</small></div></div>
+  <div class="row2"><button class="btn sec sm" id="pfOut" type="button">Sign out</button><button class="btn sec sm" id="pfClose" type="button">Cancel</button><button class="btn pri sm" id="pfSave" type="button">Save</button></div>
+</div></dialog>
+<div id="acctToast" role="status"></div>
 <script>
 /* The 15 official items — mirrors domain/ita/itaDomains.ts (source of truth for the build). */
 const DOMAINS = [
@@ -495,13 +548,52 @@ let pendingEdit = false;
 $('#wlBody').addEventListener('click',e=>{ const b = e.target.closest('[data-open]'); if(b) goForm(b.dataset.open, !!b.dataset.edit); });
 $('#demoClosed').addEventListener('change',e=>{ DB.closed = e.target.checked; saveDB(); renderList(); });
 $('#resetBtn').onclick = ()=>{ localStorage.removeItem(KEY); location.hash = '#/'; location.reload(); };
+$('#inviteBtn').onclick = ()=>{ TrainersStore.setAcct(ME_EMAIL,'invited'); location.hash='#/welcome'; route(); };
 function goForm(id, edit){ pendingEdit = !!edit; location.hash = '#/form/'+id; }
 
 /* ---------- routing: #/ = worklist, #/form/<id> = one trainee ---------- */
+const ME_EMAIL = 'lisa.kwok@example.org', SESSION_KEY = 'hkca.trainer.session';
+const acctToast = t=>{ const e=$('#acctToast'); e.textContent=t; e.classList.add('on'); clearTimeout(acctToast.t); acctToast.t=setTimeout(()=>e.classList.remove('on'),2600); };
+const meRec = ()=>{ const f=TrainersStore.find(ME_EMAIL); return f; };
+function showBare(id){
+  ['view-list','view-form'].forEach(v=>$('#'+v).classList.add('hidden'));
+  ['view-welcome','view-signin'].forEach(v=>$('#'+v).classList.toggle('hidden', v!==id));
+  document.body.classList.add('bare'); window.scrollTo(0,0);
+}
 function route(){
-  const m = /^#\/form\/(.+)$/.exec(location.hash);
+  ['view-welcome','view-signin'].forEach(v=>$('#'+v).classList.add('hidden')); document.body.classList.remove('bare');
+  const h = location.hash, out = localStorage.getItem(SESSION_KEY)==='out', a = TrainersStore.acct(ME_EMAIL);
+  if(h==='#/welcome'){ fillWelcome(); document.title='HKCA e-Portfolio \u2014 Set up your trainer account'; showBare('view-welcome'); return; }
+  if(h==='#/signin' && out){ $('#siEmail').value=ME_EMAIL; document.title='HKCA e-Portfolio \u2014 Sign in'; showBare('view-signin'); return; }
+  if(out){ location.hash='#/signin'; return; }
+  if(a==='invited'){ location.hash='#/welcome'; return; }
+  const m = /^#\/form\/(.+)$/.exec(h);
   if(m && T(m[1])){ openForm(m[1], pendingEdit); pendingEdit = false; } else showList();
 }
+function fillWelcome(){
+  const f=meRec(); if(!f) return; const t=f.t, hosp=(TrainersStore.HOSP.find(x=>x[1]===f.h)||[])[2]||f.h;
+  $('#wcHosp').textContent=hosp; $('#wcHosp2').textContent=hosp; $('#wcName').textContent=t.name; $('#wcEmail').textContent=t.email; $('#wcFy').value=t.fellow||''; $('#wcPw').value=''; $('#wcPw2').value='';
+}
+$('#wcGo').onclick = ()=>{
+  const p=$('#wcPw').value, p2=$('#wcPw2').value;
+  if(p.length<8){ acctToast('Choose a password of at least 8 characters.'); return; }
+  if(p!==p2){ acctToast('The two passwords do not match.'); return; }
+  const r=TrainersStore.setFellowByEmail(ME_EMAIL,$('#wcFy').value); if(r.err&&r.err!==1){ acctToast(r.err); return; }
+  TrainersStore.setAcct(ME_EMAIL,'active'); localStorage.removeItem(SESSION_KEY); location.hash='#/'; acctToast('Account created. You are signed in.');
+};
+$('#siGo').onclick = ()=>{ if(!$('#siPw').value){ acctToast('Enter your password.'); return; } localStorage.removeItem(SESSION_KEY); $('#siPw').value=''; location.hash='#/'; route(); };
+$('#siForgot').onclick = ()=>acctToast('Reset link sent to '+ME_EMAIL+'.');
+$('#meBtn').onclick = ()=>{
+  const f=meRec(); if(!f) return; const hosp=(TrainersStore.HOSP.find(x=>x[1]===f.h)||[])[2]||f.h;
+  $('#pfHosp').textContent=hosp; $('#pfName').textContent=f.t.name; $('#pfEmail').textContent=f.t.email; $('#pfFy').value=f.t.fellow||''; $('#pfPw').value=''; $('#profile').showModal();
+};
+$('#pfClose').onclick = ()=>$('#profile').close();
+$('#pfSave').onclick = ()=>{
+  const r=TrainersStore.setFellowByEmail(ME_EMAIL,$('#pfFy').value); if(r.err&&r.err!==1){ acctToast(r.err); return; }
+  const p=$('#pfPw').value; if(p && p.length<8){ acctToast('A new password needs at least 8 characters.'); return; }
+  $('#profile').close(); acctToast(p?'Details and password saved.':'Details saved.');
+};
+$('#pfOut').onclick = ()=>{ $('#profile').close(); localStorage.setItem(SESSION_KEY,'out'); location.hash='#/signin'; route(); };
 function showList(){
   cur = null; S = null;
   $('#view-form').classList.add('hidden'); $('#view-list').classList.remove('hidden');
