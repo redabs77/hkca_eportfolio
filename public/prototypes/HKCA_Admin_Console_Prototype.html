@@ -1834,7 +1834,7 @@ function procEvents(announce){
   else if(announce&&r&&t)toast(`${t.name} ${l.type==='apply'?'applied for':'withdrew from'} ${CNAME[r.course]}${ev.length>1?' and '+(ev.length-1)+' more':''}.`);
   save();return true;
 }
-window.addEventListener('storage',e=>{if(e.key===TrainersStore.KEY){render();return}if(e.key!==HKC.KEY)return;S.rounds=HKC.get().rounds;S.exams=HKC.get().exams;procEvents(true);render()});
+window.addEventListener('storage',e=>{if(e.key===TrainersStore.KEY){clearTimeout(window.__trT);window.__trT=setTimeout(render,500);return}if(e.key!==HKC.KEY)return;S.rounds=HKC.get().rounds;S.exams=HKC.get().exams;procEvents(true);render()});
 procEvents(false);
 (function(){const h=location.hash.slice(1).split('/');if(VIEWS[h[0]]){ui.tab=h[0];if(h[1])ui.sub[h[0]]=h[1]}})();
 render();

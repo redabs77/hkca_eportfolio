@@ -16,7 +16,7 @@
       /* trainee records (written by the SOT Console and Admin, one source each). A pain or ICU trainee may also train others. */
       trainees:[{src:'seed',name:'Dr. Ip Chi Hang',email:em('Dr. Ip Chi Hang'),stage:'HAT-1',stream:'PAIN',status:'Active'}]};
   }
-  function get(){var s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!s||s.v!==VER){s=seed();put(s)}s.retired=s.retired||[];s.trainees=s.trainees||[];return s}
+  function get(){var s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!s||s.v<VER){s=seed();put(s)}s.retired=s.retired||[];s.trainees=s.trainees||[];return s}
   function put(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
   function emailTaken(s,e){return Object.keys(s.lists).some(function(h){return s.lists[h].some(function(t){return t.email===e&&t.st==='on'})})}
   var API={KEY:KEY,HOSP:HOSP,get:get,
