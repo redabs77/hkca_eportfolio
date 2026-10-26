@@ -31,6 +31,32 @@ enum UserRole {
   EXTERNAL_ASSESSOR
 }
 
+// --- Trainer lists and accounts (migration 7, 2026-10-26) ---
+enum AccountStatus {
+  NONE // a person record exists (imported or added by a SOT) but no set-up link has been sent
+  INVITED // a set-up link has been sent and not yet used
+  ACTIVE // has signed in at least once; one login for every role the person holds
+}
+
+enum TrainerListStatus {
+  ON_LIST // on the department's trainer list (hospitalId null = imported, no hospital yet)
+  LEFT // left the department
+  MOVED // moved to another hospital; movedToHospitalId says which
+  RETIRED // inactive staff record from the legacy system, kept aside, not on any list
+}
+
+enum TrainingProgramme {
+  ANAESTHESIA
+  ICU
+  PAIN_MEDICINE
+}
+
+enum InvitationReason {
+  TRAINER_ROUND // first invited to an ITA round
+  SOT_APPOINTMENT // SOT or Assistant SOT appointed and has no login yet
+  GO_LIVE // legacy account reset at go-live; old passwords are never migrated
+}
+
 enum TrainingStage {
   BAT // Basic Anaesthesia Training (24 months)
   HAT // Higher Anaesthesia Training (24 months)
@@ -257,6 +283,16 @@ model User {
   primaryRole UserRole @default(TRAINEE)
   isActive    Boolean  @default(true)
 
+  // --- Trainer lists and accounts (migration 7, 2026-10-26) ---
+  // One login per person. Roles come from UserRoleAssignment, TraineeProfile and TrainerProfile, never from a second account.
+  // `name` stays the display name; the split names are what a SOT types when adding a trainer.
+  familyName         String?
+  givenName          String?
+  accountStatus      AccountStatus       @default(NONE)
+  accountActivatedAt DateTime?
+  invitations        AccountInvitation[] @relation("InvitationUser")
+  invitationsSent    AccountInvitation[] @relation("InvitationSender")
+
   // Auditing & Soft-delete
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
@@ -366,10 +402,11 @@ model UserRoleAssignment {
 }
 
 model TraineeProfile {
-  id                  String        @id @default(uuid())
-  userId              String        @unique
-  hkcaNumber          String        @unique
-  currentStage        TrainingStage @default(BAT)
+  id                  String            @id @default(uuid())
+  userId              String            @unique
+  hkcaNumber          String            @unique
+  currentStage        TrainingStage     @default(BAT)
+  programme           TrainingProgramme @default(ANAESTHESIA) // a current ANAESTHESIA trainee cannot be a trainer; ICU and pain trainees can (migration 7)
   curriculumEditionId String
 
   // Administrative Home
@@ -445,19 +482,50 @@ model TraineeProfile {
 model TrainerProfile {
   id             String   @id @default(uuid())
   userId         String   @unique
-  hospitalId     String
+  hospitalId     String? // null = imported from legacy with no hospital yet; the department SOT claims them
   isSot          Boolean  @default(false)
   isAssistantSot Boolean  @default(false)
   isClusterSot   Boolean  @default(false)
   qualifications String[] // ["FHKCA", "FANZCA", "FRCA"]
 
+  // --- Trainer lists and accounts (migration 7, 2026-10-26) ---
+  listStatus        TrainerListStatus @default(ON_LIST)
+  movedToHospitalId String?
+  joinedOn          DateTime?         @db.Date
+  leftOn            DateTime?         @db.Date
+  fellowshipYear    Int? // year became a Fellow; optional, legacy rarely has it, the SOT can fill it in
+  legacySource      String? // 'USER' (staff record) or 'ASSESSOR' (name typed on an ITA); null = added in the new system
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  hospital        Hospital? @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  movedToHospital Hospital? @relation("TrainerMovedTo", fields: [movedToHospitalId], references: [id], onDelete: Restrict)
 
   @@index([hospitalId, isSot])
+  @@index([hospitalId, listStatus])
+}
+
+// A single-use, expiring link that lets a person set up their login. Sending a new one revokes the open one.
+// Not sent to anyone who already has a login (accountStatus ACTIVE or a trainee record): they just sign in.
+model AccountInvitation {
+  id          String           @id @default(uuid())
+  userId      String
+  reason      InvitationReason
+  context     String? // e.g. the ITA round the invitation came with
+  tokenHash   String           @unique // only the hash is stored
+  invitedById String?
+  createdAt   DateTime         @default(now())
+  sentAt      DateTime?
+  expiresAt   DateTime
+  usedAt      DateTime?
+  revokedAt   DateTime?
+
+  user      User  @relation("InvitationUser", fields: [userId], references: [id], onDelete: Restrict)
+  invitedBy User? @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, usedAt])
 }
 
 // =============================================================================
@@ -487,6 +555,7 @@ model Hospital {
   accreditedCentres  AccreditedCentre[]
   traineeProfiles    TraineeProfile[]
   trainerProfiles    TrainerProfile[]
+  trainersMovedHere  TrainerProfile[]         @relation("TrainerMovedTo")
   rotations          Rotation[]
   vopEntries         VolumeOfPractice[]
   // --- Admin console / schema doc alignment (2026-10-24) ---

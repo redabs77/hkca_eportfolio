@@ -1313,7 +1313,7 @@ This is the single largest piece of ETL work in the project, and the largest dat
 
 Source: `Admin Prototype Delta Check 2026-10-24.md`. These tables are needed by the College Secretariat Console prototype.
 
-**Prisma status (2026-10-25, later):** migration 6 (`6_sot_nominations`) adds the SOT nomination table (section 14). **Prisma status (2026-10-25):** migration 5 (`5_secretariat_courses_exams_projects`) adds the courses, exams, formal-project and recognition changes in section 13 and edits several tables below in place. **Prisma status (2026-10-24):** migration `3_admin_console_schema_alignment` adds all of them, plus the earlier doc-only tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans with goals and proposals, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). 22 tables in all, verified on Postgres by `tests/schema/verify_admin_schema.mjs`. Deliberate differences from the SQL in this document:
+**Prisma status (2026-10-26):** migration 7 (`7_trainer_accounts`) adds trainer lists and the light trainer account (section 15). **Prisma status (2026-10-25, later):** migration 6 (`6_sot_nominations`) adds the SOT nomination table (section 14). **Prisma status (2026-10-25):** migration 5 (`5_secretariat_courses_exams_projects`) adds the courses, exams, formal-project and recognition changes in section 13 and edits several tables below in place. **Prisma status (2026-10-24):** migration `3_admin_console_schema_alignment` adds all of them, plus the earlier doc-only tables (`wba_iwba_links`, `wba_sync_state`, `retrospective_recognitions`, `training_stage_history`, `formal_project_events`, learning plans with goals and proposals, `sot_assignments`, `logbook_verifier_assignments`, `vop_verification_events`, `notifications`). 22 tables in all, verified on Postgres by `tests/schema/verify_admin_schema.mjs`. Deliberate differences from the SQL in this document:
 - Ids are UUID strings and foreign keys to users are text, as in the rest of Prisma, not `SERIAL`/`INTEGER`.
 - `ita_domain_ratings` is not built: the 15-item form (migration 1) superseded it.
 - `icu_tutorials` and `icu_tutorial_attendance` are not built: whether ICU trainees are in scope is an open question to the College.
@@ -1459,7 +1459,7 @@ Conflict rule: a reviewer whose current or parent hospital equals the trainee's 
 
 ### Trainer list update (rosters)
 
-Every January and July the SOT of each department confirms the department's trainer list (Dr. Chan, 2026-10-25; this replaces the June and December round). One `roster_rounds` row per round and one `roster_attestations` row per department. The Admin side (rounds, who confirmed, changes reported, mark reviewed) is built in the prototype; the SOT-side screen is a later build. No migration: the period is free text.
+Every January and July the SOT of each department confirms the department's trainer list (Dr. Chan, 2026-10-25; this replaces the June and December round). One `roster_rounds` row per round and one `roster_attestations` row per department. The Admin side (rounds, who confirmed, changes reported, mark reviewed) is built in the prototype; the SOT-side screen (the Trainer List tab) is built in the prototype and its tables are in section 15. No migration for the rounds: the period is free text.
 
 ```sql
 CREATE TABLE roster_rounds (
@@ -1667,6 +1667,47 @@ States: `CHECK` (recorded, Admin checks) → `BOARD` (sent to the Board) → `EN
 Rules held in the migration only (Prisma cannot express them): role is SOT or ASSISTANT_SOT; Fellow year between 1950 and 2100; a nomination that has gone to the Board has its sent date; an endorsed one has the Board date and the effective date; an entered one points at its appointment; a closed one has a reason; dates run forwards; and **one open nomination per hospital, role and nominee** (partial unique index, name compared case-insensitively). The index predicate compares the enum directly, because a `::text` cast is not immutable and Postgres refuses it.
 
 **Not a gate.** The Secretariat records the years and the three courses and the Board sees them; the database does not block a nomination that is short on years or courses. Whether a minimum number of years as a Fellow applies, and whether all three courses are compulsory, is not yet confirmed by the College.
+
+## 15. Trainer lists, one login per person, light trainer accounts (added 2026-10-26)
+
+Source: Dr. Chan, 2026-10-26 (PRD §3.2). Migration `7_trainer_accounts`. Everything here is on top of the existing `User`, `UserRoleAssignment`, `TraineeProfile` and `TrainerProfile`; there is **no second account table** for trainers. A person has one `User` row and holds roles through `UserRoleAssignment` (SOT, Assistant SOT), `TrainerProfile` (on a hospital's list) and `TraineeProfile`.
+
+```sql
+-- User: split names (what a SOT types), and the account state
+ALTER TABLE "User" ADD COLUMN "familyName" TEXT, ADD COLUMN "givenName" TEXT,
+  ADD COLUMN "accountStatus" "AccountStatus" NOT NULL DEFAULT 'NONE',   -- NONE, INVITED, ACTIVE
+  ADD COLUMN "accountActivatedAt" TIMESTAMP;
+
+-- TrainerProfile: the trainer list row. One row per person, so a trainer who moves shows at the new hospital.
+ALTER TABLE "TrainerProfile" ALTER COLUMN "hospitalId" DROP NOT NULL,   -- null = imported, no hospital yet
+  ADD COLUMN "listStatus" "TrainerListStatus" NOT NULL DEFAULT 'ON_LIST',  -- ON_LIST, LEFT, MOVED, RETIRED
+  ADD COLUMN "movedToHospitalId" TEXT REFERENCES "Hospital"(id) ON DELETE RESTRICT,
+  ADD COLUMN "joinedOn" DATE, ADD COLUMN "leftOn" DATE,
+  ADD COLUMN "fellowshipYear" INTEGER,                                    -- optional; legacy rarely has it
+  ADD COLUMN "legacySource" TEXT;                                         -- 'USER' or 'ASSESSOR'; null = added in the new system
+
+-- TraineeProfile: which training the trainee is in. ICU and pain trainees may also train others.
+ALTER TABLE "TraineeProfile" ADD COLUMN "programme" "TrainingProgramme" NOT NULL DEFAULT 'ANAESTHESIA';  -- ANAESTHESIA, ICU, PAIN_MEDICINE
+
+CREATE TABLE "AccountInvitation" (
+  id            TEXT PRIMARY KEY,
+  "userId"      TEXT NOT NULL REFERENCES "User"(id) ON DELETE RESTRICT,
+  reason        "InvitationReason" NOT NULL,   -- TRAINER_ROUND, SOT_APPOINTMENT, GO_LIVE
+  context       TEXT,                          -- e.g. the ITA round it came with
+  "tokenHash"   TEXT NOT NULL UNIQUE,          -- only the hash is stored
+  "invitedById" TEXT REFERENCES "User"(id) ON DELETE SET NULL,
+  "createdAt"   TIMESTAMP NOT NULL, "sentAt" TIMESTAMP, "expiresAt" TIMESTAMP NOT NULL,
+  "usedAt"      TIMESTAMP, "revokedAt" TIMESTAMP
+);
+```
+
+Rules held in the migration only (Prisma cannot express them), each tested in `tests/schema/verify_trainer_accounts.mjs`:
+- **Trainer list rows.** Fellowship year between 1960 and 2100; MOVED needs a destination hospital different from the current one and nothing else carries a destination; only an unplaced import (on the list or retired) may have no hospital; left on or after joined on.
+- **Trainer and trainee are exclusive.** A trigger refuses an ON_LIST trainer who is a current ANAESTHESIA trainee (stage not FELLOW), and the reverse, a trainee write for someone on a list. ICU and pain trainees, and anyone at stage FELLOW, are allowed.
+- **An SOT or Assistant SOT in post is a trainer of that hospital.** Appointing one (an active HOSPITAL-scoped assignment that has started) upserts their `TrainerProfile` on that hospital's list, on the same login, setting `isSot` or `isAssistantSot` (those flags are a maintained copy of the assignment, never edited by hand). A trainer already on another hospital's list moves to the appointing hospital: one row only. A second trigger refuses to mark an SOT in post as left, moved or retired; end the appointment first. A future-dated appointment is applied by the daily job on its start date (no row is written early).
+- **Invitations.** Expiry after creation; a link is used or revoked, not both; **one open link per person** (partial unique index; sending a new one revokes the old one first). A link is refused for anyone who already has a login (`accountStatus` ACTIVE, or any trainee record): they sign in and the role is added. Inserting a link moves NONE to INVITED; using it sets ACTIVE and `accountActivatedAt`; a revoked or expired link cannot be used.
+
+Not in the schema: the credential itself (a local password hash, or eHKAM single sign-on through `User.hkamId`) belongs to the authentication layer, which is not decided. Possible-duplicate people (same name, different email) are flagged in the import and Add trainer from existing data and are not stored; a merge screen is deferred (PRD §3.2). `RosterAttestation.changesJson` still carries the January and July changes. Legacy import: `user` rows of type trainer or SOT become `TrainerProfile` with `legacySource='USER'` and a hospital; distinct `atp_ita_assessor` emails not matched to a staff record become `legacySource='ASSESSOR'` with no hospital; inactive staff records are `RETIRED`; `accountStatus` stays NONE until go-live sends `GO_LIVE` invitations.
 
 ## Phase 2 Placeholders (schema reserved, not built in MVP)
 
