@@ -419,14 +419,14 @@ const KEY='hkca.admin.proto';
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){}
 if(!S||S.v!==15)S=seedState();
-S.rounds=HKC.get().rounds;
+S.rounds=HKC.get().rounds;S.trainers=S.trainers||[];
 S.exams=HKC.get().exams;
 syncCluster();
 const doneMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]=t.courses.slice()});return m};
 const profMap=()=>{const m={};S.trainees.forEach(t=>{m[t.id]={stage:t.stage,hosp:t.hosp,status:t.status,regFee:t.regFee!==false,trainFee:t.trainFee!==false,inter:t.exam.Intermediate||null,final:t.exam.Final||null,exempt:t.exempt?t.exempt.basis:null,cf:t.cf||{},accred:S.centres.some(c=>c.hosp===t.hosp&&c.exp>=TODAY)}});return m};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}HKC.setRounds(S.rounds);HKC.setDone(doneMap());HKC.setExams(S.exams);HKC.setProfiles(profMap())};
 const ui={tab:'home',sub:{trainees:'registry',courses:'rounds',exams:'int',projects:'prot',centres:'accred',wba:'link'},
-  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,exFilter:'All',exView:'apps',exSit:null,pjFilter:'active',pjUw:true,pjLogF:'all',docketSel:{},provSel:{},provF:'All',cSort:'cluster',aSort:'cluster',role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
+  q:'',stage:'All',status:'All',hosp:'All',sort:['name',1],round:null,sheet:null,sheetOut:null,exRaw:null,exOut:null,trRaw:null,trOut:null,exFilter:'All',exView:'apps',exSit:null,pjFilter:'active',pjUw:true,pjLogF:'all',docketSel:{},provSel:{},provF:'All',cSort:'cluster',aSort:'cluster',role:'admin',dkGate:'All',dkStat:'All',cn:'EMAC-1011'};
 const T=id=>S.trainees.find(t=>t.id===id);
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
 function logAct(a,d){const t=new Date().toTimeString().slice(0,5);const prev=S.log[0]?S.log[0].h:'0';S.log.unshift({d:TODAY,t,a,det:d,h:hash(prev+a+d+t)});save()}
@@ -1528,9 +1528,9 @@ function pjSavePaper(){
 /* ============ CENTRES & SOTs ============ */
 function vCentres(){
   const s=ui.sub.centres;const c=counts();
-  const seg=subSeg('centres',[['accred','Accredited training centres',c.accSoon],['appts','SOT appointments',c.pend+c.nomAct],['roster','Trainer lists',c.rosterOpen]]);
-  const t={accred:'Each accredited training centre, grouped by cluster, with its accredited training period and when its accreditation expires. Expiry within a year is flagged.',appts:'SOT and Assistant SOT by hospital, and the nominations on the way: the Chief of Service nominates by email, Admin checks, the Board endorses.',roster:'Each department\u2019s trainer list, updated by its SOT every January and July.'}[s];
-  return head('Centres and SOTs',{accred:'Accredited training centres',appts:'SOT appointments',roster:'Trainer lists'}[s],t,seg)+(s==='accred'?vAccred():s==='appts'?vAppts():vRoster());
+  const seg=subSeg('centres',[['accred','Accredited training centres',c.accSoon],['appts','SOT appointments',c.pend+c.nomAct],['roster','Trainer lists',c.rosterOpen],['legtr','Import legacy trainers']]);
+  const t={accred:'Each accredited training centre, grouped by cluster, with its accredited training period and when its accreditation expires. Expiry within a year is flagged.',appts:'SOT and Assistant SOT by hospital, and the nominations on the way: the Chief of Service nominates by email, Admin checks, the Board endorses.',roster:'Each department\u2019s trainer list, updated by its SOT every January and July.',legtr:'One-off load of the trainers the legacy system already holds, so each department SOT starts from a list instead of a blank page.'}[s];
+  return head('Centres and SOTs',{accred:'Accredited training centres',appts:'SOT appointments',roster:'Trainer lists',legtr:'Import legacy trainers'}[s],t,seg)+(s==='accred'?vAccred():s==='appts'?vAppts():s==='legtr'?vLegTr():vRoster());
 }
 const clGroup=(k,n,cols)=>`<tr class="grp"><td colspan="${cols}">${k}, ${esc(CLNAME[k]||k)} <span class="cnt">${n}</span></td></tr>`;
 const byCluster=(list,hf)=>list.slice().sort((x,y)=>{const a=CLUSTERS.indexOf(CLUSTER[hf(x)]),b=CLUSTERS.indexOf(CLUSTER[hf(y)]);return a-b||(hn(hf(x))>hn(hf(y))?1:-1)});
@@ -1653,6 +1653,64 @@ function vRoster(){
   return `<div class="card"><div class="q-h"><div class="h3">July 2026 round</div><span class="meta">Next round opens 1 January 2027. The SOT of each department updates its trainer list: who has joined, who has left, who has moved to another hospital.</span></div><div class="tbl-scroll"><table><thead><tr><th>Department</th><th>Trainer list confirmed by SOT</th><th>Changes reported</th><th class="act"></th></tr></thead><tbody>${byCluster(S.roster,r=>r.hosp).map(r=>`<tr><td><div class="cell-name">${esc(hn(r.hosp))}</div><div class="cell-sub mono">${r.hosp} &middot; ${CLUSTER[r.hosp]||''}</div></td><td>${dt('Confirmed '+fmtS(r.on),'ok')}</td><td>${r.changes?`${esc(r.what)} ${r.reviewed?dt('Reviewed','ok'):''}`:'<span class="muted">No changes</span>'}</td><td class="act">${r.changes&&!r.reviewed?`<button class="btn sec sm" data-a="rosterRev" data-h="${r.hosp}">Mark reviewed</button>`:''}</td></tr>`).join('')}</tbody></table></div></div>
   <p class="meta" style="margin-top:12px">The round runs every January and July. The SOT screen where a department confirms its trainer list is a later build. This page shows what it will report to the Secretariat.</p>`;
 }
+
+/* ---- Legacy trainer import ---- */
+const TR_HEAD='source,first_name,last_name,email,hospital,active';
+const TR_SAMPLE=TR_HEAD+`
+user,Sample,Trainer One,trainer.one@example.org,PWH,Y
+user,Sample,Trainer Two,trainer.two@example.org,Queen Mary Hospital,Y
+user,Sample,Trainer Three,trainer.three@example.org,QEH,N
+user,Sample,Trainer Four,trainer.four@example.org,Nowhere General,Y
+assessor,Sample,Trainer One,Trainer.One@example.org,,
+assessor,Sample,Trainer Five,trainer.five@example.org,,
+assessor,Sample,Trainer Six,trainer.six@example.org,,
+assessor,Sample,Trainer Seven,not-an-email,,
+assessor,Sample,Trainer Two,trainer.two@example.org,,`;
+const hospCode=v=>{const x=(v||'').trim().toLowerCase();if(!x)return {k:'none'};const h=HOSP.find(([c,h])=>h.toLowerCase()===x||hn(h).toLowerCase()===x);return h?{k:'ok',h:h[1]}:{k:'bad',raw:v.trim()}};
+function checkTr(){
+  const raw=$('#trRaw').value;ui.trRaw=raw;const lines=raw.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){toast('Paste the trainer file first.');return}
+  if(lines[0].toLowerCase().replace(/\s/g,'')!==TR_HEAD){ui.trOut={fatal:'The header row must be exactly: '+TR_HEAD};render();return}
+  const rows=lines.slice(1).map((l,i)=>{const p=l.split(',').map(s=>s.trim());return {n:i+2,src:(p[0]||'').toLowerCase(),first:p[1]||'',last:p[2]||'',email:(p[3]||'').toLowerCase(),hr:hospCode(p[4]),act:(p[5]||'').toUpperCase()}});
+  const have=new Set(S.trainers.map(t=>t.email)),grp={};
+  rows.forEach(r=>{r.bad=!['user','assessor'].includes(r.src)?'Source must be user or assessor':!(r.first||r.last)?'No name':!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(r.email)?'Not a valid email address':null;if(!r.bad)(grp[r.email]=grp[r.email]||[]).push(r)});
+  Object.values(grp).forEach(g=>{g.sort((a,b)=>(b.src==='user')-(a.src==='user')||a.n-b.n);const p=g[0];p.srcs=[...new Set(g.map(x=>x.src))];const hh=g.find(x=>x.hr.k==='ok');p.hosp=hh?hh.hr.h:null;p.badHosp=!hh&&g.find(x=>x.hr.k==='bad');g.slice(1).forEach(x=>{x.dupOf=p.n})});
+  const out=rows.map(r=>{
+    const b={n:r.n,name:(r.first+' '+r.last).trim(),email:r.email,src:r.src,hosp:r.hosp};
+    if(r.bad)return Object.assign(b,{k:'err',msg:r.bad});
+    if(r.dupOf)return Object.assign(b,{k:'dup',msg:'Same email as row '+r.dupOf+', merged into it'});
+    if(have.has(r.email))return Object.assign(b,{k:'skip',msg:'Already on the list'});
+    const d=Object.assign(b,{srcs:r.srcs,inactive:r.src==='user'&&r.act==='N'});
+    if(d.inactive)return Object.assign(d,{k:'warn',on:false,msg:'Marked inactive in the legacy system. Tick to import as retired'});
+    if(r.badHosp)return Object.assign(d,{k:'warn',on:false,hosp:null,msg:'Hospital \u201c'+r.badHosp.hr.raw+'\u201d not recognised. Tick to import with no hospital'});
+    return Object.assign(d,{k:'ok',msg:d.hosp?'Import to '+d.hosp:'No hospital recorded. The department SOT will place them'});
+  });
+  ui.trOut={rows:out};render();
+}
+function trOut(o){
+  if(o.fatal)return `<div class="note bad" style="margin-top:18px">${esc(o.fatal)}</div>`;
+  const c=k=>o.rows.filter(x=>x.k===k).length,n=c('ok')+o.rows.filter(x=>x.k==='warn'&&x.on).length;
+  return `<div class="card" style="margin-top:18px"><div class="q-h"><div><div class="h3">Check result</div><div class="meta">${c('ok')} ready &middot; ${c('warn')} need your decision &middot; ${c('dup')} merged duplicates &middot; ${c('skip')} already listed &middot; ${c('err')} with errors, which will be skipped</div></div><button class="btn pri sm" data-a="commitTr" ${n?'':'disabled'}>Import ${n||''} trainers</button></div><div class="tbl-scroll"><table><thead><tr><th>Row</th><th></th><th>Trainer</th><th>From</th><th>Hospital</th><th>Check</th></tr></thead><tbody>${o.rows.map((x,i)=>`<tr><td class="meta mono">${x.n}</td><td style="width:34px">${x.k==='warn'?`<input type="checkbox" data-c="trWarn" data-i="${i}" ${x.on?'checked':''} aria-label="Include row ${x.n}">`:''}</td><td><div class="cell-name">${esc(x.name||'-')}</div><div class="cell-sub mono">${esc(x.email)}</div></td><td class="meta">${x.src==='user'?'Staff record':x.src==='assessor'?'ITA invitation':esc(x.src)}</td><td class="meta">${x.hosp?esc(x.hosp):'-'}</td><td>${dt(x.msg,{ok:x.hosp?'ok':'warn',warn:'warn',err:'bad',dup:'info',skip:'info'}[x.k])}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function commitTr(){
+  const rows=ui.trOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));
+  rows.forEach(x=>{const [first,...rest]=x.name.split(' ');S.trainers.push({email:x.email,name:x.name,hosp:x.hosp||null,srcs:x.srcs,retired:!!x.inactive,at:TODAY,confirmed:false})});
+  const nh=rows.filter(x=>!x.hosp).length;
+  logAct('Legacy trainers imported',`${rows.length} trainers added from the legacy system (${nh} with no hospital); ${ui.trOut.rows.length-rows.length} rows skipped or merged. Not yet confirmed by any department SOT`);
+  ui.trOut=null;ui.trRaw=null;render();toast(plural(rows.length,'trainer')+' imported. Department SOTs confirm them in the next round.')
+}
+function vLegTr(){
+  const o=ui.trOut,T=S.trainers;
+  const by={};T.forEach(t=>{const k=t.hosp||'';(by[k]=by[k]||{hosp:k,n:0,u:0,a:0,r:0});const b=by[k];b.n++;if(t.srcs.includes('user'))b.u++;if(t.srcs.includes('assessor'))b.a++;if(t.retired)b.r++});
+  const noH=by[''],list=byCluster(Object.values(by).filter(b=>b.hosp),b=>b.hosp);
+  const rowH=b=>`<tr><td><div class="cell-name">${esc(hn(b.hosp))}</div><div class="cell-sub mono">${b.hosp} &middot; ${CLUSTER[b.hosp]||''}</div></td><td>${b.n}</td><td>${b.u}</td><td>${b.a}</td><td>${b.r||'<span class="muted">-</span>'}</td></tr>`;
+  return `<div class="card pad"><div class="steps"><span class="${o?'done':'on'}">1 Paste the file</span><span class="${o?'on':''}">2 Check it</span><span>3 Import</span></div>
+  <div class="fld"><label for="trRaw">CSV of legacy trainers, with a header row</label><textarea id="trRaw" rows="8" class="mono" style="font-size:12.5px" placeholder="${TR_HEAD}">${esc(ui.trRaw==null?'':ui.trRaw)}</textarea></div>
+  <p class="meta" style="margin:0 0 6px"><b>source</b> is <b>user</b> for a staff record of type trainer or SOT (it has a hospital), or <b>assessor</b> for a trainer typed in when an ITA was sent (name and email only, no hospital). <b>hospital</b> is a code such as PWH or the full name; leave it blank if unknown. <b>active</b> is Y or N for staff records.</p>
+  <p class="meta" style="margin:0 0 12px">People are matched by email address, so the same trainer typed on many ITAs becomes one person, and a staff record wins over an invitation. Nobody is marked confirmed: each department SOT confirms its list in the next January or July round.</p>
+  <div class="btn-row"><button class="btn sec" data-a="loadTr">Load a sample file</button><button class="btn pri" data-a="checkTr">Check the file</button></div></div>${o?trOut(o):''}
+  <div class="card" style="margin-top:18px"><div class="q-h"><div class="h3">Trainers on file</div><span class="meta">${T.length?plural(T.length,'trainer')+', none confirmed by a department SOT yet':'Nothing imported yet'}</span></div>${T.length?`<div class="tbl-scroll"><table><thead><tr><th>Department</th><th>Trainers</th><th>From staff records</th><th>From ITA invitations</th><th>Retired</th></tr></thead><tbody>${noH?`<tr><td><div class="cell-name">No hospital yet</div><div class="cell-sub">The department SOT places them in the next round</div></td><td>${noH.n}</td><td>${noH.u}</td><td>${noH.a}</td><td>${noH.r||'<span class="muted">-</span>'}</td></tr>`:''}${list.map(rowH).join('')}</tbody></table></div>`:''}</div>`;
+}
 function rosterRev(h){const r=S.roster.find(x=>x.hosp===h);r.reviewed=true;logAct('Trainer list changes reviewed',`${h}: ${r.what}`);render();toast(h+' trainer list changes marked as reviewed.')}
 
 /* ============ iWBA SYNC ============ */
@@ -1718,7 +1776,7 @@ const ACT={
   pickRound:e=>{ui.round=e.dataset.id;render()},rdF:e=>{ui.rdF=e.dataset.v;render()},newRound,editRound:e=>editRound(e.dataset.id),saveRound:e=>saveRound(e.dataset.id),openNow:e=>openNow(e.dataset.id),closeNow:e=>closeNow(e.dataset.id),reopen:e=>reopen(e.dataset.id),doReopen:e=>doReopen(e.dataset.id),decideRound:e=>decideRound(e.dataset.id),attendRound:e=>attendRound(e.dataset.id),suggestSeats,applySuggest,loadSheet:()=>{const rd=S.rounds.find(x=>x.id===ui.cn);ui.sheet=rd&&HKC.noticeOn(rd.course)?SHEET.replace(/^(HKCA-\d{4}-\d{3})$/gm,'$1, 100'):SHEET;ui.sheetOut=null;render()},checkSheet,commitSheet,
   exF:e=>{ui.exFilter=e.dataset.v;render()},loadEx:()=>{ui.exRaw=exSample(exName());ui.exOut=null;render()},checkEx,commitEx,exv:e=>{ui.exView=e.dataset.v;ui.exOut=null;render()},newSit:()=>sitForm(''),editSit:e=>sitForm(e.dataset.id),saveSit:e=>saveSit(e.dataset.id),openSit:e=>openSit(e.dataset.id),closeSit:e=>closeSit(e.dataset.id),doCloseSit:e=>doCloseSit(e.dataset.id),viewApps:e=>{ui.exSit=e.dataset.id;ui.exView='apps';ui.exFilter='All';render()},openExApp:e=>openExApp(e.dataset.s,e.dataset.id),exFee:e=>exFee(e.dataset.s,e.dataset.id),exExc:e=>exExc(e.dataset.s,e.dataset.id),exNo:e=>exNo(e.dataset.s,e.dataset.id),exWd:e=>exWd(e.dataset.s,e.dataset.id),saveElig:e=>saveElig(e.dataset.id),sotYes:e=>sotYes(e.dataset.s,e.dataset.id),sotNo:e=>sotNoAsk(e.dataset.s,e.dataset.id),doSotNo:e=>doSotNo(e.dataset.s,e.dataset.id),
   pjF:e=>{ui.pjFilter=e.dataset.v;render()},pjLogF:e=>{ui.pjLogF=e.dataset.v;render()},openCase:e=>openCase(e.dataset.id),pjDispatch:e=>pjDispatch(e.dataset.id,e.dataset.k),pjRecRev:e=>pjRecRev(e.dataset.id,e.dataset.k,+e.dataset.i),pjTeam:e=>pjTeam(e.dataset.id,e.dataset.k,+e.dataset.i),pjTeamRev:e=>pjTeamRev(e.dataset.id,e.dataset.k,+e.dataset.i),pjReassign:e=>pjReassign(e.dataset.id,e.dataset.k,+e.dataset.i),pjLate:e=>pjLate(e.dataset.id,e.dataset.k,+e.dataset.i),pjDecide:e=>pjDecide(e.dataset.id,e.dataset.k),pjResub:e=>pjResub(e.dataset.id,e.dataset.k),pjAppeal:e=>pjAppeal(e.dataset.id,e.dataset.k),pjNoAppeal:e=>pjNoAppeal(e.dataset.id,e.dataset.k),pjManSub:e=>pjManSub(e.dataset.id),pjNewForm,pjSaveNew,pjPaperForm,pjSavePaper,
-  addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),fCSort:e=>{ui.cSort=e.dataset.v;render()},fASort:e=>{ui.aSort=e.dataset.v;render()},newNom:e=>newNom(e.dataset.h,e.dataset.r),doNewNom,nomOpen:e=>nomOpen(e.dataset.id),nomSave:e=>nomSave(e.dataset.id),nomSend:e=>nomSend(e.dataset.id),nomEndorse:e=>nomEndorse(e.dataset.id),nomDoEndorse,nomClose:e=>nomClose(e.dataset.id),nomDoClose,fPv:e=>{ui.provF=e.dataset.v;render()},pvAll:()=>{pvVisible().forEach(x=>ui.provSel[x.t.id]=true);render()},pvNone:()=>{ui.provSel={};render()},pvGo,pvOne:e=>{ui.provSel={[e.dataset.id]:true};render();pvGo()},pvDo,
+  addCentre,doAddCentre,editCentre:e=>editCentre(e.dataset.h),saveCentre:e=>saveCentre(e.dataset.h),enterAppt:e=>enterAppt(e.dataset.id),newAppt,doAppt,endAppt:e=>endAppt(e.dataset.id),doEnd,rosterRev:e=>rosterRev(e.dataset.h),loadTr:()=>{ui.trRaw=TR_SAMPLE;ui.trOut=null;render()},checkTr,commitTr,fCSort:e=>{ui.cSort=e.dataset.v;render()},fASort:e=>{ui.aSort=e.dataset.v;render()},newNom:e=>newNom(e.dataset.h,e.dataset.r),doNewNom,nomOpen:e=>nomOpen(e.dataset.id),nomSave:e=>nomSave(e.dataset.id),nomSend:e=>nomSend(e.dataset.id),nomEndorse:e=>nomEndorse(e.dataset.id),nomDoEndorse,nomClose:e=>nomClose(e.dataset.id),nomDoClose,fPv:e=>{ui.provF=e.dataset.v;render()},pvAll:()=>{pvVisible().forEach(x=>ui.provSel[x.t.id]=true);render()},pvNone:()=>{ui.provSel={};render()},pvGo,pvOne:e=>{ui.provSel={[e.dataset.id]:true};render();pvGo()},pvDo,
   linkIt:e=>linkIt(e.dataset.id,e.dataset.to),linkOther:e=>linkOther(e.dataset.id),linkSel:e=>linkIt(e.dataset.id,$('#lkSel').value),bulkLink,doBulk,saveUnm:e=>saveUnm(+e.dataset.i),readNow
 };
 document.addEventListener('click',ev=>{const e=ev.target.closest('[data-a]');if(!e)return;const f=ACT[e.dataset.a];if(f){ev.preventDefault();f(e)}});
@@ -1741,6 +1799,7 @@ document.addEventListener('change',ev=>{
   else if(c==='rdS'){ui.rdS=e.value;render()}
   else if(c==='cn'){ui.cn=e.value;ui.sheetOut=null;render()}
   else if(c==='warnOn'){ui.sheetOut.rows[+e.dataset.i].on=e.checked;render()}
+  else if(c==='trWarn'){ui.trOut.rows[+e.dataset.i].on=e.checked;render()}
   else if(c==='exWarn'){ui.exOut.rows[+e.dataset.i].on=e.checked;render()}
   else if(c==='pick'){const v=[...document.querySelectorAll('#pickList input:checked')].map(x=>x.value);if(v.length>2){e.checked=false;toast('Pick exactly two reviewers.');return}ui.pick=v;$('#dispBtn').disabled=v.length!==2;document.querySelectorAll('#pickList input').forEach(x=>{x.disabled=v.length>=2&&!x.checked})}
   else if(c==='pjUw'){ui.pjUw=e.checked;render()}
