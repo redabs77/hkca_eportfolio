@@ -2484,7 +2484,7 @@ function formatStaticNames(){
 }
 
 /* ---------------- invite all trainers ---------------- */
-const DEPT_TRAINERS = TRAINERS;   // every supervising trainer in the department
+let DEPT_TRAINERS = TRAINERS;   // every supervising trainer in the department
 let invModeV = 'invite';
 function invMode(){ return invModeV; }
 function invRcpt(){ return (document.querySelector('input[name=invRcpt]:checked')||{}).value || 'all'; }
@@ -2492,6 +2492,8 @@ function invChosen(){ return invRcpt()==='all' ? DEPT_TRAINERS.slice() : [...doc
 const shortTrainees = () => ptrainees().filter(t=>ROUND.open && formsGot(t)<RULES.minForms);
 const shortForms = () => shortTrainees().reduce((a,t)=>a+(RULES.minForms-formsGot(t)),0);
 function openInvite(mode){
+  /* the invitation list is the department's Trainer List (anyone marked as left or moved is not asked) */
+  DEPT_TRAINERS = TrainersStore.list(TR_HOME).filter(t=>t.st==='on').map(t=>t.name);
   if(role==='asst') return;
   invModeV = ROUND.open ? 'remind' : 'invite';
   document.getElementById('invTitle').textContent = invModeV==='remind' ? 'Remind trainers who still owe feedback' : 'Initiate ITA and invite all trainers';
@@ -2500,9 +2502,9 @@ function openInvite(mode){
   document.getElementById('invMsg').value = invModeV==='remind'
     ? 'Dear colleague,\n\nThank you to those who have already completed ITA trainer forms. Some trainees still have too few forms for their face-to-face meeting. If you have worked with any trainee in the round, please complete a form by the deadline shown. Your form is read by the SOT team without your name.\n\nThank you.'
     : 'Dear colleague,\n\nThe '+ROUND.cycle+' In-Training Assessment is now open. Please complete a trainer form for each trainee you have worked with, by the deadline shown. Your form is read by the SOT team without your name, and the College does not see individual forms. If you are happy to be contacted about your feedback, you can tick that on the form; your name is then shown with it.\n\nThank you.';
-  document.getElementById('invRcptAll').innerHTML = `<b>All trainers in the department</b> &middot; ${DEPT_TRAINERS.length} trainers <span class="pill ok" style="margin-left:6px">Default</span>`;
+  document.getElementById('invRcptAll').innerHTML = `<b>All trainers in the department</b> &middot; ${DEPT_TRAINERS.length} trainers on your Trainer List <span class="pill ok" style="margin-left:6px">Default</span>`;
   document.querySelector('input[name=invRcpt][value=all]').checked = true;
-  document.getElementById('invPick').innerHTML = DEPT_TRAINERS.map(n=>`<label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer"><input type="checkbox" class="invT" value="${n}" checked onchange="renderInvitePreview()"><span>${n}</span></label>`).join('');
+  document.getElementById('invPick').innerHTML = DEPT_TRAINERS.map(n=>`<label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer"><input type="checkbox" class="invT" value="${trEsc(n)}" checked onchange="renderInvitePreview()"><span>${trEsc(n)}</span></label>`).join('');
   renderInvitePreview();
   document.getElementById('invModal').classList.add('on');
   document.getElementById('invSend').focus();

@@ -12,7 +12,7 @@
     var mk=function(n,i){return {id:'T'+i,name:n,email:em(n),st:'on',to:null,isNew:false}};
     return {v:VER,lists:{PWH:NAMES.map(mk)},unplaced:UNPL.map(function(n,i){return {id:'U'+i,name:n,email:em(n)}}),reports:{},lastConf:{PWH:'2026-07-12'},n:100};
   }
-  function get(){var s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!s||s.v!==VER){s=seed();put(s)}return s}
+  function get(){var s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!s||s.v!==VER){s=seed();put(s)}s.retired=s.retired||[];return s}
   function put(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
   function emailTaken(s,e){return Object.keys(s.lists).some(function(h){return s.lists[h].some(function(t){return t.email===e&&t.st==='on'})})}
   var API={KEY:KEY,HOSP:HOSP,get:get,
@@ -34,6 +34,17 @@
       l.filter(function(t){return t.st==='moved'}).forEach(function(t){var d=(s.lists[t.to]=s.lists[t.to]||[]);if(!d.some(function(x){return x.email===t.email}))d.push({id:'T'+(s.n++),name:t.name,email:t.email,st:'on',to:null,isNew:true})});
       s.lists[h]=l.filter(function(t){return t.st==='on'});s.lists[h].forEach(function(t){t.isNew=false});
       s.lastConf[h]=today;s.reports[h]={on:today,at:Date.now(),by:by,joined:c.joined,left:c.left,moved:c.moved,total:s.lists[h].length,what:API.what(c)};put(s);return s.reports[h]},
+    /* Admin's one-off legacy import: people with a hospital go onto that department's list (not yet confirmed
+       by its SOT), people without one wait in the unplaced pool, retired staff are kept aside. Matched by email. */
+    emails:function(){var s=get(),o={};Object.keys(s.lists).forEach(function(h){s.lists[h].forEach(function(t){o[t.email]=1})});s.unplaced.concat(s.retired).forEach(function(t){o[t.email]=1});return o},
+    importMany:function(rows,today){var s=get(),have=API.emails(),n=0;
+      rows.forEach(function(r){if(have[r.email])return;have[r.email]=1;n++;
+        var base={name:r.name,email:r.email,legacy:true,srcs:r.srcs||[],at:today};
+        if(r.retired)s.retired.push(base);
+        else if(r.hosp)(s.lists[r.hosp]=s.lists[r.hosp]||[]).push(Object.assign({id:'T'+(s.n++),st:'on',to:null,isNew:false},base));
+        else s.unplaced.push(Object.assign({id:'U'+(s.n++)},base))});
+      put(s);return n},
+    summary:function(){var s=get();return {lists:s.lists,unplaced:s.unplaced,retired:s.retired,lastConf:s.lastConf}},
     report:function(h){return get().reports[h]||null},
     lastConf:function(h){return get().lastConf[h]||null},
     reset:function(){try{localStorage.removeItem(KEY)}catch(e){}return get()}

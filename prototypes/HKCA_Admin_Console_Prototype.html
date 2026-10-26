@@ -1673,7 +1673,7 @@ function checkTr(){
   if(!lines.length){toast('Paste the trainer file first.');return}
   if(lines[0].toLowerCase().replace(/\s/g,'')!==TR_HEAD){ui.trOut={fatal:'The header row must be exactly: '+TR_HEAD};render();return}
   const rows=lines.slice(1).map((l,i)=>{const p=l.split(',').map(s=>s.trim());return {n:i+2,src:(p[0]||'').toLowerCase(),first:p[1]||'',last:p[2]||'',email:(p[3]||'').toLowerCase(),hr:hospCode(p[4]),act:(p[5]||'').toUpperCase()}});
-  const have=new Set(S.trainers.map(t=>t.email)),grp={};
+  const have=new Set(Object.keys(TrainersStore.emails())),grp={};
   rows.forEach(r=>{r.bad=!['user','assessor'].includes(r.src)?'Source must be user or assessor':!(r.first||r.last)?'No name':!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(r.email)?'Not a valid email address':null;if(!r.bad)(grp[r.email]=grp[r.email]||[]).push(r)});
   Object.values(grp).forEach(g=>{g.sort((a,b)=>(b.src==='user')-(a.src==='user')||a.n-b.n);const p=g[0];p.srcs=[...new Set(g.map(x=>x.src))];const hh=g.find(x=>x.hr.k==='ok');p.hosp=hh?hh.hr.h:null;p.badHosp=!hh&&g.find(x=>x.hr.k==='bad');g.slice(1).forEach(x=>{x.dupOf=p.n})});
   const out=rows.map(r=>{
@@ -1695,22 +1695,22 @@ function trOut(o){
 }
 function commitTr(){
   const rows=ui.trOut.rows.filter(x=>x.k==='ok'||(x.k==='warn'&&x.on));
-  rows.forEach(x=>{const [first,...rest]=x.name.split(' ');S.trainers.push({email:x.email,name:x.name,hosp:x.hosp||null,srcs:x.srcs,retired:!!x.inactive,at:TODAY,confirmed:false})});
-  const nh=rows.filter(x=>!x.hosp).length;
-  logAct('Legacy trainers imported',`${rows.length} trainers added from the legacy system (${nh} with no hospital); ${ui.trOut.rows.length-rows.length} rows skipped or merged. Not yet confirmed by any department SOT`);
-  ui.trOut=null;ui.trRaw=null;render();toast(plural(rows.length,'trainer')+' imported. Department SOTs confirm them in the next round.')
+  TrainersStore.importMany(rows.map(x=>({name:x.name,email:x.email,hosp:x.hosp||null,srcs:x.srcs,retired:!!x.inactive})),TODAY);
+  const nh=rows.filter(x=>!x.hosp&&!x.inactive).length,nr=rows.filter(x=>x.inactive).length;
+  logAct('Legacy trainers imported',`${rows.length} trainers added from the legacy system (${nh} with no hospital, ${nr} retired kept aside); ${ui.trOut.rows.length-rows.length} rows skipped or merged. Not yet confirmed by any department SOT`);
+  ui.trOut=null;ui.trRaw=null;render();toast(plural(rows.length,'trainer')+' imported. Each department SOT sees theirs in Trainer List.')
 }
 function vLegTr(){
-  const o=ui.trOut,T=S.trainers;
-  const by={};T.forEach(t=>{const k=t.hosp||'';(by[k]=by[k]||{hosp:k,n:0,u:0,a:0,r:0});const b=by[k];b.n++;if(t.srcs.includes('user'))b.u++;if(t.srcs.includes('assessor'))b.a++;if(t.retired)b.r++});
-  const noH=by[''],list=byCluster(Object.values(by).filter(b=>b.hosp),b=>b.hosp);
-  const rowH=b=>`<tr><td><div class="cell-name">${esc(hn(b.hosp))}</div><div class="cell-sub mono">${b.hosp} &middot; ${CLUSTER[b.hosp]||''}</div></td><td>${b.n}</td><td>${b.u}</td><td>${b.a}</td><td>${b.r||'<span class="muted">-</span>'}</td></tr>`;
+  const o=ui.trOut,M=TrainersStore.summary();
+  const rowsH=Object.keys(M.lists).map(h=>({hosp:h,n:M.lists[h].filter(t=>t.st!=='left').length,lg:M.lists[h].filter(t=>t.legacy).length,cf:M.lastConf[h]||null})).filter(b=>b.n);
+  const list=byCluster(rowsH,b=>b.hosp),noH=M.unplaced.length,total=rowsH.reduce((a,b)=>a+b.n,0)+noH;
+  const rowH=b=>`<tr><td><div class="cell-name">${esc(hn(b.hosp))}</div><div class="cell-sub mono">${b.hosp} &middot; ${CLUSTER[b.hosp]||''}</div></td><td>${b.n}</td><td>${b.lg||'<span class="muted">-</span>'}</td><td>${b.cf?dt('Confirmed '+fmtS(b.cf),'ok'):dt('Not yet','warn')}</td></tr>`;
   return `<div class="card pad"><div class="steps"><span class="${o?'done':'on'}">1 Paste the file</span><span class="${o?'on':''}">2 Check it</span><span>3 Import</span></div>
   <div class="fld"><label for="trRaw">CSV of legacy trainers, with a header row</label><textarea id="trRaw" rows="8" class="mono" style="font-size:12.5px" placeholder="${TR_HEAD}">${esc(ui.trRaw==null?'':ui.trRaw)}</textarea></div>
   <p class="meta" style="margin:0 0 6px"><b>source</b> is <b>user</b> for a staff record of type trainer or SOT (it has a hospital), or <b>assessor</b> for a trainer typed in when an ITA was sent (name and email only, no hospital). <b>hospital</b> is a code such as PWH or the full name; leave it blank if unknown. <b>active</b> is Y or N for staff records.</p>
   <p class="meta" style="margin:0 0 12px">People are matched by email address, so the same trainer typed on many ITAs becomes one person, and a staff record wins over an invitation. Nobody is marked confirmed: each department SOT confirms its list in the next January or July round.</p>
   <div class="btn-row"><button class="btn sec" data-a="loadTr">Load a sample file</button><button class="btn pri" data-a="checkTr">Check the file</button></div></div>${o?trOut(o):''}
-  <div class="card" style="margin-top:18px"><div class="q-h"><div class="h3">Trainers on file</div><span class="meta">${T.length?plural(T.length,'trainer')+', none confirmed by a department SOT yet':'Nothing imported yet'}</span></div>${T.length?`<div class="tbl-scroll"><table><thead><tr><th>Department</th><th>Trainers</th><th>From staff records</th><th>From ITA invitations</th><th>Retired</th></tr></thead><tbody>${noH?`<tr><td><div class="cell-name">No hospital yet</div><div class="cell-sub">The department SOT places them in the next round</div></td><td>${noH.n}</td><td>${noH.u}</td><td>${noH.a}</td><td>${noH.r||'<span class="muted">-</span>'}</td></tr>`:''}${list.map(rowH).join('')}</tbody></table></div>`:''}</div>`;
+  <div class="card" style="margin-top:18px"><div class="q-h"><div class="h3">Trainers on file</div><span class="meta">${total?plural(total,'trainer')+(M.retired.length?', and '+M.retired.length+' retired kept aside':''):'Nothing imported yet'}. Each department SOT sees its own list in the SOT Console, Trainer List.</span></div>${total?`<div class="tbl-scroll"><table><thead><tr><th>Department</th><th>Trainers</th><th>Imported from legacy</th><th>SOT confirmation</th></tr></thead><tbody>${noH?`<tr><td><div class="cell-name">No hospital yet</div><div class="cell-sub">Each department SOT can add them to their own list</div></td><td>${noH}</td><td>${M.unplaced.filter(t=>t.legacy).length||'<span class="muted">-</span>'}</td><td><span class="muted">-</span></td></tr>`:''}${list.map(rowH).join('')}</tbody></table></div>`:''}</div>`;
 }
 function rosterRev(h){const r=S.roster.find(x=>x.hosp===h);r.reviewed=true;logAct('Trainer list changes reviewed',`${h}: ${r.what}`);render();toast(h+' trainer list changes marked as reviewed.')}
 
