@@ -307,6 +307,8 @@
   .toast.on{opacity:1;transform:translate(-50%,0)}
 
   /* modal */
+  #trTable select{max-width:100%}
+  @media(max-width:720px){#tab-trainers .tb-a{display:grid;grid-template-columns:1fr;gap:8px;width:100%}#tab-trainers .tb-a input.ctl,#tab-trainers .tb-a .btn,#trTable select{width:100%;min-width:0 !important;box-sizing:border-box}#tab-trainers .tb-a>span{display:none}}
   .mscrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:150;display:none;align-items:center;justify-content:center;padding:16px}
   .mscrim.on{display:flex}
   .modal{background:var(--bg);border:1px solid var(--border);border-radius:14px;width:min(740px,100%);max-height:88vh;display:flex;
@@ -751,6 +753,7 @@
       <button class="tab" data-tab="rotations" role="tab" id="tabbtn-rotations" aria-controls="tab-rotations" aria-selected="false" tabindex="-1">Rotations <span class="cnt hot" id="rotBadge">2</span></button>
       <button class="tab" data-tab="itas" role="tab" id="tabbtn-itas" aria-controls="tab-itas" aria-selected="false" tabindex="-1">ITAs &amp; Learning Cycles <span class="cnt hot" id="itaBadge">4</span></button>
       <button class="tab" data-tab="review" role="tab" id="tabbtn-review" aria-controls="tab-review" aria-selected="false" tabindex="-1">Progression Risk <span class="pill purple" style="font-size:9.5px;padding:1px 6px;vertical-align:1px" title="Beta: under review, scope and signals may change">Beta</span> <span class="cnt crit">5</span></button>
+      <button class="tab" data-tab="trainers" role="tab" id="tabbtn-trainers" aria-controls="tab-trainers" aria-selected="false" tabindex="-1">Trainer List</button>
     </nav>
   </div>
 </div>
@@ -1159,6 +1162,41 @@
   </section>
 
 </div>
+
+  <section id="tab-trainers" role="tabpanel" aria-labelledby="tabbtn-trainers" class="hidden">
+    <div class="card card-pad mb">
+      <div class="card-h" style="margin-bottom:10px">
+        <div>
+          <div class="eyebrow">Prince of Wales Hospital &middot; Anaesthesia</div>
+          <div class="h2">Trainer List</div>
+          <div class="meta" style="margin-top:2px" id="trSummary"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="meta" id="trLock"></span>
+          <button class="btn pri" id="trConfirm" data-need-sot onclick="trConfirm()">Confirm trainer list</button>
+        </div>
+      </div>
+      <div id="trPending"></div>
+      <div class="toolbar" role="toolbar" aria-label="Trainer list controls" style="margin-bottom:10px">
+        <div class="tb-a" role="group" aria-label="Find or add a trainer" style="flex-wrap:wrap">
+          <input id="trSearch" class="ctl" type="search" placeholder="Find a trainer" aria-label="Find a trainer" oninput="renderTrainers()" style="min-width:200px">
+          <span style="flex:1"></span>
+          <input id="trNewName" class="ctl" placeholder="Name" aria-label="New trainer name" style="min-width:170px" data-need-sot>
+          <input id="trNewEmail" class="ctl" placeholder="Email" aria-label="New trainer email" style="min-width:210px" data-need-sot>
+          <button class="btn sec" onclick="trAdd()" data-need-sot>Add trainer</button>
+        </div>
+      </div>
+      <div class="tbl-scroll"><table id="trTable">
+        <thead><tr><th>Trainer</th><th style="width:130px">Since last confirmation</th><th style="width:260px">Status</th></tr></thead>
+        <tbody id="trBody"></tbody>
+      </table></div>
+    </div>
+    <div class="card card-pad mb" id="trUnplacedCard">
+      <div class="card-h" style="margin-bottom:6px"><div><div class="h2">Trainers with no hospital yet</div>
+        <div class="meta" style="margin-top:2px">Brought across from the old system without a hospital. Add the ones who work in your department.</div></div></div>
+      <div class="tbl-scroll"><table><tbody id="trUnplaced"></tbody></table></div>
+    </div>
+  </section>
 </main>
 
 <!-- ============ TRAINEE DRAWER ============ -->
@@ -1464,6 +1502,7 @@ Thank you.</textarea>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="hkca-plans-store.js"></script>
+<script src="hkca-trainers-store.js"></script>
 <script>
 /* ---------------- roster data ---------------- */
 const ROSTER = [
@@ -3715,7 +3754,54 @@ function goalReminders(){
 
 
 function renderAll(){
-  updateItaBadge(); refreshAsotOptions(); renderRoster(); renderItaRound(); renderLog(); renderGoals(); renderLogbook(); renderRotations();
+  updateItaBadge(); refreshAsotOptions(); renderRoster(); renderItaRound(); renderLog(); renderGoals(); renderLogbook(); renderRotations(); renderTrainers();
+}
+
+
+/* ---------------- trainer list (SOT confirms twice a year; changes go to the College) ---------------- */
+const TR_HOME='PWH', TR_ISO='2026-10-17';
+const trEsc = x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const trFmt = iso=>{ const d=new Date(iso+'T00:00:00'); return d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear(); };
+const trHosp = code=>{ const h=TrainersStore.HOSP.find(x=>x[1]===code); return h?h[2]:code; };
+function trOpts(t){
+  const groups={}; TrainersStore.HOSP.filter(h=>h[1]!==TR_HOME).forEach(h=>{ (groups[h[0]]=groups[h[0]]||[]).push(h); });
+  return `<option value="on" ${t.st==='on'?'selected':''}>${t.isNew?'Joined this round':'On the list'}</option>`
+    +`<option value="left" ${t.st==='left'?'selected':''}>Left the department</option>`
+    +Object.keys(groups).map(c=>`<optgroup label="Moved to ${trEsc(c)}">${groups[c].map(h=>`<option value="moved:${h[1]}" ${t.st==='moved'&&t.to===h[1]?'selected':''}>Moved to ${trEsc(h[2])}</option>`).join('')}</optgroup>`).join('');
+}
+function renderTrainers(){
+  if(!document.getElementById('trBody')) return;
+  const asst = role==='asst', list = TrainersStore.list(TR_HOME), q=(document.getElementById('trSearch').value||'').toLowerCase();
+  const c = TrainersStore.changes(TR_HOME), n = c.joined+c.left+c.moved, last = TrainersStore.lastConf(TR_HOME);
+  const staying = list.filter(t=>t.st==='on').length;
+  document.getElementById('trSummary').textContent = staying+' trainers'+(last?' \u00b7 last confirmed '+trFmt(last):'')+' \u00b7 next round opens 1 Jan 2027. These are the trainers invited when you start an ITA round.';
+  document.getElementById('trPending').innerHTML = n
+    ? `<div class="banner" style="margin-bottom:12px"><b>Since your last confirmation:</b> ${trEsc(TrainersStore.what(c))}. The College sees this when you confirm.</div>` : '';
+  const btn=document.getElementById('trConfirm'); btn.textContent = n ? 'Confirm trainer list' : 'Confirm, no changes';
+  document.getElementById('trLock').textContent = asst ? 'Only the SOT can change or confirm the list.' : '';
+  const rows = list.filter(t=>!q || (t.name+' '+t.email).toLowerCase().includes(q));
+  document.getElementById('trBody').innerHTML = rows.map(t=>`<tr${t.st!=='on'?' style="opacity:.62"':''}>
+    <td><div style="font-weight:650">${trEsc(t.name)}</div><div class="meta" style="font-size:12px">${trEsc(t.email)}</div></td>
+    <td>${t.isNew?'<span class="meta">New</span>':''}</td>
+    <td><select class="ctl" aria-label="Status of ${trEsc(t.name)}" ${asst?'disabled':''} onchange="trSet('${t.id}',this.value)">${trOpts(t)}</select></td></tr>`).join('')
+    || '<tr><td colspan="3" class="meta" style="padding:16px">No trainer matches.</td></tr>';
+  const un = TrainersStore.unplaced();
+  document.getElementById('trUnplacedCard').style.display = un.length?'':'none';
+  document.getElementById('trUnplaced').innerHTML = un.map(u=>`<tr><td><div style="font-weight:650">${trEsc(u.name)}</div><div class="meta" style="font-size:12px">${trEsc(u.email)}</div></td>
+    <td style="text-align:right;width:220px"><button class="btn sec sm" ${asst?'disabled':''} onclick="trClaim('${u.id}')">Add to my department</button></td></tr>`).join('');
+}
+function trSet(id,v){ const p=v.split(':'); TrainersStore.setState(TR_HOME,id,p[0],p[1]||null); renderTrainers(); }
+function trClaim(id){ TrainersStore.claim(TR_HOME,id); renderTrainers(); toast('Added to your trainer list.'); }
+function trAdd(){
+  const nm=document.getElementById('trNewName'), em=document.getElementById('trNewEmail');
+  const r=TrainersStore.add(TR_HOME,nm.value,em.value);
+  if(r.err){ toast(r.err); return; }
+  nm.value=''; em.value=''; renderTrainers(); toast('Trainer added. They are invited with the next ITA round.');
+}
+function trConfirm(){
+  const rep=TrainersStore.confirm(TR_HOME,TR_ISO,'SOT, PWH');
+  logEvent(rep.what ? `Confirmed the PWH trainer list: ${trEsc(rep.what)}` : 'Confirmed the PWH trainer list, no changes');
+  renderTrainers(); toast('Trainer list confirmed and sent to the College.');
 }
 
 /* ---------------- tabs ---------------- */
@@ -3730,7 +3816,7 @@ function go(id, focusTab){
     b.tabIndex = on ? 0 : -1;
     if(on && focusTab) b.focus();
   });
-  ['home','roster','logbook','rotations','itas','review'].forEach(t=>{
+  ['home','roster','logbook','rotations','itas','review','trainers'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden', t!==id);
   });
   if(id==='itas') renderItaRound();

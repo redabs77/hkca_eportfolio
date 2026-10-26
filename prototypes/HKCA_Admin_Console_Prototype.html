@@ -278,6 +278,7 @@ table.dk{table-layout:fixed}
 <div class="toast" id="toast" role="status"></div>
 <div class="card demo-pop" id="demoPop"><div class="h3" style="margin-bottom:6px">Demo controls</div><p class="meta" style="margin-bottom:10px">All names, numbers and dates are illustrative. The prototype date is fixed at 24 Oct 2026.</p><div class="fld" style="margin-bottom:10px"><label for="roleSel">View as</label><select id="roleSel" data-c="role"><option value="admin">College Secretariat</option><option value="to">Training Officer</option><option value="sot">Supervisor of Training</option></select></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><button class="btn sec sm" data-a="simSign">Simulate pending signatures arriving</button><button class="btn sec sm" data-a="simSubmit">Simulate applicants submitting documents</button><button class="btn sec sm" data-a="resetDemo">Reset demo data</button></div></div>
 <script src="hkca-courses-store.js"></script>
+<script src="hkca-trainers-store.js"></script>
 <script>
 /* ============ helpers ============ */
 const $=s=>document.querySelector(s);
@@ -1753,7 +1754,10 @@ const TABS=[['home','Home'],['trainees','Trainees'],['courses','Courses'],['exam
 function tabBadge(k){const c=counts();return {trainees:c.intake+c.recogAct+c.prov,courses:c.triage,exams:c.exFee+c.exCrit,projects:c.pjDispatch+c.pjOver+c.pjIn+c.pjAppeal,centres:c.pend+c.nomAct+c.accSoon,wba:c.link+c.unm}[k]||0}
 const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,projects:vProjects,centres:vCentres,wba:vWba};
 function labelTables(){document.querySelectorAll('#app table').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(h=>h.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.dataset.l===undefined&&hs[i]!==undefined)td.dataset.l=hs[i]}))})}
+/* a department SOT's confirmation (SOT Console, same browser) replaces the demo row for that hospital */
+function syncRoster(){Object.keys(TrainersStore.get().reports).forEach(h=>{const rp=TrainersStore.report(h);let r=S.roster.find(x=>x.hosp===h);if(!r){r={hosp:h};S.roster.push(r)}if(r.repAt===rp.at)return;const n=rp.joined+rp.left+rp.moved;Object.assign(r,{conf:true,on:rp.on,changes:n,what:rp.what,reviewed:n===0,repAt:rp.at})})}
 function render(){
+  syncRoster();
   const y=window.scrollY;
   $('#tabs').innerHTML=ui.role==='to'?toTab():ui.role==='sot'?sotTab():TABS.map(([k,l])=>{const b=tabBadge(k);return `<button class="tab ${ui.tab===k?'on':''}" role="tab" aria-selected="${ui.tab===k}" data-a="go" data-t="${k}" tabindex="${ui.tab===k?0:-1}">${l}${b?` <span class="cnt hot">${b}</span>`:''}</button>`}).join('');
   $('#app').innerHTML=(ui.role==='to'?vTO:ui.role==='sot'?vSOT:VIEWS[ui.tab])();roleChrome();labelTables();save();
@@ -1822,7 +1826,7 @@ function procEvents(announce){
   else if(announce&&r&&t)toast(`${t.name} ${l.type==='apply'?'applied for':'withdrew from'} ${CNAME[r.course]}${ev.length>1?' and '+(ev.length-1)+' more':''}.`);
   save();return true;
 }
-window.addEventListener('storage',e=>{if(e.key!==HKC.KEY)return;S.rounds=HKC.get().rounds;S.exams=HKC.get().exams;procEvents(true);render()});
+window.addEventListener('storage',e=>{if(e.key===TrainersStore.KEY){render();return}if(e.key!==HKC.KEY)return;S.rounds=HKC.get().rounds;S.exams=HKC.get().exams;procEvents(true);render()});
 procEvents(false);
 (function(){const h=location.hash.slice(1).split('/');if(VIEWS[h[0]]){ui.tab=h[0];if(h[1])ui.sub[h[0]]=h[1]}})();
 render();
