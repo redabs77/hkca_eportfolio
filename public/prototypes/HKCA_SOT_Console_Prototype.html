@@ -728,7 +728,8 @@
       <button data-role="asst">Assistant SOT</button>
       <button data-role="cos">Chief of Service</button>
     </div>
-    <a class="btn sec" href="HKCA_Trainee_Dashboard_DirectionA.html" target="_blank" rel="noopener">Trainee view &#8599;</a>
+    <a class="btn sec" id="trainerViewLink" href="HKCA_ITA_Trainer_Form.html" target="_blank" rel="noopener" style="display:none">Give feedback as a trainer &#8599;</a>
+      <a class="btn sec" href="HKCA_Trainee_Dashboard_DirectionA.html" target="_blank" rel="noopener">Trainee view &#8599;</a>
 
     <div class="top-right">
       <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">&#9788;</button>
@@ -2525,8 +2526,9 @@ function renderInvitePreview(){
   } else {
     const rc = invChosen(), all = ptrainees().length;
     html = `<div class="prev-row"><span>One request goes to <b>${rc.length} trainer${rc.length===1?'':'s'}</b>${rc.length===DEPT_TRAINERS.length?' (the whole department)':''}, covering <b>all ${all} trainees</b> in the round. Each trainer fills in forms for the trainees they know. The aim is ${min} or more forms per trainee before the face-to-face meetings start.</span></div>`;
-    const nA = TrainersStore.needInvite(TR_HOME, rc);
+    const nI = TrainersStore.needInvite(TR_HOME, rc), nA = nI.need;
     if(nA) html += `<div class="prev-row"><span><b>${nA} of them ${nA===1?'has':'have'} no trainer account yet.</b> Each gets a link in the invitation to set a password. Nothing else is needed from you.</span></div>`;
+    if(nI.existing) html += `<div class="prev-row"><span>${nI.existing} already ${nI.existing===1?'has':'have'} an HKCA login and will just sign in with it.</span></div>`;
     count = `${rc.length} trainer${rc.length===1?'':'s'} \u00b7 ${all} trainees`; ok = rc.length>0;
   }
   document.getElementById('invPreview').innerHTML = html;
@@ -2545,7 +2547,7 @@ function sendInvite(){
     closeInvite(); renderAll(); toast('Reminder sent to every trainer with forms outstanding'); return;
   }
   const rc = invChosen(); if(!rc.length) return;
-  const nAcc = TrainersStore.inviteAll(TR_HOME, rc);
+  const inv = TrainersStore.inviteAll(TR_HOME, rc), nAcc = inv.sent;
   ROUND.open = true; ROUND.at = todayTxt; ROUND.due = dueTxt;
   ptrainees().forEach(t=>{ INV[t.id] = {at:todayTxt, due:dueTxt, got:0, total:rc.length}; });
   logEvent(`Initiated ITA ${ROUND.cycle}: invited ${rc.length===DEPT_TRAINERS.length?'all '+rc.length+' trainers':rc.length+' selected trainers'} for all ${ptrainees().length} trainees &middot; deadline ${dueTxt}${nAcc?` &middot; ${nAcc} account set-up link${nAcc===1?'':'s'} sent`:''}`);
@@ -3776,8 +3778,18 @@ function trOpts(t){
     +`<option value="left" ${t.st==='left'?'selected':''}>Left the department</option>`
     +Object.keys(groups).map(c=>`<optgroup label="Moved to ${trEsc(c)}">${groups[c].map(h=>`<option value="moved:${h[1]}" ${t.st==='moved'&&t.to===h[1]?'selected':''}>Moved to ${trEsc(h[2])}</option>`).join('')}</optgroup>`).join('');
 }
+const TR_ME = {sot:'albert.chan@example.org', asst:'winnie.ho@example.org'};
+function trSyncTrainees(){ TrainersStore.syncTrainees('sot', ROSTER.map(t=>({name:t.name, stage:t.stage, stream:'ANAES', status:'Active'}))); }
+/* one login: a second view is offered only when this person really holds a second role (an SOT is also a trainer) */
+function trRoleLink(){
+  const a=document.getElementById('trainerViewLink'); if(!a) return;
+  const em=TR_ME[role]; const two = em && TrainersStore.rolesOf(em).includes('trainer') && TrainersStore.rolesOf(em).some(r=>r==='sot'||r==='asot');
+  a.style.display = two ? '' : 'none'; if(two) a.href='HKCA_ITA_Trainer_Form.html?as='+encodeURIComponent(em);
+}
+let trDupKey = null;
 function renderTrainers(){
   if(!document.getElementById('trBody')) return;
+  trSyncTrainees(); trRoleLink();
   const asst = role==='asst', list = TrainersStore.list(TR_HOME), q=(document.getElementById('trSearch').value||'').toLowerCase();
   const c = TrainersStore.changes(TR_HOME), n = c.joined+c.left+c.moved, last = TrainersStore.lastConf(TR_HOME);
   const staying = list.filter(t=>t.st==='on').length;
@@ -3805,9 +3817,11 @@ function trClaim(id){ TrainersStore.claim(TR_HOME,id); renderTrainers(); toast('
 function trFellow(id,v){ const r=TrainersStore.setFellow(TR_HOME,id,v); if(r.err){ toast(r.err); } renderTrainers(); }
 function trAdd(){
   const ids=['trNewLast','trNewFirst','trNewFy','trNewEmail'].map(i=>document.getElementById(i));
-  const r=TrainersStore.add(TR_HOME,ids[0].value,ids[1].value,ids[2].value,ids[3].value);
+  const key=ids.map(x=>x.value.trim().toLowerCase()).join('|');
+  const r=TrainersStore.add(TR_HOME,ids[0].value,ids[1].value,ids[2].value,ids[3].value, trDupKey===key);
   if(r.err){ toast(r.err); return; }
-  ids.forEach(x=>x.value=''); renderTrainers(); toast('Trainer added. They are invited with the next ITA round.');
+  if(r.dup){ trDupKey=key; toast(r.dup+' Press Add trainer again to add them as a different person.'); return; }
+  trDupKey=null; ids.forEach(x=>x.value=''); renderTrainers(); toast('Trainer added. They are invited with the next ITA round.');
 }
 function trConfirm(){
   const rep=TrainersStore.confirm(TR_HOME,TR_ISO,'SOT, PWH');

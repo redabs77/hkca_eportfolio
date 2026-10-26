@@ -285,7 +285,7 @@
       </div>
       <div class="top-right">
         <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode" onclick="toggleTheme()">&#9788;</button>
-        <button class="me" id="meBtn" type="button" aria-haspopup="dialog" aria-label="Your account"><span class="who"><b id="meName">Dr. Lisa Kwok</b><span>Consultant &middot; Prince of Wales Hospital</span></span><span class="meav" id="meAv">LK</span></button>
+        <button class="me" id="meBtn" type="button" aria-haspopup="dialog" aria-label="Your account"><span class="who"><b id="meName">Dr. Lisa Kwok</b><span id="meSub">Consultant &middot; Prince of Wales Hospital</span></span><span class="meav" id="meAv">LK</span></button>
       </div>
     </div>
   </div>
@@ -311,6 +311,7 @@
     <div class="proto"><span>Prototype</span>
       <label><input type="checkbox" id="demoClosed"> Show the round as closed</label>
       <button class="linkbtn" id="inviteBtn" type="button">Show the first visit from the invitation link</button>
+      <button class="linkbtn" id="inviteBtn2" type="button">Show the invitation link for someone who already has a login</button>
       <button class="linkbtn" id="resetBtn" type="button">Reset this prototype</button></div>
   </section>
 
@@ -327,7 +328,8 @@
   </section>
   <section id="view-signin" class="hidden acct" aria-labelledby="si-h">
     <h1 class="title" id="si-h">Sign in</h1>
-    <p class="lede">Trainer account for the HKCA e-Portfolio.</p>
+    <p class="lede">HKCA e-Portfolio. One login for everything you do here.</p>
+    <div class="note hidden" id="siNote" style="margin-top:12px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font-size:13px;background:var(--bg3)">You already have an HKCA login. Sign in with it and the trainer role is added to your account. There is nothing to set up.</div>
     <div class="fld"><label for="siEmail">Email</label><input id="siEmail" type="email" autocomplete="username"></div>
     <div class="fld"><label for="siPw">Password</label><input id="siPw" type="password" autocomplete="current-password"></div>
     <button class="btn pri" id="siGo" type="button">Sign in</button>
@@ -429,6 +431,7 @@
   <dl class="kv" style="grid-template-columns:110px 1fr;display:grid;gap:8px 14px;font-size:13px;margin:14px 0 0"><dt style="color:var(--ink3)">Name</dt><dd id="pfName" style="margin:0;font-weight:600"></dd><dt style="color:var(--ink3)">Email</dt><dd id="pfEmail" style="margin:0;font-weight:600"></dd></dl>
   <div class="fld"><label for="pfFy">Fellowship year</label><input id="pfFy" type="number" inputmode="numeric" min="1960" max="2026" placeholder="Not recorded"></div>
   <div class="sec2"><div class="fld" style="margin-top:0"><label for="pfPw">New password</label><input id="pfPw" type="password" autocomplete="new-password"><small>At least 8 characters. Leave blank to keep your current password.</small></div></div>
+  <div class="sec2 hidden" id="pfOther"><div class="lede" style="margin:0 0 8px">You also supervise training. Same login, different view.</div><a class="btn sec sm" href="HKCA_SOT_Console_Prototype.html" target="_blank" rel="noopener">Open the SOT Console &#8599;</a></div>
   <div class="row2"><button class="btn sec sm" id="pfOut" type="button">Sign out</button><button class="btn sec sm" id="pfClose" type="button">Cancel</button><button class="btn pri sm" id="pfSave" type="button">Save</button></div>
 </div></dialog>
 <div id="acctToast" role="status"></div>
@@ -549,12 +552,21 @@ $('#wlBody').addEventListener('click',e=>{ const b = e.target.closest('[data-ope
 $('#demoClosed').addEventListener('change',e=>{ DB.closed = e.target.checked; saveDB(); renderList(); });
 $('#resetBtn').onclick = ()=>{ localStorage.removeItem(KEY); location.hash = '#/'; location.reload(); };
 $('#inviteBtn').onclick = ()=>{ TrainersStore.setAcct(ME_EMAIL,'invited'); location.hash='#/welcome'; route(); };
+$('#inviteBtn2').onclick = ()=>{ sessionStorage.setItem('hkca.signin.note','1'); localStorage.setItem(SESSION_KEY,'out'); location.hash='#/signin'; route(); };
 function goForm(id, edit){ pendingEdit = !!edit; location.hash = '#/form/'+id; }
 
 /* ---------- routing: #/ = worklist, #/form/<id> = one trainee ---------- */
-const ME_EMAIL = 'lisa.kwok@example.org', SESSION_KEY = 'hkca.trainer.session';
+/* one login per person: the SOT Console opens this page with ?as=<email> for an SOT who is also a trainer */
+const ME_EMAIL = (()=>{ const a=new URLSearchParams(location.search).get('as'); return a && TrainersStore.find(a) ? a : 'lisa.kwok@example.org'; })(), SESSION_KEY = 'hkca.trainer.session';
 const acctToast = t=>{ const e=$('#acctToast'); e.textContent=t; e.classList.add('on'); clearTimeout(acctToast.t); acctToast.t=setTimeout(()=>e.classList.remove('on'),2600); };
 const meRec = ()=>{ const f=TrainersStore.find(ME_EMAIL); return f; };
+function paintMe(){
+  const f=TrainersStore.find(ME_EMAIL); if(!f) return; const t=f.t, hosp=(TrainersStore.HOSP.find(x=>x[1]===f.h)||[])[2]||f.h;
+  $('#meName').textContent=t.name; $('#meSub').textContent=(t.role||'Consultant')+' \u00b7 '+hosp;
+  $('#meAv').textContent=t.name.replace(/^Dr\.\s+/,'').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const roles=TrainersStore.rolesOf(ME_EMAIL), sot=roles.includes('sot')||roles.includes('asot');
+  $('#pfOther').classList.toggle('hidden', !sot);
+}
 function showBare(id){
   ['view-list','view-form'].forEach(v=>$('#'+v).classList.add('hidden'));
   ['view-welcome','view-signin'].forEach(v=>$('#'+v).classList.toggle('hidden', v!==id));
@@ -564,7 +576,7 @@ function route(){
   ['view-welcome','view-signin'].forEach(v=>$('#'+v).classList.add('hidden')); document.body.classList.remove('bare');
   const h = location.hash, out = localStorage.getItem(SESSION_KEY)==='out', a = TrainersStore.acct(ME_EMAIL);
   if(h==='#/welcome'){ fillWelcome(); document.title='HKCA e-Portfolio \u2014 Set up your trainer account'; showBare('view-welcome'); return; }
-  if(h==='#/signin' && out){ $('#siEmail').value=ME_EMAIL; document.title='HKCA e-Portfolio \u2014 Sign in'; showBare('view-signin'); return; }
+  if(h==='#/signin' && out){ $('#siEmail').value=ME_EMAIL; $('#siNote').classList.toggle('hidden', !sessionStorage.getItem('hkca.signin.note')); document.title='HKCA e-Portfolio \u2014 Sign in'; showBare('view-signin'); return; }
   if(out){ location.hash='#/signin'; return; }
   if(a==='invited'){ location.hash='#/welcome'; return; }
   const m = /^#\/form\/(.+)$/.exec(h);
@@ -581,7 +593,7 @@ $('#wcGo').onclick = ()=>{
   const r=TrainersStore.setFellowByEmail(ME_EMAIL,$('#wcFy').value); if(r.err&&r.err!==1){ acctToast(r.err); return; }
   TrainersStore.setAcct(ME_EMAIL,'active'); localStorage.removeItem(SESSION_KEY); location.hash='#/'; acctToast('Account created. You are signed in.');
 };
-$('#siGo').onclick = ()=>{ if(!$('#siPw').value){ acctToast('Enter your password.'); return; } localStorage.removeItem(SESSION_KEY); $('#siPw').value=''; location.hash='#/'; route(); };
+$('#siGo').onclick = ()=>{ if(!$('#siPw').value){ acctToast('Enter your password.'); return; } sessionStorage.removeItem('hkca.signin.note'); localStorage.removeItem(SESSION_KEY); $('#siPw').value=''; location.hash='#/'; route(); };
 $('#siForgot').onclick = ()=>acctToast('Reset link sent to '+ME_EMAIL+'.');
 $('#meBtn').onclick = ()=>{
   const f=meRec(); if(!f) return; const hosp=(TrainersStore.HOSP.find(x=>x[1]===f.h)||[])[2]||f.h;
@@ -849,6 +861,8 @@ function toggleTheme(){ const d=document.documentElement.classList.toggle('dark'
 (function(){ const s=localStorage.getItem('ita-theme'); if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme: dark)').matches)){ document.documentElement.classList.add('dark'); $('#themeBtn').innerHTML='&#9790;'; } })();
 
 /* ---------- init ---------- */
+paintMe();
+paintMe();
 route();
 </script>
 </body>

@@ -1644,9 +1644,9 @@ function doAppt(){
   if(!w){toast('Enter the name.');return}if(!b||b>TODAY){toast('Enter the Board endorsement date. It cannot be in the future.');return}if(!e){toast('Enter the effective date.');return}
   const cur=S.appts.find(a=>a.hosp===h&&a.role===r&&!a.ended);
   if(cur&&!cur.until){toast(`${h} already has a ${r} with no end date. End that term first.`);return}
-  S.appts.push({id:'AP'+Date.now(),hosp:h,role:r,who:w,from:e,until:null});
+  S.appts.push({id:'AP'+Date.now(),hosp:h,role:r,who:w,from:e,until:null,fresh:true});
   if(ui.pa){const pa=S.pendingAppt.find(x=>x.id===ui.pa);const nm=pa&&pa.nomId&&S.nominations.find(x=>x.id===pa.nomId);if(nm)nm.state='entered';S.pendingAppt=S.pendingAppt.filter(x=>x.id!==ui.pa);ui.pa=null}
-  logAct('Appointment entered',`${w}, ${r}, ${h}, from ${fmt(e)}. Board endorsement ${fmt(b)}`);closeModal();render();toast(`${w} entered as ${r} at ${h}, and is on its trainer list.`)
+  logAct('Appointment entered',`${w}, ${r}, ${h}, from ${fmt(e)}. Board endorsement ${fmt(b)}`);closeModal();render();toast(`${w} entered as ${r} at ${h}, and is on its trainer list. A set-up link goes to them if they have no HKCA login yet.`)
 }
 function endAppt(id){const a=S.appts.find(x=>x.id===id);ui.ea=id;openModal(`<h3>${a.until?'Change':'End'} the term of ${esc(a.who)}</h3><p class="meta" style="margin:6px 0 12px">${a.role}, ${a.hosp}</p><div class="fld"><label for="eD">Last day in role</label><input type="date" id="eD" value="${a.until||TODAY}" min="${a.from}"></div><div class="fld"><label for="eW">Reason</label><input type="text" id="eW" placeholder="For the record"></div><div class="btn-row"><button class="btn sec" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doEnd">Save</button></div>`)}
 function doEnd(){const a=S.appts.find(x=>x.id===ui.ea);const d=$('#eD').value,w=$('#eW').value.trim();if(!d||!w){toast('Enter a date and a reason.');return}a.until=d;if(d<=TODAY)a.ended=true;logAct('Term ended',`${a.who}, ${a.role}, ${a.hosp}: last day ${fmt(d)}. ${w}`);closeModal();render();toast('Term updated.')}
@@ -1666,7 +1666,9 @@ assessor,Sample,Trainer One,Trainer.One@example.org,,
 assessor,Sample,Trainer Five,trainer.five@example.org,,
 assessor,Sample,Trainer Six,trainer.six@example.org,,
 assessor,Sample,Trainer Seven,not-an-email,,
-assessor,Sample,Trainer Two,trainer.two@example.org,,`;
+assessor,Sample,Trainer Two,trainer.two@example.org,,
+assessor,Sarah,Lau,sarah.lau@example.org,,
+assessor,Fan,Mei Yee,fan.mei.yee@other.example.org,,`;
 const hospCode=v=>{const x=(v||'').trim().toLowerCase();if(!x)return {k:'none'};const h=HOSP.find(([c,h])=>h.toLowerCase()===x||hn(h).toLowerCase()===x);return h?{k:'ok',h:h[1]}:{k:'bad',raw:v.trim()}};
 function checkTr(){
   const raw=$('#trRaw').value;ui.trRaw=raw;const lines=raw.split(/\n/).map(s=>s.trim()).filter(Boolean);
@@ -1680,8 +1682,12 @@ function checkTr(){
     const b={n:r.n,name:(r.first+' '+r.last).trim(),email:r.email,src:r.src,hosp:r.hosp};
     if(r.bad)return Object.assign(b,{k:'err',msg:r.bad});
     if(r.dupOf)return Object.assign(b,{k:'dup',msg:'Same email as row '+r.dupOf+', merged into it'});
+    const tb=TrainersStore.traineeBlock(r.email,b.name);
+    if(tb)return Object.assign(b,{k:'err',msg:'Current anaesthesia trainee, so cannot be a trainer'});
     if(have.has(r.email))return Object.assign(b,{k:'skip',msg:'Already on the list'});
     const d=Object.assign(b,{srcs:r.srcs,inactive:r.src==='user'&&r.act==='N'});
+    const sn=TrainersStore.sameNameOther(r.email,b.name);
+    if(sn)return Object.assign(d,{k:'warn',on:false,msg:'Same name as '+sn.who+' ('+sn.email+', '+sn.kind+'). Probably one person with two emails, so skipped. Tick to import as a different person'});
     if(d.inactive)return Object.assign(d,{k:'warn',on:false,msg:'Marked inactive in the legacy system. Tick to import as retired'});
     if(r.badHosp)return Object.assign(d,{k:'warn',on:false,hosp:null,msg:'Hospital \u201c'+r.badHosp.hr.raw+'\u201d not recognised. Tick to import with no hospital'});
     return Object.assign(d,{k:'ok',msg:d.hosp?'Import to '+d.hosp:'No hospital recorded. The department SOT will place them'});
@@ -1756,7 +1762,7 @@ const VIEWS={home:vHome,trainees:vTrainees,courses:vCourses,exams:vExams,project
 function labelTables(){document.querySelectorAll('#app table').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(h=>h.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.dataset.l===undefined&&hs[i]!==undefined)td.dataset.l=hs[i]}))})}
 /* a department SOT's confirmation (SOT Console, same browser) replaces the demo row for that hospital */
 /* every SOT and Assistant SOT in post is a trainer of their hospital (Trainer List) */
-function syncAppts(){TrainersStore.syncAppointments(S.appts.filter(a=>!a.ended&&a.from<=TODAY).map(a=>({hosp:a.hosp,role:a.role,who:a.who})))}
+function syncAppts(){TrainersStore.syncTrainees('admin',S.trainees.map(t=>({name:t.name,stage:t.stage,stream:'ANAES',status:t.status==='Completed'?'Completed':'Active'})));TrainersStore.syncAppointments(S.appts.filter(a=>!a.ended&&a.from<=TODAY).map(a=>({hosp:a.hosp,role:a.role,who:a.who,fresh:!!a.fresh})))}
 function syncRoster(){Object.keys(TrainersStore.get().reports).forEach(h=>{const rp=TrainersStore.report(h);let r=S.roster.find(x=>x.hosp===h);if(!r){r={hosp:h};S.roster.push(r)}if(r.repAt===rp.at)return;const n=rp.joined+rp.left+rp.moved;Object.assign(r,{conf:true,on:rp.on,changes:n,what:rp.what,reviewed:n===0,repAt:rp.at})})}
 function render(){
   syncAppts();syncRoster();
